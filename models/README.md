@@ -22,7 +22,7 @@ serve on that stack.
 | Hy3-class ~295B MoE (community MXFP4 / NVFP4 compressed-tensors checkpoints) | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) |
 | MiniMax-M3 | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md) |
 | ~600B-class MoE with MTP drafter (community abliterated re-upload) | [14](../traps/versioning/14-finetune-reupload-not-drop-in.md) |
-| Ternary-Bonsai-27B (MLX 2bit, stock mlx_lm server, Apple silicon) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md) |
+| Ternary-Bonsai-27B (MLX 2bit, stock mlx_lm server, Apple silicon) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
 
 ## Stack-level traps (apply to any model on that stack)
 
@@ -32,7 +32,7 @@ serve on that stack.
 | Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md) |
 | Container images over mismatched drivers | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md) |
 | llama.cpp attention and serve flags | [18](../traps/runtime/18-flash-attention-off-halves-deep-decode.md), [19](../traps/tools/19-missing-jinja-breaks-tool-parsing.md) |
-| mlx_lm server (fields, launch-flag defaults, unvalidated request body) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md) |
+| mlx_lm server (fields, launch-flag defaults, unvalidated request body) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
 | Reasoning-model serving generally (fields, templates, budgets) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [04](../traps/template/04-history-reasoning-stripping.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md) |
 
 ## Clean preflights
