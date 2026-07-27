@@ -1,0 +1,54 @@
+name: Report a trap
+description: You hit a serving-path trap that produced a wrong number. A symptom and a stack is enough to start.
+title: "[trap] "
+labels: ["trap-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You do not need the mechanism or a finished writeup. The symptom, the stack, and whatever evidence you have is enough. Entries get built from reports like this.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What you actually observed. The weird number, the corrupted string, the verdict that did not survive a hand-read.
+      placeholder: "Firing rate read 0% on every arm while the model was visibly reasoning in the chat UI."
+    validations:
+      required: true
+  - type: textarea
+    id: stack
+    attributes:
+      label: Stack and build
+      description: Server and version, model, revision hash, quantization build, client/harness. Build matters, not just revision.
+      placeholder: "vLLM 0.25.1, model X rev abc1234, NVFP4 build, custom python harness"
+    validations:
+      required: true
+  - type: textarea
+    id: mechanism
+    attributes:
+      label: Mechanism, if known
+      description: What you think is happening between request and response. Fine to leave as a hypothesis or blank.
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Counts, logs, an assembled prompt dump, a minimal repro. Measured beats inferred.
+    validations:
+      required: false
+  - type: textarea
+    id: check
+    attributes:
+      label: A check that catches it, if you have one
+      description: The assertion or snippet that would have caught this before the number shipped.
+    validations:
+      required: false
+  - type: input
+    id: published
+    attributes:
+      label: Did it produce a published or shared number?
+      description: This is the part that tells readers what the trap class costs.
+      placeholder: "yes / no / almost"
+    validations:
+      required: false
