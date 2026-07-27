@@ -1,5 +1,7 @@
 # Trap 13: gpu-memory-utilization fractions misbehave on unified memory
 
+**Found by Blackwellboy.**
+
 **Status: measured on our fleet** (raw not published); the fixed-bytes fix pattern is public in our container recipe.
 
 **Symptom.** A unified-memory box (DGX Spark class, 121 GiB usable) sits at

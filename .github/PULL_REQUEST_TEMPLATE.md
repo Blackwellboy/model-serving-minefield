@@ -3,6 +3,7 @@
 Thanks. Checklist for a new entry (see CONTRIBUTING.md for the format):
 
 - [ ] One file under the right category, `traps/<category>/NN-short-slug.md`, next free global number
+- [ ] **Found by** line directly under the title, naming the finder by the handle they publish under
 - [ ] Status line up top: reproduced here / reported by others / under test
 - [ ] Sections in order: Symptom, Mechanism, Stacks and builds bitten, The check, The fix, Found, Attribution
 - [ ] Symptom leads: it describes what a reader would observe, not the mechanism
@@ -10,6 +11,7 @@ Thanks. Checklist for a new entry (see CONTRIBUTING.md for the format):
 - [ ] Stack AND build named: server version, model, revision hash, quantization build
 - [ ] The check is runnable as written (snippet, command, or a script added under `checks/`)
 - [ ] Row added to the symptom table in `README.md`
+- [ ] Model row added or extended in `models/README.md` if a model family is named
 - [ ] Attribution names the finder by the handle they publish under, with a link to raw data if public
 - [ ] No secrets, private hostnames, internal paths, or personal data anywhere in the diff
 

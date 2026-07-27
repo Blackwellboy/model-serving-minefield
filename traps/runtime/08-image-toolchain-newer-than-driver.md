@@ -1,5 +1,7 @@
 # Trap 08: image toolchain newer than the host driver kills kernels at JIT time
 
+**Found by Blackwellboy.**
+
 **Status: reproduced here** (two distinct kernel classes, two container images, DGX Spark GB10 fleet).
 
 **Symptom.** The container starts, weights load, everything looks healthy,

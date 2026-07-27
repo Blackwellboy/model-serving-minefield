@@ -5,11 +5,14 @@ the format and the evidence bar below and your entry will fit.
 
 ## Two ways in
 
-1. **Issue first (lowest friction).** Open a
-   [report-a-trap issue](../../issues/new?template=report-a-trap.yml) with
-   the symptom and your stack. You do not need the mechanism. Someone (maybe
-   you, later) turns it into an entry once the check exists.
-2. **PR with a full entry.** Add one file under the right category
+1. **Easy door (most entries should start here).** Open an
+   ["I hit a trap" issue](../../issues/new?template=report-a-trap.yml).
+   Four plain questions, no formatting, no evidence checklist. A maintainer
+   verifies what can be verified, writes the entry, credits you, and links
+   your issue; the workflow is documented in
+   [MAINTAINING.md](MAINTAINING.md). The evidence bar below applies to the
+   finished entry, not to your report.
+2. **Full door: PR with a complete entry.** Add one file under the right category
    directory, `traps/<category>/NN-short-slug.md` (next free global number;
    categories are listed in the README), add a row to the symptom table in
    `README.md`, and open a PR. The PR template walks the checklist.
@@ -22,6 +25,8 @@ One trap per file. Use these sections, in this order:
 
 ```markdown
 # Trap NN: short name
+
+**Found by <the handle they publish under>.**
 
 **Status: reproduced here | reported by others | under test.** One line on
 who measured it and where. "Reproduced here" means you ran it and can link
@@ -66,6 +71,14 @@ Link the raw data if it is public.
 - **Name what you cannot claim.** If you saw it on one stack, say one stack.
   If the mechanism is a hypothesis, label it a hypothesis and keep it out of
   the symptom and check sections.
+
+## Credit
+
+Credit is the default, not a courtesy. Contributors are named at the top of
+the entry (the **Found by** line), in the Attribution section, and in
+[HALL_OF_FAME.md](HALL_OF_FAME.md), by the handle they publish under, unless
+they ask otherwise. Use a generic label for anything not publicly
+attributable.
 
 ## House style
 

@@ -1,5 +1,7 @@
 # Trap 09: same weights, same box, three images, three different outcomes
 
+**Found by Blackwellboy; working path by eugr.**
+
 **Status: reproduced here** (one checkpoint, three container images, identical two-node DGX Spark hardware).
 
 **Symptom.** A model "works" or "does not work", or is fast or slow, and the

@@ -1,5 +1,7 @@
 # Trap 14: an abliterated or finetuned re-upload is not a drop-in
 
+**Found by Blackwellboy and TheTom.**
+
 **Status: measured on our fleet** (per-shard hash comparison; raw not published). The behavioral half is documented upstream.
 
 **Symptom.** You swap a base model for its abliterated or finetuned

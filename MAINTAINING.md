@@ -1,0 +1,63 @@
+# Maintaining the registry
+
+How a report becomes an entry, and the conventions that keep credit and
+honesty straight. Written for maintainers, readable by anyone who wants to
+know what happens to their issue.
+
+## The two doors
+
+- **Easy door:** the ["I hit a trap" issue form](../../issues/new?template=report-a-trap.yml).
+  Four plain questions. No evidence bar is applied to the report itself; the
+  bar applies to the entry a maintainer later writes from it.
+- **Full door:** a PR with a complete entry per
+  [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Both doors end in the same place: a credited entry. The easy door just moves
+the writing and verification work to a maintainer.
+
+## Promoting an issue to an entry
+
+1. **Read the report and check for a match.** If the symptom matches an
+   existing entry, reply with the link. If the reporter's stack is new for
+   that entry, add it to "Stacks and builds bitten" and credit them in the
+   Attribution section. Close with thanks; that still counts as a
+   contribution.
+2. **Verify what can be verified.** If the trap is reproducible on hardware
+   we have, run the check or a minimal repro. If it is not reproducible here
+   (different hardware, proprietary stack), verify internal consistency:
+   does the mechanism explain the symptom, does the fix follow from the
+   mechanism, is there a runnable check.
+3. **Write the entry** in the CONTRIBUTING format, in the reporter's terms
+   where possible; their phrasing of the symptom is usually the phrasing the
+   next victim will search for.
+4. **Mark status honestly.** The convention:
+   - **reproduced here**: we ran it and can link or produce the raw.
+   - **reported by others**: credited and linked, not independently
+     reproduced. This is a normal, welcome status, not a second-class one.
+   - **under test**: a replication is running; the entry says what would
+     change it.
+   Reported-but-unreproduced entries are labelled, never rejected.
+5. **Credit the reporter.** Their handle goes in the **Found by** line at
+   the top of the entry, in the Attribution section, and in
+   [HALL_OF_FAME.md](HALL_OF_FAME.md). Link the originating issue from the
+   entry's Attribution section. Contributors are always named unless they
+   ask otherwise; use a generic label for anything not publicly
+   attributable.
+6. **Wire it in.** Add the symptom row in `README.md`, the model row in
+   [models/README.md](models/README.md) if a model family is named, and a
+   line in [CHANGELOG.md](CHANGELOG.md).
+7. **Close the loop.** Comment on the issue with the entry link before
+   closing it.
+
+## Status transitions
+
+- **under test** resolves to **reproduced here** or stays **reported by
+  others** with a dated note on what the replication attempt found. A failed
+  replication is recorded in the entry, not silently deleted; "did not
+  reproduce on stack X" is information.
+- Corrections to any entry or attribution are fixed fast; open an issue.
+
+## Cadence
+
+Reports get a first maintainer response within a few days. Entries land as
+they are verified. The [CHANGELOG.md](CHANGELOG.md) is the liveness record.

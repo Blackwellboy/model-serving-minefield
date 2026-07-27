@@ -1,5 +1,7 @@
 # Trap 12: valid requests return empty content at a token ceiling, and budget converts them
 
+**Found by Blackwellboy.**
+
 **Status: reproduced here** (40-cell budget map, published raw).
 
 **Symptom.** A reasoning model returns HTTP 200 with **empty content** on

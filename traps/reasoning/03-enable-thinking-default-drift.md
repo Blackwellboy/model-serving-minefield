@@ -1,5 +1,7 @@
 # Trap 03: `enable_thinking` default drifts between revisions
 
+**Found by Blackwellboy and TheTom.**
+
 **Status: reproduced here**, reconciled across three independently run stacks.
 
 **Symptom.** Two testers say "same model" and get materially different

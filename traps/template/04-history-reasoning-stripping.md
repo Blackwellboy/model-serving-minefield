@@ -1,5 +1,7 @@
 # Trap 04: prior-turn reasoning stripped from history, and the model reads it
 
+**Found by @quantumleap68 and Blackwellboy.**
+
 **Status: reproduced here** (quantified stripped-vs-preserved comparison) and independently confirmed at the wire by @quantumleap68 on a second client and serving pair.
 
 **This is the most dangerous entry in this registry.** Its symptom is not a

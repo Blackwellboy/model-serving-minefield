@@ -1,5 +1,7 @@
 # Trap 05: a scoring detail silently flips a verdict
 
+**Found by the upstream checker's own author, who caught and corrected it in public.**
+
 **Status: reported by others** (caught and corrected by the upstream checker author); the fix pattern is documented here.
 
 Traps 01 through 04 corrupt what the model *receives* or what you *read

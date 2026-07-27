@@ -1,5 +1,7 @@
 # Trap 02: orphaned `</think>` leaking into content
 
+**Found by Blackwellboy.**
+
 **Status: reproduced here** on two serving stacks (EXL3-tail container and venv vLLM 0.25.1, same parser).
 
 **Symptom.** Every response arrives with a stray `</think>` at the very start

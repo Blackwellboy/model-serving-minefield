@@ -1,54 +1,44 @@
-name: Report a trap
-description: You hit a serving-path trap that produced a wrong number. A symptom and a stack is enough to start.
+name: I hit a trap
+description: You lost time to a serving or config bug. Four plain questions, no writeup. A maintainer turns it into an entry and credits you.
 title: "[trap] "
 labels: ["trap-report"]
 body:
   - type: markdown
     attributes:
       value: |
-        You do not need the mechanism or a finished writeup. The symptom, the stack, and whatever evidence you have is enough. Entries get built from reports like this.
+        Plain words are fine. No formatting, no evidence checklist, no finished writeup.
+        Answer these the way you would tell a friend what happened. A maintainer will
+        verify what can be verified, write the entry, credit you by the handle you
+        publish under, and link back to this issue. "I am not sure this is even a trap"
+        is a fine reason to open one.
   - type: textarea
-    id: symptom
+    id: what-broke
     attributes:
-      label: Symptom
-      description: What you actually observed. The weird number, the corrupted string, the verdict that did not survive a hand-read.
-      placeholder: "Firing rate read 0% on every arm while the model was visibly reasoning in the chat UI."
+      label: What broke
+      description: The short version of what went wrong.
+      placeholder: "Tool calling just stopped working after I switched containers."
     validations:
       required: true
   - type: textarea
-    id: stack
+    id: what-you-saw
     attributes:
-      label: Stack and build
-      description: Server and version, model, revision hash, quantization build, client/harness. Build matters, not just revision.
-      placeholder: "vLLM 0.25.1, model X rev abc1234, NVFP4 build, custom python harness"
+      label: What you saw
+      description: The symptom in your own words. The weird number, the strange output, the thing that made you doubt yourself.
+      placeholder: "Every reply started with a stray </think> and my parser choked on it."
     validations:
       required: true
   - type: textarea
-    id: mechanism
+    id: what-fixed-it
     attributes:
-      label: Mechanism, if known
-      description: What you think is happening between request and response. Fine to leave as a hypothesis or blank.
+      label: What fixed it
+      description: If you found a fix or workaround, what was it? "Still broken" is a valid answer.
     validations:
       required: false
   - type: textarea
-    id: evidence
+    id: what-serving
     attributes:
-      label: Evidence
-      description: Counts, logs, an assembled prompt dump, a minimal repro. Measured beats inferred.
+      label: What were you serving
+      description: Model, quantization, serving stack, and versions, as best you know them.
+      placeholder: "Qwen 3.6 35B-A3B, NVFP4, vLLM 0.25.1 in docker on a DGX Spark"
     validations:
-      required: false
-  - type: textarea
-    id: check
-    attributes:
-      label: A check that catches it, if you have one
-      description: The assertion or snippet that would have caught this before the number shipped.
-    validations:
-      required: false
-  - type: input
-    id: published
-    attributes:
-      label: Did it produce a published or shared number?
-      description: This is the part that tells readers what the trap class costs.
-      placeholder: "yes / no / almost"
-    validations:
-      required: false
+      required: true

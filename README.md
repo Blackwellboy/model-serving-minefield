@@ -1,34 +1,23 @@
 # Model Serving Minefield
 
-A community registry of serving-path traps that produce **confidently wrong
-measurements** about local LLMs: chat templates, tool parsers, reasoning
-fields, quantization paths, container toolchains, memory allocation, eval
-harnesses, and versioning.
+You just lost hours to a "model problem" that turned out to be a serving or
+config bug. You are not crazy, and you are not the first: this is the registry
+where those bugs live, so the next person loses minutes instead of an evening.
 
-Every entry was found the expensive way, usually after a number had already
-been published or shared. The common shape: the request looks correct, the
-response looks correct, and the number is still wrong, because something
-happened between the two that nobody inspected. Request-shaped checks cannot
-catch any of these.
+Every entry here produced a **confidently wrong measurement** on a real
+serving path: chat templates, tool parsers, reasoning fields, quantization
+kernel paths, container toolchains, memory allocation, eval harnesses,
+versioning. The common shape: the request looks correct, the response looks
+correct, and the number is still wrong, because something happened between
+the two that nobody inspected. Request-shaped checks cannot catch any of
+these.
 
 Each entry leads with the symptom you would actually observe, then the
 mechanism, the stacks and builds it bit, the check that catches it, and the
 fix. Each carries a status: **reproduced here** (measured in our lab, raw
 linked), **reported by others** (credited and linked, not independently
-reproduced), or **under test**.
-
-## Before you serve a new model
-
-The one-line checklist, each line backed by an entry:
-
-1. Image toolchain matches the host driver ([08](traps/runtime/08-image-toolchain-newer-than-driver.md)); record the image digest ([09](traps/runtime/09-image-choice-changes-outcome.md)).
-2. Read `config.json`'s quant schemes, not the repo name ([10](traps/quantization/10-quant-label-is-not-the-kernel-path.md)).
-3. One tool-defined request returns a structured `tool_calls` array ([19](traps/tools/19-missing-jinja-breaks-tool-parsing.md)).
-4. Both reasoning field names read, positive control fires ([01](traps/reasoning/01-reasoning-field-two-names.md)), thinking kwarg sent explicitly ([03](traps/reasoning/03-enable-thinking-default-drift.md)).
-5. Assembled prompt inspected at turn 3 with a marked reasoning string ([04](traps/template/04-history-reasoning-stripping.md); [checks/preflight_template.py](checks/preflight_template.py) automates it).
-6. Attention implementation confirmed on, benchmarked at real depth ([18](traps/runtime/18-flash-attention-off-halves-deep-decode.md)).
-7. KV sized in bytes on unified memory ([13](traps/memory/13-utilization-fraction-on-unified-memory.md)); speculative K swept, not searched ([11](traps/runtime/11-speculative-depth-peak-and-collapse.md)).
-8. Scores bucketed on extractable output, ceilings of at least 8192, echo+logprobs probed before multiple-choice evals ([16](traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [12](traps/evaluation/12-empty-content-at-token-ceiling.md), [15](traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md)).
+reproduced), or **under test**. Reported-but-unreproduced entries are
+welcome here and labelled, not rejected.
 
 ## Find your symptom
 
@@ -59,6 +48,24 @@ If you run one check from this registry, make it
 whose symptom looks most like a genuine model property, and it cost four
 independent testers a combined multi-week detour.
 
+About to serve a specific model? The
+[per-model index](models/README.md) maps model families to the traps
+observed on them.
+
+## Before you serve a new model
+
+The one-line checklist, each line backed by an entry. Runnable checks live
+in [checks/](checks/).
+
+1. Image toolchain matches the host driver ([08](traps/runtime/08-image-toolchain-newer-than-driver.md)); record the image digest ([09](traps/runtime/09-image-choice-changes-outcome.md)).
+2. Read `config.json`'s quant schemes, not the repo name ([10](traps/quantization/10-quant-label-is-not-the-kernel-path.md)).
+3. One tool-defined request returns a structured `tool_calls` array ([19](traps/tools/19-missing-jinja-breaks-tool-parsing.md)).
+4. Both reasoning field names read, positive control fires ([01](traps/reasoning/01-reasoning-field-two-names.md)), thinking kwarg sent explicitly ([03](traps/reasoning/03-enable-thinking-default-drift.md)).
+5. Assembled prompt inspected at turn 3 with a marked reasoning string ([04](traps/template/04-history-reasoning-stripping.md); [checks/preflight_template.py](checks/preflight_template.py) automates it).
+6. Attention implementation confirmed on, benchmarked at real depth ([18](traps/runtime/18-flash-attention-off-halves-deep-decode.md)).
+7. KV sized in bytes on unified memory ([13](traps/memory/13-utilization-fraction-on-unified-memory.md)); speculative K swept, not searched ([11](traps/runtime/11-speculative-depth-peak-and-collapse.md)).
+8. Scores bucketed on extractable output, ceilings of at least 8192, echo+logprobs probed before multiple-choice evals ([16](traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [12](traps/evaluation/12-empty-content-at-token-ceiling.md), [15](traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md)).
+
 ## Categories
 
 | Directory | Covers |
@@ -74,6 +81,47 @@ independent testers a combined multi-week detour.
 
 Old flat paths (`traps/NN-*.md`) remain as redirect stubs so existing links
 keep resolving.
+
+## How to contribute
+
+Two doors. Take the easy one; it counts just as much.
+
+- **Easy door: you hit a trap, tell us in plain words.** Open an
+  ["I hit a trap" issue](../../issues/new?template=report-a-trap.yml). Four
+  plain questions, no formatting, no writeup. A maintainer verifies what can
+  be verified, writes the entry, credits you by name, and links your issue.
+  Most entries should start this way.
+- **Full door: write the entry yourself.** One file under the right
+  `traps/<category>/`, format and evidence bar in
+  [CONTRIBUTING.md](CONTRIBUTING.md), PR template walks the checklist.
+
+Not sure whether what you hit is a trap or your own mistake? Open the issue
+anyway. "I could not tell whether this was me or the stack" is exactly the
+state these entries exist to resolve, and triage is cheap.
+
+How reports become entries, and how statuses are assigned, is documented in
+[MAINTAINING.md](MAINTAINING.md).
+
+## Contributors
+
+Findings in this registry come from **@quantumleap68**,
+**TheTom** ([offlabel](https://github.com/TheTom/offlabel)),
+**@Defilan**, **@apollo-mg**,
+**@mrpmorris** ([sparkrun-recipes](https://github.com/mrpmorris/sparkrun-recipes)),
+**eugr** ([spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)),
+and **Blackwellboy** ([laguna-s21-lab](https://github.com/Blackwellboy/laguna-s21-lab)).
+Per-finding credit is in [HALL_OF_FAME.md](HALL_OF_FAME.md), and every entry
+names its finder at the top. Contributors are always named unless they ask
+otherwise.
+
+## Recently added
+
+- 2026-07-27: contribution overhaul: easy-door issue form, per-model index, maintainer workflow, finder named at the top of every entry.
+- 2026-07-27: twelve new traps ([08](traps/runtime/08-image-toolchain-newer-than-driver.md) through [19](traps/tools/19-missing-jinja-breaks-tool-parsing.md)) covering runtime, quantization, memory, evaluation, versioning, and tools; category structure; hall of fame.
+- 2026-07-27: launched with seven traps and [checks/preflight_template.py](checks/preflight_template.py).
+
+Full history in [CHANGELOG.md](CHANGELOG.md). New entries land as they are
+verified; issue reports get a first maintainer response within a few days.
 
 ## Methodology preamble
 
@@ -116,20 +164,6 @@ serving path and reports whether prior-turn reasoning is preserved or
 stripped (trap 04), whether the template injects or rewrites messages, and
 which kwargs the template actually reads versus what the card documents
 (traps 04 and 07). See [`checks/README.md`](checks/README.md).
-
-## Contributing
-
-This registry only works if it outgrows its founding stacks. If a serving
-path burned you and the number survived review before anyone caught it,
-that is an entry.
-
-- **Report a trap**: [open an issue](../../issues/new?template=report-a-trap.yml).
-  A symptom and a stack description is enough to start.
-- **Add an entry**: one file under the right `traps/<category>/`, format and
-  evidence bar in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Everyone whose findings are in here is credited in
-[HALL_OF_FAME.md](HALL_OF_FAME.md).
 
 ## License
 

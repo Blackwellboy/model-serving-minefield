@@ -1,5 +1,7 @@
 # Trap 07: `reasoning_effort` accepted and silently ignored
 
+**Found by @quantumleap68.**
+
 **Status: reported by others** (@quantumleap68, wire-level); the check is runnable on any stack.
 
 **Symptom.** Effort levels change nothing. Identical reasoning depth at

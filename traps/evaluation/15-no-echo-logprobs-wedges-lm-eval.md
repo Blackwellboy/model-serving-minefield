@@ -1,5 +1,7 @@
 # Trap 15: a server without echo plus logprobs silently breaks lm-eval multiple choice
 
+**Found by @mrpmorris.**
+
 **Status: reported by others** (@mrpmorris, handled explicitly in his public harness); not reproduced here.
 
 **Symptom.** Multiple-choice benchmark tasks (MMLU-style) wedge forever or

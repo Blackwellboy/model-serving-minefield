@@ -1,5 +1,7 @@
 # Trap 06: identity-sentence eviction, the thinking gate keys on the literal first line
 
+**Found by @quantumleap68.**
+
 **Status: reported by others** (@quantumleap68, wire-level, N of at least 6 per cell); under independent test on our stack.
 
 **Symptom.** Thinking collapses under any real system prompt, and no amount

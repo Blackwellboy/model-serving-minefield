@@ -1,5 +1,7 @@
 # Trap 11: speculative depth has a sharp peak, and a smart search misses it
 
+**Found by Blackwellboy and TheTom.**
+
 **Status: reproduced here** (20-cell exhaustive grid, published raw); the search-strategy hazard is visible in a public tuning tool.
 
 **Symptom.** "The model is slow" after someone raised the speculative depth

@@ -1,5 +1,7 @@
 # Trap 10: the quant label is not the kernel path
 
+**Found by Blackwellboy.**
+
 **Status: reproduced here** (DGX Spark GB10; one hard failure, one measured speed class), backed by a claim-scoped hardware note.
 
 **Symptom.** A checkpoint marketed by its quant format ("NVFP4", "MXFP4")

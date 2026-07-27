@@ -1,5 +1,7 @@
 # Trap 18: flash attention off silently halves decode at depth
 
+**Found by @Defilan.**
+
 **Status: reported by others** (@Defilan, measured); adopted as a preflight check in the upstream guide. All our own vLLM numbers are FLASHINFER-attention numbers, so we never measured the off arm.
 
 **Symptom.** Decode speed collapses as context grows, far faster than

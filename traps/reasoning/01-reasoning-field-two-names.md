@@ -1,5 +1,7 @@
 # Trap 01: the reasoning field has two names
 
+**Found by Blackwellboy; streaming variant confirmed by @quantumleap68.**
+
 **Status: reproduced here** (three tools audited on our stacks), with an independent wire-level confirmation of the streaming variant by @quantumleap68.
 
 **Symptom.** Your thinking firing rate reads **0%** while the model is

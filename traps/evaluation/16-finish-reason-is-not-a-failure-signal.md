@@ -1,5 +1,7 @@
 # Trap 16: finish_reason=length is not a failure signal, and stop is not a success signal
 
+**Found by @apollo-mg and Blackwellboy.**
+
 **Status: reported by others and reproduced here** from the opposite direction; the two datasets together give the full rule.
 
 **Symptom.** A benchmark buckets every cap-hit as a failure, or every clean

@@ -1,5 +1,7 @@
 # Trap 17: "each arm at its recommended settings" is a hidden confound
 
+**Found by @apollo-mg; replicated by Blackwellboy.**
+
 **Status: reported by others (disclosed by the author) and the confound's effect reproduced here.**
 
 **Symptom.** An A/B comparison shows a clean effect (thinking on beats

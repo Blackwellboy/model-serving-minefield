@@ -1,5 +1,7 @@
 # Trap 19: one missing server flag turns structured tool calls into prose
 
+**Found by TheTom.**
+
 **Status: reported by others** (TheTom, measured on two llama.cpp forks); consistent with our native-path data from the serving side.
 
 **Symptom.** The model "cannot do tool calling": it describes the call in
