@@ -15,7 +15,7 @@ all**. The parameter parses, validates, and does nothing. On templates like
 this, prompting is the only depth lever that exists.
 
 **Stacks and builds bitten.** Laguna S 2.1 on vLLM 0.25.1, measured at the
-wire by @quantumleap68 (Hermes CLI, logging proxy): `reasoning_effort` is a
+wire by @quantumleap68 (his CLI client, logging proxy): `reasoning_effort` is a
 no-op because the template never reads it. Same class as Trap 04's corollary
 in reverse: there, the template read a kwarg the model card did not document;
 here, the API accepts a parameter the template does not read. Both directions

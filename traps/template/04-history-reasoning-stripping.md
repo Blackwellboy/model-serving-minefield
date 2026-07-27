@@ -31,7 +31,7 @@ client-default stripped histories, fired 0/150 with flat-zero curves on both
 axes: depth and mass are epiphenomenal to the stripping.
 
 Independently confirmed on a second stack and client by @quantumleap68 at the
-wire level (Hermes CLI to vLLM 0.25.1, Laguna NVFP4 TP=1 and FP8 TP=2, a
+wire level (his CLI client to vLLM 0.25.1, Laguna NVFP4 TP=1 and FP8 TP=2, a
 logging proxy between client and server, N of at least 6 per cell): a client
 that strips reasoning from replayed history renders each prior turn as an
 empty `<think></think>`, and the collapse tracks turn-by-turn. Turn 1: 199
@@ -39,7 +39,11 @@ reasoning deltas; turns 2 and 3 with stripped history: none.
 
 **Stacks and builds bitten.** A 12h production soak on Laguna S 2.1 NVFP4 /
 vLLM, plus the 3.25bpw EXL3-hybrid lane, plus @quantumleap68's independent
-client and serving pair. Four independent testers characterized this model
+client and serving pair. The rendering half is also reproduced by @Defilan
+on llama.cpp (Laguna S 2.1 Q4_K_M, Vulkan on gfx1151, deterministic via
+`/apply-template`): three prior content-only turns render as three empty
+think blocks, byte for byte; behavioral suppression on that stack is under
+test. Four independent testers characterized this model
 and **all four missed it**, because every check anyone ran was
 request-shaped: correct kwargs, correct response parsing, correct field
 names. Nobody dumped the assembled prompt at turn N.
@@ -58,9 +62,15 @@ diff it against the model card.** Anything read-but-undocumented is an
 untested variable, and if it sits near a thinking branch, assume it changes
 your results until you have shown it does not.
 
-**The fix.** Resend `reasoning` on prior assistant messages (with thinking
-on, the template then renders the real think blocks; verified passthrough
-moves prompt_tokens accordingly), or set `preserve_thinking: true` for
+**The fix.** Resend prior-turn reasoning on assistant messages, **under the
+field name your runtime actually reads**: `reasoning` on vLLM (0.25.1, this
+model's parser; verified passthrough moves prompt_tokens 63 to 303),
+`reasoning_content` on llama.cpp, where `reasoning` is silently dropped and
+renders byte-identical to the stripped arm. The remedy does not port by
+copying the field name; both wrong-field cases fail silently by producing
+absence, so probe your lane first
+([trap 20](../reasoning/20-reasoning-write-field-name-diverges.md) has the
+probe). Alternatively set `preserve_thinking: true` for
 thinking-off flows. Cost is roughly 250 to 320 prompt tokens per preserved
 turn that carries reasoning (measured: +1,615 prompt tokens over 5 preserved
 turns at depth 10, +4,764 over 19 at depth 20). Partial preservation
@@ -83,5 +93,8 @@ registry carried campaign-day labels written ahead of the clock.)
 
 **Attribution.** Community-surfaced: the lead was @quantumleap68's, who also
 provided the independent wire-level confirmation. Quantification by
-Blackwellboy. Raw data and writeup:
+Blackwellboy. llama.cpp rendering replication and the write-field divergence
+by @Defilan
+([offlabel #16](https://github.com/TheTom/offlabel/issues/16#issuecomment-5086926968)).
+Raw data and writeup:
 [context-mass/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/context-mass).

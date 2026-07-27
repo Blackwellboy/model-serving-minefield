@@ -17,7 +17,7 @@ and the gate closes. The content of your prompt barely matters; its
 *position* does.
 
 **Stacks and builds bitten.** Laguna S 2.1, measured at the wire by
-@quantumleap68 (Hermes CLI to vLLM 0.25.1, NVFP4 TP=1 and FP8 TP=2, logging
+@quantumleap68 (his CLI client to vLLM 0.25.1, NVFP4 TP=1 and FP8 TP=2, logging
 proxy, N of at least 6 per cell). His measured cells: no system message
 **8/8** fired; "You are a helpful assistant." **6/6**; a full 40K agent
 prompt **0/8**; the same 40K prompt with the identity sentence prepended as

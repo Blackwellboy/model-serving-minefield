@@ -6,6 +6,13 @@ few days.
 
 ## 2026-07-27
 
+- New trap [20](traps/reasoning/20-reasoning-write-field-name-diverges.md):
+  the reasoning write field is runtime-specific. Found by @Defilan while
+  replicating trap 04 on llama.cpp: only `reasoning_content` reaches the
+  llama.cpp template, `reasoning` is silently dropped and renders
+  byte-identical to the stripped arm, while vLLM passes `reasoning` through.
+  Trap 04's fix section now names the correct field per runtime, and its
+  stacks section carries the llama.cpp rendering replication.
 - Contribution overhaul: "I hit a trap" issue form (four plain questions,
   maintainer writes the entry), [MAINTAINING.md](MAINTAINING.md) promotion
   workflow and status conventions, per-model index at
