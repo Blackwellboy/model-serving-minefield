@@ -27,7 +27,7 @@ serve on that stack.
 
 | Stack or layer | Traps |
 |---|---|
-| Eval harnesses and scorers | [05](../traps/evaluation/05-scorer-normalization-verdict-flip.md), [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md) |
+| Eval harnesses and scorers | [05](../traps/evaluation/05-scorer-normalization-verdict-flip.md), [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [31](../traps/evaluation/31-leftover-oracle-reranker.md) |
 | Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md) |
 | Container images over mismatched drivers | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md) |
 | llama.cpp attention and serve flags | [18](../traps/runtime/18-flash-attention-off-halves-deep-decode.md), [19](../traps/tools/19-missing-jinja-breaks-tool-parsing.md) |

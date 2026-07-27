@@ -6,6 +6,17 @@ few days.
 
 ## 2026-07-27
 
+- Trap [31](traps/evaluation/31-leftover-oracle-reranker.md) landed,
+  reproduced here on one frozen suite: a leftover oracle re-ranker (a
+  temp-directory debugging script that boosts candidates by expected id,
+  or looks them up by the answer's file name stem) turns a failing
+  retrieval eval into a passing one, and the inflated number outlives the
+  script. Arms were reconstructed mechanisms run in one labelled harness
+  next to the honest engine, not recovered original code. Ships the two
+  detection fingerprints (top-1 equals top-3 exactly for expected-id
+  boosting; saturation at exactly 1.0 for answer-derived lookups) and a
+  copyable no-oracle negative control that fails the run when injected
+  answer metadata changes a ranking.
 - Trap [30](traps/template/30-default-system-message-silently-replaced.md)
   landed, reproduced here (structural, read from the shipped chat template
   of the serving checkpoint pair): the template's built-in default system
