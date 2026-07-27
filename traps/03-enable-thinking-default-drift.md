@@ -14,8 +14,8 @@ with a different revision, absent lands wherever the template default points.
 
 **Stacks and builds bitten.** Laguna S 2.1 across three independently run
 stacks (vLLM/NVFP4, llama.cpp/Q4_K_M, and an EXL3-tail container). Revision
-`0761412` defaults `enable_thinking` to `true`; another pinned fork
-documented `false`. Reconciling the three stacks took days and produced the
+`0761412` (NVFP4 upload) defaults `enable_thinking` to `true`; another pinned
+fork documented `false`. Reconciling the three stacks took days and produced the
 corrected kwarg model now documented upstream: explicit `false` is the one
 structural off-switch, explicit `true` fires, and which arm "absent" lands in
 is revision-dependent and server-dependent.
