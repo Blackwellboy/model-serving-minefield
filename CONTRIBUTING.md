@@ -16,8 +16,8 @@ the format and the evidence bar below and your entry will fit.
    directory, `traps/<category>/NN-short-slug.md` (next free global number;
    categories are listed in the README), add a row to the symptom table in
    `README.md`, and open a PR. The PR template walks the checklist.
-   Categories: template, tools, reasoning, quantization, runtime, memory,
-   evaluation, versioning. If none fits, propose a new one in the PR.
+   Categories: template, tools, reasoning, quantization, routing, runtime,
+   memory, evaluation, versioning. If none fits, propose a new one in the PR.
 
 ## Where coverage is thin
 
