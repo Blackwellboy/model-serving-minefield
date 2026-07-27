@@ -28,6 +28,6 @@ the template's kwarg surface for you.
 **The fix.** Remove the dead knob from your configs and your conclusions.
 If you need depth control on such a template, it has to come from the prompt.
 
-**Found.** 2026-07-30, reported from wire-level measurement.
+**Found.** 2026-07-27, reported from wire-level measurement.
 
 **Attribution.** @quantumleap68.

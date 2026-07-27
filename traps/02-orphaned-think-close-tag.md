@@ -30,8 +30,8 @@ In an assembled prompt, expect exactly one dangling open `<think>` at the end
 **The fix.** Send `enable_thinking` explicitly, either value. With the kwarg
 explicit the artifact did not appear in any of 984 rows.
 
-**Found.** 2026-07-27, quant-floor verification of the hybrid quant.
-Re-attributed 2026-07-28 after the full-precision reproduction.
+**Found.** 2026-07-26, quant-floor verification of the hybrid quant.
+Re-attributed 2026-07-27 after the full-precision reproduction.
 
 **Attribution.** Blackwellboy. Raw data:
 [quant-floor/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/quant-floor),

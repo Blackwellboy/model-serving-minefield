@@ -72,8 +72,10 @@ preserved history. Once the gate closes at turn 2, live-accumulated turns
 contain no reasoning to preserve (a first arm was vacuous exactly this way,
 0/50 turns, kept in the raw logs). Generate history turns statelessly.
 
-**Found.** 2026-07-27, after a gate study published; mechanism confirmed and
-quantified 2026-07-29; wire-level independent confirmation 2026-07-30.
+**Found.** 2026-07-26, after a gate study published; mechanism confirmed and
+quantified 2026-07-27; wire-level independent confirmation 2026-07-27.
+(Dates re-anchored to shipping commits 2026-07-27; earlier copies of this
+registry carried campaign-day labels written ahead of the clock.)
 
 **Attribution.** Community-surfaced: the lead was @quantumleap68's, who also
 provided the independent wire-level confirmation. Quantification by

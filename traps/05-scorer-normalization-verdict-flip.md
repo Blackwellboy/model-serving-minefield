@@ -44,7 +44,7 @@ difference between a number and a claim.
 **The fix.** Normalization applied on both sides of every matcher, plus a
 standing hand-read sample in the scoring protocol.
 
-**Found.** 2026-07-29, during a cross-checked fold-count correction.
+**Found.** 2026-07-27, during a cross-checked fold-count correction.
 
 **Attribution.** Caught and corrected by the checker's own author upstream;
 documented here with the fix pattern. Related raw data:

@@ -32,7 +32,7 @@ first line is confounded.
 the system prompt when you need thinking to fire, and control for it in any
 prompt-dose measurement.
 
-**Found.** 2026-07-30, reported from wire-level measurement.
+**Found.** 2026-07-27, reported from wire-level measurement.
 
 **Attribution.** @quantumleap68. Independently under test on a second stack
 at the time of writing; that result is not yet in, and this entry will be
