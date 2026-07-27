@@ -6,6 +6,23 @@ few days.
 
 ## 2026-07-27
 
+- Six new reported-by-others traps mined from upstream trackers and
+  community template work, every linked source read and verified before
+  writing (two candidates were dropped when their GitHub issues turned out
+  to be resolved as user error):
+  [23](traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md)
+  streaming answer in the reasoning channel,
+  [24](traps/template/24-official-template-breaks-cpp-jinja.md) official
+  templates break C++ Jinja engines,
+  [25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) empty
+  think blocks poison prefix cache,
+  [26](traps/tools/26-tool-call-inside-unclosed-think.md) tool call inside
+  unclosed think,
+  [27](traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) NVFP4
+  accuracy cliffs from config misses,
+  [28](traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md)
+  MTP fails only under concurrency or temperature. Trap 19 gains the
+  vLLM parser-pair face. Hall of fame gains an upstream-reports table.
 - New trap [20](traps/reasoning/20-reasoning-write-field-name-diverges.md):
   the reasoning write field is runtime-specific. Found by @Defilan while
   replicating trap 04 on llama.cpp: only `reasoning_content` reaches the

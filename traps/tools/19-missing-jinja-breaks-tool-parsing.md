@@ -31,6 +31,17 @@ somewhere between poor and zero.
 (server-side template/parser flags silently deciding tool-call success) is
 runtime-general.
 
+The vLLM face of the same cliff, reported by others: the template and the
+tool parser are a **pair**. Qwen 3.5/3.6 ships two distinct parser
+families (`qwen3_coder` and `qwen3_xml`), each with its own markup
+expectations and its own streaming bug history
+([vllm PR #40785](https://github.com/vllm-project/vllm/pull/40785),
+[PR #40787](https://github.com/vllm-project/vllm/pull/40787)), and
+[tfriedel's lab notes](https://github.com/tfriedel/qwen3.6-rtx3090-lab/blob/main/TOOL_CALLING_ISSUES.md)
+document swapping the chat template without re-checking the parser as a
+silent multi-turn tool killer. Change either half of the pair, re-run the
+one-tool check below.
+
 **The check.** One request with one tool defined, before anything else:
 assert the response contains a structured `tool_calls` array, not prose
 describing a call. If prose: check the serve line for the template/parser

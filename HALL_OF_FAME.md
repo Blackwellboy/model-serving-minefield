@@ -14,4 +14,20 @@ public correction; crediting that work is the point of the registry.
 | **eugr** ([spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)) | The CUDA-13.0-default-toolchain GB10 image that is the working path out of the error-222 trap | [08](traps/runtime/08-image-toolchain-newer-than-driver.md), [09](traps/runtime/09-image-choice-changes-outcome.md) |
 | **Blackwellboy** ([laguna-s21-lab](https://github.com/Blackwellboy/laguna-s21-lab)) | The lab whose measured runs seeded the registry | throughout |
 
+## Upstream reports carried in the registry
+
+Entries with status "reported by others" that were mined from public issue
+trackers and community repos, credited to their original reporters. Their
+work is theirs; the registry's contribution is the symptom-first framing
+and the check.
+
+| Who | What they reported | Entry |
+|---|---|---|
+| **@xy3xy3**, **@ArtemVorozhtsov** | Streamed answers routed into reasoning deltas with content empty (vLLM) | [23](traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md) |
+| **barubary**, **froggeric**, **allanchan339** | The C++ Jinja template-portability fix corpus for Qwen 3.5/3.6, and the auto-close-think-before-tool-call repair | [24](traps/template/24-official-template-breaks-cpp-jinja.md), [26](traps/tools/26-tool-call-inside-unclosed-think.md) |
+| **@latent-variable** | Empty historical think blocks poisoning prefix cache, with the minimal template fix | [25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) |
+| **@kik4444**, **tfriedel** | Tool calls emitted inside unclosed think blocks and the full parser-mechanism trace | [26](traps/tools/26-tool-call-inside-unclosed-think.md), [19](traps/tools/19-missing-jinja-breaks-tool-parsing.md) context |
+| **@pavanimajety**, **@cghart**, **@zeryx** | NVFP4/MXFP4 silent accuracy cliffs: the GSM8K collapse, the quantization_config.ignore mechanism and its fix, and the MoE tp=1 case | [27](traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) |
+| **@jasl**, **@baonudesifeizhai**, **@yongfuFang** | MTP speculative failures under concurrency, mid-range temperature, and parallel layouts | [28](traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md) |
+
 Corrections to attribution are welcome and get fixed fast: open an issue.
