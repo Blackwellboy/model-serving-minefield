@@ -19,6 +19,9 @@ linked), **reported by others** (credited and linked, not independently
 reproduced), or **under test**. Reported-but-unreproduced entries are
 welcome here and labelled, not rejected.
 
+In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint;
+it checks most of this registry for you in under a minute.
+
 ## Find your symptom
 
 | You are seeing | It may be | Entry | Status |
