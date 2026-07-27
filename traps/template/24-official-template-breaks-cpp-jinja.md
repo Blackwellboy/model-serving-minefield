@@ -35,6 +35,21 @@ template. The class is engine-general: any model whose official template
 uses Python-only constructs will misrender on a C++ engine, and the
 failure is silent because a template that renders wrong still renders.
 
+**Not reproduced here on one current build, dated.** 2026-07-27, llama.cpp
+b9066 serving Qwen3.5-9B Q4_K_M: the GGUF-embedded template contains
+`|items`, and the C++ engine rendered the complete tool schema (function
+name, every argument key, enum values, descriptions) matching a Python
+Jinja2 reference render of the same template. Two honest observations
+from the same probe: the engines' `tojson` implementations serialize with
+different key orders, so the renders differ at the byte level even when
+semantically equal (relevant to prefix caching and render diffing), and
+the GGUF-embedded template differed from the official card template file
+(7885 vs 7756 chars), which is
+[trap 03](../reasoning/03-enable-thinking-default-drift.md)'s territory:
+you may not be serving the template you think you are. The breakage
+reports stand for the builds and clients they name; current llama.cpp
+appears past this one.
+
 **The check.** Render one tool-defined request through your actual serving
 path and read the assembled prompt, not the request: are the tool names
 and every argument key present and correctly delimited? Then diff that

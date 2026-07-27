@@ -35,6 +35,14 @@ for the two distinct Qwen tool parsers
 [#40787](https://github.com/vllm-project/vllm/pull/40787) qwen3_xml) show
 the parser layer is actively moving; the failure is build-scoped.
 
+**Not reproduced here, dated.** 2026-07-27, 30/30 forced-tool turns parsed
+clean with thinking engaged (reasoning 118 to 483 chars per turn) on
+llama.cpp b9066 (Qwen3.5-9B Q4_K_M) and b9193 (Qwen3.6-27B Q4_K_M), both
+with their GGUF-embedded templates: every turn returned a structured
+tool call, zero tool markup in the reasoning channel. Consistent with the
+fix trajectory above; the upstream issue remains open for other builds
+and templates, so this is a build-scoped all-clear, not a retraction.
+
 **The check.** On forced-tool prompts, log the raw model text before any
 parser, alongside the structured response. Confirmed on any turn where
 raw text contains tool markup inside an open think block while structured

@@ -6,6 +6,22 @@ few days.
 
 ## 2026-07-27
 
+- Verification round on our fleet: traps
+  [26](traps/tools/26-tool-call-inside-unclosed-think.md) and
+  [24](traps/template/24-official-template-breaks-cpp-jinja.md) gain dated
+  not-reproduced-on-current-build notes (30/30 forced-tool turns clean with
+  thinking engaged on llama.cpp b9066/b9193; full tool schema rendered by
+  the C++ engine despite `|items` in the template), and the per-model index
+  gains a clean-preflights table starting with Ternary-Bonsai-27B on MLX.
+  Negative results are recorded, not dropped.
+- Traps [21](traps/versioning/21-no-generation-config-server-defaults-win.md)
+  and [22](traps/evaluation/22-family-card-budget-floors-differ-by-size.md),
+  reproduced here on our llama.cpp lanes: no generation_config.json means
+  the server's built-in sampling silently becomes "the model's settings"
+  (five parameters diverged from the card on Qwen3.5-9B, matched exactly on
+  the Qwen3.6-27B control), and the thinking budget floor differs by size
+  within one family (9B converts at 8192, 27B needs 16384 on the same
+  byte-identical task).
 - Six new reported-by-others traps mined from upstream trackers and
   community template work, every linked source read and verified before
   writing (two candidates were dropped when their GitHub issues turned out
