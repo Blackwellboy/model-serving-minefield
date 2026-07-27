@@ -130,7 +130,9 @@ anyway. "I could not tell whether this was me or the stack" is exactly the
 state these entries exist to resolve, and triage is cheap.
 
 How reports become entries, and how statuses are assigned, is documented in
-[MAINTAINING.md](MAINTAINING.md).
+[MAINTAINING.md](MAINTAINING.md). Candidates that were tested and did not
+(or could not) promote are recorded in [mining/](mining/); a negative is
+information too.
 
 ## Contributors
 
