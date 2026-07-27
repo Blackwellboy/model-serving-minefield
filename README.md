@@ -34,7 +34,7 @@ welcome here and labelled, not rejected.
 | Same weights work/fail/crawl depending on nothing obvious | Container image decides the kernel path | [09](traps/runtime/09-image-choice-changes-outcome.md) | reproduced here |
 | "FP4" checkpoint far slower than the format promises | Quant label routes to a weight-only fallback | [10](traps/quantization/10-quant-label-is-not-the-kernel-path.md) | reproduced here |
 | Model got slower after raising speculative depth | Acceptance collapses past the drafter's depth | [11](traps/runtime/11-speculative-depth-peak-and-collapse.md) | reproduced here |
-| Hard tasks return HTTP 200 with empty content | Thinking ate the whole token budget | [12](traps/evaluation/12-empty-content-at-token-ceiling.md) | reproduced here |
+| Hard tasks return HTTP 200 with empty content (or a missing content key) | Thinking ate the whole token budget | [12](traps/evaluation/12-empty-content-at-token-ceiling.md) | reproduced here |
 | Unified-memory box at 98% RAM, or capacity stranded | Utilization fraction reserving against the OS's pool | [13](traps/memory/13-utilization-fraction-on-unified-memory.md) | measured on our fleet |
 | Finetune/abliterated swap changed more than behavior | Re-upload is a different artifact, shards and drafter included | [14](traps/versioning/14-finetune-reupload-not-drop-in.md) | measured on our fleet |
 | Multiple-choice evals hang or score near zero | Server lacks echo+logprobs; lm-eval wedges | [15](traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md) | reported by others |
@@ -187,7 +187,8 @@ untested variable (trap 04's control); accepted-but-unread is a dead knob
 ## Scope
 
 Entries so far come from characterizing models on DGX Spark class hardware
-(vLLM, llama.cpp, EXL3-tail containers), from a quad-P100 llama.cpp fleet
+(vLLM, llama.cpp, EXL3-tail containers), from a stock mlx_lm lane on Apple
+silicon, from a quad-P100 llama.cpp fleet
 (@apollo-mg), a Strix Halo box (@Defilan), and a systematic recipe grid
 (@mrpmorris). Template, scoring, and toolchain classes should be assumed
 present on other stacks until checked. Revisions and builds are named per

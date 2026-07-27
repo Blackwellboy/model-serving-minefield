@@ -6,6 +6,30 @@ few days.
 
 ## 2026-07-27
 
+- MLX coverage becomes real: a read-only characterization pass on a stock
+  mlx_lm lane (prism-ml Ternary-Bonsai-27B-mlx-2bit, Apple silicon) lands
+  MLX-scoped sections in five entries. Trap
+  [01](traps/reasoning/01-reasoning-field-two-names.md): `reasoning` is the
+  one live field name on mlx_lm (non-streaming and streaming), plus two MLX
+  wrinkles: empty channels are ABSENT keys (a thinking cap-hit has no
+  `content` key at all, so `msg["content"]` raises KeyError), and every
+  streaming delta carries `role="assistant"`. Traps
+  [03](traps/reasoning/03-enable-thinking-default-drift.md) and
+  [29](traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md):
+  `--chat-template-args` is mlx_lm's spelling of the
+  server-supplies-the-kwarg arm, and it is a per-request default, not a
+  gate (second stack for 29). Trap
+  [07](traps/reasoning/07-reasoning-effort-silently-ignored.md): third
+  stack, with a wider acceptance surface: even invented TOP-LEVEL body keys
+  return 200, so a typoed parameter is a silent behavior change. Trap
+  [12](traps/evaluation/12-empty-content-at-token-ceiling.md): reproduced,
+  with the absent-key flavor of the signature. Traps
+  [20](traps/reasoning/20-reasoning-write-field-name-diverges.md) and
+  [04](traps/template/04-history-reasoning-stripping.md): the server emits
+  `reasoning` while the shipped template only reads back
+  `reasoning_content`, confirmed behaviorally with a marker round-trip;
+  naive replay silently strips all prior reasoning on this lane. Per-model
+  and per-stack index rows added for mlx_lm.
 - New [mining/](mining/) area: verification notes on mined candidates that
   did not (or could not) promote to entries, so negatives and blocked tests
   are recorded instead of lost. First three notes, from a hardware
