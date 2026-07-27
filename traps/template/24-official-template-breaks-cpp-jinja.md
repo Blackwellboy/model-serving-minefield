@@ -67,7 +67,12 @@ published number; "same template" across engines is not the same template.
 the preceding months).
 
 **Attribution.** barubary
-([21-fix template](https://huggingface.co/barubary/qwen3.5-barubary-attuned-chat-template),
+([21-fix template](https://huggingface.co/barubary/qwen3.5-barubary-attuned-chat-template);
+link checked 2026-07-28 and it now returns 401 to an anonymous reader, so the
+repo has been gated or withdrawn since this entry was written. The credit
+stands and the finding is unaffected; if you want an openable copy of this
+class of fix, use the froggeric link in the stacks section above, which
+resolves),
 posted upstream by @blockoracle in
 [QwenLM/Qwen3 #1831](https://github.com/QwenLM/Qwen3/issues/1831)),
 froggeric
