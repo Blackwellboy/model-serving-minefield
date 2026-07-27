@@ -2,7 +2,7 @@
 
 **Found by @quantumleap68.**
 
-**Status: reported by others** (@quantumleap68, wire-level); the check is runnable on any stack.
+**Status: reported by others and reproduced here on a second family and stack** (@quantumleap68 wire-level on Laguna/vLLM; reproduced on two Qwen models on llama.cpp, see below).
 
 **Symptom.** Effort levels change nothing. Identical reasoning depth at
 `low`, `medium`, and `high`, and you conclude the model ignores depth
@@ -20,6 +20,17 @@ no-op because the template never reads it. Same class as Trap 04's corollary
 in reverse: there, the template read a kwarg the model card did not document;
 here, the API accepts a parameter the template does not read. Both directions
 of the schema/template mismatch produce silent wrong numbers.
+
+Reproduced on two more models on llama.cpp (2026-07-27, standardized probe
+sweep): `reasoning_effort` low versus high moved measured reasoning length
+by noise only on Qwen3.6-27B Q4_K_M (1,996 vs 1,989 chars, llama.cpp b9193)
+and Qwen3.5-9B Q4_K_M (2,376 vs 2,528 chars, b9066); both templates read
+`enable_thinking` and neither reads `reasoning_effort` (template text
+inspected live via `/props`). Related surface: llama.cpp accepted a
+deliberately bogus `chat_template_kwargs` key with HTTP 200 on both lanes,
+so the entire kwargs dict is send-and-pray on this server: nothing
+validates that any key you send is read. The grep-the-template check is the
+only real one.
 
 **The check.** Grep the chat template for the parameter name **before**
 trusting any knob you send. If the template never references it, the knob is

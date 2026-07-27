@@ -37,6 +37,34 @@ that strips reasoning from replayed history renders each prior turn as an
 empty `<think></think>`, and the collapse tracks turn-by-turn. Turn 1: 199
 reasoning deltas; turns 2 and 3 with stripped history: none.
 
+**Cross-family confirmation of the template mechanism, with a divergent
+consequence (2026-07-27, standardized probe sweep).** The Qwen 3.6 chat
+template carries the same machinery: prior-turn reasoning is dropped from
+assembly by default, and a `preserve_thinking` kwarg gates a branch that
+renders it back (`(preserve_thinking is defined and preserve_thinking is
+true) or (loop.index0 > ns.last_query_index)` in the template read live
+from the serving lane). Measured on Qwen3.6-27B Q4_K_M / llama.cpp b9193:
+a three-turn replay with reasoning resent assembled to the same 60 prompt
+tokens as the stripped arm by default, and to 115 with
+`preserve_thinking: true`. Two divergences from the Laguna case:
+
+- **Rendering differs.** Qwen 3.6's default branch renders the prior turn
+  with no think block at all, where Laguna renders an empty
+  `<think></think>`. Only Laguna's rendering plants an explicit
+  "I did not think here" signal in the history.
+- **The behavioral collapse does not follow.** Qwen fired on the probe turn
+  in both arms (stripped and preserved) in every sample taken. The
+  template-side stripping is cross-family; the firing collapse it causes on
+  Laguna is, so far, Laguna's.
+
+**And the fix is version-dependent within a family.** The Qwen3.5-9B
+template (same serving stack) reads no `preserve_thinking` at all; resending
+reasoning changed assembly by zero tokens with and without the kwarg. If
+your pipeline standardizes on "resend reasoning plus preserve_thinking",
+that fix silently no-ops on the family member whose template never reads
+it. Enumerate the kwarg surface per model version (the check below), not
+per family.
+
 **Stacks and builds bitten.** A 12h production soak on Laguna S 2.1 NVFP4 /
 vLLM, plus the 3.25bpw EXL3-hybrid lane, plus @quantumleap68's independent
 client and serving pair. The rendering half is also reproduced by @Defilan
@@ -46,7 +74,9 @@ think blocks, byte for byte; behavioral suppression on that stack is under
 test. Four independent testers characterized this model
 and **all four missed it**, because every check anyone ran was
 request-shaped: correct kwargs, correct response parsing, correct field
-names. Nobody dumped the assembled prompt at turn N.
+names. Nobody dumped the assembled prompt at turn N. Template mechanism
+confirmed cross-family on Qwen 3.6 (llama.cpp b9193); preservation kwarg
+absent on Qwen 3.5 (llama.cpp b9066).
 
 **The check.** Assemble a three-turn conversation whose first assistant
 message carries a uniquely marked reasoning string, render the actual prompt

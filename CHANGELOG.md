@@ -6,6 +6,17 @@ few days.
 
 ## 2026-07-27
 
+- Cross-family measurements spliced into three existing entries (staged by
+  the standardized probe sweep, landed after review): trap
+  [04](traps/template/04-history-reasoning-stripping.md) gains the Qwen 3.6
+  template confirmation (same stripping machinery, different rendering, no
+  behavioral collapse) and the version-dependent-fix warning (Qwen 3.5
+  reads no `preserve_thinking`); trap
+  [07](traps/reasoning/07-reasoning-effort-silently-ignored.md) upgraded to
+  reproduced-here on two Qwen models on llama.cpp, plus the
+  bogus-kwarg-accepted-with-200 finding; trap
+  [03](traps/reasoning/03-enable-thinking-default-drift.md) gains the
+  four-lane absent-kwarg landing map.
 - [minefield-doctor](doctor/) shipped: a single stdlib-only file that
   diagnoses any OpenAI-compatible endpoint against the registry.
   Read-only and bounded (at most 8 small temperature-0 completions),

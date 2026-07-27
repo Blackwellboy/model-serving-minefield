@@ -24,6 +24,14 @@ corrected kwarg model now documented upstream: explicit `false` is the one
 structural off-switch, explicit `true` fires, and which arm "absent" lands in
 is revision-dependent and server-dependent.
 
+The landing map for an absent thinking kwarg, measured across lanes
+(2026-07-27 sweep): Laguna rev 0761412 templates default it ON (both vLLM
+lanes); Qwen3.6-27B and Qwen3.5-9B on llama.cpp landed OFF (absent produced
+no reasoning while explicit true fired, b9193/b9066); and on a llama.cpp
+Laguna path the server supplies the kwarg so absent renders identical to
+true (per the upstream #5 correction). Same request, three different arms,
+depending on family, revision, and server. Send it explicitly, always.
+
 **The check.** Never reason about thinking from a template's default. Render
 your own prompt through the serving path and confirm which branch you landed
 in. Record the checkpoint revision hash next to every published number.
