@@ -2,7 +2,8 @@
 
 Thanks. Checklist for a new entry (see CONTRIBUTING.md for the format):
 
-- [ ] One file under `traps/` named `NN-short-slug.md`, next free number
+- [ ] One file under the right category, `traps/<category>/NN-short-slug.md`, next free global number
+- [ ] Status line up top: reproduced here / reported by others / under test
 - [ ] Sections in order: Symptom, Mechanism, Stacks and builds bitten, The check, The fix, Found, Attribution
 - [ ] Symptom leads: it describes what a reader would observe, not the mechanism
 - [ ] Measured, not inferred: counts and conditions are stated (0/42 style)

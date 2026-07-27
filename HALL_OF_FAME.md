@@ -1,0 +1,17 @@
+# Hall of fame
+
+Everyone whose measured findings are carried in this registry, by the handle
+they publish under. A trap here typically cost its finder real time or a
+public correction; crediting that work is the point of the registry.
+
+| Who | What they found or contributed | Entries |
+|---|---|---|
+| **@quantumleap68** | Wire-level (logging proxy) measurement methodology: identity-sentence eviction, `reasoning_effort` no-op, independent confirmation of history stripping, the FP8/NVFP4 build-policy split, the streaming reasoning-field variant, and the client-side echo-reasoning-on-replay fix pattern | [04](traps/template/04-history-reasoning-stripping.md), [06](traps/reasoning/06-identity-sentence-eviction.md), [07](traps/reasoning/07-reasoning-effort-silently-ignored.md), [01](traps/reasoning/01-reasoning-field-two-names.md), preamble rule 2 |
+| **TheTom** ([offlabel](https://github.com/TheTom/offlabel)) | The behavioral guide and patterns this registry cross-validates against: the native-template 83%-to-0% tool cliff, the `--jinja` flag, `-fit off`, the fine-tune-not-a-superset pattern, the quantized-judge caveat, DFlash workload sensitivity, and the setup-verification discipline | [19](traps/tools/19-missing-jinja-breaks-tool-parsing.md), [14](traps/versioning/14-finetune-reupload-not-drop-in.md), [11](traps/runtime/11-speculative-depth-peak-and-collapse.md), [18](traps/runtime/18-flash-attention-off-halves-deep-decode.md) |
+| **@Defilan** | The flash-attention-off 2.2x depth penalty ([writeup](https://llmkube.com/blog/a-flag-i-never-questioned-cost-2x)), third-stack replications that separated model behavior from stack behavior, and public self-corrections of his own fold counts | [18](traps/runtime/18-flash-attention-off-halves-deep-decode.md), [05](traps/evaluation/05-scorer-normalization-verdict-flip.md) context |
+| **@apollo-mg** | The finish_reason correction made in public with the mistake left visible, the disclosed per-arm sampling confound that made a clean replication possible, and the discriminating-experiment design for budget-versus-degeneration | [16](traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](traps/evaluation/17-per-arm-recommended-sampling-confound.md) |
+| **@mrpmorris** ([sparkrun-recipes](https://github.com/mrpmorris/sparkrun-recipes)) | The echo+logprobs lm-eval wedge and its probe (including the 200-with-empty-logprobs case), and the death-classification discipline (OOM/CRASH/HANG/STARTUP/UNSUPPORTED as distinct non-scores) | [15](traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [11](traps/runtime/11-speculative-depth-peak-and-collapse.md) context |
+| **eugr** ([spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)) | The CUDA-13.0-default-toolchain GB10 image that is the working path out of the error-222 trap | [08](traps/runtime/08-image-toolchain-newer-than-driver.md), [09](traps/runtime/09-image-choice-changes-outcome.md) |
+| **Blackwellboy** ([laguna-s21-lab](https://github.com/Blackwellboy/laguna-s21-lab)) | The lab whose measured runs seeded the registry | throughout |
+
+Corrections to attribution are welcome and get fixed fast: open an issue.

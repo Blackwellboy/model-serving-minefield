@@ -9,9 +9,12 @@ the format and the evidence bar below and your entry will fit.
    [report-a-trap issue](../../issues/new?template=report-a-trap.yml) with
    the symptom and your stack. You do not need the mechanism. Someone (maybe
    you, later) turns it into an entry once the check exists.
-2. **PR with a full entry.** Add one file under `traps/` named
-   `NN-short-slug.md` (next free number), add a row to the symptom table in
+2. **PR with a full entry.** Add one file under the right category
+   directory, `traps/<category>/NN-short-slug.md` (next free global number;
+   categories are listed in the README), add a row to the symptom table in
    `README.md`, and open a PR. The PR template walks the checklist.
+   Categories: template, tools, reasoning, quantization, runtime, memory,
+   evaluation, versioning. If none fits, propose a new one in the PR.
 
 ## Entry format
 
@@ -19,6 +22,11 @@ One trap per file. Use these sections, in this order:
 
 ```markdown
 # Trap NN: short name
+
+**Status: reproduced here | reported by others | under test.** One line on
+who measured it and where. "Reproduced here" means you ran it and can link
+or produce the raw; "reported by others" means credited and linked, not
+independently reproduced; "under test" means a replication is running.
 
 **Symptom.** What a reader would actually observe, first. The weird number,
 the corrupted string, the impossible verdict. This is the section people
