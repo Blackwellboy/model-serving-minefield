@@ -49,3 +49,29 @@ anything.
 
 **Attribution.** Blackwellboy. Probe and follow-up JSONs in the sweep
 results (`probe_*`, `hfollow_*`, `hdegen_*`).
+
+## Production-lane replication (2026-07-27 ceiling-audit session, n=3 per cell)
+
+Same task, same stack family (llama.cpp), production lanes,
+enable_thinking=true, nonce-prefixed samples:
+
+| Lane / model | 4096 | 8192 | 12288 | 16384 |
+|---|---|---|---|---|
+| 27B Q4_K_M (production controller) | 0/3 convert (all empty, finish=length) | 0/3 | 1/3 | 2/3 |
+| 9B Q4_K_M (verifier lane) | 0/2 | 1/2 | 2/2 | 2/2 |
+| 35B-A3B Q3 heretic (critic lane, 3090) | 0/2 | 1/2 (the other capped mid-answer) | 2/2 | 1/2 |
+
+Two sharpenings of the original single-sample claim: (1) the floor is a
+DISTRIBUTION, not a number: the 27B produced 26K to 61K chars of
+reasoning on the identical prompt, so even 16384 fails 1 in 3; (2) every
+capped tail measured honest truncation (tail unique-line ratio 0.78 to
+1.0, zlib 0.30 to 0.44), not degeneration loops. Raw:
+ceiling_audit_20260727.jsonl (28 rows, private return).
+
+Control (the operational half): the same task with NO thinking kwarg
+completes on all three lanes in 1.5K to 5K completion tokens with zero
+reasoning chars. The budget floor only exists when thinking is on, which
+is exactly why
+[trap 29](../reasoning/29-server-reasoning-off-is-not-an-off-switch.md)
+matters: one client kwarg that re-enables thinking on a reasoning-off
+lane walks the request straight onto this floor.

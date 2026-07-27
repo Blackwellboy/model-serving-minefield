@@ -6,6 +6,15 @@ few days.
 
 ## 2026-07-27
 
+- Trap [22](traps/evaluation/22-family-card-budget-floors-differ-by-size.md)
+  gains the production-lane replication (28-row ceiling audit, three
+  lanes, n=2 to 3 per cell): the budget floor is a distribution, not a
+  number. The 27B produced 26K to 61K reasoning chars on the identical
+  prompt, so even a 16384 ceiling fails 1 in 3; every capped tail was
+  honest truncation, not degeneration. A no-thinking control completes
+  everywhere in 1.5K to 5K tokens, tying the floor to
+  [trap 29](traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md)'s
+  client-kwarg re-enable path.
 - Trap [31](traps/evaluation/31-leftover-oracle-reranker.md) landed,
   reproduced here on one frozen suite: a leftover oracle re-ranker (a
   temp-directory debugging script that boosts candidates by expected id,
