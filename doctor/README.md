@@ -58,6 +58,40 @@ NOT CHECK** (with why). `--report` appends a markdown block pre-filled
 with your stack details for the
 [easy-door issue form](../../../issues/new?template=report-a-trap.yml).
 
+## Portability notes: mlx_lm (first field run, 2026-07-27)
+
+Run against a stock mlx_lm server (prism-ml Ternary-Bonsai-27B-mlx-2bit,
+Apple silicon): 7 completions, inside the 8-request budget, no misfires.
+The doctor ports cleanly for 6 of its 9 check families. It correctly
+identified `reasoning` as the one live field name (trap 01), mapped the
+thinking toggle arms and flagged the server-side off as overridable per
+request (traps 03/29), reported bogus-kwarg acceptance (trap 07), and
+caught the empty-content-at-cap shape with a sensible
+truncation-not-degeneration read, on a response whose `content` key was
+entirely absent, without crashing (traps 12/16/22). Its clean verdicts
+(traps 02/19/23) matched independent probes.
+
+Two honest COULD NOT CHECK gaps on this stack, both coverage gaps rather
+than wrong answers:
+
+1. **Stack identification.** MLX has neither llama.cpp's `/props` nor
+   vLLM's `/version`, so the report says "openai-compatible (vLLM/MLX/
+   other)" and cannot tell an operator which stack-specific advice applies.
+2. **History-assembly checks (traps 04/20/25) are skipped**: the doctor
+   only knows how to render via llama.cpp's `/apply-template` or a template
+   fetched from `/props`. On MLX the template ships as
+   `chat_template.jinja` next to the weights on local disk, so there is a
+   render path the doctor cannot reach yet.
+
+**Planned (tracked enhancement, not yet implemented):** a
+`--template-file` argument so the doctor can run its history-assembly
+checks from a local template file, closing gap 2 for every local-weights
+stack, not just MLX. Doing that check by hand on this lane found a real
+write-field divergence the skip had left invisible (trap 20's mlx_lm
+section), which is the argument for building it. Until then, use
+[checks/preflight_template.py](../checks/preflight_template.py), which
+already accepts `--template-file`.
+
 ## What it cannot see
 
 The doctor is request-shaped where the stack gives it nothing better: on

@@ -6,6 +6,13 @@ few days.
 
 ## 2026-07-27
 
+- [Doctor](doctor/) portability notes from its first mlx_lm field run: 6 of
+  9 check families port cleanly with no misfires; the two gaps (stack
+  identification, and history-assembly checks lacking a render path on
+  stacks without a template endpoint) degrade to explicit COULD NOT CHECK
+  rather than wrong output. A `--template-file` argument is recorded as a
+  tracked enhancement so the history-assembly checks can run from the
+  `chat_template.jinja` that ships next to local weights.
 - Trap [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md)
   landed, reproduced here: mlx_lm's server `--max-tokens` launch flag is a
   per-request default, not a ceiling. A client sending a larger
