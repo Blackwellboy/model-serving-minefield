@@ -6,6 +6,23 @@ few days.
 
 ## 2026-07-28
 
+- Trap
+  [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md):
+  a single-turn eval harness scores tool-call exits as wrong answers.
+  Found by [@apollo-mg](https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067)
+  and measured at n=492 on Laguna S 2.1 UD-Q2_K_XL under llama.cpp on 4x
+  Tesla P100: pooled pass@1 71.95% against his own 90.85% baseline, a drop
+  of 18.90 points, with WRONG moving 30 to 31 and accuracy conditional on
+  attempting at 354/386 = 91.71%. Lands as **reported by others** with
+  **raw published** (12.7 KB tarball: verbatim system prompt, tool schemas,
+  per-sample buckets and token counts for all 164x3, run and driver logs).
+  The depth-side half of the same exit-path mechanism was measured here
+  independently on NVFP4 under vLLM 0.25.1 on GB10.
+- The trap carries an explicit open question rather than a settled claim:
+  the termination benefit (no-extractable 11 to 0, cap-hits 12 to 1) is
+  untested with tool output fed back, and both parties recorded opposing
+  predictions before the discriminating arm runs. Cite it as measured
+  under schema-presence-only.
 - Nine traps ([33](traps/routing/33-moe-inference-topk-expansion-tax.md)
   through
   [41](traps/runtime/41-static-batching-buys-power-not-throughput.md))
