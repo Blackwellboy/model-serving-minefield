@@ -1,0 +1,48 @@
+# Trap 29: the server's reasoning-off flag is not an off switch
+
+**Found by Blackwellboy.**
+
+**Status: reproduced here** (two production llama.cpp lanes, n=3 and n=2,
+plus negative controls).
+
+**Symptom.** Blank assistant turns (content empty, finish_reason=length,
+large reasoning field) only on requests from one particular client, while
+identical prompts from other clients complete fine at the same
+max_tokens. The lane was serving with reasoning disabled, so nobody was
+budgeting for thinking tokens.
+
+**Mechanism.** You serve a thinking-family model with reasoning disabled
+in the server config (our lanes carry `--reasoning off` in ExecStart,
+llama.cpp b9193). You size every client max_tokens for non-thinking
+outputs, e.g. 8192, and everything works. Then any client passes
+`chat_template_kwargs: {"enable_thinking": true}` and that single request
+thinks anyway: measured 15K to 61K chars of reasoning on a hard coding
+task, blowing through the 8192 cap and returning finish=length with
+empty content ([trap 12](../evaluation/12-empty-content-at-token-ceiling.md)'s
+signature). The server flag looked like a guarantee. It is a default,
+not a gate.
+
+**Stacks and builds bitten.** llama.cpp b9193 serving Qwen3.6-27B Q4_K_M
+and the same family at 35B Q3, both with `--reasoning off` in the serve
+line; raw rows in `ceiling_audit_20260727.jsonl` and
+`ceiling_audit_prodarm_20260727.jsonl`.
+
+**The check.** Send the same hard prompt twice at your production
+max_tokens: once bare, once with the thinking kwarg enabled. If the
+kwarg arm hits the ceiling with empty content while the bare arm
+completes, every caller's kwarg surface is part of your budget model.
+Grep your callers for `chat_template_kwargs`.
+
+**The fix.** Treat max_tokens sizing as conditional on the kwarg
+surface: either strip or deny thinking kwargs at the gateway for lanes
+sized for non-thinking output, or size those callers for the thinking
+distribution (which on our 27B has no safe ceiling at n=3 even at 16384;
+see [trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md)).
+
+**Found.** 2026-07-27, ceiling audit on the production lane trio.
+
+**Attribution.** Blackwellboy. Related:
+[trap 03](03-enable-thinking-default-drift.md) (which arm "absent" lands
+in is revision- and server-dependent),
+[trap 12](../evaluation/12-empty-content-at-token-ceiling.md),
+[trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md).

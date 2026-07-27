@@ -6,6 +6,19 @@ few days.
 
 ## 2026-07-27
 
+- [minefield-doctor](doctor/) shipped: a single stdlib-only file that
+  diagnoses any OpenAI-compatible endpoint against the registry.
+  Read-only and bounded (at most 8 small temperature-0 completions),
+  three-section output (PROBLEMS / CHECKED AND CLEAN / COULD NOT CHECK),
+  every finding linked to its trap, and a `--report` flag that emits a
+  paste-ready "I hit a trap" block. Acceptance-tested on five lanes
+  across llama.cpp, vLLM, and MLX, where it independently rediscovered
+  traps 21, 29, 07, and the 22-class cap behavior already measured there.
+- Trap [29](traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md)
+  landed, reproduced here: a server-side reasoning-off flag is a default,
+  not a gate; any client kwarg re-enables thinking and blows non-thinking
+  token budgets (15K to 61K chars of reasoning measured through an 8192
+  cap).
 - Verification round on our fleet: traps
   [26](traps/tools/26-tool-call-inside-unclosed-think.md) and
   [24](traps/template/24-official-template-breaks-cpp-jinja.md) gain dated
