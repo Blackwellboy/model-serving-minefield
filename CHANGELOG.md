@@ -6,6 +6,15 @@ few days.
 
 ## 2026-07-27
 
+- Trap [30](traps/template/30-default-system-message-silently-replaced.md)
+  landed, reproduced here (structural, read from the shipped chat template
+  of the serving checkpoint pair): the template's built-in default system
+  message is used only when the caller sends no system message at all, and
+  any caller system message replaces it wholesale. Consequences: every
+  with-system-prompt condition is confounded with default-identity-absent
+  by construction, and "no system message", "empty system message", and
+  "any system message" are three distinct rendered prompts. Found while
+  designing the identity-prefix study, before any cell ran.
 - Cross-family measurements spliced into three existing entries (staged by
   the standardized probe sweep, landed after review): trap
   [04](traps/template/04-history-reasoning-stripping.md) gains the Qwen 3.6
