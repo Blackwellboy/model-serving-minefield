@@ -52,6 +52,6 @@ above plus presence here means "checked, nothing found", not "untested".
 
 One row, linking the traps observed on it, in the PR that adds or extends
 the entry. If you hit a trap on a model not listed here, that fact alone is
-worth an ["I hit a trap" issue](../../issues/new?template=report-a-trap.yml):
+worth an ["I hit a trap" issue](../../../issues/new?template=report-a-trap.yml):
 "known trap, new model family" extends an entry's "Stacks and builds bitten"
 section and gets you credited.
