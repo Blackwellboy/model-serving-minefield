@@ -6,6 +6,16 @@ few days.
 
 ## 2026-07-27
 
+- New [mining/](mining/) area: verification notes on mined candidates that
+  did not (or could not) promote to entries, so negatives and blocked tests
+  are recorded instead of lost. First three notes, from a hardware
+  verification pass over the round-2 queue: R2-39 (thinking plus tools
+  yields empty output, Ollama-reported) did not reproduce on vLLM across a
+  2x2 kwarg-by-tools matrix on two lanes, scoping the candidate to Ollama;
+  R2-31 (DeepSeek V4 system-message quality cliff) did not reproduce at
+  small n on the production lane, with an identical system-independent miss
+  in all three arms; and R2-27/R2-23/R2-10/R2-29 are recorded as not
+  testable on current lanes with exactly what each test needs.
 - Trap [06](traps/reasoning/06-identity-sentence-eviction.md) status
   resolved: the promised independent test on a second stack is in, and the
   prefix-key mechanism did not reproduce there (identity as literal first
