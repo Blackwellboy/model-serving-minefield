@@ -50,10 +50,29 @@ except the apparatus: a 752-byte agent system prompt plus 3 tool schemas.
 | flaky problems | 11/164 | 73/164 | +62 |
 
 Conditional on the sample attempting an answer: 354/386 = 91.71%, against
-the 90.85% baseline, inside the +/- 1.49% per-sweep spread. So 18.9 points
-of measured score, and approximately zero points of answering ability.
-Thinking fired on 445/492 samples (90.4%), mean reasoning_content 4,686
-chars, in the most coding-shaped cell in the thread.
+the 90.85% baseline, inside the +/- 1.49% per-sweep spread. Thinking fired
+on 445/492 samples (90.4%), mean reasoning_content 4,686 chars, in the most
+coding-shaped cell in the thread.
+
+**What that conditional does and does not establish.** 354/386 conditions on
+the 386 samples where the model chose to attempt an answer, and drops the
+106 where it chose to route. That is conditioning on an outcome of the
+model's own behaviour under the apparatus, so the two columns are not
+measuring the same set of problems. The routed 106 may be systematically
+harder, systematically easier, or a random draw; nothing in this dataset
+distinguishes those, because no answer was ever produced for them. The
+supported reading is therefore narrower than a capability claim:
+
+- the pooled drop is **routing-dominated rather than wrong-answer-dominated**
+  (wrong answers moved 30 -> 31 while 106 samples changed exit path);
+- **answer accuracy among samples that still attempted stayed flat**, 91.71%
+  against a 90.85% baseline;
+- **capability on the routed cases is unmeasured**, and cannot be recovered
+  from this run.
+
+The arm that would measure it is the tool-return continuation described under
+**The fix** below: feed a fixed unhelpful tool result back and let the routed
+samples finish. It is untested and queued as APPARATUS-AT-REAL-N.
 
 **Raw is published**, which is what makes this reproducible rather than
 quotable:
@@ -102,12 +121,24 @@ compares to your published number.
    pooled dropped, the drop is routing, not capability. A flat or nearly
    flat wrong-answer count with a large pooled drop is the same signal seen
    from the other side, and it is visible without recomputing anything.
-2. **Bucket by exit path, not by score.** Every sample lands in exactly one
-   of: scored answer, wrong answer, tool call, truncated at the cap, no
-   extractable output. Print the five counts. A harness that cannot produce
-   this table is a harness that cannot tell you which of five different
-   things happened, and the four non-answer buckets have four different
-   fixes.
+2. **Bucket on two axes, not one.** A single five-way bucket list does not
+   work, because some of its members are outcomes and others are termination
+   states, and a sample can be both at once. Record two independent fields
+   per sample and report the cross-tab:
+
+   - **Outcome**: `PASS` / `WRONG` / `NO_EXTRACTABLE` / `TOOL_CALL` /
+     `UNPARSED`
+   - **Termination**: `STOP` / `LENGTH` / `TOOL_CALLS` / `ERROR` / `OTHER`
+
+   The counts in the magnitude table above are exactly why. The apparatus
+   column happens to sum to 492, but the baseline column sums to 500 against
+   492 samples: a cap-hit is a termination state that can co-occur with
+   having no extractable output, so those two rows double-count the same
+   samples. One axis cannot express that; two can, and `LENGTH` crossed with
+   `PASS` (a cap-hit that still produced usable code) is a real cell that a
+   one-axis scheme has nowhere to put. A harness that cannot produce this
+   cross-tab cannot tell you which of several different things happened, and
+   they have different fixes.
 
 A useful secondary signal: per-problem flakiness that explodes while answers
 stay stable. Bucket patterns like `T,P,P` and `P,T,P` across K seeds on one
@@ -130,8 +161,8 @@ not there.
   whether the termination result below survives a tool result coming back.
 
 **What this does to comparisons.** Apparatus dose alone, with regime held
-fixed at single-turn codegen, moved measured score by 18.9 points with
-capability flat. So a comparison between a no-apparatus benchmark run and an
+fixed at single-turn codegen, moved measured score by 18.9 points while
+wrong answers stayed flat at 30 -> 31. So a comparison between a no-apparatus benchmark run and an
 apparatus-bearing agentic run cannot attribute its difference to regime.
 Apparatus alone accounts for a swing of that size. If you are running a
 regime comparison, hold the apparatus fixed or you have confounded the two.
@@ -166,6 +197,24 @@ number is not wrong arithmetically. It is answering a different question than
 the one in your title. Related: trap
 [16](16-finish-reason-is-not-a-failure-signal.md), which is the same mistake
 one layer down, at the level of a single field.
+
+**Correction, 2026-07-28.** Three statements this entry previously carried,
+or that were fair readings of it, are retracted as not identified by the
+experiment:
+
+- "the apparatus did not make the model worse"
+- "approximately zero points of answering ability"
+- "the entire 18.9-point drop is fake"
+
+All three generalise a conditional accuracy computed on the 386 samples that
+attempted an answer into a claim about all 492. The 106 routed samples were
+selected by the model's own behaviour under the apparatus and their
+correctness was never observed, so no statement about total capability under
+the apparatus is available from this run. What survives is stated above: the
+drop is routing-dominated, accuracy among attempting samples was flat, and
+the routed cases are unmeasured. The measured counts, the conditions, and
+the exit-path mechanism are unchanged; only the strength of the conclusion
+drawn from them is.
 
 **Found.** 2026-07-27, published in a public thread with full conditions;
 raw published 2026-07-27.
