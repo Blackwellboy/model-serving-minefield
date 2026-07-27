@@ -55,6 +55,15 @@ welcome here and labelled, not rejected.
 | Every system-prompt condition differs from bare, on every axis at once | Template's default system message is replaced wholesale by any caller system message | [30](traps/template/30-default-system-message-silently-replaced.md) | reproduced here |
 | Historical eval score nobody can regenerate, far above the committed engine | Leftover oracle re-ranker wrote into the honest metrics namespace | [31](traps/evaluation/31-leftover-oracle-reranker.md) | reproduced here |
 | A client request runs past the server's --max-tokens launch flag | mlx_lm's flag is a per-request default, not a ceiling | [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) | reproduced here |
+| You gave a MoE more active experts and it got *worse* | Renormalization dilutes the original top-8; selection is intact | [33](traps/routing/33-moe-inference-topk-expansion-tax.md) | reported by others |
+| A clean significant win that evaporates against the shipped model | The baseline is a configuration you degraded yourself | [34](traps/evaluation/34-baseline-you-degraded-yourself.md) | reported by others |
+| Same weights and items, different score on a different box | Cross-machine item agreement is 98.7%, not 100% | [35](traps/evaluation/35-identical-weights-do-not-score-identically.md) | reported by others |
+| Multiple-choice collapses, or two arms truncate at wildly different rates | The token cap binds differently per arm | [36](traps/evaluation/36-token-cap-is-an-arm-level-handicap.md) | reported by others |
+| A benchmark reads zero for every arm, with zero infra errors | Harness fault, not model inability | [37](traps/evaluation/37-uniform-zero-is-a-harness-verdict.md) | reported by others |
+| Offline rollouts parse as malformed, interactive output is fine | The template supplies the opening think tag, the model does not | [38](traps/template/38-template-owns-the-opening-think-tag.md) | reported by others |
+| Output is complete gibberish after a previously working run | `device_map="auto"` spilled the model onto a device you excluded | [39](traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md) | reported by others |
+| Contamination gate removes a third of your corpus | One boilerplate n-gram, or a gram too short for the alphabet | [40](traps/evaluation/40-ngram-decontamination-false-positives.md) | reported by others |
+| Batched the loop, GPU hit 100%, the job took exactly as long | A static batch waits for its longest sequence | [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) | reported by others |
 
 If you run one check from this registry, make it
 [Trap 04](traps/template/04-history-reasoning-stripping.md). It is the one
@@ -105,6 +114,7 @@ automated by [the doctor](doctor/); runnable pieces also live in
 | [traps/tools/](traps/tools/) | Tool calling, parsers, structured output |
 | [traps/reasoning/](traps/reasoning/) | Reasoning fields, thinking kwargs and control |
 | [traps/quantization/](traps/quantization/) | Quant formats, precision, kernel paths |
+| [traps/routing/](traps/routing/) | MoE expert routing and activation config (top-k, gate weighting) |
 | [traps/runtime/](traps/runtime/) | CUDA and toolchains, container images, attention and speculative config |
 | [traps/memory/](traps/memory/) | KV cache, memory allocation, context windows |
 | [traps/evaluation/](traps/evaluation/) | Harness traps, scoring, budgets, confounds |
@@ -142,6 +152,7 @@ Findings in this registry come from **@quantumleap68**,
 **@Defilan**, **@apollo-mg**,
 **@mrpmorris** ([sparkrun-recipes](https://github.com/mrpmorris/sparkrun-recipes)),
 **eugr** ([spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)),
+**@Hikari_07_jp** ([qwen36-a6b](https://github.com/hikarioyama/qwen36-a6b)),
 and **Blackwellboy** ([laguna-s21-lab](https://github.com/Blackwellboy/laguna-s21-lab)).
 Per-finding credit is in [HALL_OF_FAME.md](HALL_OF_FAME.md), and every entry
 names its finder at the top. Contributors are always named unless they ask
@@ -149,6 +160,7 @@ otherwise.
 
 ## Recently added
 
+- 2026-07-28: nine traps ([33](traps/routing/33-moe-inference-topk-expansion-tax.md) through [41](traps/runtime/41-static-batching-buys-power-not-throughput.md)) mined from [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)'s public research log on expanding a pretrained MoE's inference top-k, offered by him for this purpose. Headline: raising a MoE's active-expert count from 8 to 32 costs accuracy before any training, silently, because renormalization dilutes the original top-8 rather than adding to it. New [routing/](traps/routing/) category for MoE activation config. The rest are measurement traps that made real numbers wrong: a baseline you degraded yourself, identical weights not scoring identically, token caps binding unequally per arm, all-arms-zero as a harness verdict, the opening think tag the template owns, `device_map="auto"` spilling silently, contamination screens firing on boilerplate, and static batching buying power instead of throughput.
 - 2026-07-27: trap [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md): mlx_lm's server `--max-tokens` flag is a per-request default, not a cap; a client can quietly run past it. Same pass landed MLX-scoped sections in six existing entries (mlx_lm now has real coverage in the [per-stack index](models/README.md)) and the new [mining/](mining/) verification-notes area for candidates that did not or could not promote.
 - 2026-07-27: trap [31](traps/evaluation/31-leftover-oracle-reranker.md): a leftover oracle re-ranker (a debugging script that boosts candidates by expected id or looks them up by the answer's file name stem) turns a failing retrieval eval into a passing one, and the inflated number outlives the script; with the two detection fingerprints (top-1 equals top-3 exactly; saturation at exactly 1.0) and a copyable no-oracle negative control.
 - 2026-07-27: trap [30](traps/template/30-default-system-message-silently-replaced.md): the template's default system message vanishes the moment you send your own, so every with-system-prompt condition also toggles default-identity-absent, and "no system message" versus "empty system message" are different baselines.
@@ -191,8 +203,9 @@ untested variable (trap 04's control); accepted-but-unread is a dead knob
 Entries so far come from characterizing models on DGX Spark class hardware
 (vLLM, llama.cpp, EXL3-tail containers), from a stock mlx_lm lane on Apple
 silicon, from a quad-P100 llama.cpp fleet
-(@apollo-mg), a Strix Halo box (@Defilan), and a systematic recipe grid
-(@mrpmorris). Template, scoring, and toolchain classes should be assumed
+(@apollo-mg), a Strix Halo box (@Defilan), a systematic recipe grid
+(@mrpmorris), and a multi-host MoE training and evaluation campaign on
+RTX PRO 6000 class hardware (@Hikari_07_jp). Template, scoring, and toolchain classes should be assumed
 present on other stacks until checked. Revisions and builds are named per
 entry. Much of the raw evidence lives in the
 [Laguna S 2.1 testing lab](https://github.com/Blackwellboy/laguna-s21-lab).

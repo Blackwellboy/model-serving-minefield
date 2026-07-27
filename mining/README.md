@@ -27,3 +27,4 @@ note.
 | 2026-07-27 | [R2-39 thinking plus tools yields empty output](2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md) | Did not reproduce on vLLM; scoped to Ollama pending an Ollama-side test |
 | 2026-07-27 | [R2-31 DeepSeek V4 system-message quality cliff](2026-07-27-r2-31-deepseek-v4-system-message-no-cliff-small-n.md) | Did not reproduce at small n; system-independent behavior measured; stays open pending an upstream recipe |
 | 2026-07-27 | [R2-27 / R2-23 / R2-10 / R2-29 blocked](2026-07-27-r2-blocked-not-testable.md) | Not testable on current lanes; each note says what a test needs |
+| 2026-07-28 | [qwen36-a6b traps 33 to 41: verification queue](2026-07-28-qwen36-a6b-verification-queue.md) | Landed as reported-by-others; confirm/refute criteria recorded before running. Trap 33 on NVFP4 is the priority candidate for a reproduced-here upgrade; first-N subsetting bias held back as a candidate for want of a measured magnitude |
