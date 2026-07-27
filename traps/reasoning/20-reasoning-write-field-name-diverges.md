@@ -42,6 +42,27 @@ implementation is invisible on vLLM and fatal on llama.cpp; a correct
 llama.cpp implementation ported to a stack that only reads `reasoning`
 would fail the same way in reverse.
 
+**Third stack: mlx_lm, where the server EMITS `reasoning` but the shipped
+template only READS `reasoning_content` (confirmed 2026-07-27).** Stock
+mlx_lm serving prism-ml Ternary-Bonsai-27B-mlx-2bit on Apple silicon; one
+behavioral probe plus a structural read of the chat_template.jinja shipped
+next to the weights. The server returns reasoning under `message.reasoning`
+(trap 01's MLX side), while the template's history path reads
+`message.reasoning_content` (plus a fallback that scrapes think tags out of
+`message.content`). The name the server WRITES is never read back: the
+natural client loop, append the assistant message exactly as received and
+resend, silently drops all prior reasoning on this lane. Behaviorally
+confirmed with the marker round-trip: a two-turn history whose assistant
+turn carried a distinctive marker string under `reasoning`, followed by
+"repeat exactly any unusual marker token you have seen, or say NONE",
+answered NONE at temperature 0. The structural read also shows the
+preservation path: the template preserves prior-turn reasoning when resent
+as `reasoning_content` AND either `preserve_thinking` is true or the turn
+sits after the last user query (not behaviorally verified this session).
+On MLX stacks the check is even cheaper than the render probe: read
+chat_template.jinja next to the weights and grep for which names the
+history path reads.
+
 **The check.** Probe both field names on your lane, same transcript,
 before trusting either. Render a conversation whose prior assistant turn
 carries a uniquely marked reasoning string once under `reasoning` and once

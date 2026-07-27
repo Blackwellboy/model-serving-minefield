@@ -25,7 +25,25 @@ model property you must measure, not assume.
 
 **Stacks and builds bitten.** Qwen 3.6 35B-A3B NVFP4 on vLLM (GB10), first
 seen as 28/30 empties in a cross-model grid at 4096, replicated 8/10 in the
-budget map, converted at 8192. The upstream guide ecosystem adopted the
+budget map, converted at 8192.
+
+Reproduced on mlx_lm (2026-07-27, stock server, prism-ml
+Ternary-Bonsai-27B-mlx-2bit, Apple silicon): a hard task with thinking on
+at max_tokens=512 returned HTTP 200, finish_reason=length, no content, and
+1,484 chars of reasoning; a degeneration screen read the tail as honest
+truncation (unique-line ratio 1.00, zlib ratio 0.53). The MLX flavor of the
+signature differs: where vLLM returns `content` as an empty string, mlx_lm
+OMITS the `content` key entirely, so `msg["content"]` raises KeyError on
+every cap-hit. A KeyError storm that correlates with
+`finish_reason=length` is this stack's version of the symptom, and it is
+easy to misread as a client bug instead of a budget artifact (see
+[trap 01](../reasoning/01-reasoning-field-two-names.md) for the absent-key
+shape). Budget note: the same 27B-class model converted a short arithmetic
+answer in 225 completion tokens with thinking on and burned all 512 on the
+hard task without converting, so the thinking-on conversion floor sits
+somewhere above 512 on that lane; per
+[trap 22](22-family-card-budget-floors-differ-by-size.md), find it for THIS
+model rather than borrowing a family number. The upstream guide ecosystem adopted the
 lesson as "an empty response at a token cap is a failure, not a truncation"
 ([offlabel patterns.md](https://github.com/TheTom/offlabel/blob/main/patterns.md)).
 

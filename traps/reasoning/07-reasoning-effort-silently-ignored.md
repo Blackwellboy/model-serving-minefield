@@ -2,7 +2,7 @@
 
 **Found by @quantumleap68.**
 
-**Status: reported by others and reproduced here on a second family and stack** (@quantumleap68 wire-level on Laguna/vLLM; reproduced on two Qwen models on llama.cpp, see below).
+**Status: reported by others and reproduced here on a second family and stack** (@quantumleap68 wire-level on Laguna/vLLM; reproduced on two Qwen models on llama.cpp, and on a third stack, mlx_lm, see below).
 
 **Symptom.** Effort levels change nothing. Identical reasoning depth at
 `low`, `medium`, and `high`, and you conclude the model ignores depth
@@ -31,6 +31,22 @@ deliberately bogus `chat_template_kwargs` key with HTTP 200 on both lanes,
 so the entire kwargs dict is send-and-pray on this server: nothing
 validates that any key you send is read. The grep-the-template check is the
 only real one.
+
+**Third stack: mlx_lm, with a WIDER acceptance surface (confirmed
+2026-07-27).** Stock mlx_lm serving prism-ml Ternary-Bonsai-27B-mlx-2bit on
+Apple silicon. Three acceptance probes, all HTTP 200, all normal replies:
+a `chat_template_kwargs` containing only an invented key; an invented
+TOP-LEVEL body key; and `reasoning_effort` as a top-level OpenAI-style
+parameter. On this stack even the request body schema is unvalidated, one
+level up from the llama.cpp finding above: a typoed `max_tokens` (say
+`max_token`) would be silently dropped and the request would run with
+defaults, so any config typo becomes a silent behavior change instead of a
+400. The shipped template (chat_template.jinja next to the weights on MLX
+model dirs) reads exactly two request-controllable kwargs, `enable_thinking`
+and `preserve_thinking`, and never references `reasoning_effort`: a dead
+knob in both positions while the server 200s both. The one kwarg the
+template DOES read behaved as documented, so acceptance-versus-effect on
+this lane splits exactly along template-reads-it lines.
 
 **The check.** Grep the chat template for the parameter name **before**
 trusting any knob you send. If the template never references it, the knob is

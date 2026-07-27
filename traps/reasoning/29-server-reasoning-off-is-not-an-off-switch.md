@@ -3,7 +3,8 @@
 **Found by Blackwellboy.**
 
 **Status: reproduced here** (two production llama.cpp lanes, n=3 and n=2,
-plus negative controls).
+plus negative controls), and reproduced on a second stack (mlx_lm,
+2026-07-27).
 
 **Symptom.** Blank assistant turns (content empty, finish_reason=length,
 large reasoning field) only on requests from one particular client, while
@@ -26,6 +27,20 @@ not a gate.
 and the same family at 35B Q3, both with `--reasoning off` in the serve
 line; raw rows in `ceiling_audit_20260727.jsonl` and
 `ceiling_audit_prodarm_20260727.jsonl`.
+
+**Second stack: mlx_lm (confirmed 2026-07-27).** A stock mlx_lm lane
+serving prism-ml Ternary-Bonsai-27B-mlx-2bit on Apple silicon, launched
+with `--chat-template-args {"enable_thinking":false}` (mlx_lm's spelling of
+server-side thinking-off; see
+[trap 03](03-enable-thinking-default-drift.md) for the toggle map). A
+client sending `chat_template_kwargs: {"enable_thinking": true}` overrides
+the server-side off PER REQUEST: the flag is a default, not a gate, same as
+the llama.cpp case. On a lane sized for non-thinking traffic the cost is
+concrete: a short arithmetic question spent 225 completion tokens with
+thinking on versus 3 tokens for a comparable thinking-off reply. Combined
+with mlx_lm's `--max-tokens` also being a per-request default (its own
+entry), this stack has NO server-side ceiling a client cannot exceed by
+asking.
 
 **The check.** Send the same hard prompt twice at your production
 max_tokens: once bare, once with the thinking kwarg enabled. If the

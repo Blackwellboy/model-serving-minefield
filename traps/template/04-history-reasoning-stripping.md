@@ -65,6 +65,23 @@ that fix silently no-ops on the family member whose template never reads
 it. Enumerate the kwarg surface per model version (the check below), not
 per family.
 
+**MLX confirmation of the stripping shape (2026-07-27, stock mlx_lm,
+prism-ml Ternary-Bonsai-27B-mlx-2bit, Apple silicon).** The shipped
+template's history path reads `reasoning_content` with a
+`preserve_thinking` gate (`(preserve_thinking is defined and
+preserve_thinking is true) or (loop.index0 > ns.last_query_index)`), while
+the server emits `reasoning`
+([trap 20](../reasoning/20-reasoning-write-field-name-diverges.md) has the
+divergence and the marker probe that confirmed it behaviorally). Two
+consequences: by default, reasoning on turns at or before the last user
+query is stripped, so multi-turn thinking studies on such a lane measure a
+model that cannot see its own prior reasoning unless the client both
+renames the field and sets the kwarg. And the preserved branch renders a
+think-open, the reasoning, and a think-close even when `reasoning_content`
+is the empty string, which is
+[trap 25](25-empty-think-blocks-poison-prefix-cache.md)'s empty-shell
+render pattern (structural read only; cache timing not tested there).
+
 **Stacks and builds bitten.** A 12h production soak on Laguna S 2.1 NVFP4 /
 vLLM, plus the 3.25bpw EXL3-hybrid lane, plus @quantumleap68's independent
 client and serving pair. The rendering half is also reproduced by @Defilan

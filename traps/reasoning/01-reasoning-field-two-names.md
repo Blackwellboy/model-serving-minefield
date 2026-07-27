@@ -2,7 +2,7 @@
 
 **Found by Blackwellboy; streaming variant confirmed by @quantumleap68.**
 
-**Status: reproduced here** (three tools audited on our stacks), with an independent wire-level confirmation of the streaming variant by @quantumleap68.
+**Status: reproduced here** (three tools audited on our stacks), with an independent wire-level confirmation of the streaming variant by @quantumleap68, and reproduced on a third serving stack (mlx_lm, 2026-07-27).
 
 **Symptom.** Your thinking firing rate reads **0%** while the model is
 visibly reasoning. Worse, it reads 0% *consistently*, which looks like a
@@ -32,6 +32,36 @@ NVFP4 (vLLM 0.25.1) confirmed the streaming variant: reasoning arrives as
 The generalization worth carrying: this is not a bug that happened to some
 scripts, it is a property of **any tool that reads a reasoning field**. Audit
 all of them at once, not just the one that surfaced the problem.
+
+**MLX (mlx_lm server), confirmed 2026-07-27** (stock mlx_lm serving
+prism-ml Ternary-Bonsai-27B-mlx-2bit on Apple silicon; temperature-0
+single-run cells). With thinking enabled, reasoning arrives under
+`message.reasoning` ONLY; `message.reasoning_content` never appeared in any
+probe. Streaming matches: `delta.reasoning` on 84 of 85 non-empty deltas,
+`delta.reasoning_content` never. This is the same wire shape @quantumleap68
+measured on vLLM 0.25.1, now confirmed on a third stack. A harness reading
+only `reasoning_content` scores this lane as never thinking.
+
+Two MLX wrinkles the other stacks do not show:
+
+- **Empty channels are ABSENT keys, not empty strings.** A thinking-on
+  response that hit the token cap had keys `[reasoning, role]` and NO
+  `content` key at all; a thinking-off response had `[content, role]` with
+  no `reasoning` key. So `msg["content"]` raises KeyError on every
+  thinking cap-hit, and `msg.get("content", "")` silently converts a budget
+  artifact into "model returned nothing". The defensive read below already
+  survives this; `content` needs the same `.get` treatment on MLX, and a
+  KeyError storm correlated with `finish_reason=length` is itself a
+  detection signature (see
+  [trap 12](../evaluation/12-empty-content-at-token-ceiling.md) for the
+  budget half).
+- **Every streaming delta carried `role="assistant"`** (85 of 85), not just
+  the first. Clients that treat a role delta as "new message starts here"
+  will fragment the stream into 85 messages.
+
+Negative results recorded on the same lane: no orphaned think-close tag in
+any arm (trap 02 clean here), and with thinking off, streamed answer text
+lands in `delta.content` (trap 23 clean here).
 
 **The check.** Read **both** keys, and fall back to scraping `<think>` tags
 out of `content`:
