@@ -19,6 +19,49 @@ the format and the evidence bar below and your entry will fit.
    Categories: template, tools, reasoning, quantization, runtime, memory,
    evaluation, versioning. If none fits, propose a new one in the PR.
 
+## Where coverage is thin
+
+Absence from this registry means nobody has reported it here, not that it is
+safe. These are the gaps we know about, and they are the most useful place to
+send a report:
+
+- **Serving stacks with no entries at all: Ollama, SGLang, TensorRT-LLM,
+  text-generation-inference.** Two candidates are already sitting in
+  [mining/](mining/) unresolved because we could not test them: a
+  thinking-plus-tools failure that did not reproduce on vLLM and looks
+  Ollama-side, and an SGLang reasoning-parser null-content report. Either
+  could be settled by one person who runs that stack.
+- **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
+  what is here was measured on two families because those are the weights we
+  have.
+- **Hardware beyond DGX Spark class, Apple silicon, P100, Strix Halo and
+  RTX PRO 6000.** Datacenter parts and ROCm are entirely unrepresented.
+
+## Sending measurement data
+
+If your report comes with data rather than a description, this is the format
+that costs you least and helps most:
+
+- **Raw rows, not aggregates.** One row per request or turn (prompt or
+  prompt id, whether thinking fired, reasoning and completion token counts,
+  finish reason). We would rather compute the statistics ourselves so they
+  are comparable to the ones already here. Do not pre-summarize.
+- **The exact serve command or config** you launched with: engine and
+  version, model build and quantization, sampling parameters, relevant flags.
+- **One line on hardware.**
+- **Say explicitly that you are happy for the data and the credit to be
+  published.** We will not publish contributed data without that sentence.
+
+Contributed data is labelled **"contributor-measured, conditions as
+reported"** everywhere it appears and is never silently pooled with
+measurements taken here. It can be cited as a corroborating or diverging
+report at that label immediately; it feeds a headline claim only after
+someone reproduces it. That is the same bar our own numbers are held to, and
+it is not a comment on your work.
+
+Scrub anything you would not want public before you send it. We are not set
+up to receive confidential data and will not accept it.
+
 ## Entry format
 
 One trap per file. Use these sections, in this order:
