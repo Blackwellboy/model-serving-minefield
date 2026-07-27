@@ -45,6 +45,27 @@ requests (reasoning length 0) while think=on without tools always produced
 reasoning. Consistent with the known reasoning-suppression-under-tool-turns
 behavior for this family; logged, not this candidate.
 
+**CAVEAT (2026-07-28).** The phrase "the known
+reasoning-suppression-under-tool-turns behavior for this family" overstates
+what is established. The observation above is n=5 on one lane, and the
+suppression reading it leans on has since been narrowed twice:
+
+- Depth: the tool-schema depth collapse does not survive in-run interleaved
+  control (all pairwise p >= 0.13; the tools arm carried the highest median).
+  What produces short reasoning on tool turns is truncation at the tool
+  boundary, not a suppression dial. A turn that exits via `tool_calls` has a
+  structurally shorter reasoning episode because it stops to call the tool.
+- Firing: @apollo-mg published an apparatus cell at n=492 (HumanEval+ 164 x
+  K=3, Laguna S 2.1 UD-Q2_K_XL under llama.cpp on 4x Tesla P100 sm_60, a
+  752-byte agent system prompt plus 3 tool schemas) with thinking firing on
+  445/492 samples (90.4%) and mean reasoning_content of 4,686 chars
+  (offlabel PR #10 comment 5093534067, 2026-07-27). Tool schemas present did
+  not close the gate at scale on that stack.
+
+Read the 4/5 above as a small-n lane observation with reasoning length
+measured at a tool boundary, not as evidence for a family-wide suppression
+behavior. Credit @apollo-mg.
+
 ## Scope of this negative
 
 This tests the model-plus-vLLM path only. The cited mechanism lives in
