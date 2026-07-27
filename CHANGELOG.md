@@ -4,6 +4,57 @@ New entries and structural changes, newest first. Cadence: entries land as
 they are verified; issue reports get a first maintainer response within a
 few days.
 
+## 2026-07-28
+
+- Nine traps ([33](traps/routing/33-moe-inference-topk-expansion-tax.md)
+  through
+  [41](traps/runtime/41-static-batching-buys-power-not-throughput.md))
+  mined from [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)'s
+  public research log on raising a pretrained MoE's inference top-k from 8
+  to 32, offered by him for this purpose and credited by handle. All nine
+  land as **reported by others**; three of them were re-scored here from the
+  per-item JSON he publishes, and the recomputations match his stated
+  p-values.
+- New category [traps/routing/](traps/routing/) for MoE expert routing and
+  activation config. Trap 33 did not fit quantization (nothing is
+  quantized) or runtime (it is a model-config knob, not a stack property),
+  and filing it under either would have hidden it from the people who need
+  it. As MoE serving knobs proliferate, this is where they go.
+- Trap [33](traps/routing/33-moe-inference-topk-expansion-tax.md) is the
+  headline: raising a MoE's active-expert count costs accuracy **before any
+  training**, with no error and no warning, because the selected gate scores
+  are renormalized and the extra experts dilute rather than add. Selection
+  is intact and the nesting is exact. Measured monotone in k on two
+  benchmarks (MMLU 84.33 to 80.67, GSM8K 89.33 to 86.50, k=8 to k=32,
+  n=600 paired, both significant), and repaid with zero training by scaling
+  the tail ranks back down.
+- The other eight are measurement traps that made real numbers wrong:
+  [34](traps/evaluation/34-baseline-you-degraded-yourself.md) a baseline you
+  degraded yourself (same arm, same items: a significant +6.10 pt win
+  against the handicapped reference, no effect against the shipped one),
+  [35](traps/evaluation/35-identical-weights-do-not-score-identically.md)
+  identical weights agreeing on only 98.7% of items across machines,
+  [36](traps/evaluation/36-token-cap-is-an-arm-level-handicap.md) token caps
+  binding at 33.4% of items for one arm and 0.0% for another,
+  [37](traps/evaluation/37-uniform-zero-is-a-harness-verdict.md) three
+  distinct all-arms-zero results that were all harness faults, one of them
+  reporting `infra_error_n=0`,
+  [38](traps/template/38-template-owns-the-opening-think-tag.md) the opening
+  think tag that the template supplies and the model never writes,
+  [39](traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md)
+  `device_map="auto"` spilling onto an excluded device and returning
+  gibberish,
+  [40](traps/evaluation/40-ngram-decontamination-false-positives.md) a
+  contamination screen removing 31.7% of a corpus on the strength of one
+  boilerplate n-gram, and
+  [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) static
+  batching that raised GPU utilization to 100% and throughput not at all.
+- Verification queue recorded in
+  [mining/](mining/2026-07-28-qwen36-a6b-verification-queue.md): trap 33 is
+  the first candidate for a **reproduced here** upgrade, since we have a
+  Qwen 3.6 35B-A3B NVFP4 lane and his measurements are all bf16 on HF
+  transformers.
+
 ## 2026-07-27
 
 - [Doctor](doctor/) portability notes from its first mlx_lm field run: 6 of
