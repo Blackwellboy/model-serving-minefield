@@ -6,6 +6,16 @@ few days.
 
 ## 2026-07-27
 
+- Trap [06](traps/reasoning/06-identity-sentence-eviction.md) status
+  resolved: the promised independent test on a second stack is in, and the
+  prefix-key mechanism did not reproduce there (identity as literal first
+  line fired 0/40 at the critical cell). A position-generic tail effect was
+  found instead: roughly 29 tokens of any token-band-matched text appended
+  at the END of the system prompt reopens the gate on both tested builds
+  (hybrid and NVFP4, in-run interleaved controls, every suffix vs bare
+  p <= 0.025; identity vs matched fillers NS). Entry now scopes both
+  results by stack, and the check and fix cover both ends of the prompt.
+  Full data and drivers: laguna-s21-lab `identity-prefix/`.
 - Trap [22](traps/evaluation/22-family-card-budget-floors-differ-by-size.md)
   gains the production-lane replication (28-row ceiling audit, three
   lanes, n=2 to 3 per cell): the budget floor is a distribution, not a

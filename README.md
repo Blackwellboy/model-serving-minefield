@@ -28,7 +28,7 @@ welcome here and labelled, not rejected.
 | Two testers, "same model", different behavior | Thinking-kwarg default drifts by revision and upload | [03](traps/reasoning/03-enable-thinking-default-drift.md) | reproduced here |
 | Thinking fires single-turn, collapses multi-turn | Reasoning stripped from replayed history | [04](traps/template/04-history-reasoning-stripping.md) | reproduced here |
 | Verdicts flip on characters nobody looked at | Scorer normalization (curly quotes, unicode) | [05](traps/evaluation/05-scorer-normalization-verdict-flip.md) | reported by others |
-| Thinking dies under any real system prompt | Identity sentence evicted from line one | [06](traps/reasoning/06-identity-sentence-eviction.md) | reported, under test |
+| Thinking dies under any real system prompt | Identity sentence evicted from line one | [06](traps/reasoning/06-identity-sentence-eviction.md) | reported; tested on a second stack, did not reproduce there (tail effect found instead) |
 | `reasoning_effort` levels change nothing | Template never reads the parameter | [07](traps/reasoning/07-reasoning-effort-silently-ignored.md) | reproduced here |
 | Healthy load, then death at kernel build or first token | Image toolchain newer than host driver (error 222 class) | [08](traps/runtime/08-image-toolchain-newer-than-driver.md) | reproduced here |
 | Same weights work/fail/crawl depending on nothing obvious | Container image decides the kernel path | [09](traps/runtime/09-image-choice-changes-outcome.md) | reproduced here |
