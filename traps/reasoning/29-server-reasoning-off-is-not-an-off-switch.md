@@ -38,9 +38,9 @@ the server-side off PER REQUEST: the flag is a default, not a gate, same as
 the llama.cpp case. On a lane sized for non-thinking traffic the cost is
 concrete: a short arithmetic question spent 225 completion tokens with
 thinking on versus 3 tokens for a comparable thinking-off reply. Combined
-with mlx_lm's `--max-tokens` also being a per-request default (its own
-entry), this stack has NO server-side ceiling a client cannot exceed by
-asking.
+with mlx_lm's `--max-tokens` also being a per-request default
+([trap 32](../runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md)),
+this stack has NO server-side ceiling a client cannot exceed by asking.
 
 **The check.** Send the same hard prompt twice at your production
 max_tokens: once bare, once with the thinking kwarg enabled. If the

@@ -6,6 +6,17 @@ few days.
 
 ## 2026-07-27
 
+- Trap [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md)
+  landed, reproduced here: mlx_lm's server `--max-tokens` launch flag is a
+  per-request default, not a ceiling. A client sending a larger
+  `max_tokens` runs straight past it (measured 1600 through a 1024 flag,
+  167 s on a lane whose normal replies take 1 to 2 s), with no warning and
+  nothing in the response distinguishing clamped from obeyed. Behavioral on
+  mlx-lm 0.31.3; source-confirmed at that release and current main, where
+  the flag's own help text calls it a default. Combined with trap
+  [29](traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md) on
+  the same stack, mlx_lm has no server-side gate a client cannot exceed by
+  asking.
 - MLX coverage becomes real: a read-only characterization pass on a stock
   mlx_lm lane (prism-ml Ternary-Bonsai-27B-mlx-2bit, Apple silicon) lands
   MLX-scoped sections in five entries. Trap
