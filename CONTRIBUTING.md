@@ -355,6 +355,35 @@ the entry (the **Found by** line), in the Attribution section, and in
 they ask otherwise. Use a generic label for anything not publicly
 attributable.
 
+## AI assistance
+
+Most of the work in this registry is executed by an AI agent and reviewed by a
+human before anything is published. Saying that once, here, is the point of
+this section: it is a property of the project, not a disclaimer to reattach to
+each artifact.
+
+**Our own work.** The registry as a whole is produced this way, which is why
+individual entries do not repeat the fact. Reports we open in someone else's
+tracker do carry it inline, because this file is not present there: the line is
+"Drafted with AI assistance (Claude); reviewed and submitted by @Blackwellboy",
+in the visible body rather than an HTML comment. The prior art we follow is
+[oven-sh/bun#36049](https://github.com/oven-sh/bun/issues/36049), which opens
+with a note stating the bug was found, root-caused and written up by an AI
+agent on behalf of and reviewed by a named human. It was accepted and fixed the
+same day in [#36050](https://github.com/oven-sh/bun/pull/36050). Disclosure did
+not cost that report anything, because the reproduction held.
+
+**Contributed entries.** You do not have to tell us whether you used AI. We
+will not ask, and the answer would not change how your report is handled. What
+does not move is the [evidence bar](#evidence-bar): the same measurement, the
+same conditions, the same raw, whoever or whatever produced them. The bar is
+the measurement, not the author.
+
+**The line that matters.** AI assistance does not lower the evidence bar, and a
+named human is accountable for every claim published here. When an entry turns
+out to be wrong, "the model wrote it" is not an answer, and you will find the
+corrections in this repo signed the same way as the claims.
+
 ## House style
 
 Plain language. No hype. Counts and conditions next to every claim. Generic
