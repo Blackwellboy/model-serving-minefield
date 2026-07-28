@@ -20,7 +20,7 @@ reproduced), or **under test**. Reported-but-unreproduced entries are
 welcome here and labelled, not rejected.
 
 In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint. It
-has checks for **17 of these 42 entries** and runs in under a minute. It is
+has checks for **17 of these 55 entries** and runs in under a minute. It is
 not a broad bill of health, and it prints its own coverage line at the end of
 every run so you can see exactly how much of the registry it touched, how
 much it could not check on your stack, and how much it never implements.
@@ -72,6 +72,19 @@ much it could not check on your stack, and how much it never implements.
 | Contamination gate removes a third of your corpus | One boilerplate n-gram, or a gram too short for the alphabet | [40](traps/evaluation/40-ngram-decontamination-false-positives.md) | reported by others |
 | Batched the loop, GPU hit 100%, the job took exactly as long | A static batch waits for its longest sequence | [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) | reported by others |
 | Adding an agent prompt and tool schemas drops your benchmark score hard | Tool-call exits are being scored as wrong answers | [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md) | contributor-measured, conditions as reported |
+| Agent emits `<function=NAME></function>` with no arguments, then loops | Template gates tool args on `is mapping` with no `else`, so replayed JSON-string args render empty | [43](traps/template/43-tool-args-string-not-mapping.md) | contributor-measured, conditions as reported |
+| Offline dequant reads cosine 0.92 and the model answers "9.9 vs 9.11" as "9 and 9" | Scales stored linear but read swizzled, so the damage is distributed rather than obvious | [44](traps/quantization/44-fp4-dequant-scale-swizzle-layout.md) | contributor-measured, conditions as reported |
+| Prefill drops ~20x for one KV quant pair and the bench tool prints a clean table | Flash-attention kernels were never compiled for that pair, so it silently leaves the fast path | [45](traps/quantization/45-fa-all-quants-cpu-fallback.md) | contributor-measured, conditions as reported |
+| High GPU utilization at low power draw, and decode ~2.5x below spec | The running binary predates its own arch-native kernel; the fix was merged but never rebuilt | [46](traps/versioning/46-stale-build-missing-arch-kernel.md) | contributor-measured, conditions as reported |
+| Time-to-first-token stays flat as an agent conversation grows | The engine auto-disabled prefix caching for a hybrid or recurrent arch and said so once, at startup | [47](traps/runtime/47-prefix-caching-autodisabled-hybrid.md) | contributor-measured, conditions as reported |
+| Every request takes ~30s including cache hits, but the server log says it finished in seconds | A `.local` name resolving dual-stack with a dead IPv6 route; the tax is entirely client-side | [48](traps/routing/48-dual-stack-mdns-latency-tax.md) | contributor-measured, conditions as reported |
+| A clean, reproducible performance gap that collapses when the harness is fixed | The benchmark prompt never tokenized to the length the table claims | [49](traps/evaluation/49-prompt-not-tokenized-to-target.md) | contributor-measured, conditions as reported |
+| Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
+| Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
+| An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
+| You changed a flag, restarted, and the old behavior is still there | A stale process kept the port; the restart reported success and the replacement crash-looped | [53](traps/runtime/53-config-edit-never-took-effect.md) | contributor-measured, conditions as reported |
+| A clean +20% speedup that also reproduces on a build without the feature | Run order, warm caches or cross-session drift; what you varied was not the only thing that varied | [54](traps/evaluation/54-run-order-and-warm-cache-artifacts.md) | contributor-measured, conditions as reported |
+| A model serves happily at its advertised context and scores badly on long-context retrieval | Advertised, served and trained context are three different numbers | [55](traps/evaluation/55-supported-context-is-not-trained-context.md) | contributor-measured, conditions as reported |
 
 If you run one check from this registry, make it
 [Trap 04](traps/template/04-history-reasoning-stripping.md). It is the one
@@ -85,7 +98,7 @@ observed on them.
 ## Run the doctor
 
 One stdlib-only file, no install, that diagnoses your endpoint against
-17 of this registry's 42 entries in under a minute:
+17 of this registry's 55 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
@@ -178,6 +191,7 @@ otherwise.
 
 ## Recently added
 
+- 2026-07-28: **traps [43](traps/template/43-tool-args-string-not-mapping.md) through [55](traps/evaluation/55-supported-context-is-not-trained-context.md): the registry's first large external contribution**, thirteen entries from [@TheTom](https://github.com/TheTom), who maintains the offlabel operator guide. All land at **contributor-measured, conditions as reported**: he measured every one on his own hardware and stated the conditions, and we have not reproduced them here. Headline classes: a chat template that renders replayed tool arguments empty when they arrive as a JSON string, an FP4 dequant that reads its scales in the wrong layout so the damage is distributed rather than obvious, KV-quant pairs with no compiled flash-attention kernel, a binary that predates its own arch-native kernel, prefix caching silently auto-disabled on hybrid architectures, and a run of measurement traps that each produced a clean reproducible number that was not real. **Numbering is provisional**; see [MAINTAINING.md](MAINTAINING.md#numbering-in-this-merge).
 - 2026-07-28: trap [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md): a single-turn eval harness scores `finish_reason=tool_calls` as a wrong answer, so attaching an agent prompt and tool schemas costs measured score without costing capability. Found and measured at n=492 by [@apollo-mg](https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067) with raw published: pooled pass@1 fell 18.9 points while wrong answers moved by one and accuracy conditional on attempting held at 91.71%. Carries the two detection fingerprints (conditional against pooled; bucket by exit path, not by score) and a pre-registered open question, with both predictions on record, about whether the termination benefit survives tool output being fed back.
 - 2026-07-28: nine traps ([33](traps/routing/33-moe-inference-topk-expansion-tax.md) through [41](traps/runtime/41-static-batching-buys-power-not-throughput.md)) mined from [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)'s public research log on expanding a pretrained MoE's inference top-k, offered by him for this purpose. Headline: raising a MoE's active-expert count from 8 to 32 costs accuracy before any training, silently, because renormalization dilutes the original top-8 rather than adding to it. New [routing/](traps/routing/) category for MoE activation config. The rest are measurement traps that made real numbers wrong: a baseline you degraded yourself, identical weights not scoring identically, token caps binding unequally per arm, all-arms-zero as a harness verdict, the opening think tag the template owns, `device_map="auto"` spilling silently, contamination screens firing on boilerplate, and static batching buying power instead of throughput.
 - 2026-07-27: trap [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md): mlx_lm's server `--max-tokens` flag is a per-request default, not a cap; a client can quietly run past it. Same pass landed MLX-scoped sections in six existing entries (mlx_lm now has real coverage in the [per-stack index](models/README.md)) and the new [mining/](mining/) verification-notes area for candidates that did not or could not promote.
