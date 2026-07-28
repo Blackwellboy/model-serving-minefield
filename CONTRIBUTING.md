@@ -500,3 +500,39 @@ corrections in this repo signed the same way as the claims.
 Plain language. No hype. Counts and conditions next to every claim. Generic
 references for tools that are not public ("a spine-probe runner") and named
 references for tools that are.
+
+**No em dashes, en dashes or figure dashes** (U+2012 to U+2015). Use a comma, a
+colon or a full stop. Arrows and mathematical symbols are fine and are
+deliberately not checked.
+
+That is a style preference and not a safety rule, and the difference decides
+where it applies:
+
+- **It does not gate the body of your entry.** A registry entry under
+  `traps/<category>/` whose Status line says `contributor-measured` is exempt
+  from it. Your prose is yours. If we want house style in it, normalising it is
+  our job at merge, not a condition of your contribution.
+- **It does apply to everything we write**: README, CONTRIBUTING, CORE,
+  CHANGELOG, HALL_OF_FAME, SECURITY, MAINTAINING, and everything under
+  `playbooks/`, `stacks/`, `models/`, `mining/`, `upstream/`, `integrity/`,
+  `doctor/` and `.github/`.
+
+The rule used to be enforced with no scoping at all, and it appeared in no
+contributor-facing document. It refused an external contributor's push on
+punctuation, over a rule they had no way to read. That was our defect, not
+theirs. It is written down here now and it no longer blocks an entry body.
+
+**The leak checks are separate, and they are not scoped.** Internal hostnames,
+ports, home directory paths, private LAN and tailnet addresses, and corpus
+identifiers block in every file, including yours, with no exemption. That check
+protects you as much as it protects us: a path or a port pasted out of your own
+terminal is the most common way a report publishes something its author did not
+mean to. Replace them with `HOST:PORT` or a placeholder.
+
+**Where this is checked, and where it is not.** Both scans are a **local
+pre-push discipline**. They run from a private kit on a maintainer's machine,
+wired into the `pre-push` hook, and they **never run in CI**. The pattern file
+is a list of the internal names it hunts for, so shipping it to a public runner
+would publish the thing it protects. A green CI badge on your PR therefore says
+nothing at all about these scans. If a push is refused by one, it prints the
+file, the line and the reason.
