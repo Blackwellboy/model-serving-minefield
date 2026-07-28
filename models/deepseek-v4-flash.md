@@ -48,7 +48,7 @@ Read from the running container, not from a launcher script or documentation.
 |---|---|---|
 | [the advertised window fails silently](../traps/evaluation/61-advertised-window-fails-silently.md) | 1M advertised, 64K trained, cold retrieval unreliable from 32K, no error ever | reproduced here (the three-ceiling arithmetic) + measured here, raw not published (the curve) |
 | [cold prefill and cache hit disagree](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md) | the identical long prompt answers correctly warm and wrongly cold | measured here, raw not published |
-| [checkpoint ships no chat template](../traps/template/56-checkpoint-ships-no-chat-template.md) | nothing to hash; no system role delimiter; late system messages weld onto the user turn | reproduced here |
+| [checkpoint ships no chat template](../traps/template/56-checkpoint-ships-no-chat-template.md) | nothing to hash; no system role delimiter; late system messages weld onto the user turn; corroborated upstream at [vllm#46710](https://github.com/vllm-project/vllm/issues/46710) on the preserve-in-place default | reproduced here |
 | [thinking kwarg truthiness](../traps/reasoning/57-thinking-kwarg-truthiness-coercion.md) | `"false"` as a string turns thinking on | reproduced here |
 | [reasoning_effort is a thinking switch](../traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md) | top-level enables reasoning and injects 79 hidden tokens; the same key in kwargs is ignored | reproduced here |
 | [reasoning round-trip confabulation](../traps/reasoning/59-reasoning-roundtrip-confabulation.md) | history reasoning is stripped, and the model confidently quotes it anyway | reproduced here |
