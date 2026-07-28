@@ -252,6 +252,12 @@ TOTAL_PATTERNS = [
     (re.compile(r"implemented\s+(\d+)\s*/\s*(\d+)"), 2, 1),
     # the same line built in a test f-string: implemented {len(md.TRAP_PATHS)}/42
     (re.compile(r"implemented\s+\{[^}]*\}\s*/\s*(\d+)"), 1, None),
+    # "all 42 entries", "All 42 entries". Two of these sat in README.md
+    # unguarded while the neighbouring "N of these 42 entries" lines were
+    # checked, so the same number was enforced in one sentence and typed by
+    # hand two paragraphs later. A total is a total however the sentence
+    # around it is phrased.
+    (re.compile(r"\b[Aa]ll\s+(\d+)\s+entries\b"), 1, None),
 ]
 
 # Counts that state neither the total nor the implemented count, but their
