@@ -187,90 +187,80 @@ ln -sf ../../integrity/hooks/pre-push .git/hooks/pre-push
 
 A hook you have not seen produce output is a hook you are assuming.
 
-## Not built: the evidence-pointer check, and the design to use when it is
+## The contradiction gate, and the absence gate that was abandoned first
 
-Nothing in this layer enforces that an entry claiming **reproduced here**
-carries a checkable evidence pointer. CONTRIBUTING requires one ("the evidence
-pointer is not optional") and that requirement is prose only. Trap 33 shipped
-for a day claiming the label while its own data README said, in as many words,
-that you cannot check our rows.
+`contradiction_gate.py` fails the build when an entry claims **reproduced here**
+while the entry, or a file it links to one hop away, asserts that the result is
+not checkable. That is the trap-33 defect exactly: the entry claimed the label
+while its data README said "you cannot check our rows".
 
-It was attempted twice on 2026-07-28 and **left unlanded on purpose**. Both
-attempts and the reason are recorded here so the next person does not repeat
-them.
+**It gates on the contradiction, not on absence, and that was the second
+design.** The first one asked "does an entry claiming reproduced here NAME its
+evidence". It was attempted twice and abandoned, and the reasoning is kept here
+because the failure is not obvious and is worth not repeating.
 
-### What was tried, and why each failed
+- **Matching phrasing** ("publicly obtainable", "without asking us") is a proxy
+  for evidence rather than evidence. An entry that says the words while naming
+  nothing passes; an honest entry that names a file in neutral prose fails.
+- **Matching shape** (a URL, an in-repo path, a runnable command) is better and
+  still wrong. Measured across all 81 entries it failed **36 of the 61** that
+  claim the label, and spot-checking found them mostly honest: trap 56's check
+  is a four-case procedure against a public checkpoint, trap 72's is a
+  one-request probe this repo's own doctor runs. Both are legitimate under
+  CONTRIBUTING form 3, and both are stated in **prose**.
+- Loosened far enough to accept prose, the shape became nearly unfailable: one
+  version "passed" trap 12 on a see-also link to a sibling entry, which is
+  defect shape 1 from CONTRIBUTING, a sentinel present in its own input.
 
-**Attempt 1, absence-gate over the status block, matching on phrasing.** Look
-in the `**Status:**` paragraph for phrases like "publicly obtainable" or
-"without asking us". Two failures. It reported 24 entries whose pointer was
-real but sat in the **check section**, which is where CONTRIBUTING itself
-nominates ("when the check section is a command a stranger can run to re-derive
-the finding for themselves, that is verification"). And matching phrasing is a
-proxy for evidence rather than evidence: an entry that says the words while
-naming nothing passes, and an honest entry that names a file in house-neutral
-prose fails.
+The obstacle is structural. Form 3 permits a runnable procedure described in
+prose, and prose is not mechanically distinguishable from absence, so an
+absence-gate must either fire on honest entries or be unfailable.
 
-**Attempt 2, absence-gate over status AND check, matching on shape.** Match the
-artifact instead: a URL, an in-repo path, or a runnable command inside a code
-span. Better, and still wrong. Measured across all 81 entries it failed **36 of
-the 61** that claim the label. Spot-checking those 36 found they are mostly not
-defective: trap 56's check is a four-case procedure against a public checkpoint,
-trap 72's is a one-request probe this repo's own doctor runs. Both are
-legitimate under form 3 and both are stated in **prose**.
+The contradiction gate has neither problem, because it never asks whether
+evidence exists. It fires on **zero of the 81** entries as they stand, which is
+the correct result and also exactly what a broken gate looks like, so its teeth
+are asserted by mutation rather than assumed:
+`integrity/tests/test_contradiction_gate.py`, 11 cases, both directions,
+including the honest-prose-procedure case that killed the absence gate and the
+one-hop case that is the whole point.
 
-Loosening far enough to accept prose procedures made the shape nearly
-unfailable, and one loose version "passed" trap 12 on a see-also link to a
-sibling entry, which is defect shape 1 from CONTRIBUTING: a sentinel that is
-also present in its own input.
+Three exemptions, each measured rather than assumed. Following into them fired
+on 12 entries, every one a false positive:
 
-**The obstacle is structural, not a tuning problem.** Form 3 explicitly permits
-a runnable procedure described in prose, and a prose procedure is not
-mechanically distinguishable from its absence. Any absence-gate must therefore
-either fire on honest entries or be unfailable. Both outcomes are worse than no
-check: this repo has already written down that a guard which fires on legitimate
-use gets waved through as routine, and that a habitually-overridden guard
-teaches the override reflex.
+1. **Policy documents.** Every entry links CONTRIBUTING, which discusses
+   non-checkability generically.
+2. **Sibling entries.** Another entry's limits are not this entry's
+   contradiction, and entries cross-link constantly.
+3. **Labelled sub-sections.** A folded contributor addendum whose raw is private
+   says so and is labelled contributor-measured; that is the addendum's limit,
+   not the host entry's.
 
-### The design to build instead: gate on the contradiction, not on absence
+A correctly stated compound status is also exempt: "reproduced here for the
+arithmetic and measured here, raw not published for the curve" is precision, and
+a gate that punished it would push entries toward vagueness.
 
-Do not ask "does this entry name evidence", which prose can satisfy invisibly.
-Ask **"does this entry claim reproduced here while something it links or ships
-says the result is not checkable"**. That is a contradiction between two
-statements the repo makes about itself, and contradictions are exactly what a
-mechanical checker is good at.
+## Known and accepted residuals
 
-Fail when an entry's status includes `reproduced here` AND the entry, or any
-in-repo file it links to, asserts non-checkability. Candidate markers, all of
-which are real phrasings this repo has used:
+Written down because an unstated limitation reads as a guarantee, which is the
+failure this whole layer exists to prevent.
 
-- "you cannot check our rows"
-- "raw not published" / "the raw is not published"
-- "available on request" / "can be produced on request"
-- "held outside the tree"
-- "we do not ship the answer sheets"
+**The pre-push hook is a content trust model, not a guarantee.** It can be
+replaced by an inert executable that exits 0 having run nothing, and git will
+invoke it happily. That is not a regression of the executable-bit fix: an
+authentic hook fails closed, and the fix ensures an authentic hook actually
+runs. What neither can do is prove the file on disk is the one in this repo.
+Anyone treating a green pre-push as evidence that the sanitizer ran should
+verify the hook resolves to `integrity/hooks/pre-push` and check the SUMMARY
+block appeared. **A hook you have not seen produce output is a hook you are
+assuming**, and that holds whether the cause is a missing bit or a substituted
+file.
 
-Why this is the right shape:
-
-- **It cannot false-fire on honest prose.** An entry whose evidence is a
-  described procedure says nothing about non-checkability, so it never trips.
-- **It catches the case that actually happened.** Trap 33 would have failed on
-  day one, on its own data README's sentence.
-- **The markers are our own vocabulary**, so the check is testing our
-  consistency rather than guessing at a contributor's style.
-- **It is falsifiable.** There is an input that makes it fire, which is the
-  contract every check in this repo has to meet.
-
-Two things to get right when building it:
-
-1. **Follow links one hop, into the repo only.** Trap 33's contradiction was not
-   in the entry; it was in the data README the entry links to. A checker that
-   reads only the entry file would have missed it.
-2. **Mutation-prove both directions.** An entry claiming reproduced-here beside
-   a non-checkability marker must fail; an entry claiming it with a prose
-   procedure and no such marker must pass. Attempt 2 looked correct until it was
-   measured across all 81, which is the step that settled it.
-
-A prototype of the rejected absence-gate exists outside this repo and is not
-worth resurrecting; start from the contradiction design.
-
+**CHANGELOG.md is exempt from the COUNT check, by design.** It is an
+append-only record of what was true on a date, so a 2026-07-28 line reading
+"corrected to 17 of 42" must keep saying 42 after the tree grows or the log
+stops being a log. The consequence, accepted: **a wrong count introduced into
+the CHANGELOG will never be caught mechanically.** Every other surface is
+checked, including orphan forms like "not implemented N", which are asserted as
+total minus implemented after one such number survived two registry expansions.
+The CHANGELOG is the one place a reader must not infer current coverage from a
+number, and its entries are dated so that reading is available to them.
