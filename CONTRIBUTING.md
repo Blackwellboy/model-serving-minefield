@@ -62,6 +62,11 @@ it is not a comment on your work.
 Scrub anything you would not want public before you send it. We are not set
 up to receive confidential data and will not accept it.
 
+Contributed data is normally linked rather than committed. The one case where
+raw data is committed to this repo is a calibration entry whose number other
+entries cite, and then only with a runnable verifier beside it; the conditions
+are in [MAINTAINING.md](MAINTAINING.md#shipping-raw-data-in-the-repo).
+
 ## Entry format
 
 One trap per file. Use these sections, in this order:
