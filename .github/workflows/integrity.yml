@@ -76,12 +76,24 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: registry integrity
+      # The contradiction gate is not a separate step because it is not a
+      # separate program: registry_integrity.py imports it and runs it over
+      # every entry, so a second invocation would double-report. It IS
+      # load-bearing (it is what stops an entry claiming "reproduced here"
+      # while a file it ships says the raw is private), so it is named here
+      # and named again in the verdict, rather than being a thing you only
+      # find by reading the import list.
+      - name: registry integrity (includes the contradiction gate)
         id: registry
         if: always()
         run: python3 integrity/registry_integrity.py --github
 
-      - name: reference integrity
+      # reference_integrity also carries the status-vocabulary checks:
+      # VOCAB-DEFN, VOCAB-GATE, VOCAB-FULL and VOCAB-SLASH. The vocabulary is
+      # defined in CONTRIBUTING and restated in README, MAINTAINING and the PR
+      # template, and the PR template drifted to a three-label subset for
+      # weeks without anything noticing.
+      - name: reference integrity (includes the status vocabulary)
         id: refs
         if: always()
         run: python3 integrity/reference_integrity.py --github
@@ -122,10 +134,40 @@ jobs:
         if: always()
         run: python3 -m unittest discover -s doctor/tests -t doctor/tests
 
+      # Every test_*.py in checks/tests, discovered rather than listed.
+      #
+      # This step used to name test_preflight_kwargs.py alone, so
+      # test_check_contract.py, which is the guard against a check that cannot
+      # fail, ran only in the local pre-push hook. That put a vacuous-check
+      # regression behind somebody remembering to have the hook installed, and
+      # the hook had already failed to fire once because a file was not
+      # executable. Naming files here is what let one go missing, so this
+      # loops instead: a new test file lands in CI the moment it lands in the
+      # tree. The files are plain scripts that assert at import and print
+      # their own verdict, which is why this is a loop and not a discover run.
       - name: checks suite
         id: checks
         if: always()
-        run: python3 checks/tests/test_preflight_kwargs.py
+        run: |
+          set -o pipefail
+          found=0
+          fail=0
+          for f in checks/tests/test_*.py; do
+            [ -e "$f" ] || continue
+            found=$((found + 1))
+            echo "::group::$f"
+            python3 "$f" || fail=1
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error title=checks::no test_*.py found under checks/tests."
+            echo "Zero tests collected is not a pass; every universal claim is"
+            echo "true of the empty set, which is the exact defect"
+            echo "test_check_contract.py exists to catch."
+            exit 1
+          fi
+          echo "ran $found check-suite script(s)"
+          exit $fail
 
       - name: sanitizer status
         if: always()
@@ -142,8 +184,8 @@ jobs:
         run: |
           fail=0
           for pair in \
-            "registry integrity=${{ steps.registry.outcome }}" \
-            "reference integrity=${{ steps.refs.outcome }}" \
+            "registry integrity + contradiction gate=${{ steps.registry.outcome }}" \
+            "reference integrity + status vocabulary=${{ steps.refs.outcome }}" \
             "claim propagation=${{ steps.claims.outcome }}" \
             "do-not-cite=${{ steps.dnc.outcome }}" \
             "mutation suite=${{ steps.mutations.outcome }}" \

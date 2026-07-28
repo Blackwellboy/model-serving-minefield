@@ -58,6 +58,12 @@ def main():
                     help="path to the other public repo, so claim propagation "
                          "can see both. Without it the run says which repo was "
                          "NOT scanned.")
+    ap.add_argument("--bbio", default=os.environ.get("MINEFIELD_BBIO_REPO"),
+                    help="path to a clone of the Blackwellboy.github.io Pages "
+                         "site. CI scans it and this script could not, so a "
+                         "pre-push run passed while the most public surface "
+                         "of the three went unchecked. Pass it, or set "
+                         "MINEFIELD_BBIO_REPO.")
     ap.add_argument("--kit", default=os.environ.get("MINEFIELD_SANITIZER_KIT",
                                                     DEFAULT_KIT))
     ap.add_argument("--base", default=None, help="diff base for do-not-cite")
@@ -93,6 +99,16 @@ def main():
     for k, v in repos.items():
         if v:
             cmd += ["--repo", "%s=%s" % (k, v)]
+    if args.bbio:
+        bb = os.path.abspath(os.path.expanduser(args.bbio))
+        if os.path.isdir(bb):
+            cmd += ["--repo", "bbio=%s" % bb]
+        else:
+            print("NOTE: --bbio %s is not a directory; the Pages site will "
+                  "NOT be scanned by this run.\n" % bb)
+    else:
+        print("NOTE: no --bbio path given. The Pages site is the most public "
+              "of the three surfaces and CI scans it; this run does not.\n")
     results.append(("claim propagation", run("2. CLAIM PROPAGATION", cmd)))
 
     dnc = [py, os.path.join(HERE, "do_not_cite.py"), "--root", root]
