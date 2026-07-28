@@ -68,6 +68,62 @@ Cases that used to be reported as clean and are now not:
 - A ModelOpt NVFP4 checkpoint whose manifest lives in `hf_quant_config.json`
   rather than `config.json`, which used to read as "unquantized checkpoint".
 
+A third audit pass found four more, all under the same contract, plus two the
+same sweep turned up. These are now not clean either:
+
+- **A located quantisation manifest.** Finding `quantization_config` in
+  `config.json`, or the scheme in `hf_quant_config.json`, establishes what the
+  checkpoint is **labelled**. Trap 10's failure mode is the engine taking a
+  different kernel path from the one the label implies, and no file on the hub
+  can rule that out. Both branches are now INCONCLUSIVE and name the runtime
+  tells that would settle it: the engine's backend-selection log, decode
+  throughput against an f16 baseline, or utilisation against power draw.
+- **Content present on a ceiling probe that never hit the cap.** One request
+  at `max_tokens=512` that finished early does not exercise a defect which
+  only appears when the budget runs out. That is `CEILING_NOT_REACHED`,
+  INCONCLUSIVE. CLEAN for trap 12 now requires `finish=length` **with**
+  content, which is the only single-probe observation that rules the failure
+  mode out.
+- **An explicit-off arm that still fires.** The toggle map printed
+  `off fired=True` and filed the whole thing under CHECKED AND CLEAN anyway.
+  An off switch that does not turn thinking off is now
+  `EXPLICIT_OFF_STILL_FIRES`, a PROBLEM. Trap 03 reaches CLEAN only when
+  explicit-on fires, explicit-off does not, and the absent arm is reported as
+  on-like, off-like or distinct without any claim that omitting the kwarg is
+  safe.
+- **`reasoning_effort` appearing in the template text.** A substring hit means
+  the name is **referenced**, not that it is read: it can sit in a comment, in
+  a branch that never runs, or in a `set` that is never used afterwards. This
+  file's own fixture template is that last shape. Now
+  `KWARG_REFERENCED_BY_TEMPLATE`, INCONCLUSIVE, pointing at the render diff
+  that would settle it.
+- **A render with no empty think shells no longer clears trap 04.** The
+  absence of `<think></think>` pairs is trap 25's failure mode directly, and
+  it is now scoped to 25. A lane that drops prior reasoning and emits no
+  wrapper at all produces exactly this render. Trap 04 takes its verdict from
+  the write-field probe, which can settle it.
+- **A CLEAN whose assertion log contradicted it.** Trap 26 recorded
+  "no raw `<tool_call>` markup" with `markup_seen: True` beside it, held. Raw
+  markup alongside parsed calls is now `TOOL_MARKUP_PARTIALLY_PARSED`, a
+  PROBLEM, and the assertion records what was actually seen.
+
+`EMPTY_CONTENT_AT_CAP` also stopped over-tagging. It reported traps 12, 22 and
+16 from one probe; trap 22 needs a cross-size comparison and trap 16 is about
+scoring `finish_reason`, so the finding now tags **12** alone, with the
+degeneration heuristic demoted to a separate annotation that says plainly it
+is two numbers over one sample.
+
+### The rule, enforced mechanically
+
+Three hardening passes each converted the false CLEANs they happened to look
+at, and each missed others. So the guard is no longer "review the `ok()`
+calls". `doctor/tests/test_doctor_verdicts.py` carries `CLEAN_CONTRACT`: every
+CLEAN this tool is permitted to emit, each with the failure mode it rules
+**out**. A sweep across every fixture scenario collects the CLEANs the tool
+actually produces and fails the build in both directions, on a verdict missing
+from the table and on a table entry no scenario can produce. A new clean
+verdict cannot be added without writing down what it rules out.
+
 ## Coverage, stated plainly
 
 The doctor implements checks for **17 of the registry's 42 numbered entries**
@@ -84,12 +140,24 @@ depth, and the coverage block says so every time:
 
 - **25** shares the trap-04 history-render heuristic. It is not a separate
   probe: one render inspection decides both.
-- **16** and **22** are annotations on the single trap-12 ceiling finding.
-  Neither has an independent probe.
+- **16** is an annotation on the trap-12 ceiling finding. It has no
+  independent probe.
+- **10** and **22** can **never reach CLEAN**, and the coverage block says so
+  on every run. The trap-10 check reads the checkpoint's quantisation
+  manifest, which establishes the label rather than the kernel path the engine
+  took. Trap 22 is a claim about a distribution across sizes and budgets, and
+  this tool sends one request at one budget, so it is linked from the ceiling
+  check purely so you can find the entry, and is never given a verdict by it.
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
 - **04, 20, 25** need a render path. On a stack that exposes none they cannot
   run at all.
 - The remaining **25** numbered traps have no check in this tool.
+
+The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
+`mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of
+their own, and there is no trap file and no README row behind any of them.
+Every run labels them as such on the finding line and lists them in the
+coverage block, and they are counted nowhere in the trap-id arithmetic above.
 
 A clean run is a statement about the handful of trap ids in the `clean` count,
 not about the registry.
@@ -143,11 +211,12 @@ Every check traces to a registry trap; every finding links it.
 | Preservation-kwarg sweep when stripping is found: four names, both polarities, both field names | 04 |
 | Kwarg deadness: invented kwarg accepted silently; `reasoning_effort` read or not; rejection attributed with a no-kwarg control | 07 |
 | Tools: forced call via `tool_choice` where supported, then a natural ask; structured `tool_calls` vs prose vs unparsed markup | 19, 26 |
-| Ceiling: empty content at cap, truncation vs degeneration, empty content *without* a cap hit | 12, 16, 22 |
+| Ceiling: empty content at cap, empty content *without* a cap hit, content at a real cap hit | 12, 16 |
+| Budget floor across sizes: **not checked**, declared uncovered every run | 22 |
 | Streaming: answer deltas in `content` vs reasoning channels, thinking off | 23 |
 | `generation_config.json` exists at the compared revision; server defaults vs shipped config, on shared keys only | 21, 17 |
-| Quantisation scheme in `config.json`, then `hf_quant_config.json` | 10 |
-| Multimodal surface, usage attribution, content-part ordering, media error classification | not yet numbered |
+| Quantisation **label** in `config.json`, then `hf_quant_config.json`. Never the kernel path, so never clean | 10 |
+| Multimodal surface, usage attribution, content-part ordering, media error classification | advisory, not in the registry |
 
 ### The tool probe, and what it still cannot tell you
 
@@ -199,8 +268,9 @@ field name (trap 01), mapped the thinking toggle arms and flagged the
 server-side off as overridable per request (traps 03/29), reported
 bogus-kwarg acceptance (trap 07), and caught the empty-content-at-cap shape
 with a sensible truncation-not-degeneration read, on a response whose
-`content` key was entirely absent, without crashing (traps 12/16/22). Its
-clean verdicts (traps 02/19/23) matched independent probes.
+`content` key was entirely absent, without crashing (trap 12; that finding
+was tagged 12/16/22 at the time and is now tagged 12 alone). Its clean
+verdicts (traps 02/19/23) matched independent probes.
 
 Two honest gaps on this stack, both coverage gaps rather than wrong answers:
 
@@ -214,6 +284,14 @@ Two honest gaps on this stack, both coverage gaps rather than wrong answers:
 Note that the trap 07 result on that run is one of the verdicts this file now
 downgrades: with no readable template, bogus-kwarg acceptance is
 `KWARG_ACCEPTED_TEMPLATE_UNREADABLE`, not a clean.
+
+This whole section is a **2026-07-27 field report against the doctor as it
+stood that day**, and several verdicts in it have since been re-classified.
+Read it as a portability record, not as a current verdict set for that lane.
+In particular the trap 03/29 toggle result would now be re-read against the
+explicit-off branch, and any trap-12 clean would need a real cap hit. Nobody
+should quote a verdict from this paragraph without re-running the doctor at
+the current tip.
 
 **Planned (tracked enhancement, not yet implemented):** a `--template-file`
 argument so the doctor can run its history-assembly checks from a local

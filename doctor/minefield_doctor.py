@@ -72,12 +72,38 @@ TRAP_PATHS = {
 TRAPS_SHARED_HEURISTIC = {
     # decided by the same single render inspection that decides trap 04
     "25": "shares the trap-04 history-render heuristic; no independent probe",
-    # annotations on the single trap-12 ceiling finding, not separate probes
+    # annotation on the single trap-12 ceiling finding, not a separate probe
     "16": "annotation on the trap-12 ceiling finding; no independent probe",
-    "22": "annotation on the trap-12 ceiling finding; no independent probe",
+    "22": "linked from the ceiling check so you can find the entry, but never "
+          "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
 TRAPS_NEED_RENDER_PATH = {"04", "20", "25"}
+
+# Ids this tool reports on that are NOT numbered registry entries. They are
+# advisory: real observations with real fixes, but no trap file, no README row
+# and no entry a reader can go and check. Printing them beside numbered traps
+# without saying so invites the reader to look up a trap that does not exist.
+ADVISORY_IDS = {
+    "mm-surface": "multimodal surface (does this lane accept media at all)",
+    "mm-usage": "media token attribution in the usage block",
+    "mm-order": "content-part ordering in the assembled prompt",
+    "mm-errors": "how media-fetch failures are classified",
+    "mm-audio-video": "audio and video channels, which this tool never probes",
+}
+
+# Checks that read a label or a manifest rather than the running engine, so
+# they can never reach CLEAN no matter what they find. Declared here so the
+# coverage block cannot be read as depth this tool does not have.
+TRAPS_NEVER_CLEAN = {
+    "10": "the hub check reads the checkpoint's quantisation manifest, which "
+          "establishes the LABEL. Trap 10 is about the kernel path the engine "
+          "actually took, which needs a runtime tell, so this check can reach "
+          "INCONCLUSIVE but never CLEAN",
+    "22": "a budget floor is a distribution across sizes and budgets; this "
+          "tool sends one request at one budget, so it never reaches a "
+          "trap-22 verdict in either direction",
+}
 
 # huggingface.co, overridable so the regression suite can point at a fixture
 # instead of the live hub. Not a command-line flag on purpose: the safety
@@ -373,13 +399,55 @@ def check_reasoning_fields(doc, base, key):
 
     landing = ("on-like" if f_abs == f_on and f_on else
                ("off-like" if f_abs == f_off else "distinct"))
-    doc.ok(["03"], f"thinking toggle map: explicit-on fired={f_on}, "
-           f"explicit-off fired={f_off}, absent lands {landing}. "
-           f"Send the kwarg explicitly; absent is revision- and "
-           f"server-dependent",
-           code="TOGGLE_MAP_CHARACTERISED",
-           asserts=[A("all three arms returned and at least one fired",
-                      {"on": f_on, "off": f_off, "absent": f_abs})])
+    if f_off:
+        # An explicit off that still produces reasoning is the defect trap 03
+        # is about, and the old code reported it as a characterised map. A map
+        # is not a clean bill: it described the arms and then filed the
+        # description under CHECKED AND CLEAN even when the off arm fired.
+        doc.problem(["03"], f"explicit-off still produces reasoning: the arm "
+                    f"sent with enable_thinking=false fired anyway "
+                    f"(on={f_on}, off={f_off}, absent lands {landing}). The "
+                    f"off switch on this lane does not turn thinking off, so "
+                    f"every 'non-thinking' budget, latency and cost number "
+                    f"taken here was measured on a thinking lane",
+                    "do not treat enable_thinking=false as an off state on "
+                    "this lane. Find the kwarg the template actually reads "
+                    "(checks/preflight_template.py --template-file), or gate "
+                    "thinking server-side, and re-take any number that assumed "
+                    "the off arm was off",
+                    code="EXPLICIT_OFF_STILL_FIRES",
+                    asserts=[A("the explicit-off arm produces no reasoning "
+                               "observable",
+                               {"on": f_on, "off": f_off, "absent": f_abs},
+                               held=False)])
+    elif f_on:
+        doc.ok(["03"], f"thinking toggle map: explicit-on fired, explicit-off "
+               f"did not, absent lands {landing}. The two explicit arms are "
+               f"separable and the off arm is genuinely off. Send the kwarg "
+               f"explicitly: the absent arm is revision- and server-dependent "
+               f"and this run says only where it landed today, not that "
+               f"leaving it out is safe",
+               code="TOGGLE_MAP_CHARACTERISED",
+               asserts=[A("the explicit-on arm fires", {"on": f_on}),
+                        A("the explicit-off arm does not fire", {"off": f_off}),
+                        A("the kwarg-absent arm was observed and classified",
+                          {"absent": f_abs, "lands": landing})])
+    else:
+        # Something fired (checked above) but not the explicit-on arm, so the
+        # toggle has no positive control and the map cannot be read as one.
+        doc.inconclusive(["03"], "thinking-toggle map",
+                         f"a reasoning observable appeared on this lane, but "
+                         f"NOT on the explicit-on arm (on={f_on}, off={f_off}, "
+                         f"absent={f_abs}). Without the on arm firing there is "
+                         f"no positive control, so which kwarg value produces "
+                         f"which state cannot be read off these three arms. "
+                         f"Enumerate the kwargs the template actually reads "
+                         f"with checks/preflight_template.py --template-file "
+                         f"before describing this lane's toggle.",
+                         code="TOGGLE_MAP_NO_POSITIVE_CONTROL",
+                         asserts=[A("the explicit-on arm fires (positive "
+                                    "control)", {"on": f_on, "off": f_off,
+                                                 "absent": f_abs}, held=False)])
 
     if f_on and not f_abs:
         doc.problem(["29"], "server-side default has thinking off, but a "
@@ -575,7 +643,13 @@ def check_history_assembly(doc, root, key):
                     asserts=[A("assembled turn-3 prompt contains no <think></think> "
                                "pair", empty_pairs, held=False)])
     else:
-        doc.ok(["04", "25"], f"no empty think shells in the turn-3 render (via {how})",
+        # Tagged 25 only. The absence of empty think shells rules out trap 25,
+        # which IS about the empty wrappers. It does not rule out trap 04:
+        # a lane that drops prior reasoning and emits no wrapper at all leaves
+        # exactly this render, and that is the HISTORY_STRIPPED_NO_GATE case
+        # decided by the write-field probe below. Trap 04 gets its verdict
+        # there, from evidence that can actually settle it.
+        doc.ok(["25"], f"no empty think shells in the turn-3 render (via {how})",
                code="NO_EMPTY_THINK_SHELLS",
                asserts=[A("assembled turn-3 prompt contains no <think></think> "
                           "pair", empty_pairs)])
@@ -891,19 +965,42 @@ def check_kwarg_deadness(doc, base, root, key):
                                 "on this stack", held=False)])
             return
         reads_effort = "reasoning_effort" in tpl
-        detail = ("server accepted chat_template_kwargs including an invented "
-                  "name without error: acceptance proves nothing about effect"
-                  f"; this template {'READS' if reads_effort else 'never reads'} "
-                  f"reasoning_effort, so that knob is "
-                  f"{'live' if reads_effort else 'dead here'}")
+        accepted = ("server accepted chat_template_kwargs including an invented "
+                    "name without error: acceptance proves nothing about effect")
+        detail = (accepted + "; this template never mentions reasoning_effort "
+                  "at all, so that knob is dead here")
         if reads_effort:
-            doc.ok(["07"], detail + " (verified by reading the served template, "
-                   "not by the server's acceptance)",
-                   code="KWARG_READ_BY_TEMPLATE",
-                   asserts=[A("server accepted an invented chat_template_kwarg",
-                              {"status": st}),
-                            A("the served chat template contains reasoning_effort",
-                              {"template_chars": len(tpl), "found": True})])
+            # A substring hit means the template MENTIONS the name. It does not
+            # mean the mention changes the rendered prompt: the name can sit in
+            # a comment, in a branch never taken, or in a `set` that is never
+            # used afterwards. This tool's own fixture template is exactly that
+            # last shape. Trap 07's failure mode is a knob with no effect, and
+            # "the name appears somewhere in the file" does not rule it out.
+            doc.inconclusive(["07"], "reasoning_effort deadness",
+                             accepted + "; this template MENTIONS "
+                             "reasoning_effort, so the knob is REFERENCED"
+                             ". A reference is not a read. The name appearing "
+                             "in the template text is consistent with a live "
+                             "knob, with a mention inside a comment, with a "
+                             "branch that never runs, and with a variable that "
+                             "is set and then never used. To settle it, render "
+                             "the prompt twice through "
+                             "checks/preflight_template.py --template-file with "
+                             "the value changed and nothing else, and confirm "
+                             "the two renders DIFFER. If they are identical the "
+                             "knob is dead regardless of what the file mentions.",
+                             code="KWARG_REFERENCED_BY_TEMPLATE",
+                             asserts=[A("server accepted an invented "
+                                        "chat_template_kwarg", {"status": st}),
+                                      A("the served chat template mentions "
+                                        "reasoning_effort",
+                                        {"template_chars": len(tpl),
+                                         "found": True}),
+                                      A("changing reasoning_effort changes the "
+                                        "rendered prompt",
+                                        "this tool does not diff two renders; "
+                                        "it greps the template text",
+                                        held=False)])
         else:
             doc.problem(["07"], detail,
                         "before trusting any kwarg, grep the template for it; "
@@ -1022,11 +1119,29 @@ def check_tools(doc, base, key):
                asserts=[A("a tools request returns a structured tool_calls array",
                           {"forced": len(f_calls), "natural": len(n_calls),
                            "name": got})])
-        doc.ok(["26"], "tool markup is parsed into tool_calls rather than left "
-               "as text inside the reasoning or content channel",
-               code="TOOL_MARKUP_PARSED",
-               asserts=[A("no raw <tool_call> markup in content or reasoning",
-                          {"markup_seen": markup})])
+        if markup:
+            # The assertion here used to read "no raw <tool_call> markup" and
+            # record markup_seen=True beside it, held=True. The log said the
+            # opposite of the claim and still counted as CLEAN.
+            doc.problem(["26"], "structured tool_calls came back, but raw "
+                        "<tool_call> markup ALSO appears in the content or "
+                        "reasoning text: part of the tool traffic on this lane "
+                        "is escaping the parser, so a multi-call turn can be "
+                        "half parsed and half left as prose",
+                        "on vLLM run a build past PR #35687; on llama.cpp use a "
+                        "template that closes think before tool_call. Until "
+                        "then, scan content and reasoning for leftover markup "
+                        "before scoring any tool-using run",
+                        code="TOOL_MARKUP_PARTIALLY_PARSED",
+                        asserts=[A("no raw <tool_call> markup in content or "
+                                   "reasoning", {"markup_seen": True},
+                                   held=False)])
+        else:
+            doc.ok(["26"], "tool markup is parsed into tool_calls rather than "
+                   "left as text inside the reasoning or content channel",
+                   code="TOOL_MARKUP_PARSED",
+                   asserts=[A("no raw <tool_call> markup in content or reasoning",
+                              {"markup_seen": False})])
         if forced_supported and f_calls and not n_calls:
             doc.ok(["19"], "the model returns no call when merely asked, but "
                    "calls correctly when forced with tool_choice: this lane's "
@@ -1105,6 +1220,25 @@ def check_ceiling(doc, base, key):
                  code="CEILING_PROBE_FAILED",
                  asserts=[A("ceiling probe returns 200", st, held=False)])
         return
+    # Trap 22 is a cross-size, cross-budget comparison: the conversion floor is
+    # a DISTRIBUTION, and this tool sends one request at one budget to one
+    # model. It is never settled here, in either direction, so say so once and
+    # never tag a 22 verdict onto the single-probe finding below.
+    doc.skip(["22"], "per-size budget floor",
+             "trap 22 is a claim about where THIS model size converts reasoning "
+             "into content, and a floor is a distribution, not a threshold: the "
+             "registry's own production replication has a 27B fail 0/3 at 8192 "
+             "and 2/3 at 16384. This tool sends ONE request at ONE budget "
+             "(max_tokens=512) to ONE model, which cannot characterise a "
+             "distribution and cannot compare sizes. Whatever the probe below "
+             "reports, it is not a trap-22 result. Run the multi-budget, "
+             "multi-sample procedure in the trap 22 entry against every size "
+             "you serve.",
+             code="BUDGET_FLOOR_NOT_CHARACTERISED",
+             asserts=[A("the ceiling probe sweeps more than one token budget",
+                        {"budgets_probed": [512], "samples_per_budget": 1},
+                        held=False)])
+
     c, rc, rr, _t, _ = msg_fields(choice)
     fr = choice.get("finish_reason")
     reason = rc or rr
@@ -1113,9 +1247,9 @@ def check_ceiling(doc, base, key):
         lines = [l for l in reason.splitlines() if l.strip()]
         uniq = len(set(lines)) / max(1, len(lines))
         z = len(zlib.compress(reason.encode())) / max(1, len(reason))
-        kind = "honest truncation" if (uniq > 0.5 and z > 0.2) else \
-               "possible degeneration loop"
-        doc.problem(["12", "22", "16"],
+        degenerate = not (uniq > 0.5 and z > 0.2)
+        kind = "possible degeneration loop" if degenerate else "honest truncation"
+        doc.problem(["12"],
                     f"hard task at max_tokens=512: HTTP 200, finish=length, "
                     f"EMPTY content, {len(reason)} chars of reasoning "
                     f"({kind}: unique-line {uniq:.2f}, zlib {z:.2f}). If your "
@@ -1126,12 +1260,62 @@ def check_ceiling(doc, base, key):
                     asserts=[A("a cap-hitting response carries content",
                                {"finish_reason": fr, "content_chars": len(c)},
                                held=False)])
+        if degenerate:
+            # An annotation on the finding above, not a second verdict, and
+            # deliberately not tagged onto trap 16: trap 16 is about scoring
+            # finish_reason, which the PROBLEM above already covers.
+            doc.inconclusive(["12"], "reasoning text at the cap looks repetitive",
+                             f"the reasoning returned at the cap has "
+                             f"unique-line {uniq:.2f} and zlib ratio {z:.2f}, "
+                             f"which is the shape of a degeneration loop rather "
+                             f"than an answer that ran out of room. This is a "
+                             f"two-number heuristic over one sample and it does "
+                             f"NOT establish degeneration: a genuinely "
+                             f"repetitive task produces the same shape. Re-run "
+                             f"at a higher budget and read the trace before "
+                             f"concluding either way.",
+                             code="CAP_REASONING_LOOKS_DEGENERATE",
+                             asserts=[A("repetition was distinguished from a "
+                                        "repetitive task by more than a "
+                                        "two-number heuristic on one sample",
+                                        {"unique_line_ratio": round(uniq, 2),
+                                         "zlib_ratio": round(z, 2),
+                                         "samples": 1}, held=False)])
+    elif has_content and fr == "length":
+        # The cap WAS reached and content came back anyway. That is the only
+        # observation on this probe that rules the trap-12 failure mode out,
+        # because the failure mode is specifically "cap hit, content empty".
+        doc.ok(["12"], f"hard task at max_tokens=512: the cap WAS reached "
+               f"(finish=length) and content came back anyway ({len(c)} chars), "
+               f"so this lane converts reasoning into content at this budget. "
+               f"Scoped to this budget and this one sample",
+               code="CONTENT_PRESENT_AT_CAP_HIT",
+               asserts=[A("the probe reached the token cap",
+                          {"finish_reason": fr}),
+                        A("a cap-hitting response carries content",
+                          {"content_chars": len(c)})])
     elif has_content:
-        doc.ok(["12"], f"hard task at 512 tokens: finish={fr}, content present "
-               f"({len(c)} chars): no empty-at-cap signature on this probe",
-               code="CONTENT_PRESENT_AT_CEILING",
-               asserts=[A("the ceiling probe returns non-empty content",
-                          {"finish_reason": fr, "content_chars": len(c)})])
+        # Content present, but the cap was never reached, so the empty-at-cap
+        # failure mode was never exercised. The old code called this CLEAN.
+        # A request that finished early is not a negative for a defect that
+        # only appears when the budget runs out.
+        doc.inconclusive(["12"], "empty content at the token ceiling",
+                         f"the probe returned {len(c)} chars of content with "
+                         f"finish_reason={fr!r}, so it never reached the cap at "
+                         f"all. Trap 12's failure mode is content going EMPTY "
+                         f"when the budget runs out, and a request that "
+                         f"finished early does not exercise it. This is not a "
+                         f"negative result, it is an untested one, and one "
+                         f"sample at one budget could not settle it even if it "
+                         f"had hit the cap: the registry's own data has a model "
+                         f"fail 1 in 3 at a budget where it also passes. Run "
+                         f"the multi-sample budget probe in the trap 12 entry "
+                         f"before recording this lane as clean.",
+                         code="CEILING_NOT_REACHED",
+                         asserts=[A("the probe reached the token cap, so the "
+                                    "empty-at-cap failure mode was exercised",
+                                    {"finish_reason": fr,
+                                     "content_chars": len(c)}, held=False)])
     else:
         # Empty content that did NOT hit the cap. The old code called this
         # clean because it only tested for finish=length. An empty answer is
@@ -1321,15 +1505,42 @@ def check_configs(doc, hf_repo, hf_revision="main"):
             cfg = json.loads(txt)
             qc = cfg.get("quantization_config")
             if qc:
-                doc.ok(["10"], f"quantization_config present at {scope}: method="
-                       f"{qc.get('quant_method')}, ignore list "
-                       f"{'present' if qc.get('ignore') else 'ABSENT'}; the label "
-                       f"is not the kernel path, read this before downloading",
-                       code="QUANT_IN_CONFIG_JSON",
-                       asserts=[rev_assert,
-                                A("config.json declares quantization_config",
-                                  {"quant_method": qc.get("quant_method"),
-                                   "has_ignore": bool(qc.get("ignore"))})])
+                # A manifest proves the checkpoint is LABELLED. Trap 10's
+                # failure mode is the engine taking a different kernel path
+                # from the one the label implies, and no file on the hub can
+                # rule that out. This used to be CLEAN while its own prose
+                # said "the label is not the kernel path".
+                doc.inconclusive(["10"], f"quantisation scheme at {scope}",
+                                 f"config.json declares quantization_config: "
+                                 f"method={qc.get('quant_method')}, ignore list "
+                                 f"{'present' if qc.get('ignore') else 'ABSENT'}. "
+                                 f"That establishes what the checkpoint is "
+                                 f"LABELLED, and nothing more. Trap 10 is about "
+                                 f"the engine taking a different kernel path "
+                                 f"from the one the label implies, and this "
+                                 f"check reads files on the hub, never your "
+                                 f"running engine, so it cannot tell a fast "
+                                 f"format-matched path from a slow fallback "
+                                 f"wearing the same name. Settle it with a "
+                                 f"RUNTIME tell: grep the engine's "
+                                 f"backend-selection log for the kernel it "
+                                 f"actually chose, or measure decode throughput "
+                                 f"against an f16 baseline of the same model, or "
+                                 f"compare GPU utilisation against power draw. "
+                                 f"Until one of those runs, the kernel path is "
+                                 f"UNKNOWN.",
+                                 code="QUANT_IN_CONFIG_JSON",
+                                 asserts=[rev_assert,
+                                          A("config.json declares "
+                                            "quantization_config",
+                                            {"quant_method": qc.get("quant_method"),
+                                             "has_ignore": bool(qc.get("ignore"))}),
+                                          A("a runtime tell confirms the engine "
+                                            "took the kernel path the label "
+                                            "implies",
+                                            "no runtime tell is read by this "
+                                            "check; it reads hub files only",
+                                            held=False)])
             else:
                 # ModelOpt and several other producers keep the manifest in a
                 # sibling file. Reporting "unquantized checkpoint" as a CLEAN
@@ -1340,20 +1551,39 @@ def check_configs(doc, hf_repo, hf_revision="main"):
                     try:
                         hq = json.loads(txt2)
                         qc2 = hq.get("quantization") or hq
-                        doc.ok(["10"], f"quantisation at {scope} is declared in "
-                               f"hf_quant_config.json, NOT in config.json "
-                               f"(quant_algo={qc2.get('quant_algo')}, "
-                               f"producer={qc2.get('producer') or hq.get('producer')}); "
-                               f"tooling that only reads config.json will call this "
-                               f"checkpoint unquantized. The label is still not the "
-                               f"kernel path: read the engine's backend-selection log",
-                               code="QUANT_IN_HF_QUANT_CONFIG",
-                               asserts=[rev_assert,
-                                        A("the quantisation manifest was located",
-                                          {"config.json": False,
-                                           "hf_quant_config.json": True}),
-                                        A("hf_quant_config.json declares the scheme",
-                                          {"quant_algo": qc2.get("quant_algo")})])
+                        doc.inconclusive(
+                            ["10"], f"quantisation scheme at {scope} "
+                            f"(manifest outside config.json)",
+                            f"quantisation is declared in "
+                            f"hf_quant_config.json, NOT in config.json "
+                            f"(quant_algo={qc2.get('quant_algo')}, "
+                            f"producer={qc2.get('producer') or hq.get('producer')}). "
+                            f"Locating that manifest is a real result: tooling "
+                            f"that only reads config.json will call this "
+                            f"checkpoint unquantized. It is still only the "
+                            f"LABEL. Trap 10 is about the engine taking a "
+                            f"different kernel path from the one the label "
+                            f"implies, and this check reads hub files, never "
+                            f"your running engine. A compressed-tensors "
+                            f"NVFP4 or MXFP4 checkpoint routing to a slow "
+                            f"marlin fallback carries exactly this manifest. "
+                            f"Settle it with a RUNTIME tell: grep the engine's "
+                            f"backend-selection log for the kernel it actually "
+                            f"chose, or measure decode throughput against an "
+                            f"f16 baseline of the same model, or compare GPU "
+                            f"utilisation against power draw. Until one of "
+                            f"those runs, the kernel path is UNKNOWN.",
+                            code="QUANT_IN_HF_QUANT_CONFIG",
+                            asserts=[rev_assert,
+                                     A("the quantisation manifest was located",
+                                       {"config.json": False,
+                                        "hf_quant_config.json": True}),
+                                     A("hf_quant_config.json declares the scheme",
+                                       {"quant_algo": qc2.get("quant_algo")}),
+                                     A("a runtime tell confirms the engine took "
+                                       "the kernel path the label implies",
+                                       "no runtime tell is read by this check; "
+                                       "it reads hub files only", held=False)])
                     except Exception:
                         doc.skip(["10"], "hf_quant_config.json parse",
                                  "present but unparseable; quantisation scheme UNKNOWN",
@@ -1412,6 +1642,8 @@ def coverage(doc):
         "inconclusive": sorted(unsure),
         "not_implemented_count": REGISTRY_TRAP_COUNT - len(implemented),
         "shared_heuristic": TRAPS_SHARED_HEURISTIC,
+        "never_clean": TRAPS_NEVER_CLEAN,
+        "advisory": sorted(ADVISORY_IDS),
         "need_hf_repo": sorted(TRAPS_NEED_HF_REPO),
         "need_render_path": sorted(TRAPS_NEED_RENDER_PATH),
     }
@@ -1427,9 +1659,21 @@ def coverage_line(cov):
 # ------------------------------------------------------------------ output
 
 def emit(doc, args):
-    T = lambda ns: " ".join(
-        (f"[trap {n}]({trap(n)})" if n in TRAP_PATHS else f"[registry draft: {n}]({trap(n)})")
-        for n in ns)
+    def T(ns):
+        out = []
+        for n in ns:
+            if n in TRAP_PATHS:
+                out.append(f"[trap {n}]({trap(n)})")
+            elif n in ADVISORY_IDS:
+                # Not a numbered entry. Say so on the line itself, so nobody
+                # goes looking for a trap file or a README row that does not
+                # exist, and so an advisory PROBLEM is not mistaken for a
+                # registry-backed one.
+                out.append(f"{n} (advisory, not in the registry: "
+                           f"{ADVISORY_IDS[n]})")
+            else:
+                out.append(f"[registry draft: {n}]({trap(n)})")
+        return " ".join(out)
     print(f"\nminefield-doctor: {args.base_url}")
     print(f"stack={doc.stack} model={doc.model} build={doc.build or 'n/a'} "
           f"requests_made={doc.requests_made}\n")
@@ -1475,10 +1719,16 @@ def emit(doc, args):
     print("  caveats on the implemented count, so it is not read as depth:")
     for n, why in sorted(cov["shared_heuristic"].items()):
         print(f"    - {n}: {why}")
+    for n, why in sorted(cov["never_clean"].items()):
+        print(f"    - {n}: NEVER REACHES CLEAN. {why}")
     print(f"    - {', '.join(cov['need_hf_repo'])}: need --hf-repo; without it "
           f"they cannot run at all")
     print(f"    - {', '.join(cov['need_render_path'])}: need a render path; on a "
           f"stack with none they cannot run at all")
+    print(f"  advisory checks, counted nowhere above because they are NOT "
+          f"numbered registry entries: {', '.join(cov['advisory'])}. They can "
+          f"report a PROBLEM or a CLEAN of their own, and there is no trap file "
+          f"or README row behind any of them.")
     print(f"  the remaining {cov['not_implemented_count']} numbered traps have "
           f"no check in this tool. A clean run above is a statement about "
           f"{len(cov['clean'])} trap ids, not about the registry.")

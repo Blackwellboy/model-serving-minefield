@@ -135,13 +135,25 @@ class TestKwargTemplateUnavailable(DoctorVerdictCase):
         self.assertIn("07", f["traps"])
         self.assertIn("acceptance proves nothing", f["detail"])
 
-    def test_control_template_reads_the_kwarg_is_clean(self):
+    def test_a_template_mentioning_the_kwarg_is_not_clean(self):
+        # The name appearing in the template text says the knob is REFERENCED,
+        # not that it is read. TEMPLATE_WITH_EFFORT is the proof: it sets
+        # reasoning_effort and then never uses it, so a grep hit and a dead
+        # knob are the same observation here.
         with FixtureLane(props=llamacpp_props(TEMPLATE_WITH_EFFORT)) as base:
             doc = diagnose(base)
         self.check_structure(doc)
-        f = find(doc, "KWARG_READ_BY_TEMPLATE")
+        self.no_clean_for(doc, "07")
+        self.assertIsNone(find(doc, "KWARG_READ_BY_TEMPLATE"),
+                          "a substring hit was still being called a read")
+        f = find(doc, "KWARG_REFERENCED_BY_TEMPLATE")
         self.assertIsNotNone(f)
-        self.assertEqual(f["level"], "OK")
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+        self.assertIn("A reference is not a read", f["detail"])
+        self.assertTrue(any(a["result"] == "failed"
+                            and "changes the rendered prompt" in a["assert"]
+                            for a in f["assertions"]),
+                        "nothing records that the two renders were never diffed")
 
     def test_control_template_does_not_read_the_kwarg_is_a_problem(self):
         with FixtureLane(props=llamacpp_props(TEMPLATE_WITHOUT_EFFORT)) as base:
@@ -208,7 +220,39 @@ class TestIgnoredThinkingKwarg(DoctorVerdictCase):
         self.assertIsNotNone(f)
         self.assertEqual(f["level"], "OK")
         self.assertIn("reasoning", f["title"])
-        self.assertIsNotNone(find(doc, "TOGGLE_MAP_CHARACTERISED"))
+        f3 = find(doc, "TOGGLE_MAP_CHARACTERISED")
+        self.assertIsNotNone(f3)
+        self.assertEqual(f3["level"], "OK")
+
+    def test_explicit_off_that_still_fires_is_a_problem(self):
+        # The defect trap 03 is about. The doctor computed f_off, printed it,
+        # and filed the whole map under CHECKED AND CLEAN regardless of it.
+        with FixtureLane(explicit_off_honored=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "03")
+        self.assertIsNone(find(doc, "TOGGLE_MAP_CHARACTERISED"),
+                          "a lane whose off switch does nothing was reported "
+                          "as a characterised toggle map")
+        f = find(doc, "EXPLICIT_OFF_STILL_FIRES")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertEqual(f["traps"], ["03"])
+        self.assertIn("explicit-off still produces reasoning", f["title"])
+
+    def test_toggle_map_clean_requires_on_to_fire_and_off_not_to(self):
+        # The control differs from the case above in exactly one flag.
+        with FixtureLane(explicit_off_honored=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "TOGGLE_MAP_CHARACTERISED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        claims = {a["assert"] for a in f["assertions"]}
+        self.assertTrue(any("explicit-on arm fires" in c for c in claims))
+        self.assertTrue(any("explicit-off arm does not fire" in c for c in claims))
+        # and it must not tell the reader that leaving the kwarg out is safe
+        self.assertIn("not that", f["title"])
 
 
 # --------------------------------------------------------------------------
@@ -263,7 +307,24 @@ class TestToolProbe(DoctorVerdictCase):
             doc = diagnose(base)
         self.check_structure(doc)
         self.assertEqual(find(doc, "TOOL_CALLS_RETURNED")["level"], "OK")
-        self.assertEqual(find(doc, "TOOL_MARKUP_PARSED")["level"], "OK")
+        f = find(doc, "TOOL_MARKUP_PARSED")
+        self.assertEqual(f["level"], "OK")
+        # the assertion must record what was actually seen, not a fixed word
+        self.assertEqual(f["assertions"][0]["observed"], {"markup_seen": False})
+
+    def test_markup_alongside_parsed_calls_is_not_clean(self):
+        # Calls parse AND raw markup leaks. The old code emitted a CLEAN whose
+        # assertion read "no raw <tool_call> markup" with markup_seen=True
+        # recorded beside it as held: the log contradicted the claim.
+        with FixtureLane(tool_calls="always", tool_markup_alongside=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "26")
+        self.assertIsNone(find(doc, "TOOL_MARKUP_PARSED"))
+        f = find(doc, "TOOL_MARKUP_PARTIALLY_PARSED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertEqual(f["traps"], ["26"])
 
 
 # --------------------------------------------------------------------------
@@ -289,6 +350,15 @@ HUB_REPOS = {
             "config.json": {"model_type": "demo"},
             "hf_quant_config.json": {"producer": {"name": "modelopt"},
                                      "quantization": {"quant_algo": "NVFP4"}}}},
+    }},
+    # the other manifest location: declared inline in config.json
+    "acme/inconfig": {"revisions": {
+        "main": {"sha": MAIN_SHA, "files": {
+            "generation_config.json": {"temperature": 0.6, "top_p": 0.95},
+            "config.json": {"model_type": "demo",
+                            "quantization_config": {
+                                "quant_method": "compressed-tensors",
+                                "ignore": ["lm_head"]}}}},
     }},
 }
 
@@ -337,7 +407,30 @@ class TestRevisionPinning(DoctorVerdictCase):
         f = find(doc, "QUANT_IN_HF_QUANT_CONFIG")
         self.assertIsNotNone(f, "a ModelOpt NVFP4 checkpoint was read as "
                                 "unquantized")
-        self.assertIn("NVFP4", f["title"])
+        self.assertIn("NVFP4", f["detail"])
+
+    def test_a_located_quant_manifest_is_never_clean_for_trap_10(self):
+        # Trap 10's failure mode is kernel path != label. A manifest on the hub
+        # establishes the label and cannot reach the running engine, so neither
+        # manifest location can rule the failure mode out.
+        cases = [("acme/nvfp4", "QUANT_IN_HF_QUANT_CONFIG"),
+                 ("acme/inconfig", "QUANT_IN_CONFIG_JSON")]
+        for repo, code in cases:
+            with self.subTest(repo=repo):
+                with FixtureHub(HUB_REPOS) as hub, FixtureLane() as base:
+                    doc = diagnose(base, hf_repo=repo, hub=hub)
+                self.check_structure(doc)
+                self.no_clean_for(doc, "10")
+                f = find(doc, code)
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], "INCONCLUSIVE")
+                self.assertIn("different kernel path", f["detail"])
+                # it must name a runtime tell the reader can actually run
+                self.assertIn("backend-selection log", f["detail"])
+                self.assertTrue(
+                    any(a["result"] == "failed" and "runtime tell" in a["assert"]
+                        for a in f["assertions"]),
+                    "nothing records that no runtime tell was read")
 
     def test_no_hf_repo_leaves_the_config_traps_unchecked(self):
         with FixtureLane() as base:
@@ -438,6 +531,21 @@ class TestHistoryAssembly(DoctorVerdictCase):
         self.assertEqual(find(doc, "WRITE_FIELD_IDENTIFIED")["level"], "OK")
         self.assertEqual(find(doc, "NO_EMPTY_THINK_SHELLS")["level"], "OK")
 
+    def test_absent_think_shells_do_not_clear_trap_04(self):
+        # A lane that drops prior reasoning and emits no wrapper at all
+        # produces a render with no empty think shells. That absence rules out
+        # trap 25, which is about the wrappers. It cannot rule out trap 04,
+        # which is about the reasoning being gone. Trap 04 gets its verdict
+        # from the write-field probe, on evidence that can settle it.
+        with FixtureLane(preserve_history=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "NO_EMPTY_THINK_SHELLS")
+        self.assertEqual(f["traps"], ["25"],
+                         f"the empty-shell render still clears {f['traps']}")
+        # 04 is still legitimately clean here, but from the other finding
+        self.assertIn("04", find(doc, "WRITE_FIELD_IDENTIFIED")["traps"])
+
     def test_no_render_path_is_could_not_check(self):
         with FixtureLane(render=False) as base:
             doc = diagnose(base)
@@ -457,6 +565,35 @@ class TestCeiling(DoctorVerdictCase):
         self.check_structure(doc)
         self.assertEqual(find(doc, "EMPTY_CONTENT_AT_CAP")["level"], "PROBLEM")
 
+    def test_empty_at_cap_does_not_tag_traps_22_and_16(self):
+        # The finding is a single probe at a single budget. Trap 22 needs a
+        # cross-size comparison and trap 16 is about scoring finish_reason,
+        # so tagging either onto this one observation over-claims both.
+        with FixtureLane(ceiling="empty_at_cap") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "EMPTY_CONTENT_AT_CAP")
+        self.assertEqual(f["traps"], ["12"],
+                         f"one ceiling probe still tags {f['traps']}")
+
+    def test_trap_22_is_never_given_a_verdict_by_one_probe(self):
+        # In every ceiling scenario, 22 must land in COULD NOT CHECK and never
+        # in CLEAN or PROBLEM: a floor is a distribution and this tool sends
+        # one request at one budget.
+        for mode in ("content", "content_at_cap", "empty_at_cap",
+                     "empty_not_at_cap"):
+            with self.subTest(ceiling=mode):
+                with FixtureLane(ceiling=mode) as base:
+                    doc = diagnose(base)
+                self.check_structure(doc)
+                self.no_clean_for(doc, "22")
+                for f in doc.problems:
+                    self.assertNotIn("22", f["traps"],
+                                     f"{f['code']} claims a trap-22 verdict")
+                f = find(doc, "BUDGET_FLOOR_NOT_CHARACTERISED")
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], "UNKNOWN")
+
     def test_empty_without_a_cap_hit_is_not_clean(self):
         with FixtureLane(ceiling="empty_not_at_cap") as base:
             doc = diagnose(base)
@@ -465,11 +602,34 @@ class TestCeiling(DoctorVerdictCase):
         self.assertEqual(find(doc, "EMPTY_CONTENT_NOT_AT_CAP")["level"],
                          "INCONCLUSIVE")
 
-    def test_control_content_present_is_clean(self):
+    def test_content_present_without_reaching_the_cap_is_not_clean(self):
+        # One request at max_tokens=512 that finished early never exercised
+        # the empty-at-cap failure mode. The old code called this CLEAN for
+        # trap 12, and the old test locked that in.
         with FixtureLane(ceiling="content") as base:
             doc = diagnose(base)
         self.check_structure(doc)
-        self.assertEqual(find(doc, "CONTENT_PRESENT_AT_CEILING")["level"], "OK")
+        self.no_clean_for(doc, "12")
+        self.assertIsNone(find(doc, "CONTENT_PRESENT_AT_CEILING"),
+                          "an early finish is still being read as a negative "
+                          "for empty-at-cap")
+        f = find(doc, "CEILING_NOT_REACHED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+        self.assertIn("never reached the cap", f["detail"])
+
+    def test_control_content_at_a_real_cap_hit_is_clean(self):
+        # Differs from the case above in exactly one thing: the cap was
+        # actually reached. That is what rules the failure mode out.
+        with FixtureLane(ceiling="content_at_cap") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "CONTENT_PRESENT_AT_CAP_HIT")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertEqual(f["traps"], ["12"])
+        claims = {a["assert"] for a in f["assertions"]}
+        self.assertTrue(any("reached the token cap" in c for c in claims))
 
 
 class TestStreamingAndMultimodal(DoctorVerdictCase):
@@ -496,12 +656,193 @@ class TestStreamingAndMultimodal(DoctorVerdictCase):
         self.assertIsNotNone(f)
         self.assertEqual(f["level"], "UNKNOWN")
 
+    def test_advisory_checks_are_labelled_as_outside_the_registry(self):
+        # mm-* checks can emit PROBLEM and CLEAN of their own, and there is no
+        # trap file or README row behind any of them. The output must say so
+        # rather than printing them as "registry draft", which reads like an
+        # entry that is on its way in.
+        import io
+        from contextlib import redirect_stdout
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            md.emit(doc, SimpleNamespace(base_url="http://fixture", report=False))
+        out = buf.getvalue()
+        for n in md.ADVISORY_IDS:
+            self.assertNotIn(f"registry draft: {n}", out,
+                             f"{n} is still presented as a pending entry")
+        self.assertIn("advisory, not in the registry", out)
+        self.assertIn("advisory checks, counted nowhere above", out)
+        # and none of them may leak into the trap-id coverage arithmetic
+        cov = md.coverage(doc)
+        for bucket in ("clean", "problems", "inconclusive", "executed"):
+            self.assertFalse(set(cov[bucket]) & set(md.ADVISORY_IDS),
+                             f"an advisory id was counted in {bucket}")
+
+    def test_never_clean_checks_are_declared_in_coverage(self):
+        import io
+        from contextlib import redirect_stdout
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            md.emit(doc, SimpleNamespace(base_url="http://fixture", report=False))
+        out = buf.getvalue()
+        self.assertIn("NEVER REACHES CLEAN", out)
+        for n in md.TRAPS_NEVER_CLEAN:
+            self.assertIn(f"- {n}: NEVER REACHES CLEAN", out)
+
     def test_audio_and_video_are_always_declared_uncovered(self):
         with FixtureLane() as base:
             doc = diagnose(base)
         f = find(doc, "MM_AUDIO_VIDEO_NOT_PROBED")
         self.assertIsNotNone(f)
         self.assertEqual(f["level"], "UNKNOWN")
+
+
+# --------------------------------------------------------------------------
+# The contract itself. Three separate hardening passes each converted the
+# false CLEANs they happened to look at and each missed others, so the guard
+# is no longer "review the ok() calls". Every CLEAN this tool can emit is
+# enumerated here with the failure mode it rules OUT. A new one cannot appear
+# without landing in this table, and a reviewer reading the table can check
+# the rule rather than rediscovering it.
+# --------------------------------------------------------------------------
+
+CLEAN_CONTRACT = {
+    "REASONING_FIELD_IDENTIFIED":
+        "a reasoning field came back non-empty, so which name to read is "
+        "settled by observation, not inferred from silence",
+    "NO_ORPHANED_CLOSE_THINK":
+        "all three arms returned and none began with </think>; the failure "
+        "signature is the leading tag itself, and it was absent in every arm "
+        "that was inspected (the partial case is INCONCLUSIVE)",
+    "TOGGLE_MAP_CHARACTERISED":
+        "explicit-on fired and explicit-off did not, so the two arms are "
+        "separable AND the off arm is genuinely off",
+    "NO_SERVER_SIDE_OFF_STATE":
+        "the kwarg-absent arm fires, so there is no server-side off state for "
+        "a client kwarg to override",
+    "STREAM_CONTENT_DELTAS":
+        "non-empty content deltas were seen, which rules out the failure mode "
+        "of the answer arriving only in the reasoning channel",
+    "NO_EMPTY_THINK_SHELLS":
+        "the assembled prompt contains no <think></think> pair, which is "
+        "trap 25's failure mode directly. Scoped to 25: it does NOT clear "
+        "trap 04",
+    "WRITE_FIELD_IDENTIFIED":
+        "a marked prior-turn reasoning string was found in the assembled "
+        "prompt, so history reasoning demonstrably survives",
+    "WRITE_FIELD_SINGLE":
+        "exactly one of the two field names carried the marker through",
+    "KWARG_UNKNOWN_REJECTED":
+        "an invented kwarg alone is rejected while an otherwise identical "
+        "control succeeds, so the rejection is attributable to the kwarg",
+    "TOOL_CALLS_RETURNED":
+        "a structured tool_calls array came back",
+    "TOOL_MARKUP_PARSED":
+        "no raw <tool_call> markup anywhere in content or reasoning, asserted "
+        "on the observed value rather than a fixed word",
+    "MODEL_ELECTS_NOT_TO_CALL":
+        "the forced control calls while the natural prompt does not, which "
+        "separates model choice from broken plumbing",
+    "CONTENT_PRESENT_AT_CAP_HIT":
+        "the cap was actually reached and content came back anyway, which is "
+        "the only single-probe observation that rules empty-at-cap out",
+    "GENERATION_CONFIG_PRESENT":
+        "the file exists at the compared revision, which is trap 21's failure "
+        "mode directly",
+    "SAMPLING_DEFAULTS_MATCH":
+        "server and checkpoint agree on every key both sides declare, and the "
+        "title says the non-shared keys were not compared",
+    "MM_REJECTED_NAMING_MODALITY":
+        "the server named the modality in its rejection, so 'text-only' is "
+        "read off the server rather than assumed (advisory, not a trap)",
+    "MM_SURFACE_ACCEPTS_IMAGES":
+        "an inline image part was accepted (advisory, not a trap)",
+    "MM_USAGE_ATTRIBUTABLE":
+        "prompt_tokens_details came back populated (advisory, not a trap)",
+    "MM_ORDER_PRESERVED":
+        "the two orderings render differently, which rules out order being "
+        "discarded (advisory, not a trap)",
+    "MM_ERROR_CLASSIFIED_4XX":
+        "a bad media path returned 4xx (advisory, not a trap)",
+}
+
+# Every scenario flag combination the suite can reach, so the sweep below sees
+# every CLEAN the tool is capable of emitting, not only the well-behaved path.
+SWEEP = [
+    {}, {"props": llamacpp_props(TEMPLATE_WITH_EFFORT)},
+    {"props": llamacpp_props(TEMPLATE_WITHOUT_EFFORT)},
+    {"reasoning_field": None}, {"reasoning_field": "reasoning"},
+    {"thinking_effective": False}, {"explicit_off_honored": False},
+    {"kwarg_rejection": "unknown"}, {"kwarg_rejection": "known"},
+    {"tool_calls": "never", "tool_choice_supported": True},
+    {"tool_calls": "never", "tool_choice_supported": False},
+    {"tool_calls": "forced_only"}, {"tool_markup": True},
+    {"tool_markup_alongside": True},
+    {"render": False}, {"preserve_history": False},
+    {"accepts_images": False, "image_reject_names_modality": True},
+    {"accepts_images": False, "image_reject_names_modality": False},
+    {"ceiling": "content"}, {"ceiling": "content_at_cap"},
+    {"ceiling": "empty_at_cap"}, {"ceiling": "empty_not_at_cap"},
+    {"stream_channel": "reasoning"}, {"stream_channel": None},
+    {"bad_media_status": 500}, {"usage_details": None},
+]
+
+
+class TestCleanContract(DoctorVerdictCase):
+
+    def test_every_clean_the_tool_can_emit_is_in_the_contract(self):
+        seen = set()
+        for flags in SWEEP:
+            with FixtureLane(**flags) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            seen |= {f["code"] for f in doc.clean}
+        with FixtureHub(HUB_REPOS) as hub, \
+                FixtureLane(props=llamacpp_props(temperature=0.6)) as base:
+            for repo, rev in (("acme/demo", "v1.0"), ("acme/nvfp4", "main"),
+                              ("acme/inconfig", "main")):
+                doc = diagnose(base, hf_repo=repo, hf_revision=rev, hub=hub)
+                self.check_structure(doc)
+                seen |= {f["code"] for f in doc.clean}
+
+        undocumented = seen - set(CLEAN_CONTRACT)
+        self.assertFalse(undocumented,
+                         f"these CLEAN verdicts are not in CLEAN_CONTRACT: "
+                         f"{sorted(undocumented)}. A CLEAN must rule the "
+                         f"failure mode OUT, not merely fail to observe it. "
+                         f"Write down which failure mode each one rules out, "
+                         f"or demote it.")
+        # and the table must not rot: nothing listed that can never fire
+        stale = set(CLEAN_CONTRACT) - seen
+        self.assertFalse(stale,
+                         f"CLEAN_CONTRACT lists verdicts no scenario produces: "
+                         f"{sorted(stale)}. Either the sweep lost coverage or "
+                         f"the verdict is dead code.")
+
+    def test_the_demoted_verdicts_never_come_back(self):
+        # Named explicitly so a future refactor that reintroduces any of them
+        # fails loudly rather than quietly restoring a false CLEAN.
+        for code in ("QUANT_IN_CONFIG_JSON", "QUANT_IN_HF_QUANT_CONFIG",
+                     "CONTENT_PRESENT_AT_CEILING", "KWARG_READ_BY_TEMPLATE"):
+            self.assertNotIn(code, CLEAN_CONTRACT,
+                             f"{code} was demoted from CLEAN by an audit; it "
+                             f"must not be readmitted")
+
+    def test_no_clean_carries_a_trap_id_it_cannot_settle(self):
+        # Never-clean ids must not appear in a CLEAN, in any scenario.
+        for flags in SWEEP:
+            with FixtureLane(**flags) as base:
+                doc = diagnose(base)
+            for f in doc.clean:
+                for n in f["traps"]:
+                    self.assertNotIn(
+                        n, md.TRAPS_NEVER_CLEAN,
+                        f"{f['code']} reports CLEAN for trap {n}, which this "
+                        f"tool can only observe the label of")
 
 
 if __name__ == "__main__":
