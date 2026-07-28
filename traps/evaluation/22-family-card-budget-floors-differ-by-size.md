@@ -129,6 +129,37 @@ the strongest one read as an addendum, and the entry's own check told readers
 one request would settle a question its own data showed one request cannot.
 The tables are unchanged; which one leads, and what the status claims, are.
 
+## Added 2026-07-28: a second per-size pair, on a different battery
+
+**Found by TheTom** ([PR #1](https://github.com/Blackwellboy/model-serving-minefield/pull/1)),
+folded here at his suggestion. **Status: contributor-measured, conditions as
+reported.** Temperature 0.6, top_p 0.95, roughly 90 scenarios; raw held outside
+the tree.
+
+A different pair and a different battery from this entry's, reaching the same
+conclusion by an independent route:
+
+| model | empty-final rate at `max_tokens=2560` |
+|---|---|
+| Qwen3.5-9B | **26%** |
+| 35B-A3B sibling | **2.7%** |
+
+Probing one 9B empty: `finish_reason=length`, all 2,560 tokens inside the
+reasoning block, still mid-thought, non-degenerate tail. The same prompt at 5120
+finished naturally in 2,146 tokens with a clean answer, **so the median was
+never the problem**.
+
+The direction is what makes this expensive. Fatter tails on smaller or less
+distilled models mean a ceiling calibrated on a large sibling manufactures
+phantom failures on the small one, in exactly the direction that reads as a
+plausible capability finding about the smaller model. His own case was found in
+2026-06, when a smaller model's empty rate was about to be written up as an
+over-refusal finding.
+
+The mechanism, that the floor is a distribution with a right tail rather than a
+number, is in
+[trap 12](12-empty-content-at-token-ceiling.md#added-2026-07-28-why-the-floor-has-to-be-a-distribution-not-a-number).
+
 ## Added 2026-07-28: a third family, and why its floor is not transferable either
 
 A fully crossed budget sweep on the NVIDIA Nemotron 3 family found a hard-task

@@ -126,6 +126,74 @@ template never reads: see
 
 *Status of this addendum: measured here, raw not published.*
 
+## Added 2026-07-28: why the floor has to be a distribution, not a number
+
+**Found by TheTom** ([PR #1](https://github.com/Blackwellboy/model-serving-minefield/pull/1)),
+folded here at his suggestion rather than landing as its own entry. **Status:
+contributor-measured, conditions as reported.** Measured on Qwen3.5-9B against a
+35B-A3B sibling, temperature 0.6, top_p 0.95, roughly 90 scenarios plus
+long-running probes; his raw is per-turn JSONL held outside the tree.
+
+This is the mechanism underneath step 4 above, and it is the reason the table in
+the previous section is a set of observations rather than a lookup.
+
+**Reasoning length at `temp > 0` is stochastic and right-skewed.** The same
+prompt on the same model rolls 2,100 tokens of thinking one time and 2,600 or
+more the next. So the per-model, per-task floor is a property of the
+**distribution**, and any single number drawn from it (the median, or the value
+that happened to convert your sample) still truncates everything in the tail
+beyond it.
+
+Two consequences that do not follow from the per-model and per-family framing on
+their own:
+
+1. **Raising the ceiling moves the cliff without removing it.** On a roughly 90
+   scenario battery, after raising the ceiling to 5120, **9.1% of turns were
+   still empty**. This entry already records a model where budget does not
+   convert at all; this is the weaker and more common case, where budget
+   converts most and leaves a tail. Because the residual rate is small, it reads
+   as a rare genuine behaviour rather than a residual artifact, and it gets
+   scored as one.
+2. **A fixed mid cap is the worst of the three options.** In a three-arm
+   thinking ablation (off, capped at 2048, on-full, temperature held fixed), the
+   capped arm was dominated by truncation empties, 15% on the behavioural
+   battery and 56% on long-running probes, making it strictly **worse than
+   thinking off**. If retry is not available, turning thinking off beats capping
+   it.
+
+**The check, at your real eval temperature.** Send the same prompt N times at
+your chosen ceiling and read the **distribution** rather than one sample. A
+pileup at exactly the cap is the signature:
+
+```
+  truncated (finish_reason=length): 5/20 = 25.0%
+  completion_tokens p50/p90/max: 1840 / 2560 / 2560
+  runs landing exactly at cap: 5
+```
+
+At temperature 0 you will not see the tail that bites you at 0.6. Order still
+matters: steps 1 and 2 come first, because this probe is only meaningful once
+you know you are looking at honest truncation and not degeneration.
+
+**The fix: mechanise step 3 as retry-on-truncation** inside the harness rather
+than as a manual re-run. On `finish_reason == "length"`, or on empty content
+with a non-degenerate tail, re-request the same turn with an escalating ceiling
+(4096, then 8192, then 16384) up to a hard cap. Every captured final is then a
+completed answer, and a true empty (`finish_reason == "stop"` with no
+extractable content) becomes real signal.
+
+**Audit every runner, not only the main one.** One scorer in his harness had a
+fixed `max_tokens=1024` and no retry ladder while every other runner had one. A
+verbose step-by-step answer was cut off before stating its result and scored as
+a wrong answer on a math gate. After the same escalating retry was added, all
+four model variants scored cleanly, and the 2048 rung was needed on three of the
+four re-runs, so the exposure was real and would have recurred silently at every
+future tier.
+
+*A runnable probe for this ships with his PR and is held pending a separate
+review against the [check contract](../../CONTRIBUTING.md#the-contract-which-is-enforced-mechanically);
+the assertion above is the payload and does not need the script.*
+
 ## Added 2026-07-28: confirmed on Ollama, exactly as described
 
 **Ollama 0.32.5, `qwen3:8b`, GB10 aarch64 CUDA 13.** At `num_predict` 16 and at
