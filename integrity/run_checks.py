@@ -85,6 +85,15 @@ def main():
                         run("1b. REFERENCE INTEGRITY",
                             [py, os.path.join(HERE, "reference_integrity.py"),
                              "--root", root])))
+        # Separate from registry integrity because it enforces a different
+        # contract over a different directory: upstream/ is the fourth tier,
+        # its entries are not registry entries, and folding the two together
+        # would put unmeasured material inside the checker whose job is the
+        # measured registry.
+        results.append(("upstream tier",
+                        run("1c. UPSTREAM TIER",
+                            [py, os.path.join(HERE, "upstream_integrity.py"),
+                             "--root", root])))
     else:
         print("1. REGISTRY INTEGRITY: not applicable, %s has no traps/ tree\n"
               % root)

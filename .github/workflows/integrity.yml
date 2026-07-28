@@ -98,6 +98,16 @@ jobs:
         if: always()
         run: python3 integrity/reference_integrity.py --github
 
+      # The fourth tier, upstream-reported, publishes material nobody here has
+      # reproduced. The only thing that makes that safe is that every entry
+      # names its primary source, its reporter and the issue state, says
+      # plainly that we have not run it, and never reaches Core, the doctor or
+      # a registry count. All of that is asserted here rather than observed.
+      - name: upstream tier (the fourth tier's requirements)
+        id: upstream
+        if: always()
+        run: python3 integrity/upstream_integrity.py --github
+
       - name: claim propagation
         id: claims
         if: always()
@@ -186,6 +196,7 @@ jobs:
           for pair in \
             "registry integrity + contradiction gate=${{ steps.registry.outcome }}" \
             "reference integrity + status vocabulary=${{ steps.refs.outcome }}" \
+            "upstream tier requirements=${{ steps.upstream.outcome }}" \
             "claim propagation=${{ steps.claims.outcome }}" \
             "do-not-cite=${{ steps.dnc.outcome }}" \
             "mutation suite=${{ steps.mutations.outcome }}" \

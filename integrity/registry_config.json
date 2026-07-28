@@ -40,6 +40,66 @@
     "reproduced by "
   ],
 
+  "_upstream_tier_note": [
+    "The fourth tier, upstream-reported, lives in upstream/ and is enforced by",
+    "integrity/upstream_integrity.py. It is NOT part of status_labels above:",
+    "those are the labels valid on a registry entry under traps/, and",
+    "upstream-reported is deliberately not one of them. The two vocabularies",
+    "are separate because the directories are separate, which is the whole",
+    "point of the tier.",
+    "reported_by_others_grandfathered is a SNAPSHOT, taken 2026-07-28, of every",
+    "entry under traps/ whose status opens with 'reported by others'. All of",
+    "them predate the tier. The check refuses any NEW one, so the easy path",
+    "for the next upstream-sourced report is upstream/ rather than traps/ with",
+    "the old label. Removing a file from this list is allowed (an entry that",
+    "gets reproduced here changes label); adding one is the thing being",
+    "prevented, and doing it by editing this file is at least a decision",
+    "somebody had to type."
+  ],
+
+  "upstream_tier": {
+    "engagement_values": [
+      "maintainer confirmed",
+      "maintainer reproduced",
+      "maintainer responded",
+      "maintainer disputed",
+      "none"
+    ],
+    "issue_state_values": [
+      "open",
+      "closed, fixed",
+      "closed, not fixed",
+      "closed, resolved as usage",
+      "closed, not planned",
+      "disputed"
+    ],
+    "reported_by_others_grandfathered": [
+      "traps/evaluation/05-scorer-normalization-verdict-flip.md",
+      "traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md",
+      "traps/evaluation/16-finish-reason-is-not-a-failure-signal.md",
+      "traps/evaluation/17-per-arm-recommended-sampling-confound.md",
+      "traps/evaluation/34-baseline-you-degraded-yourself.md",
+      "traps/evaluation/36-token-cap-is-an-arm-level-handicap.md",
+      "traps/evaluation/37-uniform-zero-is-a-harness-verdict.md",
+      "traps/evaluation/40-ngram-decontamination-false-positives.md",
+      "traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md",
+      "traps/reasoning/06-identity-sentence-eviction.md",
+      "traps/reasoning/07-reasoning-effort-silently-ignored.md",
+      "traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
+      "traps/routing/33-moe-inference-topk-expansion-tax.md",
+      "traps/runtime/18-flash-attention-off-halves-deep-decode.md",
+      "traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md",
+      "traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md",
+      "traps/runtime/41-static-batching-buys-power-not-throughput.md",
+      "traps/template/24-official-template-breaks-cpp-jinja.md",
+      "traps/template/25-empty-think-blocks-poison-prefix-cache.md",
+      "traps/template/38-template-owns-the-opening-think-tag.md",
+      "traps/tools/19-missing-jinja-breaks-tool-parsing.md",
+      "traps/tools/26-tool-call-inside-unclosed-think.md",
+      "traps/versioning/14-finetune-reupload-not-drop-in.md"
+    ]
+  },
+
   "changelog_batches": {
     "01-07": "2026-07-27 launch line: 'Launched with seven traps (reasoning fields, templates, thinking control, scorer normalization)'. Prose only, no ids in the line, so it cannot be parsed. Traps 01 to 07 are the launch set."
   },
