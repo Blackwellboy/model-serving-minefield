@@ -7,14 +7,31 @@ diagnosis against the model-serving-minefield registry.
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 8 generation requests, each capped at 512 output
-    tokens; one uses 512, the rest 64 to 256).
+    completions (at most 12 generation requests, each capped at 512 output
+    tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
+    that generate nothing.
+  - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
+    the standard library, and one deliberately non-existent file path. No file
+    of yours is read and nothing is uploaded.
   - Sends nothing anywhere except your endpoint (and huggingface.co, only
-    if you pass --hf-repo, to read two public config files).
+    if you pass --hf-repo, to read a few public config files).
   - Everything it finds cites the registry trap it comes from.
 
-Output: PROBLEMS / CHECKED AND CLEAN / COULD NOT CHECK. Add --report for a
-markdown block you can paste into an "I hit a trap" issue.
+Output, in this order:
+    PROBLEMS         something is wrong, with the fix and the trap
+    CHECKED AND CLEAN a probe ran AND its result can only mean "clean"
+    INCONCLUSIVE     a probe ran, but the result is consistent with several
+                     materially different states, so it is not a clean bill
+    COULD NOT CHECK  the probe could not run, or its precondition was missing
+    COVERAGE         how much of the registry this run actually touched
+
+The distinction between the last three is the whole point of this tool. A
+result only reaches CHECKED AND CLEAN when the observation rules out the
+failure mode. If acceptance, silence, or a missing template could equally well
+explain what was seen, it goes to INCONCLUSIVE or COULD NOT CHECK, never to
+CLEAN. Add --report for a markdown block you can paste into an "I hit a trap"
+issue, and --json for the machine-readable form, which carries the exact
+assertions that ran, not only the prose.
 
 Stdlib only. jinja2 is used for one extra render path if installed; never
 required. Exit codes: 0 ran (read the sections), 1 endpoint unreachable.
@@ -22,6 +39,14 @@ required. Exit codes: 0 ran (read the sections), 1 endpoint unreachable.
 import argparse, json, re, sys, urllib.request, urllib.error, zlib
 
 REG = "https://github.com/Blackwellboy/model-serving-minefield/blob/main/traps"
+
+# Total numbered entries in the registry. Verified against the trap files in
+# traps/*/ at the tip that ships this file; doctor/tests/test_doctor_verdicts.py
+# asserts this constant still matches the tree, so it cannot drift silently.
+# Any PR that lands new trap files fails that test until this is bumped and the
+# coverage sentences in README.md and doctor/README.md are updated with it.
+REGISTRY_TRAP_COUNT = 42
+
 TRAP_PATHS = {
     "01": "reasoning/01-reasoning-field-two-names.md",
     "02": "template/02-orphaned-think-close-tag.md",
@@ -41,7 +66,31 @@ TRAP_PATHS = {
     "26": "tools/26-tool-call-inside-unclosed-think.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
 }
-def trap(n): return f"{REG}/{TRAP_PATHS[n]}"
+
+# Honest sub-classification of the ids above, printed in the coverage block.
+# A trap id in TRAP_PATHS does NOT mean an independent check exists for it.
+TRAPS_SHARED_HEURISTIC = {
+    # decided by the same single render inspection that decides trap 04
+    "25": "shares the trap-04 history-render heuristic; no independent probe",
+    # annotations on the single trap-12 ceiling finding, not separate probes
+    "16": "annotation on the trap-12 ceiling finding; no independent probe",
+    "22": "annotation on the trap-12 ceiling finding; no independent probe",
+}
+TRAPS_NEED_HF_REPO = {"10", "17", "21"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25"}
+
+# huggingface.co, overridable so the regression suite can point at a fixture
+# instead of the live hub. Not a command-line flag on purpose: the safety
+# story says "your endpoint and huggingface.co", and that stays true.
+HF_BASE = "https://huggingface.co"
+
+
+def trap(n):
+    """Registry link for a trap id. Ids that are not yet numbered in the
+    registry (drafts pending a land) resolve to the traps index."""
+    p = TRAP_PATHS.get(n)
+    return f"{REG}/{p}" if p else REG
+
 
 RMARK = "ZQXMARK_REASONING_7734"
 TOOLS = [{"type": "function", "function": {
@@ -74,18 +123,72 @@ def post(url, body, key=None, timeout=180):
 
 # ------------------------------------------------------------ diagnosis state
 
+def A(claim, observed, held=True):
+    """One recorded assertion: what was claimed, what was seen, did it hold.
+
+    Every verdict carries these. A CLEAN with no assertions behind it is a
+    bug in this file, and the regression suite fails the build over it.
+    """
+    return {"assert": claim, "observed": observed,
+            "result": "held" if held else "failed"}
+
+
 class Doc:
+    """Verdict accumulator.
+
+    Four levels, borrowed from checks/preflight_template.py so the two tools
+    speak one vocabulary:
+
+      PROBLEM       a defect was observed
+      OK            observed, and the observation rules out the defect
+      INCONCLUSIVE  the probe RAN and returned, but several materially
+                    different states produce this same result
+      UNKNOWN       the probe could not run, or a precondition was missing
+                    (this is preflight_template's NO_RENDER_PATH shape)
+    """
+
     def __init__(self):
-        self.problems, self.clean, self.blocked = [], [], []
+        self.findings = []
         self.requests_made = 0
         self.stack, self.model, self.build = "unknown", None, None
         self.evidence = {}
-    def problem(self, traps, title, fix):
-        self.problems.append((traps, title, fix))
-    def ok(self, traps, title):
-        self.clean.append((traps, title))
-    def skip(self, traps, title, why):
-        self.blocked.append((traps, title, why))
+
+    def _add(self, level, traps, title, code, detail, asserts):
+        self.findings.append({"level": level, "code": code, "traps": list(traps),
+                              "title": title, "detail": detail,
+                              "assertions": list(asserts or [])})
+
+    def problem(self, traps, title, fix, code="PROBLEM", asserts=None):
+        self._add("PROBLEM", traps, title, code, fix, asserts)
+
+    def ok(self, traps, title, code="OK", asserts=None):
+        self._add("OK", traps, title, code, None, asserts)
+
+    def inconclusive(self, traps, title, why, code="INCONCLUSIVE", asserts=None):
+        self._add("INCONCLUSIVE", traps, title, code, why, asserts)
+
+    def skip(self, traps, title, why, code="UNKNOWN", asserts=None):
+        self._add("UNKNOWN", traps, title, code, why, asserts)
+
+    # -- views ------------------------------------------------------------
+    def by(self, level):
+        return [f for f in self.findings if f["level"] == level]
+
+    @property
+    def problems(self): return self.by("PROBLEM")
+    @property
+    def clean(self): return self.by("OK")
+    @property
+    def unsure(self): return self.by("INCONCLUSIVE")
+    @property
+    def blocked(self): return self.by("UNKNOWN")
+
+    def trap_ids(self, level):
+        out = set()
+        for f in self.by(level):
+            out |= {n for n in f["traps"] if n in TRAP_PATHS}
+        return out
+
 
 def chat(doc, base, key, model, messages, **kw):
     body = {"model": model or "default", "messages": messages,
@@ -131,6 +234,7 @@ def detect_stack(doc, base, root, key):
         doc.stack = "vllm" if st2 == 200 else "openai-compatible (vLLM/MLX/other)"
     return True
 
+
 def check_reasoning_fields(doc, base, key):
     """Traps 01 (read side), 02 (orphan close), 03 (toggle map), 29 (override)."""
     arms = {}
@@ -153,52 +257,157 @@ def check_reasoning_fields(doc, base, key):
             "stray_close": c.lstrip().startswith("</think>"),
             "keys": sorted(m.keys()), "finish": choice.get("finish_reason")}
     doc.evidence["toggle_arms"] = arms
-    if all("error" in a for a in arms.values()):
-        doc.skip(["01", "03"], "reasoning field and thinking-toggle checks",
-                 f"all probe requests failed ({arms['on'].get('error')})")
+    live = {k: v for k, v in arms.items() if "error" not in v}
+    if not live:
+        doc.skip(["01", "02", "03", "29"],
+                 "reasoning field, orphan-tag, thinking-toggle and gate checks",
+                 f"all three probe requests failed ({arms['on'].get('error')})",
+                 code="ALL_ARMS_FAILED",
+                 asserts=[A("at least one toggle arm returns HTTP 200",
+                            {k: v.get("error") for k, v in arms.items()}, held=False)])
         return
 
     on = arms.get("on", {})
     fields = [k for k in ("reasoning_content", "reasoning") if on.get(k)]
     if fields:
         doc.ok(["01"], f"reasoning exposed under {' and '.join(fields)} "
-               f"(read that exact name; the other name may not exist here)")
+               f"(read that exact name; the other name may not exist here)",
+               code="REASONING_FIELD_IDENTIFIED",
+               asserts=[A("thinking-on response carries a non-empty reasoning field",
+                          {k: on.get(k) for k in ("reasoning_content", "reasoning")})])
     elif on.get("think_in_content"):
         doc.problem(["01"], "reasoning arrives as <think> tags inside content, "
                     "not as a separate field: any harness reading only a "
                     "reasoning field scores this lane as never thinking",
                     "parse think tags from content on this lane, or enable the "
-                    "server's reasoning parser")
+                    "server's reasoning parser",
+                    code="REASONING_IN_CONTENT",
+                    asserts=[A("thinking-on content contains think tags",
+                               on.get("content_len"))])
     elif "error" not in on:
-        doc.ok(["01"], "no reasoning field or think tags with thinking on "
-               "(either a non-thinking model or thinking fully disabled server-side)")
+        # The old code called this CLEAN. It is not. Six materially different
+        # states produce "no reasoning field, no think tags, HTTP 200", and
+        # this probe cannot tell them apart. Trap 07's own rule (acceptance
+        # proves nothing) applies to silence as well.
+        doc.skip(["01"], "reasoning read-field identification",
+                 "with thinking requested ON the response carried no reasoning "
+                 "field and no think tags. That single observation is produced "
+                 "by at least six materially different states, and this probe "
+                 "distinguishes none of them: (1) a genuinely non-reasoning "
+                 "model, (2) the enable_thinking kwarg accepted and ignored, "
+                 "(3) the server's reasoning parser not enabled so the trace "
+                 "was discarded, (4) the chat template not reading this kwarg "
+                 "at all, (5) reasoning emitted on a third channel this tool "
+                 "does not read, (6) a genuine server-side gate. Determine "
+                 "which before reporting this lane as non-thinking: enumerate "
+                 "the kwargs the template reads with "
+                 "checks/preflight_template.py --template-file, and check the "
+                 "server's reasoning-parser flag.",
+                 code="THINKING_ON_NO_REASONING",
+                 asserts=[A("thinking-on response carries reasoning_content, "
+                            "reasoning, or think tags in content",
+                            {"reasoning_content": on.get("reasoning_content"),
+                             "reasoning": on.get("reasoning"),
+                             "think_in_content": on.get("think_in_content"),
+                             "message_keys": on.get("keys")}, held=False)])
 
-    for name, a in arms.items():
-        if a.get("stray_close"):
-            doc.problem(["02"], f"response content starts with a stray </think> "
-                        f"({name} arm): parser strips the open tag but not the close",
-                        "fix the reasoning-parser pairing; strip the orphan before "
-                        "scoring anything")
-            break
+    # -- trap 02, scoped to the arms that actually answered ----------------
+    stray = [n for n, a in live.items() if a.get("stray_close")]
+    if stray:
+        doc.problem(["02"], f"response content starts with a stray </think> "
+                    f"({', '.join(stray)} arm): parser strips the open tag but "
+                    f"not the close",
+                    "fix the reasoning-parser pairing; strip the orphan before "
+                    "scoring anything",
+                    code="ORPHANED_CLOSE_THINK",
+                    asserts=[A("no returned arm starts with </think>", stray,
+                               held=False)])
+    elif len(live) == len(arms):
+        doc.ok(["02"], "no orphaned </think> at the start of any of the three "
+               "probe responses",
+               code="NO_ORPHANED_CLOSE_THINK",
+               asserts=[A("no returned arm starts with </think>",
+                          sorted(live))])
     else:
-        doc.ok(["02"], "no orphaned </think> at the start of any probe response")
+        doc.inconclusive(["02"], "orphaned </think> at content start",
+                         f"clean in the {len(live)} arm(s) that returned "
+                         f"({', '.join(sorted(live))}), but "
+                         f"{len(arms) - len(live)} arm(s) failed and were never "
+                         f"inspected. An orphan that only appears under the "
+                         f"unexamined arm would not have been seen.",
+                         code="ORPHAN_CHECK_PARTIAL",
+                         asserts=[A("all three arms inspected for a leading "
+                                    "</think>", sorted(live), held=False)])
 
-    def fired(a): return bool(a.get("reasoning_content") or a.get("reasoning")
-                              or a.get("think_in_content"))
-    if "error" not in arms.get("absent", {"error": 1}) and \
-       "error" not in on and "error" not in arms.get("off", {"error": 1}):
-        landing = "on-like" if fired(arms["absent"]) == fired(on) and fired(on) else \
-                  ("off-like" if fired(arms["absent"]) == fired(arms["off"]) else "distinct")
-        doc.ok(["03"], f"thinking toggle map: explicit-on fired={fired(on)}, "
-               f"explicit-off fired={fired(arms['off'])}, absent lands {landing}. "
-               f"Send the kwarg explicitly; absent is revision- and server-dependent")
-        if fired(on) and not fired(arms["absent"]):
-            doc.problem(["29"], "server-side default has thinking off, but a "
-                        "client kwarg re-enables it per request: the flag is a "
-                        "default, not a gate, and thinking requests can blow "
-                        "non-thinking token budgets",
-                        "strip or deny thinking kwargs at your gateway, or size "
-                        "max_tokens for the thinking distribution")
+    # -- traps 03 and 29 ---------------------------------------------------
+    def fired(a):
+        return bool(a.get("reasoning_content") or a.get("reasoning")
+                    or a.get("think_in_content"))
+
+    if len(live) < 3:
+        doc.skip(["03", "29"], "thinking-toggle map and server-side gate",
+                 f"the map needs all three arms (explicit on, explicit off, "
+                 f"kwarg absent); {len(arms) - len(live)} failed",
+                 code="TOGGLE_ARMS_INCOMPLETE",
+                 asserts=[A("all three toggle arms returned", sorted(live),
+                            held=False)])
+        return
+
+    f_on, f_off, f_abs = fired(on), fired(arms["off"]), fired(arms["absent"])
+    doc.evidence["toggle_fired"] = {"on": f_on, "off": f_off, "absent": f_abs}
+    if not (f_on or f_off or f_abs):
+        # A toggle map in which nothing ever fires is not a map. Reporting
+        # "on=False, off=False, absent lands off-like" as CLEAN told operators
+        # their toggle was characterised when in fact no arm produced any
+        # observable, so no arm could be told apart from any other.
+        doc.skip(["03", "29"], "thinking-toggle map and server-side gate",
+                 "no arm produced any reasoning observable at all, so the three "
+                 "arms are indistinguishable and the toggle is uncharacterised. "
+                 "This is the same silence as the read-field check above and has "
+                 "the same six candidate causes; resolve that one first.",
+                 code="TOGGLE_MAP_VACUOUS",
+                 asserts=[A("at least one toggle arm produces a reasoning "
+                            "observable", {"on": f_on, "off": f_off,
+                                           "absent": f_abs}, held=False)])
+        return
+
+    landing = ("on-like" if f_abs == f_on and f_on else
+               ("off-like" if f_abs == f_off else "distinct"))
+    doc.ok(["03"], f"thinking toggle map: explicit-on fired={f_on}, "
+           f"explicit-off fired={f_off}, absent lands {landing}. "
+           f"Send the kwarg explicitly; absent is revision- and "
+           f"server-dependent",
+           code="TOGGLE_MAP_CHARACTERISED",
+           asserts=[A("all three arms returned and at least one fired",
+                      {"on": f_on, "off": f_off, "absent": f_abs})])
+
+    if f_on and not f_abs:
+        doc.problem(["29"], "server-side default has thinking off, but a "
+                    "client kwarg re-enables it per request: the flag is a "
+                    "default, not a gate, and thinking requests can blow "
+                    "non-thinking token budgets",
+                    "strip or deny thinking kwargs at your gateway, or size "
+                    "max_tokens for the thinking distribution",
+                    code="SERVER_OFF_IS_NOT_A_GATE",
+                    asserts=[A("kwarg-absent arm fires whenever explicit-on "
+                               "fires", {"on": f_on, "absent": f_abs},
+                               held=False)])
+    elif f_abs:
+        doc.ok(["29"], "thinking already fires with no kwarg sent, so there is "
+               "no server-side off state for a client kwarg to override on "
+               "this lane",
+               code="NO_SERVER_SIDE_OFF_STATE",
+               asserts=[A("kwarg-absent arm fires", {"absent": f_abs})])
+    else:
+        doc.inconclusive(["29"], "server-side thinking gate",
+                         "explicit-on did not fire either, so there is no "
+                         "positive control: whether a client kwarg can "
+                         "override a server-side off cannot be told from a "
+                         "lane where the kwarg never demonstrably worked.",
+                         code="GATE_NO_POSITIVE_CONTROL",
+                         asserts=[A("explicit-on arm fires (positive control)",
+                                    {"on": f_on}, held=False)])
+
 
 def check_streaming(doc, base, key):
     """Trap 23: streamed answer must land in content."""
@@ -225,20 +434,79 @@ def check_streaming(doc, base, key):
                         keys[k] = keys.get(k, 0) + 1
         doc.evidence["stream_delta_keys"] = keys
         if keys.get("content"):
-            doc.ok(["23"], f"streamed answer arrives in content deltas ({keys})")
+            doc.ok(["23"], f"streamed answer arrives in content deltas ({keys})",
+                   code="STREAM_CONTENT_DELTAS",
+                   asserts=[A("at least one non-empty content delta", keys)])
         elif keys.get("reasoning") or keys.get("reasoning_content"):
             doc.problem(["23"], f"streamed answer arrives ONLY in reasoning deltas "
                         f"with thinking off ({keys}): clients that concatenate "
                         f"content see blank replies",
                         "upgrade the engine (vLLM: past PR #40820) or read "
-                        "reasoning deltas as a fallback channel")
+                        "reasoning deltas as a fallback channel",
+                        code="STREAM_ANSWER_IN_REASONING",
+                        asserts=[A("at least one non-empty content delta", keys,
+                                   held=False)])
         else:
-            doc.skip(["23"], "streaming delta placement", "no non-empty deltas seen")
+            doc.skip(["23"], "streaming delta placement", "no non-empty deltas seen",
+                     code="STREAM_NO_DELTAS",
+                     asserts=[A("stream produced non-empty deltas", keys,
+                                held=False)])
     except Exception as e:
-        doc.skip(["23"], "streaming delta placement", f"stream failed: {e}")
+        doc.skip(["23"], "streaming delta placement", f"stream failed: {e}",
+                 code="STREAM_FAILED",
+                 asserts=[A("stream request completed", str(e), held=False)])
+
+
+def _vllm_render(doc, root, key, messages, kwargs):
+    """vLLM's assembled prompt, via /v1/chat/completions/render + /detokenize.
+
+    vLLM has exposed a render route since 0.20.0. It returns token ids rather
+    than text, so it needs a second call to be readable. Without this path the
+    doctor reported "no render path on this stack" on every vLLM lane and
+    skipped traps 04, 20 and 25, which is where the worst findings on this
+    family came from.
+
+    Falls back to /tokenize with per-token strings, which some builds answer
+    even when the route listing does not advertise it.
+    """
+    body = {"model": doc.model, "messages": messages, "max_tokens": 1}
+    if kwargs:
+        body["chat_template_kwargs"] = kwargs
+    st, txt = post(root + "/v1/chat/completions/render", body, key, timeout=30)
+    if st == 200:
+        try:
+            ids = json.loads(txt).get("token_ids")
+            if ids:
+                st2, txt2 = post(root + "/detokenize",
+                                 {"model": doc.model, "tokens": ids}, key, timeout=30)
+                if st2 == 200:
+                    d = json.loads(txt2)
+                    prompt = d.get("prompt", d.get("text"))
+                    if prompt is not None:
+                        return prompt, "server /v1/chat/completions/render + /detokenize"
+        except Exception:
+            pass
+    # fallback: tokenise with per-token strings and reassemble
+    tb = {"model": doc.model, "messages": messages,
+          "add_generation_prompt": True, "return_token_strs": True}
+    if kwargs:
+        tb["chat_template_kwargs"] = kwargs
+    st, txt = post(root + "/tokenize", tb, key, timeout=30)
+    if st == 200:
+        try:
+            strs = json.loads(txt).get("token_strs")
+            if strs:
+                # byte-level BPE markers: G-with-dot is a space, C-with-dot a newline
+                joined = "".join(strs)
+                joined = joined.replace("Ġ", " ").replace("Ċ", "\n")
+                return joined, "server /tokenize (token_strs)"
+        except Exception:
+            pass
+    return None, None
+
 
 def render_paths(doc, root, key, messages, kwargs):
-    """Return (prompt, how) via llama.cpp /apply-template, else local jinja2."""
+    """Return (prompt, how): llama.cpp /apply-template, vLLM render, or jinja2."""
     if doc.stack == "llama.cpp":
         body = {"messages": messages}
         if kwargs:
@@ -249,6 +517,10 @@ def render_paths(doc, root, key, messages, kwargs):
                 return json.loads(txt).get("prompt", ""), "server /apply-template"
             except Exception:
                 pass
+    else:
+        prompt, how = _vllm_render(doc, root, key, messages, kwargs)
+        if prompt is not None:
+            return prompt, how
     tpl = (doc.evidence.get("props") or {}).get("chat_template")
     if tpl:
         try:
@@ -262,6 +534,7 @@ def render_paths(doc, root, key, messages, kwargs):
         except Exception:
             pass
     return None, None
+
 
 def check_history_assembly(doc, root, key):
     """Traps 04 (stripping), 25 (empty shells), 20 (write field), 02 (tag balance)."""
@@ -279,10 +552,17 @@ def check_history_assembly(doc, root, key):
     base_render, how = render_paths(doc, root, key, msgs(None), {"enable_thinking": True})
     if base_render is None:
         doc.skip(["04", "25", "20"], "assembled-prompt inspection at turn 3",
-                 "no render path on this stack (needs llama.cpp /apply-template "
-                 "or a readable template plus jinja2); run the registry's "
-                 "checks/preflight_template.py with --template-file instead")
+                 "no render path on this stack (tried llama.cpp /apply-template, "
+                 "vLLM /v1/chat/completions/render plus /detokenize, vLLM "
+                 "/tokenize with token_strs, and a local jinja2 render of a "
+                 "server-published template); run the registry's "
+                 "checks/preflight_template.py with --template-file instead",
+                 code="NO_RENDER_PATH",
+                 asserts=[A("a render path returns the assembled prompt",
+                            "all four render paths returned nothing",
+                            held=False)])
         return
+    doc.evidence["render_path"] = how
     empty_pairs = len(re.findall(r"<think>\s*</think>", base_render))
     if empty_pairs:
         doc.problem(["04", "25"], f"history renders {empty_pairs} empty think "
@@ -290,9 +570,15 @@ def check_history_assembly(doc, root, key):
                     f"collapse reads as a model property, and equivalent "
                     f"histories cache-miss",
                     "resend prior reasoning under the field this runtime reads, "
-                    "or use a template that skips empty wrappers")
+                    "or use a template that skips empty wrappers",
+                    code="EMPTY_THINK_SHELLS",
+                    asserts=[A("assembled turn-3 prompt contains no <think></think> "
+                               "pair", empty_pairs, held=False)])
     else:
-        doc.ok(["04", "25"], f"no empty think shells in the turn-3 render (via {how})")
+        doc.ok(["04", "25"], f"no empty think shells in the turn-3 render (via {how})",
+               code="NO_EMPTY_THINK_SHELLS",
+               asserts=[A("assembled turn-3 prompt contains no <think></think> "
+                          "pair", empty_pairs)])
 
     hits = {}
     for field in ("reasoning_content", "reasoning"):
@@ -303,89 +589,508 @@ def check_history_assembly(doc, root, key):
     if live:
         doc.ok(["20", "04"], f"prior-turn reasoning survives history when resent "
                f"as {' and '.join(live)}; dead write name(s): "
-               f"{[f for f, h in hits.items() if not h] or 'none'}. Use the live name")
+               f"{[f for f, h in hits.items() if not h] or 'none'}. Use the live name",
+               code="WRITE_FIELD_IDENTIFIED",
+               asserts=[A("a marked prior-turn reasoning string reaches the "
+                          "assembled prompt under at least one field name", hits)])
         if len(live) == 1:
             doc.ok(["20"], f"write field on this runtime is {live[0]} only: "
-                   f"porting a fix that resends the other name silently does nothing")
+                   f"porting a fix that resends the other name silently does nothing",
+                   code="WRITE_FIELD_SINGLE",
+                   asserts=[A("exactly one of the two field names survives", hits)])
     else:
-        r, _ = render_paths(doc, root, key, msgs("reasoning_content"),
-                            {"enable_thinking": True, "preserve_thinking": True})
-        if r is not None and RMARK in r:
-            doc.problem(["04"], "history reasoning is stripped by DEFAULT; the "
-                        "preserve_thinking kwarg flips it to preserved. Every "
-                        "client that does not set it runs the stripped arm",
-                        "set preserve_thinking (and resend reasoning_content) on "
-                        "every multi-turn call; record it beside your numbers")
+        # No field name works on its own, so the template is gating history
+        # reasoning behind a kwarg. Try every preservation kwarg shape we have
+        # seen in the wild, in both polarities, under both field names. The
+        # polarity matters: `preserve_thinking: true` and
+        # `truncate_history_thinking: false` are the same switch written two
+        # ways, and a pipeline standardised on the first silently no-ops on a
+        # family that reads the second.
+        gates = [("preserve_thinking", True), ("truncate_history_thinking", False),
+                 ("keep_thinking", True), ("include_reasoning", True)]
+        found = None
+        for gate, val in gates:
+            for field in ("reasoning", "reasoning_content"):
+                r, _ = render_paths(doc, root, key, msgs(field),
+                                    {"enable_thinking": True, gate: val})
+                if r is not None and RMARK in r:
+                    found = (gate, val, field)
+                    break
+            if found:
+                break
+        doc.evidence["preservation_gate"] = found
+        if found:
+            gate, val, field = found
+            doc.problem(["04"], f"history reasoning is stripped by DEFAULT on this "
+                        f"lane. The working preservation path is "
+                        f"chat_template_kwargs {{{gate!r}: {str(val).lower()}}} "
+                        f"WITH prior reasoning resent under {field!r}. Every client "
+                        f"that does not set both runs the stripped arm",
+                        f"send {gate}={str(val).lower()} and resend reasoning as "
+                        f"{field} on every multi-turn call, and record it beside "
+                        f"your numbers; do not port a different kwarg name or "
+                        f"polarity from another model's writeup",
+                        code="HISTORY_STRIPPED_GATE_FOUND",
+                        asserts=[A("prior reasoning reaches the prompt with no "
+                                   "preservation kwarg", hits, held=False),
+                                 A("a known preservation kwarg restores it",
+                                   {"gate": gate, "value": val, "field": field})])
         else:
             doc.problem(["04", "20"], "resent prior reasoning under BOTH field "
-                        "names (and with preserve_thinking) never reaches the "
-                        "assembled prompt: this lane strips history reasoning "
-                        "with no working preservation path found",
-                        "multi-turn thinking measurements on this lane describe "
-                        "a model that cannot see its own prior reasoning; fix "
-                        "the template before trusting them")
+                        "names, and under four known preservation kwargs, never "
+                        "reaches the assembled prompt: this lane strips history "
+                        "reasoning with no preservation path this tool knows",
+                        "enumerate the kwargs your template actually reads "
+                        "(checks/preflight_template.py) before trusting any "
+                        "multi-turn number from this lane; the switch may exist "
+                        "under a name not in this list",
+                        code="HISTORY_STRIPPED_NO_GATE",
+                        asserts=[A("prior reasoning reaches the prompt under "
+                                   "either field name", hits, held=False),
+                                 A("any of four known preservation kwargs "
+                                   "restores it",
+                                   [g for g, _ in gates], held=False)])
 
     o, c = base_render.count("<think>"), base_render.count("</think>")
     if c > o:
         doc.problem(["02"], f"assembled prompt has {c} </think> vs {o} <think>: "
-                    "orphaned close tags in history", "fix template or history assembly")
+                    "orphaned close tags in history",
+                    "fix template or history assembly",
+                    code="ORPHANED_CLOSE_IN_RENDER",
+                    asserts=[A("assembled prompt has no excess </think>",
+                               {"open": o, "close": c}, held=False)])
+
+
+def _tiny_png():
+    """An 8x8 grey PNG built from the standard library, base64 encoded.
+
+    Embedding a blob would be shorter, but a constructed one is auditable: you
+    can read the chunk assembly and see that nothing is being smuggled into the
+    request.
+    """
+    import base64, struct
+    w = h = 8
+    raw = b"".join(b"\x00" + bytes([128] * (w * 3)) for _ in range(h))
+
+    def chunk(tag, data):
+        c = tag + data
+        return struct.pack(">I", len(data)) + c + struct.pack(">I", zlib.crc32(c))
+
+    png = (b"\x89PNG\r\n\x1a\n"
+           + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+           + chunk(b"IDAT", zlib.compress(raw))
+           + chunk(b"IEND", b""))
+    return base64.b64encode(png).decode()
+
+
+def _img_part():
+    return {"type": "image_url",
+            "image_url": {"url": "data:image/png;base64," + _tiny_png()}}
+
+
+def check_multimodal(doc, base, root, key):
+    """Multimodal surface. Traps 12/16 (ceiling with media) plus the multimodal
+    family that has no registry numbers yet.
+
+    Before this existed the doctor sent no media at all, so it reported a full
+    set of clean checks on a multimodal lane while several multimodal defects
+    were live. Reporting clean on a surface you never touched is worse than
+    reporting nothing, so this check either exercises the surface or says
+    explicitly that it could not.
+    """
+    txt_part = {"type": "text", "text": "Reply with the single word OK."}
+    st, choice, body = chat(doc, base, key, doc.model,
+                            [{"role": "user", "content": [txt_part, _img_part()]}],
+                            max_tokens=16)
+    if st != 200:
+        blob = str(body).lower()
+        named = [s for s in ("multimodal", "image", "not support", "unsupported",
+                             "no multi", "modality") if s in blob]
+        if named:
+            doc.ok(["mm-surface"], f"text-only lane: the server rejected an inline "
+                   f"image part with http {st}, naming the modality, so the "
+                   f"multimodal traps do not apply here (this is a checked "
+                   f"result, not an assumption)",
+                   code="MM_REJECTED_NAMING_MODALITY",
+                   asserts=[A("image request rejected with a modality-naming "
+                              "error", {"status": st, "matched": named})])
+        else:
+            doc.skip(["mm-surface"], "multimodal surface",
+                     f"an image request failed with http {st} for a reason that "
+                     f"does not name multimodality, so whether this lane accepts "
+                     f"media is UNKNOWN. Do not read the other clean results as "
+                     f"covering media.",
+                     code="MM_SURFACE_UNKNOWN",
+                     asserts=[A("image-request failure names the modality",
+                                {"status": st}, held=False)])
+        return
+
+    doc.ok(["mm-surface"], "lane accepts inline image parts (probed with a "
+           "generated 8x8 PNG, not assumed from the model name)",
+           code="MM_SURFACE_ACCEPTS_IMAGES",
+           asserts=[A("inline image part accepted", {"status": st})])
+
+    # ---- usage attribution: can you tell what the media cost you?
+    usage = (body or {}).get("usage") if isinstance(body, dict) else None
+    if isinstance(usage, dict):
+        if usage.get("prompt_tokens_details") in (None, {}):
+            doc.problem(["mm-usage"], "prompt_tokens_details is null on a request "
+                        "that carried an image: media token cost is not "
+                        "attributable from the API, and neither are cache hits",
+                        "measure media cost by differencing prompt_tokens against "
+                        "a text-only control; do not trust a per-modality "
+                        "breakdown you did not measure",
+                        code="MM_USAGE_UNATTRIBUTABLE",
+                        asserts=[A("usage.prompt_tokens_details is populated",
+                                   usage.get("prompt_tokens_details"), held=False)])
+        else:
+            doc.ok(["mm-usage"], "prompt_tokens_details is populated: media token "
+                   "cost is attributable from the usage block",
+                   code="MM_USAGE_ATTRIBUTABLE",
+                   asserts=[A("usage.prompt_tokens_details is populated",
+                              usage.get("prompt_tokens_details"))])
+    else:
+        doc.skip(["mm-usage"], "media token attribution",
+                 "the response carried no usage block at all, so whether media "
+                 "cost is attributable could not be determined",
+                 code="MM_USAGE_NO_BLOCK",
+                 asserts=[A("response carries a usage object", type(usage).__name__,
+                            held=False)])
+
+    # ---- part ordering: does the server preserve where the media sat?
+    a, how_a = render_paths(doc, root, key,
+                            [{"role": "user", "content": [
+                                {"type": "text", "text": "ALPHAMARKERZQX"},
+                                _img_part(),
+                                {"type": "text", "text": "OMEGAMARKERZQX"}]}],
+                            {"enable_thinking": True})
+    b, _ = render_paths(doc, root, key,
+                        [{"role": "user", "content": [
+                            _img_part(),
+                            {"type": "text", "text": "ALPHAMARKERZQX"},
+                            {"type": "text", "text": "OMEGAMARKERZQX"}]}],
+                        {"enable_thinking": True})
+    if a is None or b is None:
+        doc.skip(["mm-order"], "multimodal content-part ordering",
+                 "no render path available for the ordering comparison",
+                 code="MM_ORDER_NO_RENDER_PATH",
+                 asserts=[A("both orderings render", {"a": a is not None,
+                                                      "b": b is not None},
+                            held=False)])
+    elif a == b:
+        doc.problem(["mm-order"], "the assembled prompt is byte-identical whether "
+                    "the image is sent before or after the text: content-part "
+                    "ORDER IS DISCARDED, so prompts that place instructions "
+                    "around an image do not reach the model that way",
+                    "do not rely on part order; put positional instructions in "
+                    "the text itself, and re-check any result that assumed the "
+                    "model saw your arrangement",
+                    code="MM_ORDER_DISCARDED",
+                    asserts=[A("the two part orderings render differently",
+                               "byte-identical", held=False)])
+    else:
+        doc.ok(["mm-order"], "content-part order is preserved in the assembled "
+               f"prompt (the two orderings render differently, via {how_a})",
+               code="MM_ORDER_PRESERVED",
+               asserts=[A("the two part orderings render differently",
+                          {"a_chars": len(a), "b_chars": len(b),
+                           "identical": False})])
+        if "ALPHAMARKERZQXOMEGAMARKERZQX" in a.replace(" ", ""):
+            doc.problem(["mm-order"], "adjacent text parts are concatenated with "
+                        "no separator in the assembled prompt: words run together",
+                        "insert your own whitespace between adjacent text parts",
+                        code="MM_TEXT_PARTS_GLUED",
+                        asserts=[A("adjacent text parts are separated in the "
+                                   "render", "markers adjacent", held=False)])
+
+    # ---- error classification: is a caller mistake reported as a server fault?
+    st2, _, body2 = chat(doc, base, key, doc.model,
+                         [{"role": "user", "content": [
+                             {"type": "text", "text": "Describe it."},
+                             {"type": "image_url", "image_url": {
+                                 "url": "file:///nonexistent/zqx-doctor-probe.png"}}]}],
+                         max_tokens=16)
+    if st2 is None:
+        doc.skip(["mm-errors"], "media error classification", "probe request failed",
+                 code="MM_ERROR_PROBE_FAILED",
+                 asserts=[A("bad-media-path probe returned a status", st2,
+                            held=False)])
+    elif 500 <= st2 < 600:
+        doc.problem(["mm-errors"], f"a media path that does not exist is reported "
+                    f"as http {st2}, a server fault, not a 4xx caller error",
+                    "retry logic keyed on 5xx will retry forever against a "
+                    "permanently bad path; classify media-fetch failures "
+                    "client-side before retrying, and do not page on them",
+                    code="MM_ERROR_MISCLASSIFIED_5XX",
+                    asserts=[A("a bad media path returns 4xx", st2, held=False)])
+    elif 400 <= st2 < 500:
+        doc.ok(["mm-errors"], f"a bad media path is correctly reported as http "
+               f"{st2}, a caller error",
+               code="MM_ERROR_CLASSIFIED_4XX",
+               asserts=[A("a bad media path returns 4xx", st2)])
+    else:
+        doc.problem(["mm-errors"], f"a media path that does not exist returned "
+                    f"http {st2} rather than an error at all",
+                    "assert on media resolution client-side; this lane will "
+                    "answer a prompt whose media never loaded",
+                    code="MM_ERROR_NOT_REPORTED",
+                    asserts=[A("a bad media path returns an error status", st2,
+                               held=False)])
+
+    # ---- say plainly what was NOT touched
+    doc.skip(["mm-audio-video"], "audio and video channels",
+             "this doctor sends a generated still image only. Audio and video "
+             "paths, their decoders, their error classes and their token costs "
+             "are NOT covered by any result above. On a lane that advertises "
+             "them, treat the clean results here as scoped to text and images.",
+             code="MM_AUDIO_VIDEO_NOT_PROBED",
+             asserts=[A("audio or video was probed", "no audio or video request "
+                        "is made by this tool", held=False)])
+
 
 def check_kwarg_deadness(doc, base, root, key):
-    """Trap 07: accepted-but-unread kwargs."""
-    st, choice, _ = chat(doc, base, key, doc.model,
-                         [{"role": "user", "content": "Say OK."}],
-                         max_tokens=16,
-                         chat_template_kwargs={"bogus_kwarg_zzq": True,
-                                               "reasoning_effort": "high"})
+    """Trap 07: accepted-but-unread kwargs.
+
+    Trap 07's own rule is that API acceptance proves nothing about effect. The
+    only thing that turns acceptance into a verdict is reading the template. So
+    when no template is readable, the honest answer is COULD NOT CHECK, not the
+    CLEAN this used to emit. Likewise a rejection only means "dead knobs are
+    loud here" if an otherwise identical request WITHOUT the kwargs succeeds;
+    otherwise the rejection is about something else entirely.
+    """
+    tpl = (doc.evidence.get("props") or {}).get("chat_template") or ""
+    st, choice, raw = chat(doc, base, key, doc.model,
+                           [{"role": "user", "content": "Say OK."}],
+                           max_tokens=16,
+                           chat_template_kwargs={"bogus_kwarg_zzq": True,
+                                                 "reasoning_effort": "high"})
+    doc.evidence["kwarg_probe_status"] = st
+
+    if st is None:
+        doc.skip(["07"], "kwarg acceptance probe", "request failed",
+                 code="KWARG_PROBE_FAILED",
+                 asserts=[A("kwarg probe returned a status", st, held=False)])
+        return
+
     if st == 200:
-        tpl = (doc.evidence.get("props") or {}).get("chat_template") or ""
+        if not tpl:
+            doc.skip(["07"], "kwarg deadness (reasoning_effort and an invented name)",
+                     "the server accepted chat_template_kwargs including an "
+                     "invented name without error, and by trap 07's own rule "
+                     "acceptance proves nothing about effect. No chat template "
+                     "is readable on this stack (llama.cpp /props is the only "
+                     "source this tool has), so whether ANY kwarg is actually "
+                     "read could not be determined. Fetch the checkpoint's "
+                     "chat_template.jinja and run "
+                     "checks/preflight_template.py --template-file to settle it.",
+                     code="KWARG_ACCEPTED_TEMPLATE_UNREADABLE",
+                     asserts=[A("server accepted an invented chat_template_kwarg",
+                                {"status": st}),
+                              A("a chat template is readable, so acceptance can "
+                                "be turned into a verdict", "no template source "
+                                "on this stack", held=False)])
+            return
         reads_effort = "reasoning_effort" in tpl
         detail = ("server accepted chat_template_kwargs including an invented "
-                  "name without error: acceptance proves nothing about effect")
-        if tpl:
-            detail += (f"; this template {'READS' if reads_effort else 'never reads'} "
-                       f"reasoning_effort, so that knob is "
-                       f"{'live' if reads_effort else 'dead here'}")
-        if tpl and not reads_effort:
+                  "name without error: acceptance proves nothing about effect"
+                  f"; this template {'READS' if reads_effort else 'never reads'} "
+                  f"reasoning_effort, so that knob is "
+                  f"{'live' if reads_effort else 'dead here'}")
+        if reads_effort:
+            doc.ok(["07"], detail + " (verified by reading the served template, "
+                   "not by the server's acceptance)",
+                   code="KWARG_READ_BY_TEMPLATE",
+                   asserts=[A("server accepted an invented chat_template_kwarg",
+                              {"status": st}),
+                            A("the served chat template contains reasoning_effort",
+                              {"template_chars": len(tpl), "found": True})])
+        else:
             doc.problem(["07"], detail,
                         "before trusting any kwarg, grep the template for it; "
-                        "diff accepted-vs-read in both directions")
-        else:
-            doc.ok(["07"], detail)
-    elif st is None:
-        doc.skip(["07"], "kwarg acceptance probe", "request failed")
+                        "diff accepted-vs-read in both directions",
+                        code="KWARG_ACCEPTED_BUT_DEAD",
+                        asserts=[A("server accepted an invented chat_template_kwarg",
+                                   {"status": st}),
+                                 A("the served chat template contains "
+                                   "reasoning_effort",
+                                   {"template_chars": len(tpl), "found": False},
+                                   held=False)])
+        return
+
+    # Non-200. Before crediting the server for rejecting unknown kwargs, prove
+    # the rejection is ABOUT the kwargs.
+    cst, _cchoice, _craw = chat(doc, base, key, doc.model,
+                                [{"role": "user", "content": "Say OK."}],
+                                max_tokens=16)
+    doc.evidence["kwarg_control_status"] = cst
+    if cst != 200:
+        doc.skip(["07"], "kwarg deadness (reasoning_effort and an invented name)",
+                 f"the kwarg probe failed with http {st}, but so did an "
+                 f"identical control request carrying no chat_template_kwargs "
+                 f"(http {cst}). The rejection is not attributable to the "
+                 f"kwargs, so it says nothing about how this lane handles them.",
+                 code="KWARG_REJECTION_UNATTRIBUTABLE",
+                 asserts=[A("a control request with no kwargs succeeds",
+                            {"kwarg_probe": st, "control": cst}, held=False)])
+        return
+
+    bst, _b, _braw = chat(doc, base, key, doc.model,
+                          [{"role": "user", "content": "Say OK."}],
+                          max_tokens=16,
+                          chat_template_kwargs={"bogus_kwarg_zzq": True})
+    doc.evidence["kwarg_bogus_only_status"] = bst
+    if bst != 200:
+        doc.ok(["07"], f"server rejects an invented chat_template_kwarg on its own "
+               f"(http {bst}) while an identical request without it succeeds "
+               f"(http {cst}): dead knobs are loud here, which is the safe "
+               f"direction of trap 07",
+               code="KWARG_UNKNOWN_REJECTED",
+               asserts=[A("control request with no kwargs succeeds", cst),
+                        A("request with only the invented kwarg is rejected", bst)])
     else:
-        doc.ok(["07"], f"server rejects unknown chat_template_kwargs (http {st}): "
-               "at least dead knobs are loud here")
+        doc.inconclusive(["07"], "kwarg deadness (reasoning_effort and an "
+                         "invented name)",
+                         f"the combined probe was rejected (http {st}) but the "
+                         f"invented name ALONE was accepted (http {bst}), so the "
+                         f"rejection came from reasoning_effort, not from unknown-"
+                         f"kwarg strictness. This lane still accepts invented "
+                         f"names silently, and whether reasoning_effort is read "
+                         f"or merely validated cannot be told from a rejection. "
+                         f"Read the template to settle it.",
+                         code="KWARG_REJECTION_FROM_KNOWN_NAME",
+                         asserts=[A("control request with no kwargs succeeds", cst),
+                                  A("request with only the invented kwarg is "
+                                    "rejected", bst, held=False)])
+
 
 def check_tools(doc, base, key):
-    """Traps 19 (structured vs prose), 26 (tool markup swallowed by reasoning)."""
-    st, choice, raw = chat(doc, base, key, doc.model,
-                           [{"role": "user", "content":
-                             "What time is it in Tokyo? Use the tool."}],
-                           max_tokens=512, tools=TOOLS,
-                           chat_template_kwargs={"enable_thinking": True})
-    if st != 200 or choice is None:
-        doc.skip(["19", "26"], "tool-calling probe",
-                 f"tools request failed (http {st}); if your server needs parser "
-                 f"flags for tools, that absence is itself trap 19")
+    """Traps 19 (structured vs prose), 26 (tool markup swallowed by reasoning).
+
+    The old probe defined one tool, asked once, and called any absence of
+    tool_calls a parser or template failure. Six states produce that same
+    absence: the model elected not to call, the model cannot call, the template
+    omits the tools block, the parser failed, the serve flags are missing, or
+    the schema was rejected or transformed. This version separates
+    MODEL_DID_NOT_CALL from TOOL_MARKUP_NOT_PARSED by forcing a call wherever
+    tool_choice is supported, and downgrades its own confidence in writing
+    where it cannot.
+    """
+    forced_choice_spec = {"type": "function", "function": {"name": "get_time"}}
+    f_st, f_choice, f_raw = chat(doc, base, key, doc.model,
+                                 [{"role": "user", "content":
+                                   "What time is it in Tokyo?"}],
+                                 max_tokens=256, tools=TOOLS,
+                                 tool_choice=forced_choice_spec)
+    forced_supported = (f_st == 200 and f_choice is not None)
+    f_calls, f_text = [], ""
+    if forced_supported:
+        fc, frc, frr, f_calls, _ = msg_fields(f_choice)
+        f_text = f"{fc}\n{frc}\n{frr}"
+    doc.evidence["tool_choice_forced_status"] = f_st
+
+    n_st, n_choice, n_raw = chat(doc, base, key, doc.model,
+                                 [{"role": "user", "content":
+                                   "What time is it in Tokyo? Use the tool."}],
+                                 max_tokens=512, tools=TOOLS,
+                                 chat_template_kwargs={"enable_thinking": True})
+    doc.evidence["tool_natural_status"] = n_st
+    if n_st != 200 or n_choice is None:
+        if not forced_supported:
+            doc.skip(["19", "26"], "tool-calling probe",
+                     f"both the forced-call probe (http {f_st}) and the natural "
+                     f"probe (http {n_st}) failed; if your server needs parser "
+                     f"flags for tools, that absence is itself trap 19",
+                     code="TOOL_PROBES_FAILED",
+                     asserts=[A("at least one tools request returns 200",
+                                {"forced": f_st, "natural": n_st}, held=False)])
+            return
+        n_calls, n_text = [], ""
+    else:
+        nc, nrc, nrr, n_calls, _ = msg_fields(n_choice)
+        n_text = f"{nc}\n{nrc}\n{nrr}"
+
+    markup = "<tool_call>" in f_text or "<tool_call>" in n_text
+    doc.evidence["tool_calls_seen"] = {"forced": len(f_calls),
+                                       "natural": len(n_calls)}
+
+    if f_calls or n_calls:
+        who = "forced (tool_choice)" if f_calls else "natural prompt"
+        got = (f_calls or n_calls)[0].get("function", {}).get("name")
+        doc.ok(["19"], f"one tool defined, structured tool_calls returned on the "
+               f"{who} probe (name={got})",
+               code="TOOL_CALLS_RETURNED",
+               asserts=[A("a tools request returns a structured tool_calls array",
+                          {"forced": len(f_calls), "natural": len(n_calls),
+                           "name": got})])
+        doc.ok(["26"], "tool markup is parsed into tool_calls rather than left "
+               "as text inside the reasoning or content channel",
+               code="TOOL_MARKUP_PARSED",
+               asserts=[A("no raw <tool_call> markup in content or reasoning",
+                          {"markup_seen": markup})])
+        if forced_supported and f_calls and not n_calls:
+            doc.ok(["19"], "the model returns no call when merely asked, but "
+                   "calls correctly when forced with tool_choice: this lane's "
+                   "tool plumbing works and the empty natural response is a "
+                   "model choice, NOT a parser or template fault",
+                   code="MODEL_ELECTS_NOT_TO_CALL",
+                   asserts=[A("forced probe calls while natural probe does not",
+                              {"forced": len(f_calls), "natural": len(n_calls)})])
         return
-    c, rc, rr, tcs, _ = msg_fields(choice)
-    reason_text = rc or rr
-    if tcs:
-        doc.ok(["19"], f"one tool defined, structured tool_calls returned "
-               f"(name={tcs[0].get('function', {}).get('name')})")
-    elif "<tool_call>" in reason_text or "<tool_call>" in c:
+
+    if markup:
         doc.problem(["26"], "tool markup produced but not parsed into tool_calls "
                     "(found inside the reasoning/content text): the parser is "
                     "eating your tool calls",
                     "on vLLM run a build past PR #35687; on llama.cpp use a "
-                    "template that closes think before tool_call")
-    else:
-        doc.problem(["19"], "model described or skipped the call in prose; no "
-                    "structured tool_calls with a tool defined",
+                    "template that closes think before tool_call",
+                    code="TOOL_MARKUP_NOT_PARSED",
+                    asserts=[A("raw <tool_call> markup appears in text while "
+                               "tool_calls is empty", {"markup": True,
+                                                       "tool_calls": 0})])
+        return
+
+    if forced_supported:
+        doc.problem(["19"], "no structured tool_calls even when the call was "
+                    "FORCED with tool_choice, and no raw tool markup appeared "
+                    "in the text either: this lane cannot emit a tool call at "
+                    "all. It is not the model electing to answer in prose",
                     "check serve flags: --jinja and the model's native template "
-                    "on llama.cpp, the model-specific tool parser on vLLM")
+                    "on llama.cpp, the model-specific tool parser on vLLM; then "
+                    "confirm the template actually renders the tools block "
+                    "(checks/preflight_template.py)",
+                    code="TOOL_CALLING_UNAVAILABLE",
+                    asserts=[A("server accepted tool_choice", {"status": f_st}),
+                             A("a FORCED tool call returns tool_calls",
+                               {"tool_calls": 0}, held=False),
+                             A("raw tool markup appears anywhere in the text",
+                               {"markup": False}, held=False)])
+        return
+
+    # tool_choice not supported: the ambiguity cannot be removed here, so say so
+    doc.inconclusive(["19", "26"], "tool-calling capability",
+                     f"no structured tool_calls and no raw tool markup with one "
+                     f"tool defined, and this server did not accept a forced "
+                     f"tool_choice (http {f_st}), so the deterministic control "
+                     f"is unavailable. CONFIDENCE: LOW. At least six states "
+                     f"produce this result and none were separated: (1) the "
+                     f"model elected to answer in prose, (2) the model cannot "
+                     f"call tools, (3) the chat template omits the tools block, "
+                     f"(4) the server's tool parser is off or mismatched, "
+                     f"(5) serve flags for tool parsing are missing, (6) the "
+                     f"schema was rejected or silently transformed. Do NOT read "
+                     f"this as a template or parser fault. To settle it: render "
+                     f"the prompt with the tools attached and confirm the tools "
+                     f"block appears (checks/preflight_template.py), then check "
+                     f"your server's tool-parser flag.",
+                     code="MODEL_DID_NOT_CALL",
+                     asserts=[A("server accepts tool_choice, giving a "
+                                "deterministic control", {"status": f_st},
+                                held=False),
+                              A("natural probe returns tool_calls",
+                                {"tool_calls": 0}, held=False),
+                              A("raw tool markup appears in the text",
+                                {"markup": False}, held=False)])
+
 
 def check_ceiling(doc, base, key):
     """Traps 12/16/22: empty content at cap, degeneration vs truncation."""
@@ -396,12 +1101,15 @@ def check_ceiling(doc, base, key):
                          max_tokens=512,
                          chat_template_kwargs={"enable_thinking": True})
     if st != 200 or choice is None:
-        doc.skip(["12"], "ceiling probe", f"request failed (http {st})")
+        doc.skip(["12", "16", "22"], "ceiling probe", f"request failed (http {st})",
+                 code="CEILING_PROBE_FAILED",
+                 asserts=[A("ceiling probe returns 200", st, held=False)])
         return
     c, rc, rr, _t, _ = msg_fields(choice)
     fr = choice.get("finish_reason")
     reason = rc or rr
-    if fr == "length" and not c.strip():
+    has_content = bool(c.strip())
+    if fr == "length" and not has_content:
         lines = [l for l in reason.splitlines() if l.strip()]
         uniq = len(set(lines)) / max(1, len(lines))
         z = len(zlib.compress(reason.encode())) / max(1, len(reason))
@@ -413,13 +1121,62 @@ def check_ceiling(doc, base, key):
                     f"({kind}: unique-line {uniq:.2f}, zlib {z:.2f}). If your "
                     f"harness scores this zero, it is measuring your budget",
                     "bucket cap-hits before scoring; find THIS model's "
-                    "conversion floor (family advice does not transfer)")
+                    "conversion floor (family advice does not transfer)",
+                    code="EMPTY_CONTENT_AT_CAP",
+                    asserts=[A("a cap-hitting response carries content",
+                               {"finish_reason": fr, "content_chars": len(c)},
+                               held=False)])
+    elif has_content:
+        doc.ok(["12"], f"hard task at 512 tokens: finish={fr}, content present "
+               f"({len(c)} chars): no empty-at-cap signature on this probe",
+               code="CONTENT_PRESENT_AT_CEILING",
+               asserts=[A("the ceiling probe returns non-empty content",
+                          {"finish_reason": fr, "content_chars": len(c)})])
     else:
-        doc.ok(["12"], f"hard task at 512 tokens: finish={fr}, "
-               f"content {'present' if c.strip() else 'empty'} "
-               f"(no empty-at-cap signature this probe)")
+        # Empty content that did NOT hit the cap. The old code called this
+        # clean because it only tested for finish=length. An empty answer is
+        # never a clean result, and it is exactly the trap-16 shape: the exit
+        # reason says nothing went wrong while nothing was produced.
+        doc.inconclusive(["12", "16"], "empty content on the ceiling probe",
+                         f"the response carried NO content ({len(reason)} chars "
+                         f"of reasoning) yet finish_reason={fr!r}, not 'length'. "
+                         f"This is not a cap hit and it is not a clean answer. "
+                         f"Candidate causes this probe cannot separate: the "
+                         f"answer landed entirely in the reasoning channel "
+                         f"(trap 23), a stop string fired early, the parser "
+                         f"consumed the answer, or the model genuinely returned "
+                         f"nothing. A harness scoring this run would record a "
+                         f"zero for a request the server called successful.",
+                         code="EMPTY_CONTENT_NOT_AT_CAP",
+                         asserts=[A("the ceiling probe returns non-empty content",
+                                    {"finish_reason": fr, "content_chars": 0,
+                                     "reasoning_chars": len(reason)}, held=False)])
 
-def check_configs(doc, hf_repo):
+
+# ------------------------------------------------------- huggingface configs
+
+def hf_resolve_revision(repo, revision):
+    """Resolve a revision (branch, tag, or sha) to an immutable commit sha.
+
+    Without this the doctor always read `resolve/main`, so an operator serving
+    a pinned older revision was compared against today's mutable main and told
+    they had drift that does not exist on the checkpoint they are running.
+    Returns (sha_or_None, note).
+    """
+    st, txt = get(f"{HF_BASE}/api/models/{repo}/revision/{revision}")
+    if st == 200:
+        try:
+            sha = json.loads(txt).get("sha")
+            if sha:
+                return sha, f"resolved {revision!r} to commit {sha}"
+        except Exception:
+            pass
+    return None, (f"could not resolve {revision!r} to a commit sha "
+                  f"(hub API http {st}); files below were read at the mutable "
+                  f"ref {revision!r}, which can change under you")
+
+
+def check_configs(doc, hf_repo, hf_revision="main"):
     """Traps 21 (generation_config missing), 17 (defaults vs card), 10 (quant)."""
     props = doc.evidence.get("props")
     if props:
@@ -434,53 +1191,201 @@ def check_configs(doc, hf_repo):
         doc.skip(["21", "17", "10"], "generation_config / card-sampling / quant "
                  "scheme checks",
                  "pass --hf-repo org/name to compare against the checkpoint's "
-                 "shipped configs")
+                 "shipped configs (and --hf-revision if you serve a pinned "
+                 "revision rather than main)",
+                 code="NO_HF_REPO",
+                 asserts=[A("--hf-repo supplied", None, held=False)])
         return
-    st, txt = get(f"https://huggingface.co/{hf_repo}/resolve/main/generation_config.json")
+
+    sha, note = hf_resolve_revision(hf_repo, hf_revision)
+    ref = sha or hf_revision
+    pinned = bool(sha)
+    doc.evidence["hf"] = {"repo": hf_repo, "requested_revision": hf_revision,
+                          "resolved_commit": sha, "read_at_ref": ref,
+                          "note": note}
+    scope = (f"{hf_repo} @ {hf_revision}"
+             + (f" (commit {sha[:12]})" if sha else " (UNRESOLVED ref)"))
+    rev_assert = A("the requested revision resolved to an immutable commit",
+                   {"requested": hf_revision, "resolved": sha}, held=pinned)
+    if not pinned:
+        doc.inconclusive(["21", "17", "10"], f"revision pinning for {hf_repo}",
+                         note + ". Every config comparison below is against a "
+                         "ref that can move, so a reported difference may be "
+                         "drift in the hub rather than in your lane. Re-run "
+                         "with --hf-revision <commit sha> to make the "
+                         "comparison reproducible.",
+                         code="HF_REVISION_UNRESOLVED",
+                         asserts=[rev_assert])
+
+    base_url = f"{HF_BASE}/{hf_repo}/resolve/{ref}"
+
+    st, txt = get(f"{base_url}/generation_config.json")
     if st == 200:
         try:
             gc = json.loads(txt)
-            doc.ok(["21"], f"generation_config.json exists on {hf_repo} "
-                   f"(keys: {sorted(gc.keys())[:6]})")
+            doc.ok(["21"], f"generation_config.json exists on {scope} "
+                   f"(keys: {sorted(gc.keys())[:6]})",
+                   code="GENERATION_CONFIG_PRESENT",
+                   asserts=[rev_assert,
+                            A("generation_config.json is readable at the "
+                              "compared revision", {"ref": ref, "status": st})])
             if eff:
-                diffs = {k: (eff.get(k), gc.get(k)) for k in eff
-                         if k in gc and not _close(eff.get(k), gc.get(k))}
+                shared = [k for k in eff if k in gc]
+                diffs = {k: (eff.get(k), gc.get(k)) for k in shared
+                         if not _close(eff.get(k), gc.get(k))}
                 if diffs:
-                    doc.problem(["17"], f"server defaults differ from the shipped "
-                                f"generation_config: {diffs} (server, card)",
+                    doc.problem(["17"], f"server defaults differ from the "
+                                f"generation_config shipped at {scope}: {diffs} "
+                                f"(server, checkpoint)",
                                 "set sampling explicitly per request; never "
-                                "describe a run as 'model defaults' across stacks")
+                                "describe a run as 'model defaults' across stacks",
+                                code="SAMPLING_DEFAULTS_DIFFER",
+                                asserts=[rev_assert,
+                                         A("server defaults equal the checkpoint's "
+                                           "generation_config on every shared key",
+                                           {"compared": shared, "diffs": diffs},
+                                           held=False)])
+                elif shared:
+                    doc.ok(["17"], f"server defaults match the generation_config "
+                           f"shipped at {scope} on every key both sides declare "
+                           f"({', '.join(shared)}); keys only one side declares "
+                           f"were not compared",
+                           code="SAMPLING_DEFAULTS_MATCH",
+                           asserts=[rev_assert,
+                                    A("server defaults equal the checkpoint's "
+                                      "generation_config on every shared key",
+                                      {"compared": shared,
+                                       "server_only": sorted(set(eff) - set(gc)),
+                                       "checkpoint_only": sorted(
+                                           k for k in gc if k in
+                                           ("temperature", "top_k", "top_p",
+                                            "min_p", "presence_penalty")
+                                           and k not in eff)})])
                 else:
-                    doc.ok(["17"], "server defaults match the shipped generation_config")
+                    doc.skip(["17"], "server defaults vs shipped generation_config",
+                             f"the server publishes {sorted(eff)} and the "
+                             f"checkpoint's generation_config declares "
+                             f"{sorted(gc)}; the two sets do not overlap, so "
+                             f"there is nothing to compare and no basis for "
+                             f"calling the sampling aligned",
+                             code="SAMPLING_NO_SHARED_KEYS",
+                             asserts=[rev_assert,
+                                      A("server and checkpoint declare at least "
+                                        "one common sampling key",
+                                        {"server": sorted(eff),
+                                         "checkpoint": sorted(gc)}, held=False)])
+            else:
+                doc.skip(["17"], "server defaults vs shipped generation_config",
+                         "this stack publishes no effective sampling defaults "
+                         "(llama.cpp /props is the only source this tool has), "
+                         "so the checkpoint's generation_config cannot be "
+                         "compared against what your server will actually use",
+                         code="SERVER_DEFAULTS_UNREADABLE",
+                         asserts=[rev_assert,
+                                  A("the server publishes its effective sampling "
+                                    "defaults", None, held=False)])
         except Exception:
-            doc.skip(["21"], "generation_config parse", "unparseable JSON")
+            doc.skip(["21", "17"], "generation_config parse", "unparseable JSON",
+                     code="GENERATION_CONFIG_UNPARSEABLE",
+                     asserts=[rev_assert,
+                              A("generation_config.json parses as JSON", txt[:120],
+                                held=False)])
     elif st == 404:
-        detail = (f"{hf_repo} ships NO generation_config.json: there is no such "
+        detail = (f"{scope} ships NO generation_config.json: there is no such "
                   f"thing as 'model defaults' on this checkpoint")
         if eff:
             detail += f"; you are silently running your server's built-ins: {eff}"
         doc.problem(["21"], detail,
                     "take sampling from the card's prose, per mode, and set it "
-                    "explicitly on every request")
+                    "explicitly on every request",
+                    code="NO_GENERATION_CONFIG",
+                    asserts=[rev_assert,
+                             A("the checkpoint ships generation_config.json",
+                               {"ref": ref, "status": 404}, held=False)])
+        doc.skip(["17"], "server defaults vs shipped generation_config",
+                 "there is no shipped generation_config at this revision to "
+                 "compare against",
+                 code="SAMPLING_NO_BASELINE",
+                 asserts=[rev_assert])
     else:
-        doc.skip(["21"], "generation_config fetch", f"http {st} from huggingface.co")
-    st, txt = get(f"https://huggingface.co/{hf_repo}/resolve/main/config.json")
+        doc.skip(["21", "17"], "generation_config fetch",
+                 f"http {st} from the hub at {scope}",
+                 code="GENERATION_CONFIG_FETCH_FAILED",
+                 asserts=[rev_assert,
+                          A("generation_config.json is readable at the compared "
+                            "revision", {"ref": ref, "status": st}, held=False)])
+
+    st, txt = get(f"{base_url}/config.json")
     if st == 200:
         try:
             cfg = json.loads(txt)
             qc = cfg.get("quantization_config")
             if qc:
-                doc.ok(["10"], f"quantization_config present: method="
+                doc.ok(["10"], f"quantization_config present at {scope}: method="
                        f"{qc.get('quant_method')}, ignore list "
                        f"{'present' if qc.get('ignore') else 'ABSENT'}; the label "
-                       f"is not the kernel path, read this before downloading")
+                       f"is not the kernel path, read this before downloading",
+                       code="QUANT_IN_CONFIG_JSON",
+                       asserts=[rev_assert,
+                                A("config.json declares quantization_config",
+                                  {"quant_method": qc.get("quant_method"),
+                                   "has_ignore": bool(qc.get("ignore"))})])
             else:
-                doc.ok(["10"], "no quantization_config in config.json "
-                       "(unquantized checkpoint or quant recorded elsewhere)")
+                # ModelOpt and several other producers keep the manifest in a
+                # sibling file. Reporting "unquantized checkpoint" as a CLEAN
+                # result for a 4-bit checkpoint is exactly the false negative
+                # trap 10 exists to prevent, so look before concluding.
+                st2, txt2 = get(f"{base_url}/hf_quant_config.json")
+                if st2 == 200:
+                    try:
+                        hq = json.loads(txt2)
+                        qc2 = hq.get("quantization") or hq
+                        doc.ok(["10"], f"quantisation at {scope} is declared in "
+                               f"hf_quant_config.json, NOT in config.json "
+                               f"(quant_algo={qc2.get('quant_algo')}, "
+                               f"producer={qc2.get('producer') or hq.get('producer')}); "
+                               f"tooling that only reads config.json will call this "
+                               f"checkpoint unquantized. The label is still not the "
+                               f"kernel path: read the engine's backend-selection log",
+                               code="QUANT_IN_HF_QUANT_CONFIG",
+                               asserts=[rev_assert,
+                                        A("the quantisation manifest was located",
+                                          {"config.json": False,
+                                           "hf_quant_config.json": True}),
+                                        A("hf_quant_config.json declares the scheme",
+                                          {"quant_algo": qc2.get("quant_algo")})])
+                    except Exception:
+                        doc.skip(["10"], "hf_quant_config.json parse",
+                                 "present but unparseable; quantisation scheme UNKNOWN",
+                                 code="QUANT_MANIFEST_UNPARSEABLE",
+                                 asserts=[rev_assert,
+                                          A("hf_quant_config.json parses as JSON",
+                                            txt2[:120], held=False)])
+                else:
+                    doc.skip(["10"], "quantisation scheme",
+                             f"no quantization_config in config.json and no "
+                             f"hf_quant_config.json either at {scope}. This may "
+                             f"be an unquantized checkpoint, or the manifest may "
+                             f"live somewhere this check does not look. UNKNOWN, "
+                             f"not clean",
+                             code="QUANT_SCHEME_UNKNOWN",
+                             asserts=[rev_assert,
+                                      A("config.json declares quantization_config",
+                                        None, held=False),
+                                      A("hf_quant_config.json exists",
+                                        {"status": st2}, held=False)])
         except Exception:
-            doc.skip(["10"], "config.json parse", "unparseable JSON")
+            doc.skip(["10"], "config.json parse", "unparseable JSON",
+                     code="CONFIG_JSON_UNPARSEABLE",
+                     asserts=[rev_assert,
+                              A("config.json parses as JSON", txt[:120], held=False)])
     else:
-        doc.skip(["10"], "config.json fetch", f"http {st}")
+        doc.skip(["10"], "config.json fetch", f"http {st} at {scope}",
+                 code="CONFIG_JSON_FETCH_FAILED",
+                 asserts=[rev_assert,
+                          A("config.json is readable at the compared revision",
+                            {"ref": ref, "status": st}, held=False)])
+
 
 def _close(a, b):
     try:
@@ -488,26 +1393,96 @@ def _close(a, b):
     except Exception:
         return a == b
 
+# ------------------------------------------------------------------ coverage
+
+def coverage(doc):
+    """What this run actually touched, so a clean run cannot be read as a
+    broad bill of health over the registry."""
+    implemented = set(TRAP_PATHS)
+    prob = doc.trap_ids("PROBLEM")
+    clean = doc.trap_ids("OK") - prob
+    unsure = (doc.trap_ids("INCONCLUSIVE") | doc.trap_ids("UNKNOWN")) - prob - clean
+    executed = prob | clean
+    return {
+        "registry_total": REGISTRY_TRAP_COUNT,
+        "implemented": sorted(implemented),
+        "executed": sorted(executed),
+        "clean": sorted(clean),
+        "problems": sorted(prob),
+        "inconclusive": sorted(unsure),
+        "not_implemented_count": REGISTRY_TRAP_COUNT - len(implemented),
+        "shared_heuristic": TRAPS_SHARED_HEURISTIC,
+        "need_hf_repo": sorted(TRAPS_NEED_HF_REPO),
+        "need_render_path": sorted(TRAPS_NEED_RENDER_PATH),
+    }
+
+
+def coverage_line(cov):
+    return (f"implemented {len(cov['implemented'])}/{cov['registry_total']} | "
+            f"executed on this stack {len(cov['executed'])} | "
+            f"clean {len(cov['clean'])} | problems {len(cov['problems'])} | "
+            f"inconclusive {len(cov['inconclusive'])} | "
+            f"not implemented {cov['not_implemented_count']}")
+
 # ------------------------------------------------------------------ output
 
 def emit(doc, args):
-    T = lambda ns: " ".join(f"[trap {n}]({trap(n)})" for n in ns)
+    T = lambda ns: " ".join(
+        (f"[trap {n}]({trap(n)})" if n in TRAP_PATHS else f"[registry draft: {n}]({trap(n)})")
+        for n in ns)
     print(f"\nminefield-doctor: {args.base_url}")
     print(f"stack={doc.stack} model={doc.model} build={doc.build or 'n/a'} "
           f"requests_made={doc.requests_made}\n")
+
     print(f"== PROBLEMS ({len(doc.problems)}) ==")
-    for ns, title, fix in doc.problems or []:
-        print(f"  ! {title}\n    fix: {fix}\n    see: {T(ns)}")
+    for f in doc.problems:
+        print(f"  ! {f['title']}\n    fix: {f['detail']}\n    see: {T(f['traps'])}")
     if not doc.problems:
         print("  none found by the checks that ran")
+
     print(f"\n== CHECKED AND CLEAN ({len(doc.clean)}) ==")
-    for ns, title in doc.clean:
-        print(f"  + {title}\n    see: {T(ns)}")
+    for f in doc.clean:
+        print(f"  + {f['title']}\n    see: {T(f['traps'])}")
+    if not doc.clean:
+        print("  nothing reached a clean verdict on this stack")
+
+    print(f"\n== INCONCLUSIVE ({len(doc.unsure)}) ==")
+    print("  (the probe ran, but the result is consistent with several "
+          "materially\n   different states; this is NOT a clean result)")
+    for f in doc.unsure:
+        print(f"  ~ {f['title']}\n    why: {f['detail']}\n    see: {T(f['traps'])}")
+    if not doc.unsure:
+        print("  none")
+
     print(f"\n== COULD NOT CHECK ({len(doc.blocked)}) ==")
-    for ns, title, why in doc.blocked or []:
-        print(f"  ? {title}\n    why: {why}\n    see: {T(ns)}")
+    for f in doc.blocked:
+        print(f"  ? {f['title']}\n    why: {f['detail']}\n    see: {T(f['traps'])}")
     if not doc.blocked:
-        print("  everything applicable was checked")
+        print("  every check ran")
+
+    cov = coverage(doc)
+    print("\n== COVERAGE ==")
+    print(f"  {coverage_line(cov)}")
+    print(f"  counted over trap ids, against a registry of "
+          f"{cov['registry_total']} numbered entries.")
+    print(f"  executed = a trap id that received a CLEAN or PROBLEM verdict on "
+          f"this run.")
+    print(f"  implemented ids: {', '.join(cov['implemented'])}")
+    if cov["problems"]:
+        print(f"  problems on: {', '.join(cov['problems'])}")
+    if cov["inconclusive"]:
+        print(f"  inconclusive or unchecked: {', '.join(cov['inconclusive'])}")
+    print("  caveats on the implemented count, so it is not read as depth:")
+    for n, why in sorted(cov["shared_heuristic"].items()):
+        print(f"    - {n}: {why}")
+    print(f"    - {', '.join(cov['need_hf_repo'])}: need --hf-repo; without it "
+          f"they cannot run at all")
+    print(f"    - {', '.join(cov['need_render_path'])}: need a render path; on a "
+          f"stack with none they cannot run at all")
+    print(f"  the remaining {cov['not_implemented_count']} numbered traps have "
+          f"no check in this tool. A clean run above is a statement about "
+          f"{len(cov['clean'])} trap ids, not about the registry.")
+
     if args.report:
         print("\n== PASTE-READY REPORT (for an 'I hit a trap' issue) ==\n")
         print("```markdown")
@@ -515,12 +1490,31 @@ def emit(doc, args):
         print(f"- stack: {doc.stack} ({doc.build or 'build unknown'})")
         print(f"- model: {doc.model}")
         print("- endpoint: (host redacted by doctor; add server flags yourself)")
+        print(f"- doctor coverage: {coverage_line(cov)}")
         print(f"- doctor findings ({len(doc.problems)} problem(s)):")
-        for ns, title, _ in doc.problems:
-            print(f"  - {title} (traps {', '.join(ns)})")
+        for f in doc.problems:
+            print(f"  - {f['title']} (traps {', '.join(f['traps'])})")
+        if doc.unsure:
+            print(f"- inconclusive ({len(doc.unsure)}):")
+            for f in doc.unsure:
+                print(f"  - {f['title']} (traps {', '.join(f['traps'])})")
         print("\n**What broke / what you saw**\n<your words here>")
         print("\n**What fixed it**\n<if anything>")
         print("```")
+
+
+def run(doc, base, root, args):
+    """Every check, in order. Split out of main() so the regression suite can
+    drive a full run against a fixture server without going through argv."""
+    check_reasoning_fields(doc, base, args.api_key)
+    check_streaming(doc, base, args.api_key)
+    check_history_assembly(doc, root, args.api_key)
+    check_kwarg_deadness(doc, base, root, args.api_key)
+    check_multimodal(doc, base, root, args.api_key)
+    check_tools(doc, base, args.api_key)
+    check_ceiling(doc, base, args.api_key)
+    check_configs(doc, args.hf_repo, args.hf_revision)
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -530,6 +1524,11 @@ def main():
     ap.add_argument("--api-key", default=None)
     ap.add_argument("--hf-repo", default=None,
                     help="org/name of the checkpoint, enables config checks")
+    ap.add_argument("--hf-revision", default="main",
+                    help="branch, tag or commit sha of the checkpoint you are "
+                         "actually serving. Defaults to main, which is MUTABLE: "
+                         "if you serve a pinned revision, pass it here or the "
+                         "comparison is against a checkpoint you do not run.")
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--json", default=None)
     args = ap.parse_args()
@@ -543,19 +1542,23 @@ def main():
         sys.exit(1)
     if args.model:
         doc.model = args.model
-    check_reasoning_fields(doc, base, args.api_key)
-    check_streaming(doc, base, args.api_key)
-    check_history_assembly(doc, root, args.api_key)
-    check_kwarg_deadness(doc, base, root, args.api_key)
-    check_tools(doc, base, args.api_key)
-    check_ceiling(doc, base, args.api_key)
-    check_configs(doc, args.hf_repo)
+    run(doc, base, root, args)
     emit(doc, args)
     if args.json:
+        cov = coverage(doc)
         with open(args.json, "w") as f:
             json.dump({"stack": doc.stack, "model": doc.model,
-                       "problems": doc.problems, "clean": doc.clean,
-                       "could_not_check": doc.blocked,
+                       "requests_made": doc.requests_made,
+                       "coverage": cov,
+                       "coverage_line": coverage_line(cov),
+                       "findings": doc.findings,
+                       "problems": [(f["traps"], f["title"], f["detail"])
+                                    for f in doc.problems],
+                       "clean": [(f["traps"], f["title"]) for f in doc.clean],
+                       "inconclusive": [(f["traps"], f["title"], f["detail"])
+                                        for f in doc.unsure],
+                       "could_not_check": [(f["traps"], f["title"], f["detail"])
+                                           for f in doc.blocked],
                        "evidence": doc.evidence}, f, indent=1, default=str)
 
 if __name__ == "__main__":

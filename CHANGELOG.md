@@ -6,6 +6,62 @@ few days.
 
 ## 2026-07-28
 
+- [minefield-doctor](doctor/) hardened after two independent adversarial
+  audits both ranked it their second finding: the tool could report CHECKED
+  AND CLEAN for conditions it had not verified, against its own documented
+  contract that anything uncheckable goes to COULD NOT CHECK. Every `ok()`
+  call was audited. **Eight false-clean classes were converted**, six of them
+  found during the audit rather than named in it: bogus-kwarg acceptance with
+  no readable template; a non-200 kwarg probe credited as server strictness
+  with no no-kwarg control; a rejection that came from `reasoning_effort`
+  rather than from unknown-kwarg strictness; thinking-on returning no
+  reasoning field and no think tags; a thinking toggle map in which no arm
+  fires; an orphan-tag check reported clean across arms that never returned;
+  empty content that did **not** hit the cap; and sampling defaults called
+  "matching" a shipped `generation_config` when the two sides declared no keys
+  in common. A fourth output bucket, **INCONCLUSIVE**, now separates "the
+  probe ran but several materially different states produce this result" from
+  "the probe could not run", matching the `UNKNOWN` level
+  [checks/preflight_template.py](checks/preflight_template.py) already uses.
+- Doctor: `--hf-revision`. `--hf-repo` always read `resolve/main`, so an
+  operator serving a pinned revision was compared against today's mutable main
+  and told they had drift. The revision is now resolved through the hub API to
+  an immutable commit sha, that sha is printed in every config finding, and an
+  unresolvable ref is reported as INCONCLUSIVE rather than silently used.
+- Doctor: the tool probe no longer over-diagnoses. It forces a call with
+  `tool_choice` where the server supports it, which separates
+  `MODEL_ELECTS_NOT_TO_CALL` and `TOOL_CALLING_UNAVAILABLE` from
+  `TOOL_MARKUP_NOT_PARSED`. Where `tool_choice` is unsupported the ambiguity
+  cannot be removed, so the verdict is INCONCLUSIVE, printed with
+  **CONFIDENCE: LOW** and all six candidate states listed, instead of the
+  PROBLEM the old code asserted.
+- Doctor: honest coverage. The root README's "checks most of this registry"
+  is corrected to **17 of 42**, and every run now prints
+  `implemented N/42 | executed on this stack N | clean N | problems N |
+  inconclusive N | not implemented N` plus the caveats that make even 17 an
+  overstatement: 25 shares trap 04's heuristic, 16 and 22 are annotations on
+  the trap-12 finding, 10/17/21 need `--hf-repo`, and 04/20/25 need a render
+  path.
+- Doctor: committed regression suite. `doctor/tests/fixture_server.py` is a
+  declared-behaviour fixture lane plus a fixture hub;
+  `doctor/tests/test_doctor_verdicts.py` asserts the verdict for every
+  scenario, pairs each defect with a control lane that differs only in the
+  flag under test, and enforces two structural invariants: a CLEAN cannot be
+  emitted without at least one assertion that held, and a not-clean verdict
+  cannot be emitted without at least one that failed. `--json` now carries
+  those assertions verbatim, not only prose. 31 tests, plus the two existing
+  suites, all stdlib-only and contacting no network.
+- Doctor and [checks/preflight_template.py](checks/preflight_template.py):
+  landed the previously staged fixes. vLLM render path
+  (`/v1/chat/completions/render` plus `/detokenize`, falling back to
+  `/tokenize`), so traps 04, 20 and 25 are no longer skipped on every vLLM
+  lane; multimodal probes (surface, usage attribution, content-part ordering,
+  media error classification, with audio and video declared uncovered);
+  quantisation read from `hf_quant_config.json` when `config.json` is silent,
+  so a ModelOpt NVFP4 checkpoint is no longer reported as unquantized; and
+  four kwarg-enumeration false-positive classes removed (Jinja tests, filters,
+  macro parameters, namespace keyword arguments) while the self-defaulting
+  idiom that had been suppressing real kwargs is recovered.
 - Trap [35](traps/evaluation/35-identical-weights-do-not-score-identically.md)
   promoted from **reported by others** to **reproduced here**, and generalised.
   [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b) remains the

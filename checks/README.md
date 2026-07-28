@@ -37,3 +37,21 @@ Exit codes: 0 forensics complete (read the verdicts), 1 lane unreachable,
 kwarg that changes assembly).
 
 Jinja2 is used for the local render path if importable, but it is optional.
+
+## Tests
+
+```bash
+python3 checks/tests/test_preflight_kwargs.py
+```
+
+Regression coverage for `enumerate_kwargs`, the part that decides which
+identifiers are caller-supplied `chat_template_kwargs`. It got that wrong in
+both directions at once: Jinja tests, filters, macro parameters and
+`namespace(...)` keyword arguments were reported as kwargs (four of them
+raising BLOCKING findings on a real vendor template), while the canonical
+idiom `{% set x = x if x is defined else D %}` made the genuine kwargs look
+like local assignments and suppressed them. The fixtures are written in the
+test file rather than vendored, so it carries no third-party template text.
+Set `MINEFIELD_TEMPLATE_DIR` to a directory of `*.jinja` files to also run it
+over real templates on your own disk; that arm skips when the variable is
+unset.
