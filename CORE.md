@@ -51,7 +51,18 @@ playbook that needs it. They are not here because twelve is twelve.
 
 The [doctor](doctor/) orders its output Core first, within each verdict
 bucket, so the checks most likely to matter are the first lines you read. It
-implements checks for 8 of the twelve above (01, 03, 04, 10, 12, 16, 17, 19);
-53, 35, 61 and 77 have no check in it and are yours to run. That is not a
+implements checks for 9 of the twelve above (01, 03, 04, 10, 12, 16, 17, 19,
+77); 35, 53 and 61 have no check in it and are yours to run. That is not a
 gap in the tier, it is the tier being chosen on cost rather than on what a
 request-shaped tool can reach.
+
+**77 was the fourth uncovered one until 2026-07-28.** Its own entry names the
+probe as the fix, in its own words: send one deliberately misspelled parameter
+and see whether you get a 400. That is a request-shaped question with a real
+paired control (the identical request without the invented field must return
+200), so it went in. The check runs first, because on a lane that accepts
+anything, every parameter every other check sends is a hypothesis rather than
+a setting. What it can say is narrow and the tool says so: a CLEAN rules out
+"a misspelled or unimplemented parameter is silently accepted", and never that
+a particular toggle took effect. That question stays behavioural, with 03
+and 29.

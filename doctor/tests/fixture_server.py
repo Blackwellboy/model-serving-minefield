@@ -56,6 +56,17 @@ Scenario flags (all default to the well-behaved value):
                         "known" rejects reasoning_effort while silently
                         accepting invented names, which is the case that must
                         NOT be credited as a strict server.
+  reject_everything     bool. Refuses every chat completion with a 400,
+                        modelling a wrong model name, an expired key or a
+                        server still loading. Exists so the trap-77 control
+                        can be tested: a 400 on the probe request must not be
+                        credited when the baseline was refused too.
+  validates_top_level   bool. Whether an unrecognised TOP-LEVEL request field
+                        is rejected with a 400. Distinct from kwarg_rejection,
+                        which is about chat_template_kwargs: trap 77 measured
+                        a lane that validated exactly one field and accepted
+                        every other name at either level. Default False, which
+                        is the trap-77 lane and also the common real one.
   accepts_images        bool.
   image_reject_names_modality  bool.
   ceiling               "content" | "content_at_cap" | "empty_at_cap"
@@ -98,6 +109,8 @@ DEFAULTS = {
     "render": True,
     "preserve_history": True,
     "kwarg_rejection": None,
+    "validates_top_level": False,
+    "reject_everything": False,
     "accepts_images": True,
     "image_reject_names_modality": True,
     "bad_media_status": 400,
@@ -277,6 +290,24 @@ def _make_lane_handler(cfg):
 
             if path != "/v1/chat/completions":
                 return self._send(404, {"error": "not found"})
+
+            if cfg["reject_everything"]:
+                return self._send(400, {"error": {
+                    "message": "model not found or not yet loaded"}})
+
+            # Top-level field strictness (trap 77). Whitelist rather than
+            # blacklist: a blacklist that only knows the doctor's own probe
+            # name would let the check pass against a fixture that validates
+            # nothing else, which is not the lane being modelled.
+            if cfg["validates_top_level"]:
+                allowed = {"model", "messages", "temperature", "top_p",
+                           "max_tokens", "stream", "tools", "tool_choice",
+                           "chat_template_kwargs", "reasoning_effort",
+                           "enable_thinking", "think"}
+                extra = [k for k in body if k not in allowed]
+                if extra:
+                    return self._send(400, {"error": {
+                        "message": f"unrecognised request field: {extra[0]}"}})
 
             # kwarg strictness
             rej = cfg["kwarg_rejection"]
