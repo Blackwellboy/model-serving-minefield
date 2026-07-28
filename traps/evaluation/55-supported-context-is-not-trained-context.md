@@ -68,3 +68,13 @@ into swap at 256K).
 
 **Attribution.** TheTom.
 
+**Related, and it shares this entry's subject without duplicating it.**
+[Trap 61](61-advertised-window-fails-silently.md) is a first-party measurement
+of the same class on a lane advertising 1M over a 64K trained base. It covers
+the part this entry does not: that nothing anywhere in the request or the
+response tells you the advertised number stopped being true, and that
+degradation is not monotone in depth, so one passing measurement above the
+trained length is a coin flip rather than a result. The two landed in the same
+pass, and the maintainer entry was the one renamed when they collided on a
+title, because the framing here came first.
+
