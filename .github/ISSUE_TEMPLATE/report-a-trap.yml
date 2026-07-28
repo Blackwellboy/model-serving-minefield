@@ -53,6 +53,29 @@ body:
         "I cut this down, ask me if you need more" is a perfectly good thing to
         write.
 
+        ### Keep these exactly as they are
+
+        Over-redaction costs us the trap. Please do **not** placeholder:
+
+        - the **model name and revision**, including the exact repo or tag
+        - the **quantization format** (NVFP4, Q4_K_M, MXFP4, EXL3 and so on)
+        - the **serving stack and its version**, and the **image tag**
+        - the **serve flags and env vars** you launched with
+        - **port numbers on a route shape**, once the host is gone: `HOST:8000`
+          tells us it was an OpenAI-compatible lane, and `HOST:PORT` does not
+
+        Those are usually the part the trap actually depends on. A log scrubbed
+        down to "it broke on a model" is safe and useless.
+
+        ### One thing about our checks, so a green tick does not mislead you
+
+        The scan that catches an internal hostname or a private port **does not
+        run in CI**. It runs from a private pattern list on a maintainer's
+        machine before a push. So a green badge on a PR says nothing at all
+        about whether something leaked, and nothing here will catch a secret in
+        an issue before it is public. The scrub is yours and ours, not the
+        robot's.
+
         **If you have already posted a secret** anywhere on this repo, see
         [SECURITY.md](https://github.com/Blackwellboy/model-serving-minefield/blob/main/SECURITY.md).
         It starts with rotating the credential, which is the only step that

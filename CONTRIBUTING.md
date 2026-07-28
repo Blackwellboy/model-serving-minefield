@@ -603,6 +603,57 @@ protects you as much as it protects us: a path or a port pasted out of your own
 terminal is the most common way a report publishes something its author did not
 mean to. Replace them with `HOST:PORT` or a placeholder.
 
+### A worked example, because the abstract version does not land
+
+You are reporting a trap and the useful thing to paste is the request that
+showed it. This is what you ran:
+
+```
+curl -s http://gpu-node-07.ml.internal.example.com:PORT/v1/chat/completions \
+  -H "Authorization: Bearer sk-live-8f3aQ2vRkT9wL" \
+  -d '{"model":"qwen3-35b-a3b-nvfp4","max_tokens":8192,"chat_template_kwargs":{"enable_thinking":true}}'
+```
+
+(The real command had a port number where that `PORT` is. Why it is not
+printed here is the point of this section.)
+
+This is what to paste:
+
+```
+curl -s http://HOST:PORT/v1/chat/completions \
+  -H "Authorization: Bearer REDACTED" \
+  -d '{"model":"qwen3-35b-a3b-nvfp4","max_tokens":8192,"chat_template_kwargs":{"enable_thinking":true}}'
+```
+
+The hostname and the credential are gone. **The body is untouched**, and the
+body is the trap: the model, the token ceiling and the kwarg name are the three
+things anyone reproducing this needs. Scrubbing them would leave a report we
+cannot act on.
+
+Now the part that catches people, and the reason the block above says `PORT`
+rather than a number.
+
+A specific set of internal lane ports is on our private pattern list. A paste
+carrying one of them fails the scan even with the hostname already gone, because
+an unusual port is enough on its own to fingerprint a lane. **We are not going
+to print which ports those are**, and an earlier draft of this very section did:
+it named one, and the scan correctly refused the push over the file that teaches
+the rule. That is the third time a redaction example here has failed on its own
+bad example, and the fix is always to rebuild the example rather than to add an
+exception for it.
+
+So: **when in doubt, write `HOST:PORT`**. A port number is almost never what
+makes a trap reproducible. `HOST:8000` is fine and tells us it was an
+OpenAI-compatible lane; if the specific number genuinely matters, say so in
+words rather than in a URL and we will ask.
+
+**Do not try to guess the list.** It is private on purpose, because it is a list
+of the internal names it exists to catch, and publishing it would publish them.
+There is no version of this where you can check your paste against it yourself,
+and there is no version where we hand you the list so that you can. That is our
+problem to absorb, not yours to solve, and it is why the rule is a placeholder
+rather than a lookup.
+
 **Where this is checked, and where it is not.** Both scans are a **local
 pre-push discipline**. They run from a private kit on a maintainer's machine,
 wired into the `pre-push` hook, and they **never run in CI**. The pattern file
