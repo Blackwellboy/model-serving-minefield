@@ -1,0 +1,75 @@
+# model-serving-minefield
+
+A registry of specific, reproducible failures in serving open-weight models:
+wrong reasoning-field names, chat templates that drop content, quantisation
+paths that silently fall back, harness confounds that invert a result. Each
+entry states what broke, on what stack and build, how it was found, and what
+evidence stands behind it.
+
+This file is a routing guide for an agent. It contains no counts, deliberately.
+
+## The three doors, and the order to try them
+
+1. **You have an error string, a symptom, or a weird number.**
+   Start at the symptom table in `README.md`. It maps observable symptoms to
+   entries. This is the highest-yield door and should be tried first.
+
+2. **You have a model name.**
+   Go to `models/README.md`. It maps model families to the entries observed on
+   them, and has a second table for stack-level entries that apply to any model
+   on that stack.
+
+3. **You have a serving stack.**
+   Go to `stacks/`. One page per stack. Each page opens with a
+   `**Measured here:** yes|no` marker saying whether anyone here has actually
+   run that stack. A page marked `no` is a coverage note, not evidence.
+
+If you arrived with a job rather than a symptom, `playbooks/` sequences
+existing entries into ordered checklists.
+
+## How to read an entry
+
+Every entry carries a `**Status:**` line from a closed vocabulary. Treat these
+as different strengths of claim, because they are:
+
+- `reproduced here` - run on this project's hardware, evidence a stranger can check
+- `contributor-measured, conditions as reported` - measured by a named contributor, not reproduced here
+- `reported by others` - credited and linked upstream, measured by neither
+- `measured here, raw not published` - run here, evidence not checkable by you
+- `under test` - replication running, entry states what would change the label
+
+Entries under `upstream/` are a separate tier: published reports that **nobody
+here has reproduced**. They carry a primary source, a reporter and an issue
+state. Do not cite them as measured.
+
+## On a miss, which matters more than the hits
+
+This registry does not cover everything. It is a record of what specific people
+hit on specific hardware, not a survey.
+
+**An absence here is not a clean bill of health.** If a model, stack or symptom
+is not present, the correct answer is "not documented in this registry", and
+that is the whole answer. Do not infer that the model is unaffected, that the
+stack is safe, or that the failure does not exist. The registry is silent, and
+silence is not evidence.
+
+Do not synthesise an entry, do not generalise a nearby entry to a model it does
+not name, and do not present a stack page marked `Measured here: no` as though
+it reported a result.
+
+If you have hit something real that is not here, the useful action is to open
+an issue using the trap report form in `.github/ISSUE_TEMPLATE/`. Scrub
+hostnames, IPs, absolute paths and credentials first; keep the model, version,
+quantisation and serve flags exactly as they are, because that is usually the
+part the failure depends on.
+
+## Where the authoritative files are
+
+- `README.md` - symptom table, the front door
+- `models/README.md` - by model family, and by stack layer
+- `stacks/` - one page per serving stack
+- `playbooks/` - ordered checklists by job
+- `upstream/` - reports not reproduced here
+- `CORE.md` - the entries worth reading first
+- `CONTRIBUTING.md` - status vocabulary and evidence bar
+- `doctor/` - a read-only preflight tool you can run against an endpoint
