@@ -29,6 +29,32 @@ is protected by a hard HTTP 400 when the tool-parser flags are missing, so the
 plain claim is unreachable there. The other three candidates on this page remain
 blocked for the reasons stated above.
 
+## Correction 2026-07-28: R2-23 is not a vLLM defect, and this page implied it was
+
+This page records the VL reranker candidate as blocked for want of reranker
+weights, with the test being to "score fixed pairs against Transformers". That
+test is written to confirm a serving defect, and **the upstream thread does not
+report one.**
+
+The issue was read in full during the
+[round-2 classification pass](2026-07-28-r2-queue-classified-upstream-tier.md).
+It closes with the **reporter** stating that the scores were correct once the
+chat template was supplied, the model had been served without one, and that a
+**hand-copied** Jinja file still misbehaved where a **downloaded** one did not.
+No maintainer ever confirmed a scoring bug, because the resolution arrived
+first.
+
+The candidate was ranked seventh of fifty on the strength of a summary line
+nobody had checked against the thread. It stayed that way for months.
+
+What is real here is a usage trap with a silent-wrong signature, and it is
+published as
+[U10](../upstream/U10-vllm-vl-reranker-without-chat-template.md): a scoring
+path has no natural correctness signal, so a reranker assembled with the wrong
+prompt returns confident, well-formed, near-reversed numbers. The
+weights-blocked status is unchanged, we still hold none, but the thing to
+test is now the template arms, not vLLM against Transformers.
+
 ## Correction 2026-07-28: R2-27's blocker was worded wrongly
 
 This page recorded the Mistral tokenizer-mode candidate as blocked for want of
