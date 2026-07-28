@@ -27,8 +27,8 @@ protects is your ability to tell them apart at a glance.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. Ninety entries
-is too many to read; none of these asks you to.
+Four doors, and which one you want depends on why you are here. Ninety-seven
+entries is too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
   for the four jobs people actually arrive with:
@@ -47,7 +47,7 @@ is too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 90 entries, one row each, sorted by number. It is the
+  directly below, all 97 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -58,8 +58,8 @@ is too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **18 of these 90 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 72. It runs
+for **18 of these 97 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 79. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -72,7 +72,7 @@ stop chasing a ghost somebody else already chased.
 
 ## Find your symptom
 
-All 90 entries. If you know what you are running rather than what you are
+All 97 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -168,6 +168,13 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | You set `cache_prompt: false` to isolate a request and cannot tell whether it worked | On this build it does isolate, which is a third data point that does not reproduce two prior stacks | [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md) | measured here, raw not published |
 | Every arm of a quantisation ladder scores the same as the stock copy | An in-place weight edit mutated the stock copy too, through a shared inode | [89](traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) | contributor-measured, conditions as reported |
 | A kernel library advertises a fast path your card cannot run, behind six errors that each look fixable | It ships cubins for one architecture only | [90](traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md) | contributor-measured, conditions as reported |
+| A temperature-0 lane that passed a reproducibility check returns different answers under real traffic | Continuous batching is non-deterministic above a prompt-length floor, and a minimal reproduction is below it | [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md) | reproduced here |
+| A temperature-0 lane diverges at concurrency 1, where batching cannot be the cause | Partial prompt-cache hits are a second divergence source, and cache state outlives your arms | [92](traps/runtime/92-prompt-cache-is-a-second-divergence-source.md) | reproduced here |
+| Moving the clock out of your system prompt changed nothing, or made reuse worse | The template relocates the system block, so the head of the prompt is the first user turn and the received mitigation is inverted | [93](traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md) | reproduced here |
+| A reproducibility guarantee validated on one GPU does not hold on another, same binary and weights | Batch-invariant reproducibility is architecture-dependent past a few hundred prompt tokens | [94](traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md) | reproduced here |
+| You are about to caveat a number because another model shares the host | Two lanes on two GPUs of one host perturbed neither correctness nor decode, so the caveat is unearned | [95](traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) | measured here, raw not published |
+| The serving binary reports more free VRAM than the card has in total | `--list-devices` prints host available memory as device free memory | [96](traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) | reproduced here |
+| A lane runs at a few percent of its achievable decode rate and nothing says why | Partial GPU offload, named by no log line and no `/props` field, with VRAM use no proxy for it | [97](traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md) | reproduced here |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -195,7 +202,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 18 of this registry's 90 entries in under a minute:
+against 18 of this registry's 97 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
@@ -289,6 +296,7 @@ otherwise.
 
 ## Recently added
 
+- 2026-07-28: **traps [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md) through [97](traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md): the determinism axis, and the registry's first cross-architecture and co-tenancy coverage**, on the same llama.cpp lane as 82 to 88. The one to read is [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md), because its failure mode is a **false negative**: temperature-0 divergence under concurrency needs a prompt above roughly 220 tokens, and the natural minimal reproduction is shorter than that, so the check passes and the lane is not deterministic. [93](traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md) is the one that corrects widely repeated advice: on a template that relocates the system block, a clock at the head of the system prompt is inert (136 cached tokens against 135), and moving it into the first user message, which is the usual remedy, is the single change that takes reuse from 77% to 0.6%. [94](traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md) is a regime and not a ranking: `sm_86` and `sm_120` both diverge at 220 tokens, and only `sm_120` still diverges at 444. [95](traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) is a **negative** that removes a standing caveat, and it states the case it does not cover. [92](traps/runtime/92-prompt-cache-is-a-second-divergence-source.md) is a self-caught error: prompt-cache state survived across separate invocations against one process and inverted one of our own results before we found it.
 - 2026-07-28: **traps [82](traps/template/82-system-prompt-relocates-to-last-user-turn.md) through [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md): a fourth serving stack**, llama.cpp with `--jinja` against a Mistral-family Q8_0 GGUF of unstated provenance supplied by **Exile**. The checkpoint is deliberately not characterised and nothing here generalises to any named model. Headline: an agent loop of user, tool call, tool result, user is **unrenderable** and the 400 blames the template rather than your message list; and the template carries a hard-coded default system prompt injected whenever you omit one, so a no-system-prompt control arm **is not a control**. Also a negative worth as much as the positives: [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md) finds `cache_prompt: false` DOES isolate on this build, a third data point that does not reproduce two prior stacks, and it lands with its build qualifier attached.
 - 2026-07-28: traps [89](traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) and [90](traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md), from [@drowzeys](https://github.com/drowzeys) (Keys), shared from his public notes. An in-place weight edit that mutates the stock copy through a shared inode, so every comparison against it is quietly wrong; and a kernel library shipping cubins for one architecture only, behind six errors that each look like a fixable config bug. Two further findings of his landed inside traps [62](traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md) and [79](traps/memory/79-out-of-range-context-request-accepted.md) rather than taking numbers.
 - 2026-07-28: trap [33](traps/routing/33-moe-inference-topk-expansion-tax.md) **promoted to reported by others + reproduced here.** The top-k expansion tax was landed from a research log whose every number is bf16 under HF transformers; it reproduces on our own **NVFP4** build, where under this registry's own rule a different quantisation is a different unit under test and the question was genuinely open. Monotone across four values of k, in two scoring protocols, on two independent passes each: k=8 to k=32 is **-4.50 points** at n=600 paired, discordant 37 against 10, exact McNemar **p = 9.8e-05**, with the independent replicate at -4.00 and p = 0.000936. [Method, both protocols and the runnable scripts](mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md). **This is the second time a first-party run has confirmed an external contributor's finding here**, and as with the first, [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b) keeps the **Found by** line.

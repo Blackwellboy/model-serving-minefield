@@ -7,7 +7,7 @@ material. Every claim on these pages is published in the entry it links.
 | Stack | Page | Entries naming this stack |
 |---|---|---|
 | vLLM | [vllm.md](vllm.md) | 51 |
-| llama.cpp and GGUF | [llama-cpp.md](llama-cpp.md) | 27 |
+| llama.cpp and GGUF | [llama-cpp.md](llama-cpp.md) | 34 |
 | Ollama | [ollama.md](ollama.md) | 9 |
 | mlx_lm | [mlx.md](mlx.md) | 9 |
 | HF transformers `generate()` | no page yet | 7 |
