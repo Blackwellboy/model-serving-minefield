@@ -64,15 +64,27 @@ Everything else in the two launch lines is byte-identical, including
 two nodes, and the generation-config override. The two container environments
 differ by exactly one variable, confirmed by diffing both in full.
 
-**A distinction worth keeping.** The bind-mounted drafter file is often
-described as part of "the garble fix". Reading it against the stack's own
-original shows it is not. The only functional change is a guard that detects a
-non-uniform flattened batch, meaning a mixed prefill/decode step whose
-per-request rows are unequal, and skips speculation for that step instead of
-raising and killing the worker. Its own comment calls it a
-concurrency-greater-than-one fix. That is a **crash** guard, not a garbling
-guard. It was bundled into the same maintenance window. Treat the two as
-separate changes that happen to share a date.
+**A distinction worth keeping, and a correction to how we described it.** The
+bind-mounted drafter file is often described as part of "the garble fix".
+Reading it against the stack's own original shows it is not. The only functional
+change is a guard that detects a non-uniform flattened batch, meaning a mixed
+prefill/decode step whose per-request rows are unequal, and skips speculation
+for that step instead of raising and killing the worker. That is a **crash**
+guard, not a garbling guard, bundled into the same maintenance window. Treat the
+two as separate changes that happen to share a date.
+
+**The guard is not ours.** Corrected 2026-07-28. An AST diff of the deployed
+file against the archived upstream at `60b9118` gives an **identical condition**
+and a **byte-identical return**; the only differences are two renamed local
+variables, line wrapping, and one dropped log sentence. The guard is MiaAI's
+work and any description of it as a first-party change was wrong. Against stock
+vLLM it is a non-uniform-batch guard; **against the recipe we actually build
+from, our file changes nothing at all.**
+
+**Still open, and stated so nobody closes it by assumption:** the stage-c
+image's own baseline proposer was never read. Whether the bind mount differs
+from what that image shipped is therefore unknown. What has been established is
+only that it does not differ meaningfully from upstream at `60b9118`.
 
 **Stacks and builds bitten.** A vLLM `0.21.1rc1.dev339+g1967a5627bc3` build
 serving a community-abliterated DeepSeek-V4-Flash checkpoint (FP8 weight-block
