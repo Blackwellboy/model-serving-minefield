@@ -126,12 +126,12 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **18 of the registry's 81 numbered entries**
+The doctor implements checks for **18 of the registry's 90 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 78). Every
 run ends with a coverage line:
 
 ```
-implemented 18/81 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 63
+implemented 18/90 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 72
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -151,7 +151,7 @@ depth, and the coverage block says so every time:
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
 - **04, 20, 25** need a render path. On a stack that exposes none they cannot
   run at all.
-- The remaining **63** numbered traps have no check in this tool.
+- The remaining **72** numbered traps have no check in this tool.
 
 The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
 `mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of

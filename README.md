@@ -41,14 +41,14 @@ Two doors, and which one you want depends on why you are here.
   most visitors arrive before the symptom rather than during it.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
-it. It has checks for **18 of these 81 entries** and runs in under a minute. It
+it. It has checks for **18 of these 90 entries** and runs in under a minute. It
 is not a broad bill of health, and it prints its own coverage line at the end of
 every run so you can see exactly how much of the registry it touched, how much
 it could not check on your stack, and how much it never implements.
 
 ## Find your symptom
 
-All 81 entries. If you know what you are running rather than what you are
+All 90 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -135,6 +135,15 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | HTTP 200, empty content, and a context size the model could never have honoured | An out-of-range context request is accepted with no clamp message | [79](traps/memory/79-out-of-range-context-request-accepted.md) | reproduced here |
 | A decode rate thirty times the lane's ceiling, or a TTFT longer than the request | A reasoning parser batches the stream, so delta timings describe its flush schedule | [80](traps/runtime/80-reasoning-parser-batches-sse-deltas.md) | measured here, raw not published |
 | A lane you just stopped leaves the next one dying at `cudaMemGetInfo` | Container exit and device memory reclaim are different events | [81](traps/memory/81-stopped-container-has-not-released-memory.md) | measured here, raw not published |
+| Every turn misses the prefix cache, and the system prompt is not where you put it | The template relocates the system prompt onto the last user turn, so no two turns share a prefix | [82](traps/template/82-system-prompt-relocates-to-last-user-turn.md) | reproduced here |
+| Your no-system-prompt control arm is not a control | The template injects a hard-coded default system prompt whenever the request omits one | [83](traps/template/83-template-carries-a-baked-default-system-prompt.md) | reproduced here |
+| An agent loop returns HTTP 400 and the error blames the template, not your message list | A completed tool round trip followed by a user turn is unrenderable | [84](traps/template/84-tool-roundtrip-then-user-turn-is-unrenderable.md) | reproduced here |
+| `enable_thinking` is rejected as a string and accepted as a boolean, on a model with no thinking at all | The server type-checks the kwarg by name even though the template never reads it | [85](traps/reasoning/85-enable-thinking-typechecked-though-never-read.md) | reproduced here |
+| A prefilled assistant turn behaves differently from the same text mid-conversation | The final assistant message bypasses the template's assistant branch | [86](traps/template/86-final-assistant-turn-bypasses-the-template-branch.md) | reproduced here |
+| `/props` reports a context length you did not launch with | It reports the PER-SLOT context, exposes no trained context, and calls itself disabled while serving | [87](traps/runtime/87-llamacpp-props-reports-per-slot-context.md) | reproduced here |
+| You set `cache_prompt: false` to isolate a request and cannot tell whether it worked | On this build it does isolate, which is a third data point that does not reproduce two prior stacks | [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md) | measured here, raw not published |
+| Every arm of a quantisation ladder scores the same as the stock copy | An in-place weight edit mutated the stock copy too, through a shared inode | [89](traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) | contributor-measured, conditions as reported |
+| A kernel library advertises a fast path your card cannot run, behind six errors that each look fixable | It ships cubins for one architecture only | [90](traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md) | contributor-measured, conditions as reported |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -149,7 +158,7 @@ observed on them.
 ## Run the doctor
 
 One stdlib-only file, no install, that diagnoses your endpoint against
-18 of this registry's 81 entries in under a minute:
+18 of this registry's 90 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
@@ -235,6 +244,7 @@ Findings in this registry come from **@quantumleap68**,
 **@mrpmorris** ([sparkrun-recipes](https://github.com/mrpmorris/sparkrun-recipes)),
 **eugr** ([spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)),
 **@Hikari_07_jp** ([qwen36-a6b](https://github.com/hikarioyama/qwen36-a6b)),
+**@drowzeys** ([Keys](https://github.com/drowzeys)), **Exile**,
 and **Blackwellboy** ([laguna-s21-lab](https://github.com/Blackwellboy/laguna-s21-lab)).
 Per-finding credit is in [HALL_OF_FAME.md](HALL_OF_FAME.md), and every entry
 names its finder at the top. Contributors are always named unless they ask
@@ -242,6 +252,8 @@ otherwise.
 
 ## Recently added
 
+- 2026-07-28: **traps [82](traps/template/82-system-prompt-relocates-to-last-user-turn.md) through [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md): a fourth serving stack**, llama.cpp with `--jinja` against a Mistral-family Q8_0 GGUF of unstated provenance supplied by **Exile**. The checkpoint is deliberately not characterised and nothing here generalises to any named model. Headline: an agent loop of user, tool call, tool result, user is **unrenderable** and the 400 blames the template rather than your message list; and the template carries a hard-coded default system prompt injected whenever you omit one, so a no-system-prompt control arm **is not a control**. Also a negative worth as much as the positives: [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md) finds `cache_prompt: false` DOES isolate on this build, a third data point that does not reproduce two prior stacks, and it lands with its build qualifier attached.
+- 2026-07-28: traps [89](traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) and [90](traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md), from [@drowzeys](https://github.com/drowzeys) (Keys), shared from his public notes. An in-place weight edit that mutates the stock copy through a shared inode, so every comparison against it is quietly wrong; and a kernel library shipping cubins for one architecture only, behind six errors that each look like a fixable config bug. Two further findings of his landed inside traps [62](traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md) and [79](traps/memory/79-out-of-range-context-request-accepted.md) rather than taking numbers.
 - 2026-07-28: trap [33](traps/routing/33-moe-inference-topk-expansion-tax.md) **promoted to reported by others + reproduced here.** The top-k expansion tax was landed from a research log whose every number is bf16 under HF transformers; it reproduces on our own **NVFP4** build, where under this registry's own rule a different quantisation is a different unit under test and the question was genuinely open. Monotone across four values of k, in two scoring protocols, on two independent passes each: k=8 to k=32 is **-4.50 points** at n=600 paired, discordant 37 against 10, exact McNemar **p = 9.8e-05**, with the independent replicate at -4.00 and p = 0.000936. [Method, both protocols and the runnable scripts](mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md). **This is the second time a first-party run has confirmed an external contributor's finding here**, and as with the first, [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b) keeps the **Found by** line.
 - 2026-07-28: **traps [75](traps/versioning/75-release-asset-renamed-pinned-url-404.md) through [81](traps/memory/81-stopped-container-has-not-released-memory.md): first Ollama coverage**, which [CONTRIBUTING](CONTRIBUTING.md#where-coverage-is-thin) had listed as a stack with no entries at all. The one with the highest operator cost is [77](traps/reasoning/77-only-one-request-field-is-validated.md): exactly one request field is validated, so a harness ported from another server sends `enable_thinking: false`, gets HTTP 200, and measures its entire thinking-off arm on a thinking lane. Also [78](traps/tools/78-tool-choice-accepted-and-ignored.md), where `tool_choice` is inert in both directions and therefore **fails open** on the standard way an agent framework gates a turn. Two further findings landed inside existing entries: a third reasoning field name split by route ([01](traps/reasoning/01-reasoning-field-two-names.md)) and the injection mirror of the in-text toggle ([66](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama)). The same pass settled R2-39 on the stack it was scoped to, and established that SGLang is [not infeasible](mining/2026-07-28-sglang-on-gb10-feasibility.md) on this hardware class.
 - 2026-07-28: **traps [63](traps/reasoning/63-reasoning-round-trip-one-correct-shape.md) through [74](traps/evaluation/74-non-speech-audio-fabricated-captions.md): the NVIDIA Nemotron 3 family**, three checkpoints including this registry's first multimodal lane, characterised across three sessions and merged. Headline: the reasoning round trip has exactly **one correct shape out of four**, because the preservation gate is named `truncate_history_thinking` and **true means discard**, the opposite polarity to the name this registry already documents, so a pipeline standardised on the other one silently no-ops. Also: a template that scans user text for `/think` and `/no_think`, obeys them over the documented keyword, and deletes them from the prompt, so any path or URL containing those characters is silently rewritten. Eight more findings landed as **additions to existing entries** rather than new numbers, including a measured empty-content floor and the proof that no single floor is safe to copy.
