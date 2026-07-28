@@ -134,3 +134,45 @@ renders above are from this build and this server version.
 runtime can evaluate), [trap 02](02-orphaned-think-close-tag.md) (stray close
 tags), [trap 30](30-default-system-message-silently-replaced.md) (system
 message not surviving the template intact).
+
+## Corroborated upstream 2026-07-28: vllm#46710
+
+[vllm#46710](https://github.com/vllm-project/vllm/issues/46710)
+([@wqh17101](https://github.com/wqh17101),
+[@bbrowning](https://github.com/bbrowning),
+[@lazypool](https://github.com/lazypool),
+[@felix0080](https://github.com/felix0080)) reports the operator-visible
+consequence of this entry's template property, from the serving-default
+direction. Credit for that report is theirs. **Status of this section: reported
+by others**; we have not reproduced the default they hit.
+
+Their matrix has the same shape as the check above: a model whose template
+raises returns HTTP 400 on a late system message, and this checkpoint returns
+200 with degraded output because its template renders happily. The thread
+attributes the degradation to attention decay across a sliding window. **The
+render in this entry says it is simpler and more mechanical:** there is no
+system message in that position for attention to weight at all, because the
+text was concatenated onto the end of the user's turn before the model saw
+anything. That accounts for the reported overwriting of the user's query, for
+why the same payload is clean on checkpoints that do have a system role marker,
+and for the intermittency, without appealing to the attention window.
+
+The two findings are complementary. This entry is a **template property** that
+has been true of this checkpoint all along. The issue is about a **serving
+default that made it reachable**: vLLM moved from merging system messages to
+the front toward preserving them in place, for prefix-cache reasons, with
+auto-detection that treats "the template rendered without raising" as "the
+model handles this". For a checkpoint with no system role marker, rendering
+without raising is exactly what it will do.
+
+[PR #47681](https://github.com/vllm-project/vllm/pull/47681) proposes flipping
+the default back to merge, with an opt-in allowlist that starts empty. **As of
+2026-07-28 it is open, unmerged, and its changes land in the Anthropic
+entrypoint**, so it is not a fix you can assume is in your build, and it is
+scoped narrower than the general chat path.
+
+**Scope, stated because our own lane cannot show this half.** We serve a
+lineage that predates those defaults, so we have not observed preserve-in-place
+ourselves. We established the template property directly from `/tokenize`; the
+upstream thread supplies the evidence that a current default makes it bite.
+Neither half is derived from the other.

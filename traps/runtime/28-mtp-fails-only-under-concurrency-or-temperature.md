@@ -19,7 +19,13 @@ cases that single-stream, greedy, default-layout testing cannot reach:
 concurrent batch scheduling
 ([vllm #41402](https://github.com/vllm-project/vllm/issues/41402),
 DeepSeek-V4-Flash MTP hang at `vllm bench serve` concurrency > 1 on
-v0.20.0, reporter later verified fixed on main), sampling-parameter
+v0.20.0, 4x B200 with tensor parallel and `num_speculative_tokens=2`, reporter later verified fixed on main). **That one has a signature worth
+recognising, because a reader arrives holding the log line rather than the
+title:** the server logs `No available shared memory broadcast block found in
+60 seconds` on repeat, throughput falls to near zero with requests still marked
+running, and there is no Python exception and no CUDA traceback at all. A hang
+with no traceback reads as dead hardware or a wedged interconnect. It was a
+scheduling path., sampling-parameter
 handling in the (0, 1) temperature range under data-parallel serving
 ([vllm-ascend #8724](https://github.com/vllm-project/vllm-ascend/issues/8724),
 KeyError, triaged upstream), and parallel-layout initialization

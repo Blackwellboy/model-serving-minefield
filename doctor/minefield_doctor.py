@@ -1254,7 +1254,23 @@ def check_tools(doc, base, key):
         nc, nrc, nrr, n_calls, _ = msg_fields(n_choice)
         n_text = f"{nc}\n{nrc}\n{nrr}"
 
-    markup = "<tool_call>" in f_text or "<tool_call>" in n_text
+    # KNOWN LIMITATION, recorded rather than papered over. This detects one
+    # hardcoded literal. It reached the right verdict on every lane tested so
+    # far, and on at least one of them it did so by coincidence: the dialect
+    # happened to use this tag. A checkpoint whose markup is a different tag
+    # (a bare <function=...>, a [TOOL_CALL] form, or JSON with no wrapper)
+    # leaves markup False, and the surrounding logic then reports
+    # MODEL_DID_NOT_CALL rather than TOOL_MARKUP_NOT_PARSED. That is a
+    # false-INCONCLUSIVE, which is safe, but the mirror case is not: a
+    # checkpoint that emits this literal inside ordinary prose would set
+    # markup True with no call, which is a latent false PROBLEM.
+    #
+    # Not fixed here, deliberately. A general detector needs the dialect, and
+    # the registry's own trap 84 shows the dialect is a per-checkpoint property
+    # that has to be read out of the template rather than guessed. Guessing
+    # more tags would widen the false-PROBLEM surface, not narrow it.
+    TOOL_MARKUP_LITERALS = ("<tool_call>",)
+    markup = any(lit in f_text or lit in n_text for lit in TOOL_MARKUP_LITERALS)
     doc.evidence["tool_calls_seen"] = {"forced": len(f_calls),
                                        "natural": len(n_calls)}
 
@@ -1969,6 +1985,13 @@ def emit(doc, args):
           f"numbered registry entries: {', '.join(cov['advisory'])}. They can "
           f"report a PROBLEM or a CLEAN of their own, and there is no trap file "
           f"or README row behind any of them.")
+    unaccounted = sorted(set(cov["implemented"])
+                         - set(cov["executed"]) - set(cov["inconclusive"]))
+    if unaccounted:
+        print("  implemented but NOT exercised on this run, in either "
+              "direction: " + ", ".join(unaccounted))
+        print("    a check exists for these and this run gave them no verdict, "
+              "clean or otherwise. They are not covered by anything above.")
     print(f"  the remaining {cov['not_implemented_count']} numbered traps have "
           f"no check in this tool. A clean run above is a statement about "
           f"{len(cov['clean'])} trap ids, not about the registry.")

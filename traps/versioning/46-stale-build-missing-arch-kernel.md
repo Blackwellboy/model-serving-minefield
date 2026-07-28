@@ -61,7 +61,31 @@ to the model:
 - **Fixing the kernel was not the whole story.** The server fronted a gateway routing ~10 auxiliary
   tasks to the same port; at one slot, every one serialized behind the user's turn. Three parallel
   10-token requests finished at 825 / 1082 / 1405 ms, strictly serial. Two slots fixed it and VRAM
-  moved 27.9 to 28.0 GB, because context is *split* across slots, not multiplied.
+  moved 27.9 to 28.0 GB, because context is *shared across* slots, not
+  multiplied.
+
+  **This is documented upstream design, not an accident of this build.** In
+  [llama.cpp discussion #4130](https://github.com/ggml-org/llama.cpp/discussions/4130),
+  asked by [@lapp0](https://github.com/lapp0) and answered by
+  [@ggerganov](https://github.com/ggerganov) as maintainer on 2024-01-08:
+  `--ctx-size` specifies the total size of the KV cache, which is the total
+  number of tokens storable across all independent sequences.
+
+  **The precise form matters when you size a deployment**, and the word "split"
+  above was wrong. It is not a hard per-slot partition of `ctx / n_parallel`:
+  llama.cpp implements a unified cache, so the pool is **shared**, and a
+  sequence may exceed its nominal share as long as the sum across all sequences
+  stays within `P*T`. What is bounded is the sum. The operator consequence is
+  unchanged and is the part to remember: **raising `--parallel` without raising
+  `--ctx-size` reduces what each slot can hold**, which is why adding a slot
+  above cost 0.1 GB rather than doubling the pool.
+
+  The upstream answer is from January 2024 and the measurement above is from
+  2026-07-05, so it is quoted as design intent that still matches what was
+  observed, not as a current guarantee. Credit for the answer is
+  [@ggerganov](https://github.com/ggerganov)'s and the question is
+  [@lapp0](https://github.com/lapp0)'s; the only contribution here is noticing
+  that the two describe the same behaviour.
 - **"This file has no MTP" is not "this family has no MTP."** The deployed quant lacked
   multi-token-prediction tensors, so the speculative flag made the server refuse to start. A
   purpose-built MTP-preserving quant of the same weights initialized fine and took decode from a

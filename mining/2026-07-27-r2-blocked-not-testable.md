@@ -28,3 +28,24 @@ the leaked format is nested XML rather than JSON, and on vLLM the ordinary path
 is protected by a hard HTTP 400 when the tool-parser flags are missing, so the
 plain claim is unreachable there. The other three candidates on this page remain
 blocked for the reasons stated above.
+
+## Correction 2026-07-28: R2-27's blocker was worded wrongly
+
+This page recorded the Mistral tokenizer-mode candidate as blocked for want of
+Mistral weights. That is not the blocker, and stating it that way implied the
+candidate would unblock the moment a Mistral checkpoint appeared. It would not.
+
+Two independent reasons, established on llama.cpp `b9878`:
+
+1. **The flag is hard-rejected.** llama.cpp exits with an invalid-argument error
+   on the tokenizer-mode flag. There is no code path to exercise, with or
+   without weights.
+2. **A GGUF is the wrong artifact regardless.** Conversion to GGUF discards the
+   native tokenizer that the flag exists to select, so even a Mistral GGUF could
+   not test the thing the candidate is about.
+
+The candidate is therefore **llama.cpp-inapplicable**, not weight-blocked. It
+remains open against a stack that implements the flag, which is vLLM with the
+original safetensors checkpoint, and a Mistral GGUF arriving does not change
+that. Recorded during the fourth-stack coverage pass, which served exactly such
+a GGUF and could not have tested it.

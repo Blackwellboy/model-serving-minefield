@@ -312,3 +312,27 @@ accepts `--template-file`). It probes one model per run; pass `--model`
 to pick one on multi-model servers. It sends a still image only: audio and
 video paths, their decoders, error classes and token costs are declared
 uncovered in every run rather than left implied.
+
+## Readiness is a completed generation, not an endpoint answering
+
+Recorded here because it has now cost two separate things, and because this
+tool is where an operator looks for how to check a lane.
+
+**`/v1/models` answering is NOT readiness.** On most serving stacks that route
+responds as soon as the HTTP server binds, which is well before weights are
+resident and long before the lane can generate. A poll that gates on it reports
+one of two wrong answers depending on timing: a connection refusal while the
+lane is merely still starting, or a 200 while nothing has loaded. On a large
+checkpoint the gap between binding and being able to generate is minutes.
+
+It bit the fleet's own lane-release helper, whose restore probe hit that route
+immediately after container start, and it bit a session's first wait loop on
+2026-07-28. Both read a bound socket as a ready model.
+
+**Readiness is a completed generation.** Send one small request with a real
+token budget and require content back before you call the lane up. A probe that
+has not produced a token has not established that the lane can produce one, and
+this doctor's own rule applies to it: a result reaches clean only when the
+observation rules the failure mode out, rather than merely failing to observe
+it.
+
