@@ -245,6 +245,17 @@ def detect_stack(doc, base, root, key):
         doc.model = json.loads(txt)["data"][0]["id"]
     except Exception:
         pass
+    st, txt = get(root + "/api/version", key, timeout=8)
+    if st == 200 and '"version"' in (txt or ""):
+        # Ollama. Worth detecting for one specific reason: it does not read
+        # chat_template_kwargs at all, so the vLLM spelling below is accepted,
+        # silently ignored, and makes every toggle arm fire.
+        doc.stack = "ollama"
+        try:
+            doc.build = str(json.loads(txt).get("version", ""))[:40]
+        except Exception:
+            pass
+        return True
     st, txt = get(root + "/props", key, timeout=8)
     if st == 200:
         doc.stack = "llama.cpp"
@@ -261,13 +272,54 @@ def detect_stack(doc, base, root, key):
     return True
 
 
+# Which request field turns thinking on and off is a property of the SERVING
+# STACK, not of the model. This tool used to send vLLM's spelling to every
+# lane. On a stack that does not read it the kwarg is accepted, ignored, and
+# every arm fires -- which is indistinguishable from an off switch that does
+# not work, and was reported as exactly that. Measured on Ollama 0.32.5:
+# chat_template_kwargs.enable_thinking=false leaves thinking ON (569 chars of
+# reasoning) while reasoning_effort=none turns it OFF (0 chars). The old code
+# called that lane a trap-03 PROBLEM and, on the same evidence, emitted a
+# trap-29 CLEAN asserting no client kwarg could override. Both were wrong.
+VLLM_OFF = ("chat_template_kwargs.enable_thinking=false",
+            {"chat_template_kwargs": {"enable_thinking": False}})
+VLLM_ON = ("chat_template_kwargs.enable_thinking=true",
+           {"chat_template_kwargs": {"enable_thinking": True}})
+EFFORT_OFF = ("reasoning_effort=none", {"reasoning_effort": "none"})
+EFFORT_ON = ("reasoning_effort=high", {"reasoning_effort": "high"})
+
+# Stacks whose thinking-off spelling we have established first-hand. Only for
+# these may "the off switch does not work" be asserted from a firing off arm:
+# anywhere else, a firing off arm is equally consistent with having sent a
+# name the stack never reads.
+STACKS_WITH_KNOWN_OFF_CONTROL = {"vllm", "llama.cpp", "ollama"}
+
+
+def on_control_for(stack):
+    return EFFORT_ON if stack == "ollama" else VLLM_ON
+
+
+def off_controls_for(stack):
+    """Off controls to try, the stack's own spelling first.
+
+    The alternates are tried too, because a control that actually suppresses is
+    positive evidence about THIS lane no matter which stack we guessed.
+    """
+    return [EFFORT_OFF, VLLM_OFF] if stack == "ollama" else [VLLM_OFF, EFFORT_OFF]
+
+
 def check_reasoning_fields(doc, base, key):
     """Traps 01 (read side), 02 (orphan close), 03 (toggle map), 29 (override)."""
     arms = {}
-    for name, kwargs in (("on", {"enable_thinking": True}),
-                         ("off", {"enable_thinking": False}),
-                         ("absent", None)):
-        body_kw = {"chat_template_kwargs": kwargs} if kwargs is not None else {}
+    on_label, on_body = on_control_for(doc.stack)
+    off_tries = off_controls_for(doc.stack)
+    off_label, off_body = off_tries[0]
+    doc.evidence["thinking_controls"] = {
+        "stack": doc.stack, "on": on_label,
+        "off_tried_in_order": [lbl for lbl, _ in off_tries]}
+    for name, body_kw in (("on", on_body),
+                          ("off", off_body),
+                          ("absent", {})):
         st, choice, raw = chat(doc, base, key, doc.model,
                                [{"role": "user", "content":
                                  "Which is larger, 17*24 or 400? Answer briefly."}],
@@ -380,6 +432,33 @@ def check_reasoning_fields(doc, base, key):
         return
 
     f_on, f_off, f_abs = fired(on), fired(arms["off"]), fired(arms["absent"])
+
+    # If the primary off control did not suppress, try the other spellings we
+    # know before concluding anything. A control that suppresses settles the
+    # question by observation and outranks any guess from stack detection.
+    working_off = None if f_off else off_label
+    alt_results = {}
+    if f_off:
+        for lbl, body in off_tries[1:]:
+            st, choice, _raw = chat(doc, base, key, doc.model,
+                                    [{"role": "user", "content":
+                                      "Which is larger, 17*24 or 400? Answer briefly."}],
+                                    max_tokens=256, **body)
+            if st != 200 or choice is None:
+                alt_results[lbl] = f"http {st}"
+                continue
+            c, rc, rr, _tc, _m = msg_fields(choice)
+            a_fired = bool(rc or rr or "<think>" in c or "</think>" in c)
+            alt_results[lbl] = {"fired": a_fired}
+            if not a_fired:
+                working_off = lbl
+                break
+        doc.evidence["off_control_alternates"] = alt_results
+    doc.evidence["working_off_control"] = working_off
+    # Established = we can name the control this lane reads, either because one
+    # demonstrably suppressed, or because the detected stack's own documented
+    # spelling is what we sent.
+    off_established = bool(working_off) or doc.stack in STACKS_WITH_KNOWN_OFF_CONTROL
     doc.evidence["toggle_fired"] = {"on": f_on, "off": f_off, "absent": f_abs}
     if not (f_on or f_off or f_abs):
         # A toggle map in which nothing ever fires is not a map. Reporting
@@ -399,7 +478,50 @@ def check_reasoning_fields(doc, base, key):
 
     landing = ("on-like" if f_abs == f_on and f_on else
                ("off-like" if f_abs == f_off else "distinct"))
-    if f_off:
+    if f_off and working_off:
+        # The spelling we tried first is not the one this lane reads, but a
+        # control that does exist was found. This is NOT trap 03's defect: the
+        # lane has a working off switch, under a different name.
+        doc.ok(["03"], f"thinking toggle map: {off_label} does NOT turn "
+               f"thinking off on this lane, but {working_off} does. "
+               f"explicit-on fired, explicit-off under {working_off} did not, "
+               f"absent lands {landing}. Use {working_off} here, and treat the "
+               f"other spelling as accepted-and-ignored rather than as an off "
+               f"switch",
+               code="OFF_CONTROL_IS_A_DIFFERENT_KWARG",
+               asserts=[A("the explicit-on arm fires", {"on": f_on}),
+                        A(f"an off control was found that suppresses reasoning",
+                          {"control": working_off, "alternates": alt_results}),
+                        A("the first-tried spelling did not suppress",
+                          {"tried": off_label, "fired": f_off})])
+    elif f_off and not off_established:
+        # Every off control we know fired, but the stack was never identified,
+        # so we cannot say we sent the name it reads. "The off switch is
+        # broken" and "we used the wrong word" produce this identical
+        # observation. Calling it a PROBLEM here is the false positive this
+        # tool produced against Ollama.
+        doc.skip(["03"], "thinking-toggle map",
+                 f"reasoning fired on every arm including explicit-off, but "
+                 f"the stack behind this endpoint was not identified "
+                 f"(detected: {doc.stack!r}), so the off control it reads is "
+                 f"unknown. Tried "
+                 f"{', '.join(lbl for lbl, _ in off_tries)}; none suppressed. "
+                 f"A lane that ignores the kwarg you sent is indistinguishable "
+                 f"from a lane whose off switch does not work, and this tool "
+                 f"cannot tell them apart without knowing the stack. Enumerate "
+                 f"the kwargs the template actually reads with "
+                 f"checks/preflight_template.py --template-file, or name the "
+                 f"stack, before treating this lane as having no off switch.",
+                 code="OFF_CONTROL_NAME_NOT_ESTABLISHED",
+                 asserts=[A("the off control this lane reads is known",
+                            {"stack": doc.stack,
+                             "tried": [lbl for lbl, _ in off_tries],
+                             "alternates": alt_results}, held=False)])
+        # deliberately NOT a return: trap 29 gets its own verdict below, from
+        # its own gate. Returning here made that gate unreachable, and a
+        # mutation run proved the test protecting it passed for the wrong
+        # reason -- the code it was meant to exercise never ran.
+    elif f_off:
         # An explicit off that still produces reasoning is the defect trap 03
         # is about, and the old code reported it as a characterised map. A map
         # is not a clean bill: it described the arms and then filed the
@@ -418,7 +540,9 @@ def check_reasoning_fields(doc, base, key):
                     code="EXPLICIT_OFF_STILL_FIRES",
                     asserts=[A("the explicit-off arm produces no reasoning "
                                "observable",
-                               {"on": f_on, "off": f_off, "absent": f_abs},
+                               {"on": f_on, "off": f_off, "absent": f_abs,
+                                "controls_tried": [lbl for lbl, _ in off_tries],
+                                "stack": doc.stack},
                                held=False)])
     elif f_on:
         doc.ok(["03"], f"thinking toggle map: explicit-on fired, explicit-off "
@@ -460,12 +584,35 @@ def check_reasoning_fields(doc, base, key):
                     asserts=[A("kwarg-absent arm fires whenever explicit-on "
                                "fires", {"on": f_on, "absent": f_abs},
                                held=False)])
-    elif f_abs:
-        doc.ok(["29"], "thinking already fires with no kwarg sent, so there is "
-               "no server-side off state for a client kwarg to override on "
-               "this lane",
+    elif f_abs and off_established:
+        doc.ok(["29"], f"thinking already fires with no kwarg sent, so there is "
+               f"no server-side off state for a client kwarg to override on "
+               f"this lane. The client-side control that does work here is "
+               f"{working_off or off_label}",
                code="NO_SERVER_SIDE_OFF_STATE",
-               asserts=[A("kwarg-absent arm fires", {"absent": f_abs})])
+               asserts=[A("kwarg-absent arm fires", {"absent": f_abs}),
+                        A("the client off control this lane reads is known, so "
+                          "the claim about client kwargs is not made from "
+                          "silence",
+                          {"control": working_off or off_label,
+                           "stack": doc.stack})])
+    elif f_abs:
+        # The absent arm firing is a real observation, but the sentence this
+        # CLEAN used to make is about CLIENT KWARGS, and we do not know which
+        # kwarg this lane reads. Asserting that none can override, having tried
+        # only names we guessed, is a clean earned from silence.
+        doc.skip(["29"], "server-side thinking gate",
+                 f"thinking fires with no kwarg sent, so the server default is "
+                 f"on -- but the stack was not identified (detected: "
+                 f"{doc.stack!r}) and no off control we tried suppressed, so "
+                 f"whether a client kwarg can override cannot be stated. That "
+                 f"is a claim about client kwargs and it needs the name this "
+                 f"lane reads.",
+                 code="SERVER_GATE_CONTROL_UNKNOWN",
+                 asserts=[A("the client off control this lane reads is known",
+                            {"stack": doc.stack,
+                             "tried": [lbl for lbl, _ in off_tries]},
+                            held=False)])
     else:
         doc.inconclusive(["29"], "server-side thinking gate",
                          "explicit-on did not fire either, so there is no "

@@ -227,7 +227,11 @@ class TestIgnoredThinkingKwarg(DoctorVerdictCase):
     def test_explicit_off_that_still_fires_is_a_problem(self):
         # The defect trap 03 is about. The doctor computed f_off, printed it,
         # and filed the whole map under CHECKED AND CLEAN regardless of it.
-        with FixtureLane(explicit_off_honored=False) as base:
+        # The lane must be one whose stack we identify, otherwise a firing off
+        # arm is equally consistent with our having sent a name it never reads
+        # -- see test_unidentified_stack_* below.
+        with FixtureLane(explicit_off_honored=False,
+                         props=llamacpp_props()) as base:
             doc = diagnose(base)
         self.check_structure(doc)
         self.no_clean_for(doc, "03")
@@ -239,6 +243,101 @@ class TestIgnoredThinkingKwarg(DoctorVerdictCase):
         self.assertEqual(f["level"], "PROBLEM")
         self.assertEqual(f["traps"], ["03"])
         self.assertIn("explicit-off still produces reasoning", f["title"])
+
+    # -- the Ollama false-positive pair ---------------------------------
+    #
+    # Measured on Ollama 0.32.5 / qwen3:8b: chat_template_kwargs is accepted
+    # and ignored (569 chars of reasoning with enable_thinking=false, byte
+    # identical to sending nothing), while reasoning_effort=none genuinely
+    # turns thinking off. The doctor reported that lane as a trap-03 PROBLEM
+    # and, from the same three arms, emitted a trap-29 CLEAN asserting no
+    # client kwarg could override the server default. Both were wrong, and a
+    # false CLEAN on 29 is the exact defect class the hardening pass existed
+    # to remove.
+
+    def test_ollama_lane_is_not_reported_as_a_broken_off_switch(self):
+        with FixtureLane(ollama=True, off_kwarg="reasoning_effort") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(doc.stack, "ollama",
+                         "an Ollama lane must be identified as one; without "
+                         "that the off-control spelling cannot be chosen")
+        self.assertIsNone(find(doc, "EXPLICIT_OFF_STILL_FIRES"),
+                          "a lane with a working off switch under a different "
+                          "kwarg was reported as having no off switch")
+        f = find(doc, "TOGGLE_MAP_CHARACTERISED")
+        self.assertIsNotNone(f, "the toggle map is characterisable on Ollama "
+                                "once the right control is sent")
+        self.assertEqual(f["level"], "OK")
+
+    def test_ollama_off_control_found_via_alternate_spelling(self):
+        # Same lane, but detection deliberately defeated: no /api/version. The
+        # doctor must still find the working control by trying it, rather than
+        # concluding the off switch is broken.
+        with FixtureLane(ollama=False, off_kwarg="reasoning_effort") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertIsNone(find(doc, "EXPLICIT_OFF_STILL_FIRES"))
+        f = find(doc, "OFF_CONTROL_IS_A_DIFFERENT_KWARG")
+        self.assertIsNotNone(f, "an alternate off control that demonstrably "
+                                "suppresses was not searched for")
+        self.assertEqual(f["level"], "OK")
+        self.assertIn("reasoning_effort=none", f["title"])
+        claims = {a["assert"] for a in f["assertions"]}
+        self.assertTrue(any("suppresses reasoning" in c for c in claims))
+
+    def test_unidentified_stack_with_no_working_off_control_cannot_check(self):
+        # Nothing suppresses AND the stack is anonymous. "The off switch is
+        # broken" and "we sent a word this stack never reads" produce this
+        # identical observation, so neither may be asserted.
+        with FixtureLane(explicit_off_honored=False, anonymous=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertNotIn(doc.stack, ("vllm", "llama.cpp", "ollama"),
+                         "this scenario is only meaningful on a lane that "
+                         "identifies as no known stack")
+        self.assertIsNone(find(doc, "EXPLICIT_OFF_STILL_FIRES"),
+                          "a PROBLEM was asserted about an off switch on a "
+                          "stack whose off-control name was never established")
+        f = find(doc, "OFF_CONTROL_NAME_NOT_ESTABLISHED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "UNKNOWN")
+        self.assertEqual(f["traps"], ["03"])
+
+    def test_unidentified_stack_gets_no_clean_on_trap_29(self):
+        # The false CLEAN. NO_SERVER_SIDE_OFF_STATE asserts that no client
+        # kwarg can override the server default; on an anonymous stack we have
+        # tried only names we guessed, so that is a clean earned from silence.
+        with FixtureLane(explicit_off_honored=False, anonymous=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "29")
+        self.assertIsNone(find(doc, "NO_SERVER_SIDE_OFF_STATE"),
+                          "trap 29 was cleared on a lane whose client off "
+                          "control was never established")
+        # and it must reach trap 29's own gate rather than being covered by
+        # the trap-03 branch returning early: a mutation run showed that an
+        # early return made this gate unreachable and this test vacuous.
+        f = find(doc, "SERVER_GATE_CONTROL_UNKNOWN")
+        self.assertIsNotNone(f, "trap 29 produced no verdict of its own, so "
+                                "the gate protecting it never executed")
+        self.assertEqual(f["level"], "UNKNOWN")
+        self.assertEqual(f["traps"], ["29"])
+
+    def test_trap_29_clean_is_still_available_when_the_control_is_known(self):
+        # The control for the pair above: same firing-absent-arm shape, but on
+        # a stack we identify, so the claim about client kwargs is earned.
+        with FixtureLane(ollama=True, off_kwarg="reasoning_effort") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "NO_SERVER_SIDE_OFF_STATE")
+        self.assertIsNotNone(f, "trap 29 must still be clearable when the off "
+                                "control is known -- the fix must not simply "
+                                "delete the verdict")
+        self.assertEqual(f["level"], "OK")
+        claims = {a["assert"] for a in f["assertions"]}
+        self.assertTrue(any("client off control this lane reads is known" in c
+                            for c in claims))
 
     def test_toggle_map_clean_requires_on_to_fire_and_off_not_to(self):
         # The control differs from the case above in exactly one flag.
@@ -723,7 +822,12 @@ CLEAN_CONTRACT = {
         "separable AND the off arm is genuinely off",
     "NO_SERVER_SIDE_OFF_STATE":
         "the kwarg-absent arm fires, so there is no server-side off state for "
-        "a client kwarg to override",
+        "a client kwarg to override -- and the client control this lane reads "
+        "is known, so the claim about client kwargs is not made from silence",
+    "OFF_CONTROL_IS_A_DIFFERENT_KWARG":
+        "an off control was found that demonstrably suppresses reasoning on "
+        "this lane, which rules out the failure mode of having no off switch; "
+        "the spelling tried first was accepted and ignored",
     "STREAM_CONTENT_DELTAS":
         "non-empty content deltas were seen, which rules out the failure mode "
         "of the answer arriving only in the reasoning channel",
@@ -777,6 +881,11 @@ SWEEP = [
     {"props": llamacpp_props(TEMPLATE_WITHOUT_EFFORT)},
     {"reasoning_field": None}, {"reasoning_field": "reasoning"},
     {"thinking_effective": False}, {"explicit_off_honored": False},
+    {"explicit_off_honored": False, "props": llamacpp_props()},
+    {"explicit_off_honored": False, "anonymous": True},
+    {"anonymous": True},
+    {"ollama": True, "off_kwarg": "reasoning_effort"},
+    {"off_kwarg": "reasoning_effort"},
     {"kwarg_rejection": "unknown"}, {"kwarg_rejection": "known"},
     {"tool_calls": "never", "tool_choice_supported": True},
     {"tool_calls": "never", "tool_choice_supported": False},
