@@ -107,6 +107,46 @@ If an entry does not meet all three conditions, link the data instead. If a
 calibration entry's data would be large enough to change the character of the
 repo, prefer a release asset and say in the entry where it lives.
 
+## Merge contributor PRs, do not apply them
+
+**Merge through GitHub. Do not `git checkout <branch> -- <paths>` onto `main`.**
+
+Applying a contributor's files to `main` produces a result that looks identical
+in the tree and is not identical to them. Their branch and `main` have then
+independently modified the same paths, so their PR shows conflicts on every file
+they wrote plus whatever else moved, and their check run is their branch against
+a `main` that has moved past it. They see a red X on their own work while the
+maintainer comments say it is merged.
+
+It also throws away the only attribution git records. Entry credit lines,
+HALL_OF_FAME and the CHANGELOG survive, because those name the person. The merge
+does not, and it cannot be added afterwards.
+
+This happened to traps 99 to 104 and the PR had to be closed unmerged with an
+explanation. The remainder of that batch, trap 98, is deliberately being held so
+it can land as its own PR and carry his merge.
+
+**Checklist when a contributor PR needs maintainer edits before it can land:**
+
+1. Push the edits to their branch if they have granted maintainer access, or ask
+   for them, or land the batch minus the contested entries and take the rest as
+   a follow-up PR. All three preserve the merge.
+2. If none of those is possible and it must be applied directly, say so **in the
+   PR at the time**, name the attribution cost, and offer the remainder as its
+   own PR. The [contributor-facing statement](CONTRIBUTING.md#how-your-pr-gets-landed-and-what-that-does-to-your-attribution)
+   is what we have committed to them.
+3. Never leave a PR showing conflicts against content `main` already has.
+   Resolving it reconciles their branch against work that is already in, and it
+   can quietly reintroduce anything the maintainer deliberately held back. Close
+   it with an explanation instead.
+
+**One platform note, because it is easy to promise and impossible to deliver.**
+`state_reason: completed` cannot be set on a pull request. It is an issues-only
+field: a PR is merged or it is closed, and a close carries no completed or
+not-planned distinction. If the intent is to say the work was completed rather
+than abandoned, that has to be in the closing comment, because the API will not
+carry it.
+
 ## Numbering in this merge
 
 **Numbers in the 43-and-up range are provisional until the contributors whose

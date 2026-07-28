@@ -1,5 +1,8 @@
 # SGLang
 
+**Measured here:** yes (served first-party on GB10; zero published entries yet, which is a different thing from not having run it)
+
+
 **0 entries name SGLang** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 

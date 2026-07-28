@@ -491,6 +491,38 @@ plainly, in the PR, which ones we are holding and what would unblock each.
 Entries we are not ready to land go to [mining/](mining/) rather than being
 closed, so the work stays findable and stays yours.
 
+## How your PR gets landed, and what that does to your attribution
+
+**Default: your PR is merged through GitHub.** That is the only way the commits
+carry your name, appear in your contribution graph, and leave a merge in the
+history that says you wrote them. Where a batch needs maintainer edits first,
+those go on your branch or into a follow-up, not around it.
+
+**We got this wrong once and it is worth stating what went wrong.** A
+seven-entry contribution was applied to `main` directly instead of merged. The
+entries landed correctly and the credit lines, HALL_OF_FAME row and CHANGELOG
+entry were all accurate, but the contributor's own PR then showed conflicts on
+every file he had written and a failing check, because his branch and `main`
+had independently modified the same paths. From his side the page said his work
+was in conflict while our comments said it was merged, and nobody explained the
+gap. The merge attribution was lost and it was not recoverable after the fact.
+
+**If we do need to land something directly**, which happens when an entry has to
+be split, held or renumbered against other in-flight work, then we owe you three
+things and they are not optional:
+
+- **Saying so in the PR, at the time**, not after you notice a red check.
+- **Naming what it costs you**: the merge does not appear against your name and
+  those commits will not show in your contribution graph. The entry credit,
+  HALL_OF_FAME and CHANGELOG are unaffected, and those are the durable surfaces,
+  but they are not the same thing.
+- **Offering the remainder as its own PR** so at least part of the batch carries
+  your merge, where any part of it is still outstanding.
+
+A closed pull request is a weak credit surface. The entry's `Found by` line,
+the HALL_OF_FAME row and the CHANGELOG announcement are the durable ones, and
+all three name you rather than pointing at a PR number.
+
 ## Credit
 
 Credit is the default, not a courtesy. Contributors are named at the top of

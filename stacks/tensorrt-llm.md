@@ -1,5 +1,8 @@
 # TensorRT-LLM
 
+**Measured here:** no (no first-party run)
+
+
 **We have measured nothing on this stack, and we hold no upstream reports about
 it either.** This page exists because "no page" and "no problems" look
 identical from outside, and they are not the same thing. Absence here means

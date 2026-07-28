@@ -334,6 +334,38 @@ def canonical_labels(root):
     return [lab.strip().lower() for lab in VOCAB_ROW.findall(section)]
 
 
+# A stack page must declare whether we have measured on that stack, in a form a
+# machine can read. This exists because the public site rendered "11 serving
+# stacks measured first-hand" the first time its generator ran: the count of
+# stack PAGES was correct and the label around it was false, because six of the
+# eleven are pages about stacks we have not touched. They said so in their own
+# prose, in two different phrasings, so nothing could derive the true number and
+# the fix at the time was to weaken the label to "covered".
+#
+# The marker restores the stronger claim by making it checkable. Deriving it
+# from prose instead would be a regex asserting something the tree does not
+# declare, which is the failure this file exists to catch.
+STACK_MARKER_RE = re.compile(r"^\*\*Measured here:\*\* (yes|no)\b", re.M)
+
+
+def check_stack_markers(root, findings):
+    d = os.path.join(root, "stacks")
+    if not os.path.isdir(d):
+        return
+    for fn_ in sorted(os.listdir(d)):
+        if not fn_.endswith(".md") or fn_ == "README.md":
+            continue
+        rel = "stacks/" + fn_
+        m = STACK_MARKER_RE.search(read(os.path.join(d, fn_)))
+        if not m:
+            findings.append(Finding(
+                "STACK-MARKER", rel,
+                "no '**Measured here:** yes|no' line. Every stack page must "
+                "declare first-hand status in a form the site generator can "
+                "read, so a page count is never rendered as a measurement "
+                "count"))
+
+
 def check_vocabulary(root, findings):
     canon = canonical_labels(root)
     if not canon:
@@ -450,6 +482,7 @@ def run(root):
     check_routing_ids(root, entries, findings)
     check_status_lead(root, entries, findings)
     check_vocabulary(root, findings)
+    check_stack_markers(root, findings)
     return findings, len(entries)
 
 

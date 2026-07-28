@@ -1,5 +1,8 @@
 # TabbyAPI and ExLlamaV2 / ExLlamaV3
 
+**Measured here:** no (no first-party run)
+
+
 **We have measured nothing on this stack.** No entry names TabbyAPI, ExLlama,
 ExLlamaV2 or EXL2 anywhere. Absence means nobody has reported to us, not that
 the stack is clean.
