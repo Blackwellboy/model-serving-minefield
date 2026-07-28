@@ -23,7 +23,7 @@ weighted-aggregate reasoning is adapted from
 (MIT), and the measured Simpson's-paradox example in it is ours and new. It is
 credited in the playbook text.
 
-## One rule that belongs to all four
+## One rule that belongs to all five
 
 **Readiness is a completed generation, not an endpoint answering.** Wherever a
 playbook says "wait for the lane", that means one small request with a real
