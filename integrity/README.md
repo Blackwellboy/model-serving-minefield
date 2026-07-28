@@ -147,3 +147,43 @@ useless.
 
 Run it after touching anything in this directory. A green run of the checks
 themselves is not evidence; a green run of the mutations is.
+
+## Two things that made this hook a no-op, both found on 2026-07-28
+
+The pre-push hook is the only place the sanitizer runs, because its pattern file
+cannot be published to a CI runner. That makes a silently inert hook the worst
+failure this layer can have, and it had two, stacked, on the first push that
+tried to use it.
+
+**1. It could not find itself.** The install instruction is `ln -sf` into
+`.git/hooks/`. `BASH_SOURCE` is then the symlink's own path, so `dirname` gave
+`.git/hooks`, `INTEGRITY` became `.git/`, and every push was refused with
+`can't open .git/run_checks.py`. That is fail-closed and therefore not
+dangerous, but the documented install produced a hook that could never pass.
+Fixed by resolving the symlink with `readlink -f` before the dirname, plus an
+explicit existence check so the next path bug says what is wrong instead of
+surfacing as a Python file-not-found.
+
+**2. Git ignored it, and said so in a hint.** The symlink target was not
+executable, so git printed
+
+```
+hint: The '.git/hooks/pre-push' hook was ignored because it's not set as executable.
+```
+
+and pushed anyway. This is the dangerous one, and it is the same shape as
+everything else this repo audits: **a check that does not run looks exactly
+like a check that passed**, and the only signal was a hint above the push
+output that a human skims past. The file is now committed with the executable
+bit set, so a fresh clone symlinks a hook that git will actually invoke.
+
+**If you are installing this hook, verify it fires rather than assuming it.**
+Run it directly once and confirm you get the SUMMARY block:
+
+```bash
+ln -sf ../../integrity/hooks/pre-push .git/hooks/pre-push
+.git/hooks/pre-push origin <remote-url> </dev/null
+```
+
+A hook you have not seen produce output is a hook you are assuming.
+
