@@ -57,6 +57,40 @@ the writing and verification work to a maintainer.
   reproduce on stack X" is information.
 - Corrections to any entry or attribution are fixed fast; open an issue.
 
+## Shipping raw data in the repo
+
+This is a text-first repo. The default is that an entry **links or can produce**
+its raw, and the raw lives outside the tree. Keeping it that way is what makes
+the registry cheap to clone and quick to read.
+
+There is one exception, and it is deliberate rather than an oversight:
+
+**When an entry is a calibration constant that other entries cite, its raw data
+ships in-repo, and a runnable verifier ships with it.** A number that other
+conclusions are measured against has to be checkable without asking anyone for
+files. If a reader cannot re-derive it from the tree, every entry that leans on
+it inherits an unverifiable dependency.
+
+Conditions, all three required:
+
+1. Other entries cite the number as a threshold, floor or baseline. A one-off
+   measurement, however good, does not qualify.
+2. A verifier ships beside the data, runs with no arguments, resolves its own
+   paths, and prints a pass or fail per published figure. Data without a
+   verifier is just weight.
+3. The verifier is written independently of whatever produced the numbers, so
+   that a bug in the original does not reproduce itself in the check.
+
+The worked example is
+[the agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md),
+whose `verify_numbers.py` re-derives every published figure from the shipped
+answer sheets. Writing that verifier caught two defects in the draft before
+publication, which is the argument for the rule in one sentence.
+
+If an entry does not meet all three conditions, link the data instead. If a
+calibration entry's data would be large enough to change the character of the
+repo, prefer a release asset and say in the entry where it lives.
+
 ## Cadence
 
 Reports get a first maintainer response within a few days. Entries land as
