@@ -42,7 +42,8 @@ entries is too many to read; none of these asks you to.
 - **"What am I running?"** The **[per-stack pages](stacks/)** give you the five
   entries most likely to bite on
   [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
-  [Ollama](stacks/ollama.md) or [mlx_lm](stacks/mlx.md), plus the three checks
+  [Ollama](stacks/ollama.md), [sglang](stacks/sglang.md) or
+  [mlx_lm](stacks/mlx.md), plus the three checks
   to run before anything else.
   **Every stack has a page, including the ones we have never run**:
   [HF transformers](stacks/hf-transformers.md),
