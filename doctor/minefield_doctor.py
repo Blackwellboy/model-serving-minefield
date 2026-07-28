@@ -75,6 +75,7 @@ TRAP_PATHS = {
     "26": "tools/26-tool-call-inside-unclosed-think.md",
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
+    "77": "reasoning/77-only-one-request-field-is-validated.md",
 }
 
 # The registry's Core tier (../CORE.md): the twelve entries selected on
@@ -82,8 +83,11 @@ TRAP_PATHS = {
 # the best data. Findings are ordered Core first within each verdict bucket so
 # the first lines an operator reads are the ones most likely to matter.
 #
-# Four of the twelve (35, 53, 61, 77) have no check in this tool and appear
+# Three of the twelve (35, 53, 61) have no check in this tool and appear
 # here only so the ordering key and the coverage line stay honest about that.
+# 77 was the fourth until check_request_validation landed: its own entry names
+# the two-minute probe as the fix, so implementing it was reading the entry
+# rather than inventing a check.
 # Keep this set in sync with CORE.md; it is a reading-order tier, not a claim
 # about severity in any individual case.
 CORE_TRAP_IDS = {"01", "03", "04", "10", "12", "16", "17", "19",
@@ -1401,6 +1405,102 @@ def check_tools(doc, base, key):
                                 {"markup": False}, held=False)])
 
 
+def check_request_validation(doc, base, key):
+    """Trap 77: is the request surface validated at all?
+
+    The entry names this probe as its own fix, in its own words: "before you
+    trust any new server with an arm of an experiment, send one deliberately
+    misspelled parameter and see whether you get a 400. If you get a 200, the
+    request surface is unvalidated, your own typos are silent too, and every
+    parameter you send is a hypothesis rather than a setting." So this check
+    is reading the entry, not inventing a test for it.
+
+    Why it earns a place beside the behavioural toggle checks. Those ask "did
+    thinking actually stop", which is the right question and an expensive one:
+    it needs a reasoning observable, and on a lane that produces none the
+    toggle map is uncharacterised and every arm skips. This asks the cheap
+    structural question underneath it, which needs no observable at all: does
+    a 200 on this lane carry ANY information about whether the server read
+    what you sent? On a lane that answers no, every parameter in every other
+    check is a hypothesis, and that is worth knowing before the expensive
+    probes run rather than after.
+
+    The CLEAN is paired, and it has to be. "The probe request returned 400" is
+    satisfied by a lane that returns 400 for everything: a wrong model name,
+    an expired key, a server still loading. That is the false-CLEAN shape this
+    tool has produced four times. So the baseline goes first, and CLEAN
+    requires an identical request WITHOUT the invented field to have returned
+    200. The difference between the two is then attributable to the field.
+
+    What the CLEAN does NOT rule out, stated here because it is the tempting
+    over-read: a server that rejects an unknown field can still accept a
+    known-but-unimplemented one and ignore it. Rejecting typos is a floor, not
+    a guarantee that any particular parameter took effect. The behavioural
+    question stays with traps 03 and 29, and the entry's own advice stands
+    either way: assert on the response, never on the status code.
+    """
+    # A name no server implements and no server could plausibly add. Sent at
+    # the top level, which is where trap 77 measured it; the entry records
+    # that placement inside `options` behaved identically.
+    probe_field = "__minefield_unvalidated_field_probe__"
+    msgs = [{"role": "user", "content": "hi"}]
+
+    base_st, _, base_txt = chat(doc, base, key, doc.model, msgs, max_tokens=16)
+    if base_st != 200:
+        doc.inconclusive(
+            ["77"], "request-field validation",
+            f"the baseline request (nothing invented, nothing unusual) did "
+            f"not return 200 (http {base_st}), so a rejection of the probe "
+            f"below would say nothing about field validation: a lane that "
+            f"rejects everything rejects the probe too. Fix the lane, or the "
+            f"model name or key, and re-run.",
+            code="VALIDATION_NO_BASELINE",
+            asserts=[A("a plain request succeeds",
+                       {"status": base_st, "body": str(base_txt)[:160]},
+                       held=False)])
+        return
+
+    probe_st, _, probe_txt = chat(doc, base, key, doc.model, msgs,
+                                  max_tokens=16, **{probe_field: "minefield"})
+    doc.evidence["unknown_field_probe_status"] = probe_st
+
+    if probe_st != 200:
+        doc.ok(["77"],
+               f"the request surface is validated: an invented top-level "
+               f"field was rejected (http {probe_st}) while the identical "
+               f"request without it returned 200. A misspelled parameter on "
+               f"this lane is loud rather than silent",
+               code="VALIDATION_REJECTS_UNKNOWN_FIELD",
+               asserts=[A("the baseline request succeeds",
+                          {"status": base_st}),
+                        A("the same request with an invented field is "
+                          "rejected",
+                          {"field": probe_field, "status": probe_st})])
+        return
+
+    doc.problem(
+        ["77"],
+        f"the request surface is unvalidated: an invented top-level field "
+        f"({probe_field}) was accepted with http 200, exactly as the baseline "
+        f"without it was. Nothing you send to this lane is confirmed by its "
+        f"status code",
+        "Treat every request parameter here as a hypothesis until you have "
+        "checked the response. Two consequences, both of them cheap to get "
+        "wrong: a thinking-off arm that sends a field this server does not "
+        "implement is measured on whatever the lane's default is, which on a "
+        "thinking-by-default lane means the entire arm is a number about the "
+        "wrong configuration; and your own typos are silent, so a parameter "
+        "you misspelled reads as a parameter that had no effect. Assert on "
+        "the response per request, not per configuration: an arm you believe "
+        "is thinking-off must show an absent or empty reasoning field on "
+        "every request in it.",
+        code="UNKNOWN_FIELD_ACCEPTED",
+        asserts=[A("the baseline request succeeds", {"status": base_st}),
+                 A("an invented field is rejected",
+                   {"field": probe_field, "status": probe_st,
+                    "body": str(probe_txt)[:160]}, held=False)])
+
+
 def check_tool_choice_gate(doc, base, key):
     """Trap 78: tool_choice accepted and ignored, which fails OPEN.
 
@@ -2060,6 +2160,10 @@ def emit(doc, args):
 def run(doc, base, root, args):
     """Every check, in order. Split out of main() so the regression suite can
     drive a full run against a fixture server without going through argv."""
+    # First, because it is the cheapest and because it qualifies every check
+    # after it: on a lane that accepts anything, every parameter the checks
+    # below send is a hypothesis rather than a setting.
+    check_request_validation(doc, base, args.api_key)
     check_reasoning_fields(doc, base, args.api_key)
     check_streaming(doc, base, args.api_key)
     check_history_assembly(doc, root, args.api_key)
