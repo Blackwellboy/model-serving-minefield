@@ -45,6 +45,9 @@ phrase.
 - [ ] Status label is one of the five above, copied exactly
 - [ ] **Evidence pointer present.** `reproduced here` requires one of: a URL to the raw a reader can open, in-repo raw under the MAINTAINING rules, or a runnable procedure against a publicly obtainable artifact. "We can produce the raw on request" does not qualify: a promise cannot be checked by the person reading the entry. If none of the three is available, the honest label is `measured here, raw not published`
 - [ ] Any status quoted in `README.md`, `CORE.md`, a `models/` page or a `stacks/` page matches the entry's own Status line
+- [ ] **No internal hostnames, ports, home directory paths, LAN or tailnet addresses** in any file, including your entry body. Use `HOST:PORT` or a placeholder. This is checked before publication, it blocks everywhere with no exemption, and it is the check most likely to catch something you did not intend to publish
+- [ ] No em, en or figure dashes **outside** a `contributor-measured` entry body (see [House style](../CONTRIBUTING.md#house-style)). Inside one they are not checked and we normalise at merge, so this is not something to spend time on
+- [ ] Noted: both scans run from a private kit at `git push` on a maintainer machine and **never in CI**, so a green badge here says nothing about them
 
 What this PR adds:
 
