@@ -265,6 +265,61 @@ total minus implemented after one such number survived two registry expansions.
 The CHANGELOG is the one place a reader must not infer current coverage from a
 number, and its entries are dated so that reading is available to them.
 
+**Status agreement between a surface and an entry is checked only at the
+LEADING label.** `reference_integrity.py` compares the first closed-vocabulary
+stem in a routing table's status cell against the first stem in the entry's own
+Status line. It does not compare full compound statuses, and two abandoned
+attempts are recorded here because both were wrong in instructive ways.
+Matching the first bold-delimited span truncates every compound status and
+produced 8 findings, most of them artifacts of the truncation. Matching the
+whole status paragraph fires on **negated** mentions, because entries
+legitimately write sentences like "which is why this is not 'reproduced here'";
+that version produced 26 findings of which 25 were honest entries. A guard that
+fires on two dozen good entries gets waved through, which is worse than no
+guard. **The accepted consequence: a surface can keep the right leading label
+and still describe the qualifier wrongly, and nothing will catch it.** The
+leading label is the part that carries credit and weight, which is why that is
+the part asserted.
+
+**Which stack or model an entry "belongs to" is not mechanically decidable, so
+placement onto the right per-stack page is not asserted.** The reverse
+direction is: every trap id cited on a stack page, a playbook, `CORE.md` or the
+per-model index must resolve to an entry that exists, which is what catches a
+renumber. The forward direction, "this entry names llama.cpp so it must appear
+on the llama.cpp page", needs a judgement about what an entry is *about* rather
+than what it mentions, and the counting rule the stack pages publish is itself
+prose: a stack counts when it is named in an entry's evidence surfaces, not in
+a passing cross-reference. **The accepted consequence: an entry can be missing
+from a stack page it belongs on, and the per-stack entry counts in
+`stacks/README.md` can drift, without any check firing.** Both are maintained
+by hand at merge time.
+
+**Anchor fragments are not resolved.** A link to `file.md#some-heading` is
+checked for the file, never for the heading. GitHub's slug algorithm is not
+fully specified, and a re-implementation that is subtly wrong produces false
+positives on correct links, which is the failure mode this layer avoids more
+carefully than it avoids misses. **The accepted consequence: a renamed heading
+silently breaks in-page navigation.**
+
+**Non-markdown content is scanned by the claim ledger and by nothing else.**
+`claim_propagation.py` reads `.md`, `.txt` and `.html`. The `.html` extension
+is there because the Pages site is a single `index.html`: without it, pointing
+the ledger at that repo returns a confident CLEAN having read only its README,
+which is how the site carried a retracted depth claim after three other
+surfaces were corrected. But the site is otherwise outside every other check.
+Its trap counts are guarded only by a `check_counts.py` that lives in that
+repository, not here, and `reference_integrity.py` does not run against it
+because it has no `traps/` tree. **The accepted consequence: the site's counts
+and links are checked by the site's own tooling or not at all.**
+
+**Data files are not checked at all.** The committed `.jsonl` raw under
+`mining/`, the `.sh` and `.py` scripts beside them, `LICENSE`, `.gitignore`,
+the issue template and the workflow file are read by no check in this layer.
+For the raw that is deliberate: it is evidence, and rewriting it would falsify
+it. For the scripts it is a real gap, accepted because they are shipped as
+runnable artifacts rather than as claims. **A stale path or a broken flag
+inside a shipped script will not be caught here.**
+
 **Documents outside this repository are structurally out of reach, and stale
 registry facts there will not be caught.** This is the third residual and it is
 the one with the widest blast radius, so it is written down rather than left to
