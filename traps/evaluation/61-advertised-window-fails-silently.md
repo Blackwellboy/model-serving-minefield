@@ -117,13 +117,22 @@ fragment of the correct passphrase* and then derailed into invented records.
 The information is reaching the model. What degrades first is the instruction,
 not the retrieval.
 
-That means `finish_reason: length` is doing real work as a signal here, which
-is the exact inversion of the usual advice in
-[trap 16](../evaluation/16-finish-reason-is-not-a-failure-signal.md): there,
-treating cap-hits as failures corrupts your scores. Here, the transition from
-`stop` to `length` on a task whose correct answer is three tokens long is the
-earliest observable sign of degradation, and it appears a full rung before
-accuracy moves. Score the answer, but watch the finish reason.
+That means `finish_reason: length` is doing real work as a signal here, and it
+is worth being precise about how that sits with
+[trap 16](../evaluation/16-finish-reason-is-not-a-failure-signal.md), because
+the careless version of this sentence is a claim form that entry exists to
+retract. Trap 16's rule is **not** "cap-hits are failures" and it is not the
+inverse either: it is that `finish_reason` lies in **both** directions, so you
+bucket on **extractable output first** and use the finish reason only as a
+diagnostic dimension. Nothing here changes that rule.
+
+What this lane adds is that the diagnostic dimension is unusually informative
+on this particular task. The correct answer is three tokens long, so
+extractable output is a clean binary, and the `stop` to `length` transition
+shows up a full rung of depth **before** accuracy moves. So: score the answer,
+exactly as trap 16 says, and watch the finish reason as the early warning it
+happens to be here. Do not promote it to the pass/fail criterion, which is the
+move trap 16 records being corrected in public.
 
 **The critical caveat, and it is large.** Every failure above is a **cold**
 prefill. Re-send any of those exact prompts while the prefix cache still holds
