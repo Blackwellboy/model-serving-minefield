@@ -39,6 +39,7 @@ the writing and verification work to a maintainer.
    entry is the only person the label exists for, and they cannot act on an
    offer to send them files.
 
+   <!-- status-vocabulary: full-set -->
    The labels are **reproduced here**, **contributor-measured, conditions as
    reported**, **reported by others**, **measured here, raw not published**,
    and **under test**. Each carries an evidence pointer. Reported,

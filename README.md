@@ -15,6 +15,7 @@ these.
 Each entry leads with the symptom you would actually observe, then the
 mechanism, the stacks and builds it bit, the check that catches it, and the
 fix. Each carries exactly one status from a
+<!-- status-vocabulary: full-set -->
 [closed vocabulary](CONTRIBUTING.md#status-vocabulary), and the status says how
 much weight the entry carries: **reproduced here** (we ran it, and you can
 check the result without asking us for anything), **contributor-measured,
@@ -42,7 +43,11 @@ entries is too many to read; none of these asks you to.
   entries most likely to bite on
   [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
   [Ollama](stacks/ollama.md) or [mlx_lm](stacks/mlx.md), plus the three checks
-  to run before anything else. The
+  to run before anything else.
+  [HF transformers](stacks/hf-transformers.md) and
+  [SGLang](stacks/sglang.md) have pages too, and both open by saying what they
+  do not have: nothing on the HF page was measured here on that stack, and
+  SGLang has no entries at all yet. The
   **[per-model and per-stack index](models/README.md)** is the full map,
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
@@ -58,8 +63,8 @@ entries is too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **18 of these 97 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 79. It runs
+for **19 of these 97 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 78. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -210,7 +215,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 18 of this registry's 97 entries in under a minute:
+against 19 of this registry's 97 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

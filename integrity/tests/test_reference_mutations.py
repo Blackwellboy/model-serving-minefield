@@ -26,10 +26,14 @@ CHECKER = os.path.join(INTEGRITY, "reference_integrity.py")
 def copy_tree(dst):
     """Copy the parts of the repo the checker reads. Deliberately includes
     .git so tracked_md() takes its normal git path rather than the fallback."""
+    # .github is in the list because the PR template restates the status
+    # vocabulary, and the restatement is what VOCAB-SLASH and VOCAB-FULL
+    # check. Without it those tests would pass against a tree that does not
+    # contain the file they exist for.
     for name in ("traps", "playbooks", "stacks", "models", "mining",
                  "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
-                 "MAINTAINING.md", "HALL_OF_FAME.md", "doctor", "checks",
-                 "integrity", "LICENSE"):
+                 "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md",
+                 "doctor", "checks", "integrity", ".github", "LICENSE"):
         src = os.path.join(ROOT, name)
         if not os.path.exists(src):
             continue
@@ -179,7 +183,111 @@ class ReferenceMutations(unittest.TestCase):
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 0, "a trailing qualifier must not fire:\n" + out)
 
-    def test_10_mining_note_citing_a_dead_id(self):
+    # --- the status vocabulary, defined once and restated in four places ----
+    #
+    # These exist because the PR template shipped for weeks teaching three of
+    # the five labels, missing exactly the two an external contribution needs,
+    # and that omission is what made the registry's first external
+    # contribution arrive mislabelled. CONTRIBUTING was corrected. Nothing
+    # asserted the template agreed with it, so the template kept teaching the
+    # wrong set. Each test below reintroduces one shape of that drift.
+
+    def test_11_pr_template_teaching_a_partial_slash_list(self):
+        """The exact historical defect: a slash-joined subset."""
+        p = os.path.join(self.repo, ".github", "PULL_REQUEST_TEMPLATE.md")
+        open(p, "w", encoding="utf-8").write(
+            "# Adding a trap entry\n\n"
+            "- [ ] Status line up top: reproduced here / reported by others / "
+            "under test\n")
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB-SLASH", out)
+        self.assertIn("contributor-measured", out)
+
+    def test_12_slash_list_is_clean_when_it_is_the_whole_set(self):
+        """A surface may enumerate with slashes; it may not enumerate a
+        SUBSET. Without this the check would just ban a punctuation mark."""
+        p = os.path.join(self.repo, ".github", "PULL_REQUEST_TEMPLATE.md")
+        t = open(p, encoding="utf-8").read()
+        t += ("\n\nStatus: reproduced here / contributor-measured, conditions "
+              "as reported / reported by others / measured here, raw not "
+              "published / under test\n")
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 0, "a complete slash list must not fire:\n" + out)
+
+    def test_13_marked_surface_dropping_a_label(self):
+        p = os.path.join(self.repo, "MAINTAINING.md")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace("**measured here, raw not published**,", "", 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB-FULL", out)
+        self.assertIn("measured here, raw not published", out)
+
+    def test_14_wrapped_label_on_a_marked_surface_is_clean(self):
+        """Regression. MAINTAINING wraps 'contributor-measured, conditions as
+        reported' across a newline. The first version of this check did a flat
+        substring test and reported that present, correct label as missing.
+        A guard that fires on an honest surface gets waved through."""
+        p = os.path.join(self.repo, "README.md")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace("**contributor-measured,\nconditions as reported**",
+                      "**contributor-measured,\n   conditions   as\nreported**", 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 0, "wrapped labels must not fire:\n" + out)
+
+    def test_15_gate_labels_diverging_from_the_published_table(self):
+        """contradiction_gate enforces the set at runtime. If its list and
+        CONTRIBUTING's table disagree, one of them is lying to a
+        contributor."""
+        p = os.path.join(self.repo, "integrity", "contradiction_gate.py")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace('    "under test",\n', "", 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB-GATE", out)
+
+    def test_16_gate_carrying_a_label_nobody_published(self):
+        p = os.path.join(self.repo, "integrity", "contradiction_gate.py")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace('    "under test",\n',
+                      '    "under test",\n    "measured on our fleet",\n', 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB-GATE", out)
+        self.assertIn("measured on our fleet", out)
+
+    def test_17_a_sixth_label_added_to_the_canonical_table(self):
+        """Adding a label to CONTRIBUTING must break every stale restatement
+        rather than diverge from them silently. This is the direction the
+        original defect ran in."""
+        p = os.path.join(self.repo, "CONTRIBUTING.md")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace(
+            "| **under test** |",
+            "| **vendor-confirmed** | the vendor acknowledged it | a vendor |\n"
+            "| **under test** |", 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB", out)
+
+    def test_18_canonical_table_going_missing(self):
+        """No parsable table is reported, not treated as nothing to check."""
+        p = os.path.join(self.repo, "CONTRIBUTING.md")
+        t = open(p, encoding="utf-8").read()
+        t = t.replace("## Status vocabulary", "## Statuses", 1)
+        open(p, "w", encoding="utf-8").write(t)
+        rc, out = run_checker(self.repo)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("VOCAB-DEFN", out)
+
+    def test_19_mining_note_citing_a_dead_id(self):
         p = os.path.join(self.repo, "mining", "OPEN_QUESTIONS.md")
         t = open(p, encoding="utf-8").read()
         t = t.replace("../traps/runtime/97-", "../traps/runtime/970-", 1)
