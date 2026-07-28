@@ -344,8 +344,8 @@ whole thing back. A PR is never rejected for size.
 three outcomes are: it lands as its own entry, it lands as a qualifier on the
 existing entry with your data and credit attached, or it becomes a row in the
 existing entry's "Stacks and builds bitten". All three are contributions and
-all three are credited. You are not expected to have read all 42 entries
-before opening a PR; finding the overlap is a maintainer's job.
+all three are credited. You are not expected to have read every entry in the
+registry before opening a PR; finding the overlap is a maintainer's job.
 
 **Partial merges.** We will land the entries we can verify or accept and say
 plainly, in the PR, which ones we are holding and what would unblock each.

@@ -14,10 +14,16 @@ these.
 
 Each entry leads with the symptom you would actually observe, then the
 mechanism, the stacks and builds it bit, the check that catches it, and the
-fix. Each carries a status: **reproduced here** (measured in our lab, raw
-linked), **reported by others** (credited and linked, not independently
-reproduced), or **under test**. Reported-but-unreproduced entries are
-welcome here and labelled, not rejected.
+fix. Each carries exactly one status from a
+[closed vocabulary](CONTRIBUTING.md#status-vocabulary), and the status says how
+much weight the entry carries: **reproduced here** (we ran it, and you can
+check the result without asking us for anything), **contributor-measured,
+conditions as reported** (someone else measured it and published their
+conditions), **reported by others** (credited and linked, not independently
+reproduced), **measured here, raw not published** (we ran it, and you cannot
+check it), and **under test**. Entries that are reported, contributed or
+unreproduced are welcome here and labelled, never rejected; what the label
+protects is your ability to tell them apart at a glance.
 
 In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint. It
 has checks for **17 of these 81 entries** and runs in under a minute. It is
