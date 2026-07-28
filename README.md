@@ -19,8 +19,11 @@ linked), **reported by others** (credited and linked, not independently
 reproduced), or **under test**. Reported-but-unreproduced entries are
 welcome here and labelled, not rejected.
 
-In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint;
-it checks most of this registry for you in under a minute.
+In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint. It
+has checks for **17 of these 42 entries** and runs in under a minute. It is
+not a broad bill of health, and it prints its own coverage line at the end of
+every run so you can see exactly how much of the registry it touched, how
+much it could not check on your stack, and how much it never implements.
 
 ## Find your symptom
 
@@ -81,25 +84,35 @@ observed on them.
 ## Run the doctor
 
 One stdlib-only file, no install, that diagnoses your endpoint against
-this registry in under a minute:
+17 of this registry's 42 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
 python3 minefield_doctor.py --base-url http://localhost:8000/v1
 ```
 
-Read-only and bounded: GET probes plus at most 8 small temperature-0
-completions, nothing sent anywhere but your endpoint. Output is
-PROBLEMS / CHECKED AND CLEAN / COULD NOT CHECK, every finding linked to
-its trap, and `--report` emits a paste-ready block for the
+Read-only and bounded: GET probes plus at most 12 small temperature-0
+completions, nothing sent anywhere but your endpoint. Add
+`--hf-repo org/name` for the checkpoint-config checks, and
+`--hf-revision <tag or commit>` if you serve a pinned revision rather than
+whatever `main` holds today.
+
+Output is PROBLEMS / CHECKED AND CLEAN / INCONCLUSIVE / COULD NOT CHECK,
+followed by a coverage line. A result only reaches CHECKED AND CLEAN when
+the observation rules the trap out; where acceptance, silence, or a missing
+template would explain the same result, it is reported as INCONCLUSIVE or
+COULD NOT CHECK instead. Every finding links its trap, and `--report`
+emits a paste-ready block for the
 ["I hit a trap" form](../../issues/new?template=report-a-trap.yml). Full
-safety story and check list in [doctor/README.md](doctor/README.md).
+safety story, check list and coverage caveats in
+[doctor/README.md](doctor/README.md).
 
 ## Before you serve a new model
 
-The one-line checklist, each line backed by an entry. Most of it is
-automated by [the doctor](doctor/); runnable pieces also live in
-[checks/](checks/).
+The one-line checklist, each line backed by an entry. Lines 2, 3, 4, 5 and
+the first two thirds of line 8 have a check in [the doctor](doctor/); lines
+1, 6, 7 and the echo-and-logprobs part of line 8 do not, and are yours to
+run. Runnable pieces also live in [checks/](checks/).
 
 1. Image toolchain matches the host driver ([08](traps/runtime/08-image-toolchain-newer-than-driver.md)); record the image digest ([09](traps/runtime/09-image-choice-changes-outcome.md)).
 2. Read `config.json`'s quant schemes, not the repo name ([10](traps/quantization/10-quant-label-is-not-the-kernel-path.md)).

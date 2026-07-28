@@ -97,17 +97,85 @@ _BUILTIN = {
 
 _JINJA_IDENT = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\b")
 
+# Jinja keywords. Not kwargs.
+_JINJA_KEYWORD = {
+    "if", "else", "elif", "endif", "for", "endfor", "set", "endset", "in",
+    "is", "not", "and", "or", "with", "without", "endwith", "macro",
+    "endmacro", "call", "endcall", "filter", "endfilter", "block", "endblock",
+    "extends", "include", "import", "from", "as", "do", "raw", "endraw",
+    "generation", "endgeneration", "recursive", "scoped", "context",
+    # Jinja globals: callable in any template, never caller-supplied
+    "range", "dict", "lipsum", "cycler", "joiner", "namespace",
+}
+
+# Jinja TESTS: the identifier after `is` or `is not`. `tools is iterable` does
+# not mean the caller supplies `iterable`. Positional detection below catches
+# custom tests too; this list is the backstop for the built-in ones.
+_JINJA_TEST = {
+    "defined", "undefined", "none", "boolean", "false", "true", "integer",
+    "float", "number", "string", "sequence", "mapping", "iterable", "callable",
+    "sameas", "escaped", "in", "divisibleby", "odd", "even", "lower", "upper",
+    "filter", "test", "eq", "ne", "lt", "le", "gt", "ge", "equalto",
+}
+
+# Jinja FILTERS: the identifier after `|`. `x | tojson | safe` does not mean the
+# caller supplies `safe`.
+_JINJA_FILTER = {
+    "abs", "attr", "batch", "capitalize", "center", "default", "d",
+    "dictsort", "escape", "e", "filesizeformat", "first", "float",
+    "forceescape", "format", "groupby", "indent", "int", "join", "last",
+    "length", "list", "lower", "map", "max", "min", "pprint", "random",
+    "reject", "rejectattr", "replace", "reverse", "round", "safe", "select",
+    "selectattr", "slice", "sort", "string", "striptags", "sum", "title",
+    "tojson", "trim", "truncate", "unique", "upper", "urlencode", "urlize",
+    "wordcount", "wordwrap", "xmlattr", "items", "split", "startswith",
+    "endswith", "rstrip", "lstrip", "strip", "count", "keys", "values",
+}
+
+# `x if x is defined else DEFAULT` and `x | default(...)` are the two idioms a
+# template uses to READ a caller-supplied kwarg while giving it a fallback. The
+# first idiom assigns to the same name, so a naive "locally assigned" filter
+# hides exactly the kwargs we are looking for.
+_SELF_DEFAULTING_SET = re.compile(
+    r"{%-?\s*set\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\1\s+if\s+\1\s+is\s+defined", re.S)
+
+
 def enumerate_kwargs(tpl):
-    """Find identifiers the template READS that are not builtins and not locally
-    assigned. These are the chat_template_kwargs surface."""
+    """Find identifiers the template READS that are not builtins, not Jinja
+    syntax, and not locally assigned. These are the chat_template_kwargs
+    surface.
+
+    Three classes of false positive were reported against the previous version
+    and are handled explicitly here, because each one produced a BLOCKING
+    finding on a real vendor template:
+
+      - Jinja tests (`tools is iterable`, `x is mapping`, `x is sequence`)
+      - Jinja filters (`x | tojson | safe`)
+      - macro parameters and `namespace(...)` keyword arguments
+        (`{% macro m(json_dict, handled_keys) %}`,
+         `{% set ns = namespace(last_user_idx = -1) %}`)
+
+    A fourth defect went the other way: the real kwargs were being SUPPRESSED,
+    because the canonical kwarg idiom
+    `{% set enable_thinking = enable_thinking if enable_thinking is defined else True %}`
+    looks like a local assignment. Those names are now recovered explicitly.
+    """
     if not tpl:
         return [], {}, []
-    assigned = set(re.findall(r"{%-?\s*set\s+([a-zA-Z_][a-zA-Z0-9_]*)", tpl))
+    self_defaulting = set(_SELF_DEFAULTING_SET.findall(tpl))
+    assigned = set(re.findall(r"{%-?\s*set\s+([a-zA-Z_][a-zA-Z0-9_]*)", tpl)) - self_defaulting
     forvars = set()
     for m in re.finditer(r"{%-?\s*for\s+([a-zA-Z_0-9_,\s]+?)\s+in\s", tpl):
         for v in m.group(1).split(","):
             forvars.add(v.strip())
     macros = set(re.findall(r"{%-?\s*macro\s+([a-zA-Z_][a-zA-Z0-9_]*)", tpl))
+    # macro PARAMETERS are locals, not caller kwargs
+    macro_params = set()
+    for m in re.finditer(r"{%-?\s*macro\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^)]*)\)", tpl):
+        for p in m.group(1).split(","):
+            p = p.split("=")[0].strip()
+            if p:
+                macro_params.add(p)
 
     candidates = {}
     # only look inside jinja delimiters, not the literal text of the template
@@ -117,17 +185,20 @@ def enumerate_kwargs(tpl):
         block = re.sub(r"'[^']*'|\"[^\"]*\"", " ", block)
         # drop attribute access: `message.content` must not report `content`
         block = re.sub(r"\.\s*[a-zA-Z_][a-zA-Z0-9_]*", " ", block)
+        # drop keyword-argument names in calls: `namespace(last_user_idx = -1)`
+        # binds a local, it does not read a caller kwarg
+        block = re.sub(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*=(?!=)", " ", block)
+        # drop test positions: everything directly after `is` or `is not`
+        block = re.sub(r"\bis\s+(?:not\s+)?[a-zA-Z_][a-zA-Z0-9_]*", " is ", block)
+        # drop filter positions: everything directly after a pipe
+        block = re.sub(r"\|\s*[a-zA-Z_][a-zA-Z0-9_]*", " ", block)
         for ident in _JINJA_IDENT.findall(block):
             low = ident.lower()
-            if low in _BUILTIN or ident in assigned or ident in forvars or ident in macros:
+            if (low in _BUILTIN or low in _JINJA_KEYWORD or low in _JINJA_TEST
+                    or low in _JINJA_FILTER):
                 continue
-            if low in ("if", "else", "elif", "endif", "for", "endfor", "set", "in",
-                       "is", "not", "and", "or", "defined", "default", "endmacro",
-                       "macro", "length", "trim", "join", "string", "int", "float",
-                       "list", "items", "selectattr", "map", "rejectattr", "equalto",
-                       "lower", "upper", "replace", "split", "first", "last", "tojson",
-                       "generation", "endgeneration", "raw", "endraw", "startswith",
-                       "endswith", "rstrip", "lstrip", "strip", "count", "sort"):
+            if (ident in assigned or ident in forvars or ident in macros
+                    or ident in macro_params):
                 continue
             candidates.setdefault(ident, 0)
             candidates[ident] += 1
@@ -138,6 +209,17 @@ def enumerate_kwargs(tpl):
         defaults[m.group(1)] = m.group(2).strip()
     for m in re.finditer(r"([a-zA-Z_][a-zA-Z0-9_]*)\s+is\s+defined", tpl):
         defaults.setdefault(m.group(1), "(guarded by `is defined`)")
+    # the self-defaulting idiom carries its fallback on the same line; surface it
+    for m in re.finditer(
+            r"{%-?\s*set\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\1\s+if\s+\1\s+is\s+defined"
+            r"\s+else\s+([^%}]+?)\s*-?%}", tpl, re.S):
+        defaults[m.group(1)] = m.group(2).strip()
+
+    # a kwarg the template reads through the self-defaulting idiom is a kwarg
+    # even if it never appears anywhere else
+    for name in self_defaulting:
+        candidates.setdefault(name, 0)
+        candidates[name] += 1
 
     # which of these gate a think/reasoning branch? those are the dangerous ones
     thinky = []
