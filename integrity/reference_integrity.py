@@ -58,7 +58,8 @@ BARE_ID = re.compile(r"^(\d{2})$")
 
 # Same skip rule registry_integrity uses for repo-relative GitHub namespaces:
 # these are correct links with no on-disk target.
-GH_NS = re.compile(r"^(?:\.\./)+(issues|pull|pulls|compare|wiki|releases|discussions)(/|$)")
+GH_NS = re.compile(r"^(?:\.\./)+(issues|pull|pulls|compare|wiki|releases"
+                   r"|discussions|security)(/|$)")
 
 STEMS = ["reproduced here", "contributor-measured", "reported by others",
          "measured here, raw not published", "under test"]
@@ -277,12 +278,177 @@ def check_status_lead(root, entries, findings):
                     % (tid, surface, entry)))
 
 
+# ---------------------------------------------------------------------------
+# The status vocabulary is defined in one file and restated in several, which
+# is a drift class rather than a one-off bug. The PR template shipped for weeks
+# teaching three labels out of five, missing exactly the two an external
+# contribution needs, and that is the documentation bug that made the
+# registry's first external contribution arrive mislabelled. CONTRIBUTING was
+# corrected; the template that taught the wrong set was not, because nothing
+# asserted the two agree.
+#
+# CONTRIBUTING.md's Status vocabulary table is canonical. Everything below
+# compares against what is parsed out of it, so adding a sixth label there
+# breaks every stale restatement instead of silently diverging from them.
+VOCAB_HEADING = re.compile(r"^##+\s+Status vocabulary\s*$", re.M)
+VOCAB_ROW = re.compile(r"^\|\s*\*\*([^*|]+)\*\*\s*\|", re.M)
+VOCAB_MARKER = "status-vocabulary: full-set"
+CANON_FILE = "CONTRIBUTING.md"
+
+
+def tracked_text(root):
+    """Tracked .md, .yml and .yaml. The forms under .github are yaml and can
+    restate the vocabulary as easily as a markdown page can."""
+    out = []
+    for rel in tracked_md(root):
+        out.append(rel)
+    try:
+        r = subprocess.run(["git", "-C", root, "ls-files", "*.yml", "*.yaml"],
+                           capture_output=True, text=True, timeout=60)
+        out += [p for p in r.stdout.splitlines() if p.strip()]
+    except Exception:
+        for dp, dn, fn in os.walk(root):
+            dn[:] = [d for d in dn if d not in (".git", "__pycache__")]
+            for f in fn:
+                if f.endswith((".yml", ".yaml")):
+                    out.append(os.path.relpath(os.path.join(dp, f), root))
+    return sorted(set(out))
+
+
+def canonical_labels(root):
+    """The closed set, read out of CONTRIBUTING's table. Returns [] when the
+    heading or the table is missing, which is itself reported rather than
+    quietly treated as 'no labels to check'."""
+    path = os.path.join(root, CANON_FILE)
+    if not os.path.exists(path):
+        return []
+    text = read(path)
+    m = VOCAB_HEADING.search(text)
+    if not m:
+        return []
+    section = text[m.end():]
+    nxt = re.search(r"^##\s+", section, re.M)
+    if nxt:
+        section = section[:nxt.start()]
+    return [lab.strip().lower() for lab in VOCAB_ROW.findall(section)]
+
+
+def check_vocabulary(root, findings):
+    canon = canonical_labels(root)
+    if not canon:
+        findings.append(Finding(
+            "VOCAB-DEFN", CANON_FILE,
+            "no parsable Status vocabulary table; the canonical closed set "
+            "cannot be read, so nothing downstream can be checked against it"))
+        return
+    if len(set(canon)) != len(canon):
+        findings.append(Finding("VOCAB-DEFN", CANON_FILE,
+                                "duplicate label in the canonical table"))
+    canon_set = set(canon)
+
+    # The stem list this checker uses for STATUS-LEAD is itself a restatement.
+    for stem in STEMS:
+        if not any(lab.startswith(stem) for lab in canon_set):
+            findings.append(Finding(
+                "VOCAB-DEFN", "integrity/reference_integrity.py",
+                "STEMS carries %r, which leads no canonical label" % stem))
+    for lab in sorted(canon_set):
+        if not any(lab.startswith(s) for s in STEMS):
+            findings.append(Finding(
+                "VOCAB-DEFN", "integrity/reference_integrity.py",
+                "canonical label %r is led by no stem in STEMS, so "
+                "STATUS-LEAD cannot see it" % lab))
+
+    # The gate enforces the set at runtime. If its list and the published
+    # table disagree, one of them is lying to a contributor.
+    #
+    # Read from --root by TEXT, not by import. Importing resolves to whichever
+    # copy of the module is on sys.path, which is this checker's own directory
+    # and not the tree being checked; the mutation suite caught that by
+    # planting a divergence in a copied tree and watching nothing fire.
+    gate_rel = os.path.join("integrity", "contradiction_gate.py")
+    gate_path = os.path.join(root, gate_rel)
+    if not os.path.exists(gate_path):
+        findings.append(Finding("VOCAB-GATE", gate_rel, "file is missing"))
+    else:
+        m = re.search(r"^LABELS\s*=\s*\[(.*?)\]", read(gate_path),
+                      re.S | re.M)
+        if not m:
+            findings.append(Finding("VOCAB-GATE", gate_rel,
+                                    "no parsable LABELS list"))
+        else:
+            gate = set(s.lower().strip() for s in
+                       re.findall(r'"([^"]+)"|\'([^\']+)\'', m.group(1))
+                       for s in (s[0] or s[1],))
+            for lab in sorted(canon_set - gate):
+                findings.append(Finding(
+                    "VOCAB-GATE", gate_rel,
+                    "LABELS is missing canonical label %r" % lab))
+            for lab in sorted(gate - canon_set):
+                findings.append(Finding(
+                    "VOCAB-GATE", gate_rel,
+                    "LABELS carries %r, which is not in the canonical table"
+                    % lab))
+
+    # Two ways a surface restates the set. The marker is the opt-in for prose
+    # and tables; the slash form is the shape the PR template actually had,
+    # and it is caught whether or not anyone remembered the marker.
+    alt = "|".join(re.escape(l) for l in
+                   sorted(canon_set, key=len, reverse=True))
+    slash = re.compile(r"(?:%s)(?:\s*/\s*(?:%s))+" % (alt, alt))
+    for rel in tracked_text(root):
+        if rel == CANON_FILE:
+            continue
+        path = os.path.join(root, rel)
+        if not os.path.exists(path):
+            continue
+        text = read(path)
+        low = text.lower()
+        # A restatement is prose and wraps: MAINTAINING carries
+        # "contributor-measured, conditions as\n   reported", which is the
+        # label present and correct. Collapse whitespace before testing
+        # containment, or the check reports a missing label that is there and
+        # a maintainer learns to wave it through.
+        flat = re.sub(r"\s+", " ", low)
+        idx = low.find(VOCAB_MARKER)
+        if idx >= 0:
+            # Scope to the marked REGION, marker to the next heading, not to
+            # the whole file. MAINTAINING names every label again in its
+            # status-transitions section, so a file-wide containment test
+            # passes even after a label is deleted from the enumeration
+            # itself. That is the drift this check exists to catch, and the
+            # first version of it could not see it.
+            region = low[idx:]
+            nxt = re.search(r"^#{1,6}\s", region, re.M)
+            if nxt:
+                region = region[:nxt.start()]
+            region = re.sub(r"\s+", " ", region)
+            missing = sorted(l for l in canon_set if l not in region)
+            if missing:
+                findings.append(Finding(
+                    "VOCAB-FULL", rel,
+                    "declares the full status vocabulary but the marked "
+                    "region omits: %s" % "; ".join(repr(m) for m in missing)))
+        for i, line in enumerate(low.splitlines(), 1):
+            m = slash.search(line)
+            if not m:
+                continue
+            if all(l in flat for l in canon_set):
+                continue
+            missing = sorted(l for l in canon_set if l not in flat)
+            findings.append(Finding(
+                "VOCAB-SLASH", "%s:%d" % (rel, i),
+                "enumerates the vocabulary as %r but the file never mentions: "
+                "%s" % (m.group(0), "; ".join(repr(x) for x in missing))))
+
+
 def run(root):
     findings = []
     entries = collect_entries(root)
     check_links_and_numbers(root, findings)
     check_routing_ids(root, entries, findings)
     check_status_lead(root, entries, findings)
+    check_vocabulary(root, findings)
     return findings, len(entries)
 
 
