@@ -41,7 +41,7 @@ Two doors, and which one you want depends on why you are here.
   most visitors arrive before the symptom rather than during it.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
-it. It has checks for **17 of these 81 entries** and runs in under a minute. It
+it. It has checks for **18 of these 81 entries** and runs in under a minute. It
 is not a broad bill of health, and it prints its own coverage line at the end of
 every run so you can see exactly how much of the registry it touched, how much
 it could not check on your stack, and how much it never implements.
@@ -149,7 +149,7 @@ observed on them.
 ## Run the doctor
 
 One stdlib-only file, no install, that diagnoses your endpoint against
-17 of this registry's 81 entries in under a minute:
+18 of this registry's 81 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

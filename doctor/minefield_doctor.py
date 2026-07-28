@@ -64,6 +64,7 @@ TRAP_PATHS = {
     "23": "reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
     "25": "template/25-empty-think-blocks-poison-prefix-cache.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
+    "78": "tools/78-tool-choice-accepted-and-ignored.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
 }
 
@@ -1354,6 +1355,97 @@ def check_tools(doc, base, key):
                                 {"markup": False}, held=False)])
 
 
+def check_tool_choice_gate(doc, base, key):
+    """Trap 78: tool_choice accepted and ignored, which fails OPEN.
+
+    This is the first check in this tool for anything above trap 55, and it was
+    chosen because it is the one with a real consequence: `tool_choice: "none"`
+    is the standard way an agent framework says "answer in prose this turn, do
+    not call anything". A server that accepts it and calls anyway does not
+    produce an outage to investigate; it produces an agent that occasionally
+    takes an action on a turn its author believed was read-only.
+
+    The CLEAN here is worth stating carefully, because without a control it
+    would be vacuous. "No tool call came back when I sent none" is satisfied by
+    a model that simply did not want to call, which is the empty-set shape
+    CONTRIBUTING names. So this runs a positive control FIRST: the same
+    tool-inviting prompt with no tool_choice at all. Only if that control
+    actually produces a call does the suppression in the none-arm mean
+    anything, and only then can this emit CLEAN.
+    """
+    ctrl_st, ctrl_choice, _ = chat(
+        doc, base, key, doc.model,
+        [{"role": "user", "content": "What time is it in Tokyo? Use the tool."}],
+        max_tokens=256, tools=TOOLS)
+    if ctrl_st != 200 or ctrl_choice is None:
+        doc.inconclusive(["78"], "tool_choice gate",
+                         f"the control request (tools attached, no tool_choice) "
+                         f"did not return a usable completion (http {ctrl_st}), "
+                         f"so there is nothing to gate against.",
+                         code="TOOL_CHOICE_NO_CONTROL",
+                         asserts=[A("control returns a completion",
+                                    {"status": ctrl_st}, held=False)])
+        return
+    _, _, _, ctrl_calls, _ = msg_fields(ctrl_choice)
+
+    none_st, none_choice, _ = chat(
+        doc, base, key, doc.model,
+        [{"role": "user", "content": "What time is it in Tokyo? Use the tool."}],
+        max_tokens=256, tools=TOOLS, tool_choice="none")
+    doc.evidence["tool_choice_none_status"] = none_st
+
+    if none_st != 200 or none_choice is None:
+        # A server that REJECTS tool_choice:none is not this trap. It is loud,
+        # which is the opposite failure and a safe one.
+        doc.ok(["78"], f"tool_choice none is rejected outright (http {none_st}), "
+                       f"so it cannot be silently ignored on this lane",
+               code="TOOL_CHOICE_REJECTED",
+               asserts=[A("tool_choice none is not silently accepted",
+                          {"status": none_st})])
+        return
+    _, _, _, none_calls, _ = msg_fields(none_choice)
+
+    if not ctrl_calls:
+        doc.inconclusive(["78"], "tool_choice gate",
+                         "the control request did not produce a tool call, so "
+                         "an absence of calls under tool_choice none proves "
+                         "nothing: the model may simply not have called either "
+                         "way. Re-run with a prompt this model reliably calls "
+                         "on, or force one with a named tool_choice first.",
+                         code="TOOL_CHOICE_NO_CONTROL",
+                         asserts=[A("control produces a tool call",
+                                    {"tool_calls": len(ctrl_calls)}, held=False)])
+        return
+
+    if none_calls:
+        doc.problem(
+            ["78"],
+            "tool_choice none was accepted and ignored: a control with tools "
+            "and no tool_choice called a tool, and the identical request with "
+            "tool_choice none called one too",
+            "Do not rely on tool_choice to gate a turn on this lane. The only "
+            "control that works everywhere is to omit the tools payload on "
+            "turns where a call must not happen. This fails OPEN, so an agent "
+            "loop with a side-effecting tool can act on a turn you believed "
+            "was read-only.",
+            code="TOOL_CHOICE_IGNORED",
+            asserts=[A("control produces a tool call",
+                       {"tool_calls": len(ctrl_calls)}),
+                     A("tool_choice none suppresses the call",
+                       {"tool_calls": len(none_calls)}, held=False)])
+        return
+
+    doc.ok(["78"],
+           "tool_choice none binds: a control with tools and no tool_choice "
+           "called a tool, and the identical request with tool_choice none did "
+           "not, so the suppression is attributable to the parameter",
+           code="TOOL_CHOICE_NONE_BINDS",
+           asserts=[A("control produces a tool call",
+                      {"tool_calls": len(ctrl_calls)}),
+                    A("tool_choice none suppresses it",
+                      {"tool_calls": len(none_calls)})])
+
+
 def check_ceiling(doc, base, key):
     """Traps 12/16/22: empty content at cap, degeneration vs truncation."""
     st, choice, _ = chat(doc, base, key, doc.model,
@@ -1910,6 +2002,7 @@ def run(doc, base, root, args):
     check_kwarg_deadness(doc, base, root, args.api_key)
     check_multimodal(doc, base, root, args.api_key)
     check_tools(doc, base, args.api_key)
+    check_tool_choice_gate(doc, base, args.api_key)
     check_ceiling(doc, base, args.api_key)
     check_configs(doc, args.hf_repo, args.hf_revision)
 

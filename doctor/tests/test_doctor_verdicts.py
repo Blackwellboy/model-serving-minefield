@@ -582,7 +582,7 @@ class TestCoverage(DoctorVerdictCase):
             md.emit(doc, SimpleNamespace(base_url="http://fixture", report=False))
         out = buf.getvalue()
         self.assertIn("== COVERAGE ==", out)
-        self.assertIn(f"implemented 17/{md.REGISTRY_TRAP_COUNT}", out)
+        self.assertIn(f"implemented {len(md.TRAP_PATHS)}/{md.REGISTRY_TRAP_COUNT}", out)
         self.assertIn("== INCONCLUSIVE (", out)
         self.assertIn("no check in this tool", out)
         for n in md.TRAPS_SHARED_HEURISTIC:
@@ -840,6 +840,17 @@ CLEAN_CONTRACT = {
         "prompt, so history reasoning demonstrably survives",
     "WRITE_FIELD_SINGLE":
         "exactly one of the two field names carried the marker through",
+    "TOOL_CHOICE_NONE_BINDS":
+        "a control WITH tools and no tool_choice produced a tool call on this "
+        "lane, and the identical request with tool_choice none did not, so the "
+        "suppression is attributable to the parameter rather than to a model "
+        "that was never going to call. Without that control this CLEAN would "
+        "be the empty-set shape: 'no call happened' is satisfied by a model "
+        "that simply declined",
+    "TOOL_CHOICE_REJECTED":
+        "the lane returns a non-200 for tool_choice none, so the parameter "
+        "cannot be silently accepted and ignored here. Rejecting loudly is the "
+        "opposite failure from trap 78 and a safe one",
     "KWARG_UNKNOWN_REJECTED":
         "an invented kwarg alone is rejected while an otherwise identical "
         "control succeeds, so the rejection is attributable to the kwarg",
@@ -888,6 +899,7 @@ SWEEP = [
     {"off_kwarg": "reasoning_effort"},
     {"kwarg_rejection": "unknown"}, {"kwarg_rejection": "known"},
     {"tool_calls": "never", "tool_choice_supported": True},
+    {"tool_choice_none_honored": False},
     {"tool_calls": "never", "tool_choice_supported": False},
     {"tool_calls": "forced_only"}, {"tool_markup": True},
     {"tool_markup_alongside": True},
