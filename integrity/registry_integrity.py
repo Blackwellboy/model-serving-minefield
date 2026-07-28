@@ -47,6 +47,8 @@ import json
 import os
 import re
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import contradiction_gate as _contradiction
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -398,6 +400,13 @@ def run(root):
                 "FILE-STATUS", rel,
                 "status %r is not in the allowed vocabulary"
                 % norm_status(m.group(1))[:70]))
+
+        # An entry must not claim more than its own linked files admit.
+        for where, why, quote in _contradiction.check(
+                os.path.join(root, rel), root, read):
+            findings.append(Finding(
+                "CONTRADICTION", where,
+                "entry claims 'reproduced here' but %s: ...%s..." % (why, quote[:90])))
 
         # found-by
         head = "\n".join(text.splitlines()[:8])
