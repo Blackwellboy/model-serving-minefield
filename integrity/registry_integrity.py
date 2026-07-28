@@ -165,6 +165,22 @@ def collect_entries(root):
     return entries, stubs
 
 
+def next_free_number(root):
+    """The lowest unused two-digit id, counting stubs as used.
+
+    Lowest-unused rather than highest-plus-one on purpose: a gap in the
+    sequence is a number nobody holds, and handing it out is better than
+    letting the range creep. If there is no gap this is highest-plus-one
+    anyway. Returns a string so it prints with its leading zero.
+    """
+    entries, stubs = collect_entries(root)
+    taken = {int(k) for k in list(entries) + list(stubs) if k.isdigit()}
+    n = 1
+    while n in taken:
+        n += 1
+    return "%02d" % n
+
+
 def readme_rows(root):
     """Parse the README symptom table into {id: (status_cell, line_no)}."""
     rows = {}
@@ -497,6 +513,16 @@ def main():
     print("registry integrity: %s" % root)
     print("  entries counted: %d   redirect stubs (not counted): %d   "
           "doctor TRAP_PATHS: %s" % (n_entries, n_stubs, implemented))
+    # Derived, never stored. A NEXT_NUMBER file would be a second place the
+    # number lives, it would go stale the moment somebody landed without
+    # updating it, and two concurrent contributions would collide on the
+    # coordination mechanism as well as on the number. This is computed from
+    # the tree every run, so it is correct at the moment it is read and there
+    # is nothing to keep in sync. Stubs count as taken: a redirect stub is a
+    # number that was used and must not be handed out again.
+    print("  next free trap number: %s   (derived from the tree, not stored; "
+          "numbers are provisional and rebased at merge, see CONTRIBUTING)"
+          % next_free_number(root))
     if not findings:
         print("  CLEAN: %d checks over %d entries, no findings"
               % (8 * n_entries + n_stubs, n_entries))
