@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "_readme": [
+    "The do-not-cite list, made mechanical. It already existed as a",
+    "convention: the banned-phrasings block in laguna:TWEET_PACK_V3.1.md, the",
+    "two NOT LOCATED sources in laguna:SOURCE_ARCHIVES_NOTES.md, and the",
+    "corrections on record in laguna:quant-floor/. Convention means somebody",
+    "has to remember. This file is the same list in a form a hook can read.",
+    "",
+    "Two kinds of entry:",
+    "  enforced     a regex tight enough to run on added text without noise.",
+    "               A hit fails the check.",
+    "  manual_only  a rule that is real but not mechanisable without firing on",
+    "               ordinary prose (for example: a code throughput figure",
+    "               published without the word median). Printed every run as a",
+    "               reminder, never fails the check. Recorded here rather than",
+    "               dropped, because a list that quietly loses its hard items",
+    "               is worse than one that admits which items are yours to",
+    "               check by eye.",
+    "",
+    "Scope: ADDED text. The check runs on a diff by default, because the list",
+    "is about what you are publishing now, and because running it on the whole",
+    "tree would fire on the archives that record the banned items in the first",
+    "place. --all exists for a deliberate audit and honours exempt_paths."
+  ],
+  "enforced": [
+    {
+      "id": "beat-r0b0tlab",
+      "pattern": "beat(?:s|ing)?\\s+r0b0tlab",
+      "why": "banned phrasing, TWEET_PACK_V3.1. We did not run a head to head against that container and must not imply one.",
+      "instead": "State our own measured pair and the conditions. Comparisons need both sides measured on the same protocol."
+    },
+    {
+      "id": "fastest-laguna",
+      "pattern": "fastest\\s+laguna",
+      "why": "banned phrasing, TWEET_PACK_V3.1. A superlative over a field nobody enumerated.",
+      "instead": "Name the number, the build and the conditions."
+    },
+    {
+      "id": "stevibe-cross-hardware",
+      "pattern": "(?:spark\\s*)?19\\.44|PRO\\s*6000\\s*108|4x\\s*5090\\s*145",
+      "why": "figures from an X post that was NOT LOCATED by search on 2026-07-23 (SOURCE_ARCHIVES_NOTES.md). Unverified source; treated as uncitable.",
+      "instead": "Similar cross-hardware comparisons exist from authors we did locate. Cite one of those."
+    },
+    {
+      "id": "darvasch-dflash-3x",
+      "pattern": "DFlash[^\\n]{0,60}3x|3x[^\\n]{0,30}on code",
+      "why": "the DFlash 3x-on-code / slower-on-agent-reasoning claim survives only as a paraphrase in COMMUNITY_RESEARCH.md; the source post was NOT LOCATED on 2026-07-23.",
+      "instead": "Our own DFlash acceptance measurements are published and citable."
+    },
+    {
+      "id": "8620-quality-battery",
+      "pattern": "8,?620",
+      "why": "banned phrasing, TWEET_PACK_V3.1: nothing may imply we ran their 8,620-case quality battery. We did not.",
+      "instead": "Cite our own battery by its own case count."
+    },
+    {
+      "id": "warm-cache-latency",
+      "pattern": "warm[- ]cache",
+      "why": "banned phrasing, TWEET_PACK_V3.1: no warm-cache latency figure at depth. Our depth latencies are cold-cache and the warm numbers were never protocol-controlled.",
+      "instead": "Publish the cold-cache figure and say it is cold."
+    }
+  ],
+  "manual_only": [
+    {
+      "id": "code-figure-without-median",
+      "rule": "Code throughput figures are published with the word median. Peaks only with explicit conditions.",
+      "why": "TWEET_PACK_V3.1 banned phrasings. Not mechanisable: any regex broad enough to catch a bare figure fires on every table cell in the repo."
+    },
+    {
+      "id": "container-claims-on-hold",
+      "rule": "No container claim while tweet 6 is HOLD.",
+      "why": "state of an external hold, not a property of the text."
+    },
+    {
+      "id": "unlocatable-x-posts",
+      "rule": "No claim sourced from the two X posts recorded as NOT LOCATED, beyond the two figure sets already enforced above.",
+      "why": "the claims are paraphrases; only their distinctive figures can be pattern-matched."
+    },
+    {
+      "id": "superseded-claim-forms",
+      "rule": "The retracted and corrected claim forms (bare cap-hit criterion, +2.64 as a cross-stack property, HumanEval/32 as a passing cap-hit, the 116/132 misparse, the depth-dose claim, the Qwen throttle, the field-name scoping, the trap 42 capability reading) are enforced by integrity/claim_propagation.py, which runs in the same job.",
+      "why": "Tried enforcing them here as well and it misfired: this check is line-scoped, and the corrections that make those citations legitimate sit on the FOLLOWING line. A duplicate rule that reports a correctly corrected paragraph as a violation is how a check gets ignored. One checker, with real multi-line context, beats two."
+    }
+  ],
+  "exempt_paths": [
+    {
+      "reason": "the posted claim set, kept verbatim for accountability",
+      "surface": "TWEET_PACK_V3.md"
+    },
+    {
+      "reason": "the list itself lives here",
+      "surface": "TWEET_PACK_V3.1.md"
+    },
+    {
+      "reason": "records the NOT LOCATED sources and must quote their figures to identify them",
+      "surface": "SOURCE_ARCHIVES_NOTES.md"
+    },
+    {
+      "reason": "same archive record",
+      "surface": "SOURCE_ARCHIVES.md"
+    },
+    {
+      "reason": "holds the surviving paraphrase, labelled UNVERIFIED",
+      "surface": "container/COMMUNITY_RESEARCH.md"
+    },
+    {
+      "reason": "the corrections-on-record section quotes the superseded forms in order to retract them",
+      "surface": "quant-floor/"
+    },
+    {
+      "reason": "the replication record",
+      "surface": "pr10-replication/"
+    },
+    {
+      "reason": "this list and its tests",
+      "surface": "integrity/"
+    },
+    {
+      "reason": "the registry entry whose subject is the +2.64 confound",
+      "surface": "traps/evaluation/17-per-arm-recommended-sampling-confound.md"
+    },
+    {
+      "reason": "the registry entry whose subject is the cap-hit criterion",
+      "surface": "traps/evaluation/16-finish-reason-is-not-a-failure-signal.md"
+    },
+    {
+      "reason": "the originality audit and its raw archived copies of third-party material; both have to quote the banned strings to be about them",
+      "surface": "originality/"
+    }
+  ]
+}
