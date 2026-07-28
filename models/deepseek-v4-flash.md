@@ -121,10 +121,13 @@ sampling; cite it as an unexplained, task-dependent variance floor on this lane.
 any n=1 result on this lane, including any of ours, should be read with that in
 mind. Second, it is exactly why the cold-versus-warm cache claim in
 [cold prefill and cache hit disagree](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md)
-rests on a 10-versus-10 separation across six prompt lengths and seven
-documents **rather than on any single cold/warm pair**. With a non-zero noise
-floor that we cannot yet explain, a single pair would not have carried that
-claim, and the entry says so.
+rests on the four-versus-six `finish_reason` separation among the ten requests
+that carry per-request cache counters **rather than on any single cold/warm
+pair**: four runs at 79.44% coverage or below all hit the token cap, six at
+99.81% or above all stopped cleanly. With a non-zero noise floor that we cannot
+yet explain, a single pair would not have carried that claim, and the entry says
+so. An earlier version of this page cited a ten-versus-ten separation, which was
+a retracted aggregation of runs whose cache fractions were never measured.
 
 ## Measured: cold-prefill context depth curve
 
@@ -161,10 +164,14 @@ arm is a measured 0.0% hit.
 
 Run read-only at registry commit `6a2e0e6`, the hardened revision. Recorded
 because this was a real-world test of that hardening against a stack it had
-never seen. Coverage line as printed at that commit, when the registry held 42 entries:
-*implemented 17 of 42, executed on this stack 13, clean 6, problems 7,
-inconclusive 4, not implemented 25*. The registry has grown since; the
-denominator here is a record of what that run saw, not a current count.
+never seen. Coverage as printed at that commit, when the registry held 42 entries: 17
+implemented of 42, executed on this stack 13, clean 6, problems 7,
+inconclusive 4, and 25 with no check in the tool. Transcribed rather than
+quoted verbatim, deliberately: the live coverage line is a machine-checked
+sentence, and a historical copy of it sitting in prose is exactly the shape
+that fossilises and then gets read as current. The registry has grown a long
+way since; these are the numbers that run saw and none of them is a current
+count.
 
 **It got the substance right.** All four problems it raised were independently
 confirmed by our own probes: the thinking-kwarg override, history reasoning

@@ -122,15 +122,59 @@ open, **we** rebase the numbers at merge, not you").
 
 What that meant in practice:
 
-- The external block landed **first and at its own base**, so no entry in it
-  moved and its internal cross-references were unchanged. That was deliberate:
-  it is the only set whose numbering was already visible to somebody outside
-  this repo, so it is the only set where renumbering would cost a third party
-  rather than us.
+- The external block landed **first and at its own base**, so its lowest number
+  was preserved. That was deliberate: it is the only set whose numbering was
+  already visible to somebody outside this repo, so it is the only set where
+  renumbering would cost a third party rather than us. **Preserving the base is
+  not the same as nothing moving**, and this file said the stronger, false
+  thing first: one entry folded and one was held, so everything above the base
+  slid down one place and the sweep rewrote the internal cross-references to
+  match. The full map is below.
 - Every first-party set was renumbered around it, not the other way round.
 - One title collided. Both entries were real and distinct, so both landed and
   **ours was the one renamed**, because the phrase came from the contributor's
   corpus in the first place. The two cross-link.
+
+### The PR-to-main number map
+
+The base was preserved, so 43 is still 43. But folding one entry and holding
+another removed two numbers from the middle of the range, so **everything above
+43 slid down by one place** against the numbers published in the PR. Twelve
+entries moved. Saying "the base was preserved" and saying "nothing moved" are
+different claims, and the first one is the true one.
+
+This map is here so an external bookmark can be resolved without reading a PR
+thread. Slugs did not change, so a link to a filename still resolves; a bare
+number from the PR does not.
+
+| PR #1 | now on main | slug |
+|---|---|---|
+| 43 | **43** | `tool-args-string-not-mapping` |
+| 44 | *folded into 12 and 22* | `retry-on-truncation-residual-tail` |
+| 45 | **44** | `fp4-dequant-scale-swizzle-layout` |
+| 46 | **45** | `fa-all-quants-cpu-fallback` |
+| 47 | **46** | `stale-build-missing-arch-kernel` |
+| 48 | **47** | `prefix-caching-autodisabled-hybrid` |
+| 49 | **48** | `dual-stack-mdns-latency-tax` |
+| 50 | **49** | `prompt-not-tokenized-to-target` |
+| 51 | **50** | `hidden-state-dump-convention` |
+| 52 | **51** | `single-backend-nan-fused-path` |
+| 53 | **52** | `speed-measured-on-a-broken-config` |
+| 54 | **53** | `config-edit-never-took-effect` |
+| 55 | **54** | `run-order-and-warm-cache-artifacts` |
+| 56 | *held* | `kv-quant-unread-without-chunked-prefill` |
+| 57 | **55** | `supported-context-is-not-trained-context` |
+
+**The PR's 56 is not the current trap 56.** It is held; the current 56 is one of
+ours. That is the collision a bare bookmarked number would hit.
+
+**This was stated wrongly first.** The merge note and this file both originally
+said no entry of his moved and his cross-references were unchanged. Neither was
+true: the sweep rewrote those cross-references, which is why they still resolve.
+The correction is
+[on the PR thread](https://github.com/Blackwellboy/model-serving-minefield/pull/1)
+as its own comment rather than as an edit, because the wrong version had already
+been read.
 
 If you contributed to this range and want any of it renumbered or renamed,
 including a title, say so and we will run the sweep. That is not a courtesy

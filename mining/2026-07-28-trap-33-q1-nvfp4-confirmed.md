@@ -1,25 +1,38 @@
 # Q1: raising a MoE's inference top-k costs accuracy on a quantised build too
 
-**Verdict: CONFIRM.** This promotes trap
-[33](../traps/routing/33-moe-inference-topk-expansion-tax.md) to **reported by
-others and reproduced here**. [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)
-keeps the **Found by** line; what this adds is a first-party run on different
-weights, a different quantisation and a different stack.
+**Verdict: CONFIRM.** This adds a first-party confirmation to trap
+[33](../traps/routing/33-moe-inference-topk-expansion-tax.md), which now reads
+**reported by others + measured here, raw not published**.
+[@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b) keeps the **Found
+by** line; what this adds is a run on different weights, a different
+quantisation and a different stack.
 
-**Status: reproduced here.** The evidence a stranger can act on is
-`scripts/`, which ships beside this note: the item builder (which prints the
-sha256 so a mismatch is loud), the arm-directory builder with its four proofs,
-both runners, both analysers and the launch scripts. MMLU and the checkpoint
-are both public, so the whole study re-runs on the reader's own lane without
-asking us for anything.
+**Status: measured here, raw not published**, and this was briefly and wrongly
+labelled reproduced here. The distinction is the whole point of the label.
+`scripts/` ships beside this note, so a stranger can **re-run** the study on
+their own lane: the item builder (which prints the sha256 so a mismatch is
+loud), the arm-directory builder with its four proofs, both runners, both
+analysers and the launch scripts. What they cannot do is **check our rows**,
+because the answer sheets are not published. Reproduced-here requires the
+second, not the first.
 
-**The answer sheets are deliberately not shipped in this repo.**
-[MAINTAINING](../MAINTAINING.md#shipping-raw-data-in-the-repo) restricts
-in-repo raw to calibration constants that other entries cite as a threshold,
-floor or baseline, and Q1 is not one of those: it is a one-off measurement,
-however good. The agreement floor it is quoted against **is** such a constant
-and its raw does ship. Following our own rule here rather than making an
-exception for our own result is the point.
+That distinction has teeth on this stack specifically. Our own
+[agreement floor](2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+measured per-item agreement between identical runs at 97.58%, so a re-run will
+not reproduce these counts exactly even when everything is done right. Telling a
+reader "run it yourself" and calling that verification would be asking them to
+treat a noisy re-run as a check on an exact figure.
+
+**Why the sheets are not shipped, which is the same reason the label moved.**
+[MAINTAINING](../MAINTAINING.md#shipping-raw-data-in-the-repo) restricts in-repo
+raw to calibration constants that other entries cite as a threshold, floor or
+baseline. Q1 is a one-off measurement, however good, and nothing cites its
+-4.50 that way. The agreement floor it is quoted against **is** such a constant,
+and its raw does ship, which is the rule working rather than an inconsistency.
+The alternative was to widen the rule so this result could keep the stronger
+label, and a rule widened for the benefit of the person applying it is not a
+rule. **What converts this entry:** publishing the sheets at a URL, or this
+delta becoming a figure other entries measure against.
 
 Measured 2026-07-28. Plan of record: [the verification queue](2026-07-28-qwen36-a6b-verification-queue.md), item Q1. Criteria were pre-registered in that file before any arm ran and are not
 restated here in altered form.

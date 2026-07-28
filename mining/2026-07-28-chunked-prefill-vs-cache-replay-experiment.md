@@ -10,13 +10,24 @@ scratch serve.
 
 The staged entry
 [cold prefill and cache hit disagree](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md)
-establishes a measured fact and offers an unproven mechanism. The fact: on a
-live DeepSeek-V4-Flash lane, byte-identical long prompts answer differently
-depending on prefix-cache state, with a perfect 10-versus-10 separation on
-`finish_reason` across six prompt lengths from 32,000 to 999,996 tokens. Ten
-runs at 79% cache coverage or below all ran to the token cap emitting invented
-document content; ten runs at 99.8% or above all stopped cleanly with a short
-exact answer.
+establishes a measured fact and offers an unproven mechanism.
+
+**The premise of this specification was rewritten on 2026-07-28**, and that
+matters more than a numeric edit: it was originally pre-registered against a
+ten-versus-ten separation that the entry had already retracted. An experiment
+designed against a figure that does not exist is powered for the wrong effect
+and tests the wrong contrast, so the design below is stated against the
+corrected observation rather than patched to agree with it.
+
+The fact, corrected: on a live DeepSeek-V4-Flash lane, byte-identical long
+prompts answer differently depending on prefix-cache state. Ten requests carry
+per-request prefix-cache counters across four prompt lengths from 131,070 to
+999,996 tokens. **Four at 79.44% coverage or below all ran to the token cap
+emitting invented document content; six at 99.81% or above all stopped cleanly
+with a short exact answer.** Recovery of the planted fact on the low-cache arm
+was **1 of 4**, not zero: at 524,281 the cold run did surface the passphrase and
+then failed to stop, which is a counterexample the design has to accommodate
+rather than assume away.
 
 The offered mechanism is that the two paths compute the same KV by different
 routes. A cold prefill of a long prompt runs as many chunked passes of
@@ -170,13 +181,25 @@ support it at this depth.
 
 ## Endpoints, pre-registered before any data is collected
 
-**Primary: `finish_reason` is `stop`.** This is the endpoint with the perfect
-separation in the production observation, 10 versus 10, and it flips one rung
-of depth before accuracy does. Scored per request as a binary.
+**Primary: `finish_reason` is `stop`.** This is the endpoint with the cleanest
+separation in the production observation, four low-cache runs at `length`
+against six high-cache runs at `stop`, and it flips one rung of depth before
+accuracy does. Scored per request as a binary.
 
-**Secondary: planted passphrase recovered.** Case-insensitive substring match
-of the exact passphrase in the completion. Noisier, because production cold
-recovery ran about 4 successes in 10.
+**Power note, and it is the reason this specification exists.** That separation
+is 4 against 6, not 10 against 10. Ten observations split four and six is a
+suggestive direction, not an estimate: with no overlap at all, the exact
+one-sided Fisher probability is about 0.005, which is real, but the confidence
+interval on any effect size is enormous and the arms differ in depth as well as
+in cache state. **Treat the production observation as the thing to be tested,
+not as the result being confirmed.** That is a change from an earlier draft of
+this file, which pre-registered against the retracted ten-versus-ten figure and
+would therefore have been powered for an effect nobody measured.
+
+**Secondary: planted passphrase recovered.** Case-insensitive substring match of
+the exact passphrase in the completion. Noisier, and noisier than the earlier
+draft claimed: production cold recovery was **1 of 4**, and the one success is a
+counterexample rather than a rounding detail.
 
 **Tertiary, recorded but not tested:** the partial-retrieval signature, meaning
 a completion that opens with the first word of the passphrase and then diverges
@@ -258,7 +281,9 @@ decode. Comfortably an overnight run on a scratch pair.
 Two factors of the three can be tested at **request level only**, on any lane,
 because cache state is a request protocol rather than a flag. That gives the
 cold-versus-warm contrast at higher n and more depths, and it is worth doing:
-it would turn the 10-versus-10 separation into a properly powered estimate.
+it would turn a four-versus-six observation into a properly powered estimate,
+which is the single most valuable thing anyone could do with this entry short
+of the full design.
 
 It **cannot** test the mechanism. Prefill shape and KV dtype are both serve
 flags. So the reduced variant strengthens the entry's *fact* and leaves its

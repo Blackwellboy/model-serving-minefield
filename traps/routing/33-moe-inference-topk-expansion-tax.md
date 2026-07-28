@@ -5,9 +5,25 @@
 
 **Status: reported by others** (measured by the finder across three runs on
 two machines, with the per-item JSON he publishes re-scored here and the dose
-curve confirmed from his raw) **and reproduced here** since 2026-07-28, on our
-own Qwen 3.6 35B-A3B **NVFP4** lane, at n=600 paired, two independent passes,
-in both scoring protocols. Method, numbers and the runnable scripts are in
+curve confirmed from his raw; **his** raw is published, which is what makes that
+half checkable) **and measured here, raw not published** since 2026-07-28, on
+our own Qwen 3.6 35B-A3B **NVFP4** lane, at n=600 paired, two independent
+passes, in both scoring protocols.
+
+**Why the first-party half is not "reproduced here", having briefly been
+labelled that way.** That label requires a stranger to check the **result**
+without asking us for anything. We ship the runnable scripts, which lets you
+**re-run** the study on your own lane; we do not ship the answer sheets, so you
+cannot check **our** rows. Those are different things, and our own agreement
+floor is the reason the difference matters here: a re-run on this stack carries
+real per-item noise, so your numbers and ours will not be identical even when
+you do everything right. Shipping the sheets would fix it, and MAINTAINING
+reserves in-repo raw for calibration constants that other entries cite as a
+threshold, floor or baseline. Nothing cites this delta that way. Rather than
+widen that rule so our own result could keep the stronger label, the label
+moved. **What converts it:** the answer sheets published at a URL, or this
+delta becoming a figure other entries measure against, at which point the
+in-repo exception applies on its own terms. Method, numbers and the runnable scripts are in
 [the Q1 writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
 
 **This is the second time a first-party run has confirmed an external

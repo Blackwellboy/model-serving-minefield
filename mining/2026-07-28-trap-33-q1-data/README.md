@@ -16,5 +16,12 @@ does ship its raw, and the difference between the two is the rule rather than
 an inconsistency.
 
 What that means for you: you cannot check our rows, and you can run the study.
+Those are different things, and the entry is labelled for the weaker one. It
+reads **measured here, raw not published**, not reproduced here, precisely
+because re-runnability is not checkability. On this stack that gap is measured
+rather than theoretical: per-item agreement between identical runs is 97.58%,
+so your re-run will differ from ours in the third significant figure even when
+nothing is wrong.
+
 The item builder prints the sha256 of the item set, so if your set differs from
 ours you will know immediately rather than at the end.

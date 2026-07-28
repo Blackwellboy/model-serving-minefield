@@ -236,6 +236,19 @@ TOTAL_PATTERNS = [
     (re.compile(r"implemented\s+\{[^}]*\}\s*/\s*(\d+)"), 1, None),
 ]
 
+# Counts that state neither the total nor the implemented count, but their
+# DIFFERENCE. These are the ones that fossilise: "not implemented 25" was
+# 42 minus 17 and survived two registry expansions, because every pattern above
+# looks for a total and this number is not one. A reader takes it for current
+# coverage, which is exactly what it is not.
+#
+# Asserted as total minus implemented rather than against a literal, so it
+# cannot go stale again.
+ORPHAN_PATTERNS = [
+    re.compile(r"not\s+implemented\s+\*{0,2}(\d+)\*{0,2}\b"),
+    re.compile(r"remaining\s+\*{0,2}(\d+)\*{0,2}\s+numbered\s+traps"),
+]
+
 COUNT_SCAN_EXTS = (".md", ".py")
 COUNT_SKIP_FILES = {"CHANGELOG.md"}
 COUNT_SKIP_DIRS = {".git", "__pycache__", "integrity"}
@@ -310,6 +323,19 @@ def check_counts(root, n_entries, findings):
                                     "declares doctor coverage %d, doctor "
                                     "TRAP_PATHS has %d (%s)"
                                     % (got, implemented, m.group(0).strip())))
+                if implemented is None:
+                    continue
+                expected_orphan = n_entries - implemented
+                for rx in ORPHAN_PATTERNS:
+                    for m in rx.finditer(line):
+                        got = int(m.group(1))
+                        if got != expected_orphan:
+                            findings.append(Finding(
+                                "COUNT", "%s:%d" % (rel, i),
+                                "declares %d not-implemented, tree has %d "
+                                "entries minus %d implemented = %d (%s)"
+                                % (got, n_entries, implemented,
+                                   expected_orphan, m.group(0).strip())))
     return implemented
 
 
