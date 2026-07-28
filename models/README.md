@@ -9,6 +9,13 @@ that model here, not that it is safe. And many traps live in the stack, not
 the model: everything in the stack-level table applies to whatever model you
 serve on that stack.
 
+**If you know your serving stack, start one level up.** The
+[per-stack pages](../stacks/) carry the five entries most likely to bite on
+[vLLM](../stacks/vllm.md), [llama.cpp and GGUF](../stacks/llama-cpp.md),
+[Ollama](../stacks/ollama.md) and [mlx_lm](../stacks/mlx.md), plus the three
+checks to run before anything else. This page is the full map; those are the
+shortlists.
+
 ## Model families
 
 | Model family | Traps observed on it |
