@@ -112,6 +112,31 @@ thing it protects. `run_checks.py` prints SKIPPED, in those words, when the
 private kit is absent, rather than a pass it did not earn. Point it at the kit
 with `MINEFIELD_SANITIZER_KIT`.
 
+## Running in CI
+
+Both public repos run this layer on push to main, on pull requests, and on
+demand. Two rules were learned the hard way on the first red run and are worth
+stating, because both are easy to reintroduce:
+
+**A nested checkout is a different repository.** The peer repo must be checked
+out OUTSIDE the workspace. When it was placed at `.peer/` inside it, every peer
+file was scanned twice, once under its own repo name and once under this repo's
+name, where its exemptions did not apply. A correctly exempt line was reported
+as a failure and the build went red on a non-finding. The checkers now prune
+any directory containing a `.git` entry and print what they pruned, so the tool
+is right regardless of layout, and the workflows put the peer in `RUNNER_TEMP`
+so the situation does not arise. The sibling workflow with the same layout
+passed, which was worse: it was green for the wrong reason.
+
+**Every check runs, and the badge says which one failed.** Steps carry
+`if: always()` and a final verdict step prints PASS or FAIL per check. Without
+that, one failure skips the rest and the badge reports one broken thing while
+saying nothing about the others.
+
+Pass `--github` to any of the three checkers to emit GitHub Actions
+annotations. Findings then name the file, the line, what matched and the
+correct form of the claim, instead of `Process completed with exit code 1`.
+
 ## Proving the checks have teeth
 
 `integrity/tests/test_mutations.py` reintroduces each historical failure on a
