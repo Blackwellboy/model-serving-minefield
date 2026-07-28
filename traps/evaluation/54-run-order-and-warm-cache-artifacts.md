@@ -2,7 +2,20 @@
 
 **Found by TheTom.**
 
-**Status: contributor-measured, conditions as reported + reproduced here.** Two halves. **Contributor-measured:** TheTom measured the run-order and warm-cache artifacts on his own hardware; his conditions are stated below and his raw is private. **Reproduced here, narrowly:** we independently hit the framing rule this entry is built on, that an outsized headline number is a bug report until proven otherwise, when another lab's +2.64 point coding-benchmark effect fell to -1.02 under a temperature-controlled re-run while the secondary flakiness claim survived. Raw, drivers and per-sample JSONL: [laguna-s21-lab/pr10-replication](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication). **What we did not reproduce:** the specific mechanisms here. Our controlled variable was temperature parity, not run order or cache state; we controlled order by interleaving rather than by the counterbalancing this entry prescribes; and we have never run the null-build disproof, measured a warm-cache or cudagraph warm-up effect, or locked clocks. Those remain contributor-measured.
+**Status: contributor-measured, conditions as reported.** That is the label for everything this entry is about. A second, narrower claim inside it is separately reproduced here, on a different experiment, and the two are scoped per claim below rather than blended, because a skimmer should not carry the stronger label onto the wrong one.
+
+| Claim | Status |
+|---|---|
+| Run order, warm caches and cross-session drift produce a clean, reproducible, false speedup. The +21 to 24% prefill result, the null-build disproof, the cudagraph and clock effects. **This is what the entry is about.** | **contributor-measured, conditions as reported** (TheTom, on his own hardware; conditions below, raw private) |
+| The framing rule the entry is built on: an outsized headline number is a bug report until proven otherwise | **reproduced here**, but on a different experiment. Another lab's +2.64 point coding-benchmark effect fell to -1.02 under a temperature-controlled re-run while its secondary flakiness claim survived. Raw, drivers and per-sample JSONL: [laguna-s21-lab/pr10-replication](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication) |
+
+**Read the second row narrowly.** "Reproduced here" attaches to the framing
+rule, **not** to this entry's prefill story and not to any of its mechanisms.
+Our controlled variable was temperature parity, not run order or cache state;
+we controlled order by interleaving rather than by the counterbalancing this
+entry prescribes; and we have never run the null-build disproof, measured a
+warm-cache or cudagraph warm-up effect, or locked clocks. Every mechanism below
+is contributor-measured and none of it has been reproduced here.
 
 **Symptom.** A tuning change shows a clean **+21 to 24%** prefill improvement at 4K. It is
 consistent,

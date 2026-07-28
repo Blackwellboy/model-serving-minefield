@@ -25,13 +25,31 @@ check it), and **under test**. Entries that are reported, contributed or
 unreproduced are welcome here and labelled, never rejected; what the label
 protects is your ability to tell them apart at a glance.
 
-In a hurry? [Run the doctor](#run-the-doctor) against your own endpoint. It
-has checks for **17 of these 81 entries** and runs in under a minute. It is
-not a broad bill of health, and it prints its own coverage line at the end of
-every run so you can see exactly how much of the registry it touched, how
-much it could not check on your stack, and how much it never implements.
+## Start here
+
+Two doors, and which one you want depends on why you are here.
+
+- **"What am I running?"** The **[per-model and per-stack index](models/README.md)**
+  is the place to start if you are about to serve something, or you already are.
+  It maps model families and serving stacks to the traps observed on them, so
+  you can read the handful that apply to you instead of all 81. Absence from it
+  means nobody has reported on that model here, not that it is safe.
+- **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is directly
+  below, all 81 entries, one row each, sorted by number. It is the answer to a
+  weird number you are holding right now. That is the premise of this registry
+  and it has not moved; it is second on the page rather than first only because
+  most visitors arrive before the symptom rather than during it.
+
+In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
+it. It has checks for **17 of these 81 entries** and runs in under a minute. It
+is not a broad bill of health, and it prints its own coverage line at the end of
+every run so you can see exactly how much of the registry it touched, how much
+it could not check on your stack, and how much it never implements.
 
 ## Find your symptom
+
+All 81 entries. If you know what you are running rather than what you are
+seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
 |---|---|---|---|
@@ -89,7 +107,7 @@ much it could not check on your stack, and how much it never implements.
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
 | You changed a flag, restarted, and the old behavior is still there | A stale process kept the port; the restart reported success and the replacement crash-looped | [53](traps/runtime/53-config-edit-never-took-effect.md) | contributor-measured, conditions as reported |
-| A clean +20% speedup that also reproduces on a build without the feature | Run order, warm caches or cross-session drift; what you varied was not the only thing that varied | [54](traps/evaluation/54-run-order-and-warm-cache-artifacts.md) | contributor-measured, conditions as reported |
+| A clean +20% speedup that also reproduces on a build without the feature | Run order, warm caches or cross-session drift; what you varied was not the only thing that varied | [54](traps/evaluation/54-run-order-and-warm-cache-artifacts.md) | contributor-measured, conditions as reported (the framing rule alone is separately reproduced here) |
 | A model serves happily at its advertised context and scores badly on long-context retrieval | Advertised, served and trained context are three different numbers | [55](traps/evaluation/55-supported-context-is-not-trained-context.md) | contributor-measured, conditions as reported |
 | Template forensics reports "no chat template" on a model that chats fine | The template is Python code inside the checkpoint, not a Jinja file | [56](traps/template/56-checkpoint-ships-no-chat-template.md) | reproduced here |
 | You sent the thinking kwarg as the string `"false"` and thinking turned on | The kwarg is evaluated for truthiness, not parsed as a boolean | [57](traps/reasoning/57-thinking-kwarg-truthiness-coercion.md) | reproduced here |
