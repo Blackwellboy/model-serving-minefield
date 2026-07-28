@@ -28,8 +28,29 @@ if [ "${MINEFIELD_SKIP_INTEGRITY:-0}" = "1" ]; then
 fi
 
 ROOT="$(git rev-parse --show-toplevel)"
-HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Resolve the symlink before taking a dirname. The install instructions above
+# tell you to symlink this file into .git/hooks/, and BASH_SOURCE is then the
+# symlink's own path, so a bare dirname gives .git/hooks and INTEGRITY becomes
+# .git/. The hook then refused every push with "can't open .git/run_checks.py",
+# which is a fail-closed outcome and therefore not dangerous, but it does mean
+# that anyone who installed it the documented way had a hook that could never
+# pass. Found 2026-07-28 on the first push that used it.
+SELF="${BASH_SOURCE[0]}"
+if command -v readlink >/dev/null 2>&1; then
+  RESOLVED="$(readlink -f "$SELF" 2>/dev/null || true)"
+  [ -n "$RESOLVED" ] && SELF="$RESOLVED"
+fi
+HOOK_DIR="$(cd "$(dirname "$SELF")" && pwd)"
 INTEGRITY="$(dirname "$HOOK_DIR")"
+
+if [ ! -f "$INTEGRITY/run_checks.py" ]; then
+  echo "pre-push: cannot find run_checks.py from $INTEGRITY."
+  echo "pre-push: REFUSING rather than skipping. Point the hook at the repo's"
+  echo "pre-push: integrity/hooks/pre-push, or set MINEFIELD_SKIP_INTEGRITY=1"
+  echo "pre-push: and record the skip."
+  exit 1
+fi
 
 # The peer repo, so claim propagation sees both public surfaces.
 PEER="${MINEFIELD_PEER_REPO:-}"
