@@ -1,5 +1,31 @@
 # minefield-doctor
 
+## What this tool actually is: a thinking-stack preflight
+
+The name says doctor, and the name is bigger than the tool. Read it as a
+**thinking-stack preflight**, not a minefield doctor.
+
+Its 18 checks cluster almost entirely on one region of the registry: reasoning
+field names, chat templates and history assembly, thinking control kwargs,
+tool parsing, and token ceilings. That is not an accident of what got built
+first, it is what a read-only, request-shaped probe can reach in under a
+minute. The regions it says **nothing** about include quantisation kernel
+paths, container toolchains and driver mismatches, memory allocation and KV
+sizing, MoE routing, every eval-harness confound, and long-context behaviour.
+Those are most of this registry, and they are where several of the
+[Core 12](../CORE.md) live.
+
+So: a PROBLEM from this tool is a real defect worth acting on. A run with no
+problems means the handful of trap ids in its `clean` count were ruled out on
+your lane, and nothing more. The coverage block below is deliberately
+unflattering and it prints on every run; do not let a clean summary line talk
+you out of reading it.
+
+Findings are ordered **Core first** within each verdict bucket, so the checks
+most likely to matter are the first lines you read.
+
+## Running it
+
 One stdlib-only file that points at your OpenAI-compatible endpoint and
 diagnoses it against this registry. No install, no venv, no dependencies.
 

@@ -4,6 +4,15 @@ diagnosis against the model-serving-minefield registry.
 
     python3 minefield_doctor.py --base-url http://localhost:8000/v1
 
+WHAT THIS IS: a thinking-stack preflight, not a minefield doctor. Its checks
+cluster on reasoning fields, chat templates and history assembly, thinking
+control kwargs, tool parsing and token ceilings, because that is what a
+read-only request-shaped probe can reach. It says nothing about quantisation
+kernel paths, container toolchains, memory allocation, MoE routing, eval-harness
+confounds or long-context behaviour, which is most of the registry. A run with
+no problems is a statement about the trap ids in its clean count, never a bill
+of health. Findings print Core tier first within each bucket (see CORE.md).
+
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
@@ -67,6 +76,18 @@ TRAP_PATHS = {
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
 }
+
+# The registry's Core tier (../CORE.md): the twelve entries selected on
+# evidence of what has cost people evenings, rather than on which entries have
+# the best data. Findings are ordered Core first within each verdict bucket so
+# the first lines an operator reads are the ones most likely to matter.
+#
+# Four of the twelve (35, 53, 61, 77) have no check in this tool and appear
+# here only so the ordering key and the coverage line stay honest about that.
+# Keep this set in sync with CORE.md; it is a reading-order tier, not a claim
+# about severity in any individual case.
+CORE_TRAP_IDS = {"01", "03", "04", "10", "12", "16", "17", "19",
+                 "35", "53", "61", "77"}
 
 # Honest sub-classification of the ids above, printed in the coverage block.
 # A trap id in TRAP_PATHS does NOT mean an independent check exists for it.
@@ -199,7 +220,16 @@ class Doc:
 
     # -- views ------------------------------------------------------------
     def by(self, level):
-        return [f for f in self.findings if f["level"] == level]
+        """Findings at one level, Core-tier first.
+
+        The sort is stable, so within the Core group and within the rest the
+        original probe order is preserved. Ordering only; nothing is dropped,
+        no verdict changes, and a finding that touches no numbered trap sorts
+        with the non-Core group rather than being hidden.
+        """
+        out = [f for f in self.findings if f["level"] == level]
+        out.sort(key=lambda f: 0 if CORE_TRAP_IDS & set(f["traps"]) else 1)
+        return out
 
     @property
     def problems(self): return self.by("PROBLEM")
@@ -1902,6 +1932,10 @@ def coverage(doc):
         "advisory": sorted(ADVISORY_IDS),
         "need_hf_repo": sorted(TRAPS_NEED_HF_REPO),
         "need_render_path": sorted(TRAPS_NEED_RENDER_PATH),
+        "core_total": sorted(CORE_TRAP_IDS),
+        "core_implemented": sorted(CORE_TRAP_IDS & implemented),
+        "core_executed": sorted(CORE_TRAP_IDS & executed),
+        "core_not_implemented": sorted(CORE_TRAP_IDS - implemented),
     }
 
 
@@ -1972,6 +2006,13 @@ def emit(doc, args):
         print(f"  problems on: {', '.join(cov['problems'])}")
     if cov["inconclusive"]:
         print(f"  inconclusive or unchecked: {', '.join(cov['inconclusive'])}")
+    print(f"  Core tier ({len(cov['core_total'])} entries, see CORE.md): "
+          f"implemented here {', '.join(cov['core_implemented'])}; "
+          f"executed on this run "
+          f"{', '.join(cov['core_executed']) or 'none'}.")
+    print(f"    Core entries with NO check in this tool, and therefore yours "
+          f"to run by hand: {', '.join(cov['core_not_implemented'])}. "
+          f"Findings above are printed Core first within each bucket.")
     print("  caveats on the implemented count, so it is not read as depth:")
     for n, why in sorted(cov["shared_heuristic"].items()):
         print(f"    - {n}: {why}")
