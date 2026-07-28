@@ -264,3 +264,48 @@ checked, including orphan forms like "not implemented N", which are asserted as
 total minus implemented after one such number survived two registry expansions.
 The CHANGELOG is the one place a reader must not infer current coverage from a
 number, and its entries are dated so that reading is available to them.
+
+**Documents outside this repository are structurally out of reach, and stale
+registry facts there will not be caught.** This is the third residual and it is
+the one with the widest blast radius, so it is written down rather than left to
+the assumption that CI covers it.
+
+The COUNT check asserts every declared total against the tree it can see. That
+tree is this repository. Other surfaces describe this repository's state and are
+not in it:
+
+- a private control-plane continuity document that cold-start agents read as
+  authoritative,
+- a personal site that quotes an entry count in prose,
+- session returns and handoff notes that quote a tip SHA and a count.
+
+On 2026-07-28 the continuity document said **42** and the site said **32** while
+the live tree held **90**. Both were found by hand, one by an archive
+excavation and one by a sweep, and neither could have been found by anything in
+this directory.
+
+**Can the layer reach them? No, and not for a reason worth engineering around.**
+Three options were considered and all three are worse than the residual:
+
+1. **Scan sibling paths from CI.** The public runner has no access to a private
+   control-plane tree, and giving it access would put that tree on a public
+   runner, which is the thing the sanitizer's pattern file already cannot do.
+2. **Have the other documents pull the count at render time.** They are hand-
+   written prose in repositories with no build step. Adding one to make a
+   sentence self-updating is a large change to buy a small guarantee.
+3. **A cross-repo checker run locally.** This is the only workable one, and it
+   still cannot be a gate, because nothing forces it to run before somebody
+   reads the stale document. It would be a periodic sweep, not a check.
+
+**So the honest statement is: any count outside this repository is a snapshot,
+and the only thing that makes it trustworthy is the tip SHA printed beside it.**
+That is the convention to enforce socially rather than mechanically: never write
+a bare count, always write the count and the tip it was counted at, so a reader
+can tell in one command whether it still holds. The count in this repository is
+checked; every count elsewhere is a claim about a moment.
+
+For scale, because it argues the point better than the rule does: this
+registry's entry count went **42 to 81 to 90 within a single day**. A document
+that quotes it without a tip is wrong within hours, and no amount of care at
+writing time changes that.
+
