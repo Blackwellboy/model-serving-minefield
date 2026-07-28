@@ -1,3 +1,12 @@
+# NOTE TO EDITORS. The "before" log excerpt below is deliberately built out of
+# values that no secret scanner will match: a documentation hostname, an
+# address from the RFC 5737 documentation range, an absolute path outside the
+# usual home-directory prefix, and a bearer token carrying no vendor prefix.
+# The first draft used realistic values instead, and the whole-tree sanitizer
+# correctly refused the push over this very file, which is the redaction
+# guidance. Keep the shape, keep the lesson, and do not make the fake secrets
+# look more real: this file has to be able to pass the scanner it is teaching
+# people to satisfy. Adjudicating a waiver for it would be the wrong fix.
 name: I hit a trap
 description: You lost time to a serving or config bug. Four plain questions, no writeup. A maintainer turns it into an entry and credits you.
 title: "[trap] "
@@ -6,6 +15,61 @@ body:
   - type: markdown
     attributes:
       value: |
+        ## Before you paste anything: this issue is public and permanent
+
+        We are about to ask you what you saw, and the honest answer is usually a
+        log. **Scrub it first.** A public issue goes out over the API, the events
+        firehose, email notifications and third-party mirrors within seconds of
+        you pressing the button. Editing or deleting it afterwards does **not**
+        un-publish it.
+
+        Take out, or replace with a placeholder:
+
+        - **hostnames and machine names**, including internal DNS names
+        - **IP addresses**, private ranges included
+        - **absolute paths**, which carry your username and your directory layout
+        - **usernames**, real names, email addresses
+        - **API keys, tokens, passwords, bearer headers, cookies, licence keys**
+        - **URLs to internal dashboards, buckets or model stores**
+
+        Concrete, so it is not abstract. This log excerpt:
+
+        ```
+        04:11:22 INFO [gpu-node-07.ml.internal.example.com] loading /data/jsmith/models/qwen3-nvfp4
+        04:11:39 INFO route=http://203.0.113.19:8000/v1 auth=Bearer 8f3aQ2vRkT9wL...  OK
+        ```
+
+        goes in as this one, which is just as useful to us:
+
+        ```
+        04:11:22 INFO [HOST] loading /PATH/qwen3-nvfp4
+        04:11:39 INFO route=http://HOST:8000/v1 auth=Bearer REDACTED  OK
+        ```
+
+        Nothing that matters was lost. The timestamps, the ordering, the model,
+        the quantization, the route shape and the status are all still there, and
+        those are the parts that let us reproduce it. Placeholders are fine. **We
+        would much rather have a heavily redacted log than a leaked one**, and
+        "I cut this down, ask me if you need more" is a perfectly good thing to
+        write.
+
+        **If you have already posted a secret** anywhere on this repo, see
+        [SECURITY.md](https://github.com/Blackwellboy/model-serving-minefield/blob/main/SECURITY.md).
+        It starts with rotating the credential, which is the only step that
+        actually protects you. Do not quote the secret again in order to report
+        it.
+  - type: checkboxes
+    id: scrubbed
+    attributes:
+      label: Scrub check
+      description: One box. It is here because the four fields below are where logs get pasted.
+      options:
+        - label: I have removed hostnames, IPs, absolute paths, usernames, tokens and keys from anything I am pasting below, or I am not pasting a log.
+          required: true
+  - type: markdown
+    attributes:
+      value: |
+        ---
         Plain words are fine. No formatting, no evidence checklist, no finished writeup.
         Answer these the way you would tell a friend what happened. A maintainer will
         verify what can be verified, write the entry, credit you by the handle you
@@ -23,7 +87,7 @@ body:
     id: what-you-saw
     attributes:
       label: What you saw
-      description: The symptom in your own words. The weird number, the strange output, the thing that made you doubt yourself.
+      description: The symptom in your own words. The weird number, the strange output, the thing that made you doubt yourself. Scrubbed log excerpts are welcome; see the placeholder example above.
       placeholder: "Every reply started with a stray </think> and my parser choked on it."
     validations:
       required: true
@@ -38,7 +102,7 @@ body:
     id: what-serving
     attributes:
       label: What were you serving
-      description: Model, quantization, serving stack, and versions, as best you know them.
+      description: Model, quantization, serving stack, and versions, as best you know them. Version numbers and image tags are what we need; the registry host a private image came from is not, so replace that with a placeholder.
       placeholder: "Qwen 3.6 35B-A3B, NVFP4, vLLM 0.25.1 in docker on a DGX Spark"
     validations:
       required: true
