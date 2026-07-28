@@ -1,6 +1,6 @@
 # Playbooks
 
-Four ordered checklists, for the four jobs people are actually doing when
+Five ordered checklists, for the five jobs people are actually doing when
 they arrive here. Each step names the entry it guards against and the check
 to run, so you can work top to bottom and stop when the lane is clean.
 
@@ -14,6 +14,14 @@ carries the mechanism, the status label, and what was and was not measured.
 | [Thinking died when I made it multi-turn](thinking-died-multi-turn.md) | Single-turn reasons, multi-turn does not, and the model still sounds fine |
 | [Porting a harness to a new server](porting-a-harness.md) | Code that measured correctly on one stack is now pointed at another |
 | [Long context looks broken](long-context-looks-broken.md) | A long window accepts your prompt and answers from nowhere near the start |
+| [Reading a soak](reading-a-soak.md) | One configuration ran for hours and you are about to call a moving aggregate "drift" |
+
+**One caveat on the newest of the five.** [Reading a soak](reading-a-soak.md) is
+the only playbook whose steps are not all previously published entries: its
+weighted-aggregate reasoning is adapted from
+[Hikari's per-domain evaluation discipline](https://github.com/hikarioyama/Hikari-knowledge)
+(MIT), and the measured Simpson's-paradox example in it is ours and new. It is
+credited in the playbook text.
 
 ## One rule that belongs to all four
 

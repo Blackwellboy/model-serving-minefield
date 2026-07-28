@@ -115,7 +115,7 @@ path was available and both were run:
 | Generation-scored, pass 2 | 85.50% | 81.50% | -4.00 pt | p = 0.000936 |
 | Choice-logprob, pass 1 | 83.67% | 80.50% | -3.17 pt | p = 0.0145 |
 | Choice-logprob, pass 2 | 83.83% | 80.17% | -3.67 pt | p = 0.0071 |
-| *Reported, bf16, choice-logprob* | *84.33%* | *80.67%* | *-3.66 pt* | *p = 0.0021* |
+| *Reported, bf16, choice-logprob* | *84.33%* | *80.67%* | *-3.67 pt* | *p = 0.0021* |
 
 The protocol-matched arms land on the reported bf16 figures closely enough that
 the closeness should not be over-read from four runs, but the direction, the
@@ -201,7 +201,7 @@ that floor at all.
   instrumented.
 - **Not a claim about NVFP4 versus bf16.** The two sets of numbers come from
   different stacks as well as different quantisations, so the small gap between
-  our -3.17/-3.67 and the reported -3.66 is not attributable to quantisation.
+  our -3.17/-3.67 and the reported -3.67 is not attributable to quantisation.
   What is shown is that quantising the expert weights does **not** remove the
   effect.
 - **Not a claim about the fix.** The alpha dial was not ported. Whether the

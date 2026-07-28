@@ -52,7 +52,7 @@ a statement of method, but it is no longer a reason to discount the result.
 
 Two further consequences for Q1:
 
-- The reported effect is 3.66 points, roughly **2.7x** the measured 1.3 point
+- The reported effect is 3.67 points, roughly **2.7x** the measured 1.3 point
   band at n=600, so it is detectable at the planned n.
 - The **Confirm** clause below allows "a significant but much smaller effect"
   as a directional confirmation. That clause now has a floor under it: an
