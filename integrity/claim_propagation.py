@@ -44,7 +44,12 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LEDGER = os.path.join(HERE, "claims.json")
 
-SCAN_EXTS = (".md", ".txt")
+# .html is here because the most public surface we own is a single-page site
+# (Blackwellboy.github.io/index.html) and it is not markdown. Scanning only
+# .md and .txt meant the ledger could be pointed at that repo and return a
+# confident CLEAN having read nothing but its README: a false CLEAN on the
+# surface that carried a retracted claim for a day longer than any other.
+SCAN_EXTS = (".md", ".txt", ".html")
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "_proofs", "_proof_archive"}
 
 ENFORCED_STATES = {"retracted", "corrected", "scope-limited"}

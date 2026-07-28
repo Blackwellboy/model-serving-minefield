@@ -40,17 +40,36 @@ jobs:
           fetch-depth: 1
         continue-on-error: true
 
-      - name: move the peer clone out of the workspace
+      # The Pages site is the third surface. It is a single index.html, not
+      # markdown, which is why claim_propagation scans .html: without that it
+      # would read the site's README and report a confident CLEAN. It is
+      # checked out READ-ONLY and is never written to from here.
+      - uses: actions/checkout@v5
+        with:
+          repository: Blackwellboy/Blackwellboy.github.io
+          path: peer-bbio
+          fetch-depth: 1
+        continue-on-error: true
+
+      - name: move the peer clones out of the workspace
         id: peer
         run: |
+          mkdir -p "$RUNNER_TEMP/peer"
           if [ -d peer-laguna ]; then
-            mkdir -p "$RUNNER_TEMP/peer"
             mv peer-laguna "$RUNNER_TEMP/peer/laguna-s21-lab"
             echo "path=$RUNNER_TEMP/peer/laguna-s21-lab" >> "$GITHUB_OUTPUT"
             echo "Peer repo at $RUNNER_TEMP/peer/laguna-s21-lab"
           else
             echo "path=" >> "$GITHUB_OUTPUT"
             echo "::warning::peer repo unavailable; claim propagation will scan this repo only and will say so."
+          fi
+          if [ -d peer-bbio ]; then
+            mv peer-bbio "$RUNNER_TEMP/peer/bbio"
+            echo "bbio=$RUNNER_TEMP/peer/bbio" >> "$GITHUB_OUTPUT"
+            echo "Pages site at $RUNNER_TEMP/peer/bbio"
+          else
+            echo "bbio=" >> "$GITHUB_OUTPUT"
+            echo "::warning::Pages site unavailable; the most public surface was NOT scanned this run."
           fi
 
       - uses: actions/setup-python@v6
@@ -62,16 +81,23 @@ jobs:
         if: always()
         run: python3 integrity/registry_integrity.py --github
 
+      - name: reference integrity
+        id: refs
+        if: always()
+        run: python3 integrity/reference_integrity.py --github
+
       - name: claim propagation
         id: claims
         if: always()
         run: |
+          ARGS="--repo minefield=."
           if [ -n "${{ steps.peer.outputs.path }}" ]; then
-            python3 integrity/claim_propagation.py --github \
-              --repo minefield=. --repo laguna="${{ steps.peer.outputs.path }}"
-          else
-            python3 integrity/claim_propagation.py --github --repo minefield=.
+            ARGS="$ARGS --repo laguna=${{ steps.peer.outputs.path }}"
           fi
+          if [ -n "${{ steps.peer.outputs.bbio }}" ]; then
+            ARGS="$ARGS --repo bbio=${{ steps.peer.outputs.bbio }}"
+          fi
+          python3 integrity/claim_propagation.py --github $ARGS
 
       - name: do-not-cite on added text
         id: dnc
@@ -117,6 +143,7 @@ jobs:
           fail=0
           for pair in \
             "registry integrity=${{ steps.registry.outcome }}" \
+            "reference integrity=${{ steps.refs.outcome }}" \
             "claim propagation=${{ steps.claims.outcome }}" \
             "do-not-cite=${{ steps.dnc.outcome }}" \
             "mutation suite=${{ steps.mutations.outcome }}" \

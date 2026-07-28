@@ -75,6 +75,10 @@ def main():
                         run("1. REGISTRY INTEGRITY",
                             [py, os.path.join(HERE, "registry_integrity.py"),
                              "--root", root])))
+        results.append(("reference integrity",
+                        run("1b. REFERENCE INTEGRITY",
+                            [py, os.path.join(HERE, "reference_integrity.py"),
+                             "--root", root])))
     else:
         print("1. REGISTRY INTEGRITY: not applicable, %s has no traps/ tree\n"
               % root)

@@ -31,7 +31,8 @@
   ],
   "repos": {
     "minefield": "model-serving-minefield",
-    "laguna": "laguna-s21-lab"
+    "laguna": "laguna-s21-lab",
+    "bbio": "Blackwellboy.github.io"
   },
   "context_window": {
     "before": 8,
@@ -108,6 +109,18 @@
         {
           "pattern": "depth\\s+(?:collapses|is suppressed|falls|drops)\\s+(?:with|under|as)",
           "note": "the claim stated about depth rather than about a rule block"
+        },
+        {
+          "pattern": "dose\\s+shorten\\w*\\s+reasoning",
+          "note": "the site's own restatement of the retracted dose reading. None of the markdown-shaped phrasings above match it, which is why the site carried the claim after three other surfaces were corrected."
+        },
+        {
+          "pattern": "prompt\\s+dose[^\\n]{0,60}shorten",
+          "note": "looser form of the same sentence, for a rewrite that keeps the idea and moves the words"
+        },
+        {
+          "pattern": "heaviest\\s+agent\\s+prompt[^\\n]{0,80}short",
+          "note": "the observation-shaped version the site used to introduce the claim"
         }
       ],
       "exempt_paths": [
