@@ -412,6 +412,29 @@ def check_doctor_prose(root, findings):
                 "wrong number off-repo" % (m.group(1), implemented)))
 
 
+# llms.txt is a routing file for agents and must carry NO counts. Every count
+# in this repo has gone stale at least once, on the README first screen, in the
+# doctor's opening sentence, in the playbook list and on the public site. A
+# routing file that names a number rots the same way, and unlike a prose page
+# nobody re-reads it. The rule is simpler to enforce than to remember, so it is
+# enforced: any bare two-or-more digit number fails.
+LLMS_COUNT_RE = re.compile(r"(?<![\w.\-/])\d{2,}(?![\w.\-/])")
+
+
+def check_llms_txt(root, findings):
+    p = os.path.join(root, "llms.txt")
+    if not os.path.exists(p):
+        return
+    text = read(p)
+    for m in LLMS_COUNT_RE.finditer(text):
+        ln = text.count("\n", 0, m.start()) + 1
+        findings.append(Finding(
+            "LLMS-COUNT", "llms.txt:%d" % ln,
+            "bare number %r. llms.txt must name no counts: every count in this "
+            "repo has gone stale at least once, and a routing file that carries "
+            "one rots the same way with nobody re-reading it" % m.group(0)))
+
+
 def check_counts(root, n_entries, findings):
     implemented = doctor_implemented_count(root)
     for dp, dns, fns in os.walk(root):
@@ -583,6 +606,7 @@ def run(root):
     implemented = check_counts(root, len(entries), findings)
     check_word_counts(root, len(entries), findings)
     check_doctor_prose(root, findings)
+    check_llms_txt(root, findings)
     return findings, len(entries), len(stubs), implemented
 
 

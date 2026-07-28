@@ -147,6 +147,47 @@ not-planned distinction. If the intent is to say the work was completed rather
 than abandoned, that has to be in the closing comment, because the API will not
 carry it.
 
+## The site bot races you, and index.html is generated
+
+Pushing to this repo triggers the build workflow in
+`Blackwellboy/Blackwellboy.github.io`, which regenerates `index.html` from this
+tree and commits it. If you are editing that repo's sources at the same time,
+your push is rejected and you are left holding a conflict in a **generated**
+file.
+
+**Resolution, and it is not the obvious one.** Do not merge `index.html`. Take
+your `build.py` and `index.template.html`, then **regenerate** `index.html` and
+stage the result:
+
+```bash
+git checkout <your-commit> -- build.py index.template.html
+python3 build.py --registry ../model-serving-minefield
+git add build.py index.template.html index.html
+git rebase --continue
+```
+
+Hand-merging a generated file produces something neither generator would emit,
+and the next scheduled build silently replaces it, so any hand-resolution you
+did is lost without a signal.
+
+**Why not just serialise them.** The bot fires on push and has no way to know a
+human is mid-edit, and adding a lock the bot must respect means the bot can
+block on a stale lock and the page stops updating. A page that quietly stops
+regenerating is the failure mode this repo has already had twice. A rejected
+push is loud and costs one rebase; a wedged generator is silent and costs days.
+
+**What to do before a session that touches both.** Take the claim on the site
+clone the same way as the registry, which stops two *humans* colliding even
+though it cannot stop the bot:
+
+```bash
+repo-claim claim ~/publish/model-serving-minefield --session <name>
+repo-claim claim <site-clone> --session <name>
+```
+
+Land registry changes first, let the bot rebuild, then edit the site. The race
+only bites when the order is reversed.
+
 ## Numbering in this merge
 
 **Numbers in the 43-and-up range are provisional until the contributors whose

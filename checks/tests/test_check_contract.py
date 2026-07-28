@@ -53,6 +53,7 @@ Exit codes across checks in this directory:
 
     python3 checks/tests/test_check_contract.py
 """
+import json
 import importlib.util
 import sys
 from pathlib import Path
@@ -194,6 +195,36 @@ def _run_controls(name, mod, fails, verbose=False):
             print(f"   ok  regression assert {label!r}")
 
 
+MANIFEST_PATH = CHECKS_DIR / "MANIFEST.json"
+
+
+def manifest_failures(checks):
+    """Two-way: what the manifest expects vs what discovery found.
+
+    The harness already refuses to pass over an empty set. That is not enough:
+    a set of one is not empty and is still wrong if the registry expects two.
+    Coverage was silent, so discovery could narrow and nothing would say so.
+    """
+    fails = []
+    if not MANIFEST_PATH.exists():
+        return [f"{MANIFEST_PATH.name} is missing; coverage is unasserted and "
+                f"a narrowed discovery set would pass silently"]
+    try:
+        expected = set(json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))["checks"])
+    except Exception as e:
+        return [f"{MANIFEST_PATH.name} is unreadable ({e}); coverage is unasserted"]
+    found = {name for name, _src, _c in checks}
+    for missing in sorted(expected - found):
+        fails.append(f"{missing}: in {MANIFEST_PATH.name} but NOT discovered. "
+                     f"Either it moved or its extension stopped matching, and "
+                     f"the harness would otherwise report ALL PASS without it")
+    for extra in sorted(found - expected):
+        fails.append(f"{extra}: discovered but NOT in {MANIFEST_PATH.name}. A "
+                     f"check nobody recorded is a check nobody decided to "
+                     f"cover; add it to the manifest deliberately")
+    return fails
+
+
 def conformance_failures():
     """Return the list of contract violations across every discovered check."""
     fails = []
@@ -201,6 +232,7 @@ def conformance_failures():
     if not checks:
         return ["no checks discovered; this harness would pass vacuously over "
                 "an empty set, which is the defect it tests for"], []
+    fails += manifest_failures(checks)
     for name, _src, controls_path in checks:
         mod = _check_module(name, controls_path, fails)
         if mod is None:
@@ -230,6 +262,10 @@ def main():
         print("FAILURE: no checks discovered; this harness would pass "
               "vacuously over an empty set, which is the defect it tests for")
         sys.exit(1)
+
+    for f in manifest_failures(checks):
+        print(f"MANIFEST: {f}")
+        fails.append(f)
 
     for name, _src, controls_path in checks:
         print(f"== {name}")

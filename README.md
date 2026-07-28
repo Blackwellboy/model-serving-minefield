@@ -26,6 +26,10 @@ check it), and **under test**. Entries that are reported, contributed or
 unreproduced are welcome here and labelled, never rejected; what the label
 protects is your ability to tell them apart at a glance.
 
+> **Reading this as an agent?** [`llms.txt`](llms.txt) is a short routing file
+> written for you: the three doors, the order to try them, how to read a status
+> line, and what to do on a miss. It names no counts, on purpose.
+
 ## Start here
 
 Four doors, and which one you want depends on why you are here. All 103

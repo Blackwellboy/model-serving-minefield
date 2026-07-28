@@ -35,9 +35,16 @@ def copy_tree(dst):
     # and the mining notes all link into it. Omitting it made 48 correct links
     # dangle inside the copy, so five tests failed against a tree that was
     # green. A partial copy is a mutation nobody intended.
+    # llms.txt joined the list the day it landed, for the same reason upstream/
+    # did: README links to it, REF-EXISTS resolves every relative link in the
+    # copy, and a file left out of the copy is a broken link that exists only
+    # inside the fixture. Four tests went red against a green tree. The comment
+    # above was already describing this exact failure, which is a fair warning
+    # that the list is the fragile part: anything the docs link to has to be
+    # here, and nothing tells you when that stops being true.
     for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
                  "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
-                 "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md",
+                 "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
                  "doctor", "checks", "integrity", ".github", "LICENSE"):
         src = os.path.join(ROOT, name)
         if not os.path.exists(src):
