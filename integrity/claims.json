@@ -1,0 +1,680 @@
+{
+  "schema": 1,
+  "_readme": [
+    "The claims ledger: every published claim that has been retracted,",
+    "corrected or scope-limited, and every surface that carries it.",
+    "",
+    "The rule this file exists to enforce: A RETRACTION IS NOT COMPLETE UNTIL",
+    "ITS SEARCH TERMS ARE RECORDED. integrity/claim_propagation.py refuses to",
+    "pass a claim whose state is retracted, corrected or scope-limited and",
+    "whose search_phrasings list is empty. Recording the phrasing is what",
+    "makes the retraction mechanically enforceable on every future surface,",
+    "including surfaces that do not exist yet.",
+    "",
+    "Field notes:",
+    "  state             retracted    the claim is withdrawn; the old form is wrong",
+    "                    corrected    a specific form is wrong, a nearby form is right",
+    "                    scope-limited the measurement stands, the generalisation does not",
+    "  search_phrasings  regexes, each with a note saying what it is looking for.",
+    "                    Case-insensitive. Written tight: a phrasing that fires on",
+    "                    ordinary prose gets the whole check ignored.",
+    "  requires_near     scope-limited only. A hit is acceptable if one of these",
+    "                    matches inside the context window; otherwise it is flagged.",
+    "  exempt_paths      surfaces that carry the superseded wording ON PURPOSE",
+    "                    (verbatim archives, the retraction record itself).",
+    "  carried_by        every local surface known to carry this claim, and what",
+    "                    state that surface is in. Checked for existence.",
+    "  remote_surfaces   upstream comments and third-party guides. A checker",
+    "                    cannot edit or (by default) read these; they are printed",
+    "  correction_anchors  distinctive strings that say a nearby correction is about THIS claim. Required for retracted and corrected states. Keep them DISTINCTIVE: 'qwen' in a Qwen-heavy repo let an unrelated PR-10 correction 30 lines away vouch for the uncorrected Qwen dose-depth paragraph during this file's own bring-up.",
+    "                    as MANUAL every run so they cannot be forgotten."
+  ],
+  "repos": {
+    "minefield": "model-serving-minefield",
+    "laguna": "laguna-s21-lab"
+  },
+  "context_window": {
+    "before": 8,
+    "after": 20,
+    "_note": "Lines around a hit searched for a correction marker. This project's convention is to leave the superseded sentence visible and put the correction immediately after it, so the window is asymmetric. Measured on the tree as it stands, the widest legitimate gap is 7 lines; 20 is generous. Wider windows let an unrelated correction vouch for a claim, which is why correction_anchors exist as well."
+  },
+  "correction_markers": [
+    "CORRECTION",
+    "corrected",
+    "retract",
+    "withdraw",
+    "superseded",
+    "supersedes",
+    "do not cite",
+    "does not replicate",
+    "does not survive",
+    "never scored",
+    "previously read",
+    "previously said",
+    "is an inversion",
+    "misparse",
+    "not be cited",
+    "no longer holds",
+    "scale caveat",
+    "kept verbatim for accountability",
+    "do not survive",
+    "does not hold",
+    "effect vanishes",
+    "vanishes",
+    "sign reversed",
+    "confound",
+    "replication",
+    "run-scoped",
+    "not valid evidence",
+    "two variables"
+  ],
+  "claims": [
+    {
+      "id": "depth-dose-suppression",
+      "title": "Reasoning depth is suppressed by system-prompt dose",
+      "state": "retracted",
+      "retracted_on": "2026-07-27",
+      "authority": "laguna:c7-depth-collapse/C7_DEPTH_COLLAPSE_20260727.md",
+      "superseded_by": "Depth among fired turns is statistically flat across bare / +identity / +neutral / +tools / +identity+tools (all pairwise p >= 0.13; the tools arm was the highest median). The medians are real measurements of those cells; the monotonic-dose reading was a cross-run comparison. What moves depth is task composition and tool-boundary truncation.",
+      "search_phrasings": [
+        {
+          "pattern": "collapses? monotonically with dose",
+          "note": "the headline form of the retracted dose reading"
+        },
+        {
+          "pattern": "every rule block you add shortens the reasoning",
+          "note": "the operator-advice restatement; it survived one correction pass and had to be withdrawn separately, which is why it gets its own phrasing"
+        },
+        {
+          "pattern": "shortens the reasoning you get",
+          "note": "shorter variant of the same advice sentence"
+        },
+        {
+          "pattern": "745\\s*(?:->|to|\\u2192)\\s*282",
+          "note": "the C7-to-C8 cross-run median pair, cited as a collapse"
+        },
+        {
+          "pattern": "3536\\s*(?:->|to|\\u2192)\\s*745",
+          "note": "the bare-to-agent-prompt half of the same cross-run ladder"
+        },
+        {
+          "pattern": "1080\\s*(?:->|to|\\u2192)\\s*1?20",
+          "note": "the identity-presence depth collapse, a cross-run read"
+        },
+        {
+          "pattern": "(?:suppress|collaps)\\w*\\s+(?:reasoning\\s+|thinking\\s+)?depth",
+          "note": "the claim as a verb. Deliberately NOT the bare string 'depth-collapse': that is the name of the study directory and of the retraction record, so matching it produces one hit per link and buries the real ones."
+        },
+        {
+          "pattern": "depth\\s+(?:collapses|is suppressed|falls|drops)\\s+(?:with|under|as)",
+          "note": "the claim stated about depth rather than about a rule block"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the retraction record itself; it must quote what it retracts",
+          "surface": "laguna:c7-depth-collapse/"
+        },
+        {
+          "reason": "the claim set as posted, kept verbatim for accountability",
+          "surface": "laguna:TWEET_PACK_V3.md"
+        },
+        {
+          "reason": "the claim set as posted, kept verbatim for accountability",
+          "surface": "laguna:TWEET_PACK_V3.1.md"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:README.md",
+          "state": "corrected in place"
+        },
+        {
+          "surface": "laguna:LAGUNA_OPERATORS_GUIDE.md",
+          "state": "corrected in place, twice: the headline and then the operator-advice restatement"
+        },
+        {
+          "surface": "laguna:gate-study/README.md",
+          "state": "corrected in place"
+        },
+        {
+          "surface": "laguna:cross-model/QWEN_GATE_CURVE_20260728.md",
+          "state": "corrected in place"
+        },
+        {
+          "surface": "laguna:identity-prefix/IDENTITY_PREFIX_STUDY_20260730.md",
+          "state": "corrected in place"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/12",
+          "what": "the two-axis rewrite of the guide's section 2, built on our gate-study grid",
+          "state": "merged 2026-07-26, BEFORE the depth retraction; its length axis needs the same correction"
+        }
+      ],
+      "correction_anchors": [
+        "c7-depth-collapse",
+        "interleaved",
+        "monotonic-dose",
+        "monotonic.dose",
+        "depth grid",
+        "pairwise p"
+      ]
+    },
+    {
+      "id": "apparatus-suppresses-firing",
+      "title": "Attaching an agent prompt and tool schemas changes thinking firing rate",
+      "state": "scope-limited",
+      "recorded": "2026-07-28",
+      "authority": "laguna:LAGUNA_OPERATORS_GUIDE.md (SCALE CAVEAT 2026-07-28)",
+      "superseded_by": "The firing direction is measured at n=40 per cell on our NVFP4 build under vLLM 0.25.1 on GB10 sm_121 and does not generalise across quants, runtimes or task mixes. At n=492 on llama.cpp with a Q2_K_XL build the apparatus effect on firing is much weaker (445/492 fired, 90.4%).",
+      "search_phrasings": [
+        {
+          "pattern": "24/40[^\\n]{0,120}29/40",
+          "note": "the without-schemas to with-schemas firing pair"
+        },
+        {
+          "pattern": "29/40 with (?:them|schemas)",
+          "note": "the with-schemas cell cited on its own"
+        },
+        {
+          "pattern": "suppress\\w*[^\\n]{0,90}(?<!\\d)3/40",
+          "note": "the dense 10-rule crater asserted as a suppression property. Anchored to the verb because the bare fraction appears in every cell table in the study, and a check that fires on a results table gets ignored."
+        },
+        {
+          "pattern": "(?<!\\d)3/40[^\\n]{0,90}suppress",
+          "note": "the same sentence with the number first"
+        }
+      ],
+      "requires_near": [
+        {
+          "pattern": "n\\s*=\\s*40",
+          "note": "the sample size stated next to the figure"
+        },
+        {
+          "pattern": "n\\s*=\\s*492",
+          "note": "the larger contrasting cell"
+        },
+        {
+          "pattern": "scale caveat",
+          "note": "the named caveat block"
+        },
+        {
+          "pattern": "does not generalise",
+          "note": "the explicit scope sentence"
+        },
+        {
+          "pattern": "within-run cells",
+          "note": "the scope wording used in the operators guide"
+        },
+        {
+          "pattern": "per cell",
+          "note": "cell-size wording"
+        },
+        {
+          "pattern": "apollo",
+          "note": "the contrasting n=492 measurement is always credited by handle"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the primary study; its own tables are the measurement, not a generalisation of it",
+          "surface": "laguna:gate-study/"
+        },
+        {
+          "reason": "as posted, kept verbatim",
+          "surface": "laguna:TWEET_PACK_V3.md"
+        },
+        {
+          "reason": "as posted, kept verbatim",
+          "surface": "laguna:TWEET_PACK_V3.1.md"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:LAGUNA_OPERATORS_GUIDE.md",
+          "state": "scale caveat attached 2026-07-28"
+        },
+        {
+          "surface": "laguna:README.md",
+          "state": "carries the gate-study headline"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067",
+          "what": "apollo-mg's n=492 apparatus cell, the measurement that bounds ours",
+          "state": "third-party, read-only"
+        },
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/12",
+          "what": "our ten conditions replaced the guide's three-stack composite in section 2",
+          "state": "merged upstream; carries our n=40 cells"
+        }
+      ]
+    },
+    {
+      "id": "qwen-dose-depth-throttle",
+      "title": "System-prompt dose throttles Qwen's reasoning length",
+      "state": "corrected",
+      "retracted_on": "2026-07-28",
+      "authority": "laguna:cross-model/QWEN_GATE_CURVE_20260728.md, CORRECTION 2026-07-28",
+      "superseded_by": "The Qwen medians are real measurements, but the depth-effect framing was retracted on the Laguna side and the same tool-boundary truncation confound applies to the Qwen C8 cell, which is the only Qwen condition that produces tool calls (14/40). Whether Qwen has a genuine dose-depth effect is OPEN until the same in-run interleaved control is run on Qwen. It must not be stated as a settled throttle.",
+      "search_phrasings": [
+        {
+          "pattern": "2927\\s*(?:->|to|\\u2192)\\s*~?\\s*1311",
+          "note": "the Qwen depth ladder cited as a dose effect"
+        },
+        {
+          "pattern": "is a \\*{0,2}throttle",
+          "note": "the settled framing: gate versus throttle"
+        },
+        {
+          "pattern": "throttle\\*{0,2}\\s*\\(how long it thinks",
+          "note": "the gloss that states it as a mechanism"
+        },
+        {
+          "pattern": "modulates thinking,? dose-responsively",
+          "note": "the unified-claim sentence that carries the depth half"
+        }
+      ],
+      "exempt_paths": [],
+      "carried_by": [
+        {
+          "surface": "laguna:cross-model/QWEN_GATE_CURVE_20260728.md",
+          "state": "correction recorded in place 2026-07-28"
+        },
+        {
+          "surface": "laguna:README.md",
+          "state": "corrected in place 2026-07-28. It carried the uncorrected form until then: the correction was on record in the cross-model report and never propagated to the lab README. Found by this checker on its first live run, not by a reader."
+        }
+      ],
+      "remote_surfaces": [],
+      "correction_anchors": [
+        "throttle",
+        "dose-depth",
+        "2927",
+        "1311",
+        "interleaved"
+      ]
+    },
+    {
+      "id": "cap-hits-are-failures",
+      "title": "A cap-hit is a failure",
+      "state": "retracted",
+      "retracted_on": "2026-07-27",
+      "authority": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md, corrections on record item 2",
+      "superseded_by": "Cap-hits with no extractable code are failures. A cap-hit that still emits usable code goes to the scorer like any other sample. Retracted by its own author.",
+      "search_phrasings": [
+        {
+          "pattern": "cap[- ]hits?\\s+(?:are|is)\\s+(?:a\\s+)?failures?",
+          "note": "the bare criterion. The correct form puts 'with no extractable code' between the noun and the verb, so it does not match this pattern."
+        },
+        {
+          "pattern": "cap[- ]hitters?\\s+(?:are|is)\\s+(?:a\\s+)?failures?",
+          "note": "the same criterion said about the samples rather than the events"
+        },
+        {
+          "pattern": "treat(?:ed|ing)? (?:every |all )?cap[- ]hits? as (?:a )?failures?",
+          "note": "the imperative form, which is how a criterion gets into someone else's harness"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the retraction record",
+          "surface": "laguna:quant-floor/"
+        },
+        {
+          "reason": "the replication that produced the corrected criterion",
+          "surface": "laguna:pr10-replication/"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md",
+          "state": "retraction recorded"
+        },
+        {
+          "surface": "laguna:pr10-replication/PR10_REPLICATION_20260728.md",
+          "state": "corrected form stated"
+        },
+        {
+          "surface": "minefield:traps/evaluation/16-finish-reason-is-not-a-failure-signal.md",
+          "state": "the registry entry for this class"
+        },
+        {
+          "surface": "minefield:traps/evaluation/12-empty-content-at-token-ceiling.md",
+          "state": "cites trap 16's bucketing rule"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/blob/main/patterns.md",
+          "what": "our cross-model cap-hit result landed as a standalone patterns.md entry",
+          "state": "third-party guide carrying our criterion; must carry the extractable-code qualifier"
+        }
+      ],
+      "correction_anchors": [
+        "cap[- ]hit",
+        "extractable"
+      ]
+    },
+    {
+      "id": "reasoning-field-name-is-a-model-property",
+      "title": "Laguna streams reasoning as delta.reasoning, not delta.reasoning_content",
+      "state": "corrected",
+      "retracted_on": "2026-07-28",
+      "authority": "laguna:README.md CORRECTION 2026-07-28",
+      "superseded_by": "The field name is a property of the serving stack, not of the checkpoint, and the read side and the write side can disagree on the same runtime. MTPLX emits reasoning_content on its MLX lane; on llama.cpp only reasoning_content reaches the template on history replay. Read both names, write whichever the runtime accepts.",
+      "search_phrasings": [
+        {
+          "pattern": "streams reasoning as\\s*.{0,4}delta\\.reasoning.{0,4},\\s*not",
+          "note": "the exact sentence that stated the field name as a model property"
+        },
+        {
+          "pattern": "(?:the model|laguna|this model)\\s+(?:emits|streams|uses|returns)\\s+.{0,3}reasoning(?:_content)?.{0,3}\\s*,?\\s*not\\s+.{0,3}reasoning",
+          "note": "any restatement that attaches a field name to the checkpoint rather than to the server"
+        }
+      ],
+      "exempt_paths": [],
+      "carried_by": [
+        {
+          "surface": "laguna:README.md",
+          "state": "corrected in place"
+        },
+        {
+          "surface": "laguna:LAGUNA_OPERATORS_GUIDE.md",
+          "state": "credits @davidtai with surfacing the scoping error"
+        },
+        {
+          "surface": "minefield:traps/reasoning/01-reasoning-field-two-names.md",
+          "state": "the registry entry; states the correct scoping"
+        },
+        {
+          "surface": "minefield:traps/reasoning/20-reasoning-write-field-name-diverges.md",
+          "state": "the write-side entry"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/youssofal/MTPLX/pull/195#issuecomment-5096652285",
+          "what": "MTPLX emits reasoning_content on its MLX lane; reported by @davidtai",
+          "state": "third-party, the report that found our scoping error"
+        },
+        {
+          "url": "https://github.com/TheTom/offlabel/issues/16#issuecomment-5086926968",
+          "what": "on llama.cpp only reasoning_content reaches the template on history replay (@Defilan)",
+          "state": "third-party"
+        },
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/9",
+          "what": "our two spine-runner fixes: thinking exposed on reasoning as well as reasoning_content",
+          "state": "merged upstream; consistent with the corrected scoping"
+        }
+      ],
+      "correction_anchors": [
+        "reasoning_content",
+        "delta\\.reasoning",
+        "field name",
+        "scoping"
+      ]
+    },
+    {
+      "id": "trap42-capability-reading",
+      "title": "The apparatus costs no answering ability (trap 42 capability reading)",
+      "state": "retracted",
+      "retracted_on": "2026-07-28",
+      "authority": "minefield:traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md, Correction 2026-07-28",
+      "superseded_by": "All three statements generalise a conditional accuracy computed on the 386 samples that attempted an answer into a claim about all 492. The 106 routed samples were selected by the model's own behaviour and their correctness was never observed. What survives: the drop is routing-dominated, accuracy among attempting samples was flat, and the routed cases are unmeasured.",
+      "search_phrasings": [
+        {
+          "pattern": "apparatus did not make the model worse",
+          "note": "retracted statement 1, recorded verbatim in the entry"
+        },
+        {
+          "pattern": "zero points of answering ability",
+          "note": "retracted statement 2, recorded verbatim in the entry"
+        },
+        {
+          "pattern": "(?:entire )?18\\.9[- ]point drop is fake",
+          "note": "retracted statement 3, recorded verbatim in the entry"
+        },
+        {
+          "pattern": "the drop is (?:entirely |all )?(?:fake|artefact|artifact)",
+          "note": "the paraphrase a reader would write after reading statement 3"
+        },
+        {
+          "pattern": "no (?:real )?capability (?:cost|loss)(?: at all)?",
+          "note": "the general form of the same over-read"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the retraction record lists all three statements verbatim",
+          "surface": "minefield:traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "minefield:traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md",
+          "state": "correction recorded in place"
+        },
+        {
+          "surface": "minefield:README.md",
+          "state": "the Recently added entry for trap 42"
+        },
+        {
+          "surface": "minefield:CHANGELOG.md",
+          "state": "the dated announcement"
+        },
+        {
+          "surface": "minefield:HALL_OF_FAME.md",
+          "state": "credits the n=492 cell"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067",
+          "what": "apollo-mg's n=492 apparatus cell, the source measurement",
+          "state": "third-party, read-only"
+        }
+      ],
+      "correction_anchors": [
+        "apparatus",
+        "492",
+        "routed",
+        "18\\.9",
+        "conditional accuracy"
+      ]
+    },
+    {
+      "id": "pr10-plus-2-64-cross-stack",
+      "title": "Thinking-on wins verifiable codegen by +2.64 points",
+      "state": "corrected",
+      "retracted_on": "2026-07-27",
+      "authority": "laguna:pr10-replication/PR10_REPLICATION_20260728.md and laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md corrections on record item 1",
+      "superseded_by": "The +2.64 was measured with the arms at different temperatures (ON t0.7, OFF t0.6). With temperature held identical the accuracy effect vanishes and the sign reverses. It must not be cited as a measured cross-stack property; cite the temperature-controlled replications.",
+      "search_phrasings": [
+        {
+          "pattern": "\\+2\\.64",
+          "note": "the figure itself. Every citation of it must carry the temperature confound; the number is the whole claim."
+        },
+        {
+          "pattern": "thinking[- ]on wins",
+          "note": "the headline in words rather than digits"
+        },
+        {
+          "pattern": "flakiness halved",
+          "note": "the co-cited half of the same headline"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the replication record",
+          "surface": "laguna:pr10-replication/"
+        },
+        {
+          "reason": "the synthesis that records the correction",
+          "surface": "laguna:quant-floor/"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:README.md",
+          "state": "cited with the correction attached"
+        },
+        {
+          "surface": "laguna:LAGUNA_OPERATORS_GUIDE.md",
+          "state": "cited with the correction attached"
+        },
+        {
+          "surface": "minefield:traps/evaluation/17-per-arm-recommended-sampling-confound.md",
+          "state": "the registry entry for the confound class"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/10",
+          "what": "the original claim, in the upstream PR",
+          "state": "third-party; our replication is posted on the thread"
+        }
+      ],
+      "correction_anchors": [
+        "2\\.64",
+        "temperature",
+        "thinking[- ]on",
+        "HumanEval"
+      ]
+    },
+    {
+      "id": "humaneval-32-cap-hit-passed",
+      "title": "HumanEval/32 was a cap-hit that still scored a pass in our run",
+      "state": "retracted",
+      "retracted_on": "2026-07-27",
+      "authority": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md corrections on record item 3",
+      "superseded_by": "HumanEval/32 was never scored as a pass in our run. The shipped eval results score /32 fail on base and plus in all six runs on both arms. The clean example of a cap-hit that passed is apollo-mg's /47, not anything of ours.",
+      "search_phrasings": [
+        {
+          "pattern": "HumanEval/32[^.]{0,80}(?:passed|scored as a pass|still passed)",
+          "note": "the retracted example"
+        },
+        {
+          "pattern": "/32[^.]{0,40}was scored as a pass",
+          "note": "the shorter form the bullet originally used"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the retraction record",
+          "surface": "laguna:quant-floor/"
+        },
+        {
+          "reason": "carries the dated in-place correction",
+          "surface": "laguna:pr10-replication/"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md",
+          "state": "retraction recorded"
+        },
+        {
+          "surface": "laguna:pr10-replication/PR10_REPLICATION_20260728.md",
+          "state": "corrected in place"
+        }
+      ],
+      "remote_surfaces": [],
+      "correction_anchors": [
+        "/32",
+        "cap[- ]hit"
+      ]
+    },
+    {
+      "id": "116-132-single-fraction",
+      "title": "116/132 read as a single fraction or a single problem",
+      "state": "retracted",
+      "retracted_on": "2026-07-27",
+      "authority": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md corrections on record item 4",
+      "superseded_by": "HumanEval/116 and HumanEval/132 are two separate problems that each looped in all three ON seeds. Any reading of 116/132 as a single fraction or a single problem is a misparse.",
+      "search_phrasings": [
+        {
+          "pattern": "116/132",
+          "note": "the ambiguous string itself. Any surface that writes it without immediately naming two problems reproduces the misparse."
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "the retraction record",
+          "surface": "laguna:quant-floor/"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:quant-floor/THINKING_QUANT_FLOOR_SYNTHESIS_20260727.md",
+          "state": "retraction recorded"
+        }
+      ],
+      "remote_surfaces": [],
+      "correction_anchors": [
+        "116/132",
+        "116 and",
+        "132 are two"
+      ]
+    },
+    {
+      "id": "firing-dose-response-curve",
+      "title": "Thinking firing follows a dose-response curve in prompt length",
+      "state": "retracted",
+      "retracted_on": "2026-07-26",
+      "authority": "laguna:README.md upstream-adoptions block; superseded by the two-axis model in offlabel#12",
+      "superseded_by": "Firing probability is a persona-and-task conjunction and is non-monotonic in prompt length: a dense 10-rule block suppresses harder than a much longer agent prompt. Superseded by the two-axis model.",
+      "search_phrasings": [
+        {
+          "pattern": "firing\\s*\\*{0,2}dose[- ]response curve",
+          "note": "the retracted framing, tightly anchored to 'firing' so it does not fire on the gate study, which is legitimately a dose-response study of the gate"
+        },
+        {
+          "pattern": "monotonic(?:ally)? in prompt length",
+          "note": "the property the retraction denies"
+        },
+        {
+          "pattern": "longer the prompt, the (?:less|lower)",
+          "note": "the plain-words restatement of a monotonic length effect"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "reason": "as posted, kept verbatim",
+          "surface": "laguna:TWEET_PACK_V3.md"
+        },
+        {
+          "reason": "as posted, kept verbatim",
+          "surface": "laguna:TWEET_PACK_V3.1.md"
+        }
+      ],
+      "carried_by": [
+        {
+          "surface": "laguna:README.md",
+          "state": "retraction recorded in the upstream-adoptions block"
+        },
+        {
+          "surface": "laguna:gate-study/README.md",
+          "state": "states the non-monotonic finding as axis 1"
+        }
+      ],
+      "remote_surfaces": [
+        {
+          "url": "https://github.com/TheTom/offlabel/pull/12",
+          "what": "the two-axis rewrite that superseded the curve",
+          "state": "merged 2026-07-26"
+        }
+      ],
+      "correction_anchors": [
+        "dose[- ]response",
+        "non-monotonic",
+        "two-axis"
+      ]
+    }
+  ]
+}

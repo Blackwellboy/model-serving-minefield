@@ -1,0 +1,55 @@
+{
+  "_readme": [
+    "Recorded exemptions for integrity/registry_integrity.py.",
+    "Every key here is a thing the checker would otherwise fail on. An",
+    "exemption is only allowed with a reason someone had to type: a silent",
+    "pass is what this whole layer exists to stop."
+  ],
+
+  "own_finder_names": ["blackwellboy"],
+
+  "_status_note": [
+    "The status vocabulary is a CLOSED SET defined once in",
+    "CONTRIBUTING.md#status-vocabulary. status_labels mirrors that set and the",
+    "checker asserts every label still appears in CONTRIBUTING.md, so this file",
+    "cannot quietly enforce a vocabulary nobody documented.",
+    "status_stems are the opening words a status may start with; the prose",
+    "after the stem is the qualifier and is free. Compound statuses joined with",
+    "' + ' are allowed and every part must open with a stem.",
+    "Recorded 2026-07-28: the vocabulary was replaced mid-session by the",
+    "entries-lead-with-evidence pass (commit 6cc1f63). 'measured on our fleet'",
+    "became 'measured here, raw not published' and 'contributor-measured,",
+    "conditions as reported' was added. This config is seeded from the tree at",
+    "that commit."
+  ],
+
+  "status_labels": [
+    "reproduced here",
+    "contributor-measured, conditions as reported",
+    "reported by others",
+    "measured here, raw not published",
+    "under test"
+  ],
+
+  "status_stems": [
+    "reproduced here",
+    "contributor-measured",
+    "reported by others",
+    "measured here, raw not published",
+    "under test",
+    "reproduced by "
+  ],
+
+  "changelog_batches": {
+    "01-07": "2026-07-27 launch line: 'Launched with seven traps (reasoning fields, templates, thinking control, scorer normalization)'. Prose only, no ids in the line, so it cannot be parsed. Traps 01 to 07 are the launch set."
+  },
+
+  "index_exempt": {
+    "05": "scorer normalization is a property of the scorer, not of any model or serving stack; it is listed under the eval-harness stack row, which the checker does see, and this key covers the case where that row is rewritten",
+    "11": "listed on the Laguna family row; kept here as a note that speculative depth is a drafter property, not a model-family one",
+    "14": "listed on the ~600B-class MoE row by description rather than by a model name, because the re-upload is a community artifact with no stable family label",
+    "31": "leftover oracle re-ranker lives entirely in the harness; it appears on the eval-harness stack row and belongs to no model",
+    "32": "mlx_lm server flag; appears on the mlx_lm stack row and on the Bonsai model row",
+    "40": "n-gram decontamination is a corpus-screening step upstream of any model; eval-harness stack row only"
+  }
+}

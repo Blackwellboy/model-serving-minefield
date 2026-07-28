@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# pre-push: the whole consistency layer, including the one check CI cannot run.
+#
+# Install (from the repo root):
+#     ln -sf ../../integrity/hooks/pre-push .git/hooks/pre-push
+# In the lab repo, where integrity/ is not checked in:
+#     ln -sf /path/to/model-serving-minefield/integrity/hooks/pre-push \
+#            .git/hooks/pre-push
+#
+# Why a hook AND a workflow, rather than one of them. The sanitizer's pattern
+# file is the list of internal hostnames, usernames, path fragments and
+# codenames it hunts for. Publishing it to a public CI runner publishes the
+# thing it protects, so that check can only run on a machine that already has
+# the private kit. Everything else runs in both places: the hook catches it
+# before it leaves the machine, CI catches it when someone pushes from
+# somewhere else or edits through the web UI.
+#
+# Refusing is the point. To override for a genuine emergency:
+#     MINEFIELD_SKIP_INTEGRITY=1 git push
+# which prints a loud line so the skip is visible in the terminal scrollback.
+
+set -uo pipefail
+
+if [ "${MINEFIELD_SKIP_INTEGRITY:-0}" = "1" ]; then
+  echo "pre-push: INTEGRITY CHECKS SKIPPED by MINEFIELD_SKIP_INTEGRITY=1."
+  echo "pre-push: nothing below ran. Say so in the return."
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INTEGRITY="$(dirname "$HOOK_DIR")"
+
+# The peer repo, so claim propagation sees both public surfaces.
+PEER="${MINEFIELD_PEER_REPO:-}"
+if [ -z "$PEER" ]; then
+  for guess in "$(dirname "$ROOT")/laguna-s21-lab" \
+               "$(dirname "$ROOT")/model-serving-minefield"; do
+    if [ -d "$guess" ] && [ "$guess" != "$ROOT" ]; then PEER="$guess"; break; fi
+  done
+fi
+
+ARGS=(--root "$ROOT")
+[ -n "$PEER" ] && ARGS+=(--peer "$PEER")
+
+echo "pre-push: running the integrity layer on $ROOT"
+[ -z "$PEER" ] && echo "pre-push: peer repo not found; claim propagation will \
+name the repo it did not scan."
+
+python3 "$INTEGRITY/run_checks.py" "${ARGS[@]}"
+rc=$?
+
+if [ $rc -ne 0 ]; then
+  echo ""
+  echo "pre-push: REFUSED. Fix the findings above, or push with"
+  echo "pre-push: MINEFIELD_SKIP_INTEGRITY=1 and record the skip."
+fi
+exit $rc

@@ -1,0 +1,73 @@
+name: integrity
+
+# Runs the consistency layer on every push and PR. Four of the five checks
+# live here. The fifth, the sanitizer whole-tree scan, deliberately does NOT:
+# its pattern file is the list of internal names it scans for, so shipping it
+# to a public runner would publish the thing it protects. That check runs from
+# the private kit in the pre-push hook, and integrity/README.md says so in the
+# same words, so nobody reads a green badge here as a sanitizer pass.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Blackwellboy/laguna-s21-lab
+          path: .peer/laguna-s21-lab
+          fetch-depth: 1
+        continue-on-error: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: registry integrity
+        run: python3 integrity/registry_integrity.py
+
+      - name: claim propagation
+        run: |
+          if [ -d .peer/laguna-s21-lab ]; then
+            python3 integrity/claim_propagation.py \
+              --repo minefield=. --repo laguna=.peer/laguna-s21-lab
+          else
+            echo "peer repo unavailable; scanning this repo only."
+            python3 integrity/claim_propagation.py --repo minefield=.
+          fi
+
+      - name: do-not-cite on added text
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$BASE" ]; then BASE="${{ github.event.before }}"; fi
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            BASE="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
+          fi
+          python3 integrity/do_not_cite.py --base "$BASE"
+
+      - name: mutation suite (the checks must have teeth)
+        env:
+          MINEFIELD_PEER_REPO: .peer/laguna-s21-lab
+        run: python3 -m unittest discover -s integrity/tests -t integrity/tests
+
+      - name: doctor suite
+        run: python3 -m unittest discover -s doctor/tests -t doctor/tests
+
+      - name: checks suite
+        run: python3 -m unittest discover -s checks/tests -t checks/tests
+
+      - name: sanitizer status
+        run: |
+          echo "SANITIZER WHOLE-TREE SCAN: not run here, by design."
+          echo "Its pattern file lists the internal names it scans for and"
+          echo "cannot be published. It runs from the private kit via the"
+          echo "pre-push hook: see integrity/README.md."

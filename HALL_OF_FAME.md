@@ -25,7 +25,7 @@ and the check.
 | Who | What they reported | Entry |
 |---|---|---|
 | **@xy3xy3**, **@ArtemVorozhtsov** | Streamed answers routed into reasoning deltas with content empty (vLLM) | [23](traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md) |
-| **barubary**, **froggeric**, **allanchan339** | The C++ Jinja template-portability fix corpus for Qwen 3.5/3.6, and the auto-close-think-before-tool-call repair | [24](traps/template/24-official-template-breaks-cpp-jinja.md), [26](traps/tools/26-tool-call-inside-unclosed-think.md) |
+| **barubary**, **froggeric**, **allanchan339**, **@blockoracle** | The C++ Jinja template-portability fix corpus for Qwen 3.5/3.6, and the auto-close-think-before-tool-call repair; @blockoracle filed the upstream issue that surfaced the portability break and is named as its reporter in the entry | [24](traps/template/24-official-template-breaks-cpp-jinja.md), [26](traps/tools/26-tool-call-inside-unclosed-think.md) |
 | **@latent-variable** | Empty historical think blocks poisoning prefix cache, with the minimal template fix | [25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) |
 | **@kik4444**, **tfriedel** | Tool calls emitted inside unclosed think blocks and the full parser-mechanism trace | [26](traps/tools/26-tool-call-inside-unclosed-think.md), [19](traps/tools/19-missing-jinja-breaks-tool-parsing.md) context |
 | **@pavanimajety**, **@cghart**, **@zeryx** | NVFP4/MXFP4 silent accuracy cliffs: the GSM8K collapse, the quantization_config.ignore mechanism and its fix, and the MoE tp=1 case | [27](traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) |
