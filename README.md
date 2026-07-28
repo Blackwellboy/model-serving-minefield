@@ -28,15 +28,16 @@ protects is your ability to tell them apart at a glance.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. Ninety-seven
-entries is too many to read; none of these asks you to.
+Four doors, and which one you want depends on why you are here. All 103
+entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
-  for the four jobs people actually arrive with:
+  for the five jobs people actually arrive with:
   [before you publish an A/B](playbooks/before-you-publish-an-ab.md),
   [thinking died when I made it multi-turn](playbooks/thinking-died-multi-turn.md),
-  [porting a harness to a new server](playbooks/porting-a-harness.md), and
-  [long context looks broken](playbooks/long-context-looks-broken.md). Each step
+  [porting a harness to a new server](playbooks/porting-a-harness.md),
+  [long context looks broken](playbooks/long-context-looks-broken.md), and
+  [reading a soak](playbooks/reading-a-soak.md). Each step
   names the entry it guards against and the check to run. Nothing in them is
   new; they are the existing entries, sequenced.
 - **"What am I running?"** The **[per-stack pages](stacks/)** give you the five
@@ -227,7 +228,8 @@ bite hardest on your serving stack plus the three checks to run first.
 
 Holding a job rather than a symptom? The [playbooks](playbooks/) sequence
 these entries into ordered checklists for publishing an A/B, recovering
-multi-turn thinking, porting a harness, and diagnosing long context.
+multi-turn thinking, porting a harness, diagnosing long context, and reading
+a soak.
 
 ## Run the doctor
 

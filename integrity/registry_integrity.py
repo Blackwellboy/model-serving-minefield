@@ -315,6 +315,75 @@ def doctor_implemented_count(root):
     return len(re.findall(r'"\d{2,}"\s*:', m.group(1)))
 
 
+# ---- counts written as words, and the playbook list -----------------------
+# A total spelled out as a word is invisible to every pattern above, because
+# they all match digits. README.md carried "Ninety-seven entries is too many to
+# read" on its first screen while five digit-written totals beside it were
+# enforced and correct. Nothing could have caught it: the guard was not weak
+# here, it was blind. So spelled-out cardinals in front of "entries" are simply
+# refused, and the fix is to write the number in digits where the COUNT
+# patterns can see it.
+WORD_TOTAL_RE = re.compile(
+    r"(?i)\b((?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)"
+    r"(?:[-\s](?:one|two|three|four|five|six|seven|eight|nine))?|"
+    r"a hundred|one hundred)\s+entries\b")
+
+# The playbooks list is a second count with no guard: README named four jobs
+# and linked four files while the tree held five, and playbooks/README said
+# "all four" in a heading. Counted from the tree, checked against both.
+PLAYBOOK_COUNT_RE = re.compile(
+    r"(?i)\b(three|four|five|six|seven|eight|nine|ten|\d+)\s+"
+    r"(?:ordered\s+checklists|jobs\b)")
+PLAYBOOK_ALL_RE = re.compile(r"(?i)\bbelongs to all (three|four|five|six|seven|eight|nine|ten|\d+)\b")
+_WORDNUM = {"three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+            "eight": 8, "nine": 9, "ten": 10}
+
+
+def _as_int(tok):
+    return _WORDNUM.get(tok.lower(), None) if not tok.isdigit() else int(tok)
+
+
+def check_word_counts(root, n_entries, findings):
+    for rel in ("README.md", "CORE.md", "CONTRIBUTING.md"):
+        p = os.path.join(root, rel)
+        if not os.path.exists(p):
+            continue
+        # Scanned as ONE string, not line by line. The instance this was built
+        # for was wrapped across a line break ("Ninety-seven\nentries is too
+        # many to read"), so a per-line scan cannot see it, which is how the
+        # first version of this check passed its own mutation test. The line
+        # number is recovered from the match offset.
+        text = read(p)
+        for m in WORD_TOTAL_RE.finditer(text):
+            ln = text.count("\n", 0, m.start()) + 1
+            findings.append(Finding(
+                "COUNT-WORD", "%s:%d" % (rel, ln),
+                "registry total written as a word (%r). Every COUNT pattern "
+                "matches digits, so a word is unguarded and goes stale "
+                "silently. Write it in digits."
+                % " ".join(m.group(1).split())))
+
+    pb = os.path.join(root, "playbooks")
+    if not os.path.isdir(pb):
+        return
+    n = len([f for f in os.listdir(pb)
+             if f.endswith(".md") and f != "README.md"])
+    for rel, rx in (("README.md", PLAYBOOK_COUNT_RE),
+                    ("playbooks/README.md", PLAYBOOK_COUNT_RE),
+                    ("playbooks/README.md", PLAYBOOK_ALL_RE)):
+        p = os.path.join(root, rel)
+        if not os.path.exists(p):
+            continue
+        for i, line in enumerate(read(p).splitlines(), 1):
+            for m in rx.finditer(line):
+                v = _as_int(m.group(1))
+                if v is not None and v != n:
+                    findings.append(Finding(
+                        "PLAYBOOK-COUNT", "%s:%d" % (rel, i),
+                        "declares %s playbooks, tree has %d (%s)"
+                        % (m.group(1), n, m.group(0))))
+
+
 def check_counts(root, n_entries, findings):
     implemented = doctor_implemented_count(root)
     for dp, dns, fns in os.walk(root):
@@ -484,6 +553,7 @@ def run(root):
             check_links(root, rel, findings)
 
     implemented = check_counts(root, len(entries), findings)
+    check_word_counts(root, len(entries), findings)
     return findings, len(entries), len(stubs), implemented
 
 
