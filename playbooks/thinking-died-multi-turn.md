@@ -130,12 +130,19 @@ Two cheap offline greps and one render:
 
 ## 8. Check where the prefix actually starts
 
-**Guards:** [trap 82, the system prompt relocates to the last user turn](../traps/template/82-system-prompt-relocates-to-last-user-turn.md)
+**Guards:** [trap 82, the system prompt relocates to the last user turn](../traps/template/82-system-prompt-relocates-to-last-user-turn.md), [trap 93, the clock-in-system-prompt mitigation is inverted](../traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md)
 
 If every turn misses the prefix cache and the system prompt is not where you
 put it, one measured template moves it onto the **last** user turn, so no two
 turns share a prefix. Render two consecutive turns and compare their opening
 tokens.
+
+Then apply the positional rule rather than the role-based one. On that
+template a per-turn clock at the head of the **system** prompt costs one cached
+token, and the standard remedy of moving volatile text into the **first user
+message** is the change that takes reuse from 77% to 0.6%. Keep volatile text
+out of wherever the render actually puts the head of the prompt, whatever role
+it arrives in, and confirm with two arms and a **server restart between them**.
 
 ## 9. Assert per request which arm you actually measured
 

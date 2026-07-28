@@ -1,6 +1,6 @@
 # llama.cpp and GGUF
 
-**27 entries name llama.cpp or GGUF** in their evidence surfaces (see
+**34 entries name llama.cpp or GGUF** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 This stack has the registry's densest template coverage, because it is the one
 whose render route makes template forensics cheap.
@@ -64,9 +64,43 @@ rather than what you launched with
 - [88](../traps/runtime/88-cache-prompt-false-does-isolate-here.md): whether
   `cache_prompt: false` isolates a request is a **per-build** fact. It does on
   the one build measured here, which does not reproduce two prior stacks.
-Entries 82 through 88 came from one Mistral-family Q8_0 GGUF of **unstated
-provenance** on llama.cpp `b9878`. The checkpoint is deliberately not
-characterised and nothing from it generalises to any named model.
+
+## If you care whether temperature 0 means what you think it means
+
+- [91](../traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md):
+  multi-slot batching diverges at temperature 0, but **only above a prompt
+  length floor**, so the minimal reproduction most people write returns a false
+  negative. Send `cache_prompt: false` and compare hashes, not samples.
+- [92](../traps/runtime/92-prompt-cache-is-a-second-divergence-source.md): the
+  prompt cache is a second, independent divergence source, visible at
+  concurrency 1, and its state survives across separate client invocations
+  against one process. Restart the server between arms of a reuse comparison.
+- [94](../traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md):
+  the same binary and weights are batch-invariant on `sm_86` at 444 tokens and
+  not on `sm_120`. Reproducibility is a per-architecture claim.
+- [95](../traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md):
+  a **negative**. Two lanes on two GPUs of one host, both with headroom,
+  perturbed neither correctness nor decode throughput.
+
+## What this server will not tell you about itself
+
+- [97](../traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md):
+  partial offload costs 22 to 31 times decode and **no log line and no `/props`
+  field names the split**. VRAM occupancy is not a proxy. Record a full-offload
+  decode figure per file per lane, or you have no signal.
+- [96](../traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md):
+  under WSL2, `--list-devices` prints **host** available memory as device free
+  memory, exceeding the total it prints beside it. Assert
+  `free_mib <= total_mib` before believing either number.
+- [93](../traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md):
+  on the relocating template above, keeping a clock out of the system prompt is
+  a no-op and moving it into the first user turn is the change that destroys
+  reuse. The rule is positional, not role-based.
+
+Entries 82 through 88 and 91 through 97 came from one Mistral-family Q8_0 GGUF
+of **unstated provenance** on llama.cpp `b9878`, except 96, which loaded no
+model at all. The checkpoint is deliberately not characterised and nothing from
+it generalises to any named model.
 
 ## Where the GGUF pipeline itself bites
 

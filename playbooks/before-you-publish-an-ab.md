@@ -38,6 +38,21 @@ transferable to binary-outcome results.
 **Stop condition.** Any effect smaller than your own floor needs a
 same-machine paired re-run before it is publishable.
 
+**Your floor is not a constant, and temperature 0 does not remove it.** On a
+multi-slot server, byte-identical replies to a repeated temperature-0 request
+depend on three things the usual check does not vary: concurrency above 1, a
+prompt above a length floor that a minimal reproduction sits below, and the GPU
+architecture. Measured on one build, 108-token prompts never diverged in 256
+concurrent responses and 220-token prompts diverged in 74 of 256
+([trap 91](../traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md)),
+and at 444 tokens and above the same binary and weights diverged on `sm_120` and
+not at all on `sm_86`
+([trap 94](../traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md)).
+Measure the floor at the prompt length and concurrency you will actually run,
+on the card you will actually run, and compare hashes rather than eyeballing a
+sample: the divergences were all fluent, correct, semantically different
+sentences.
+
 ## 2. Fix one machine and one session as the measurement room
 
 **Guards:** [trap 35](../traps/evaluation/35-identical-weights-do-not-score-identically.md)
@@ -124,6 +139,17 @@ couple of percent the row is invalid, not caveated.
 3. **Test the null.** Run the improved configuration on a build that does not
    contain the improvement. Cheapest disproof available, and the one that
    settled the finder's case.
+4. **Restart the server between arms, and assert the cache is cold.**
+   Counterbalancing the order is not enough on its own: on one measured build
+   the prompt cache persisted across separate client invocations against a
+   single process, retained prompts issued roughly a thousand requests earlier,
+   and **reversed the sign** of a prefix-reuse result when the arms were re-run
+   in the opposite order against that same process
+   ([trap 92](../traps/runtime/92-prompt-cache-is-a-second-divergence-source.md)).
+   Both runs were internally consistent; one was measuring the other's history.
+   Assert `cached_tokens == 0` on the first request after each restart. Setting
+   `cache_prompt: false` is the wrong tool here, because it measures no reuse
+   rather than clean reuse.
 
 ## 9. Gate the performance number on a correctness artifact from the same binary
 
