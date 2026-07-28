@@ -58,3 +58,47 @@ number, because the label alone under-determines it.
 **Found.** 2026-07-09; hardware claim verified locally 2026-07-10.
 
 **Attribution.** Blackwellboy.
+
+## Added 2026-07-28: two more instances, failing in opposite directions
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.**
+
+**The label is wrong about the checkpoint.** A repository named NVFP4 whose
+`quantization_config.quant_algo` is **`MIXED_PRECISION`**: FP8 across 139
+targets (attention and Mamba projections, latent projections, shared expert),
+NVFP4 at W4A4 group size 16 across 40,961 targets (the routed experts). The
+engine resolves it to `quantization=modelopt_mixed` and selects **two** kernels,
+one per scheme. The Hugging Face API tags the repository **`8-bit`**, not
+`4-bit`. Practically: your stack needs both an FP8 and an NVFP4 kernel path, and
+a stack with only one of them fails or falls back silently.
+
+**The label is right about the checkpoint and still says nothing about the
+kernel.** Two genuine-NVFP4 siblings both bound to `FLASHINFER_CUTLASS` out of
+seven candidate MoE backends, with `MARLIN` and `EMULATION` both available and
+either of which would have been accepted silently. On the mixed-precision member
+the vendor launch line **forces** Marlin with three separate settings
+(`VLLM_NVFP4_GEMM_BACKEND=marlin`, `--moe-backend marlin`,
+`VLLM_USE_FLASHINFER_MOE_FP4=0`). Drop those and you are on a different kernel
+path with different failure modes. The quantisation **packaging format**, not
+the label, decides.
+
+### The labelling pattern itself, which is now a second clean instance
+
+This is worth separating from the kernel-path consequence above, because it is a
+different problem with a different fix. The pattern: a repository name states a
+quantisation format, and the format is either not what the file says or not what
+the runtime does, and **neither disagreement produces any error**. The first
+clean instance in this registry was a community MXFP4 or NVFP4
+compressed-tensors upload routing to a weight-only fallback. This is the second,
+and it fails one level earlier: the label disagrees with the checkpoint's own
+`quantization_config` rather than with the kernel.
+
+The generalisable rule, which costs one command: **read
+`config.json`'s `quantization_config` before you believe a repository name, and
+read the engine's own resolved quantisation line before you believe the
+config.** Three things can disagree (name, config, resolved kernel) and each
+disagreement is silent.
+
+*Status of this addendum: reproduced here. The `quantization_config` block and
+the HF `8-bit` tag are public and checkable without us; the backend binding is
+in the engine's own startup log on any lane serving the checkpoint.*

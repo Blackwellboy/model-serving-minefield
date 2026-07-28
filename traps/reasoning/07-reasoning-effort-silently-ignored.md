@@ -62,3 +62,26 @@ If you need depth control on such a template, it has to come from the prompt.
 **Found.** 2026-07-27, reported from wire-level measurement.
 
 **Attribution.** @quantumleap68.
+
+## Added 2026-07-28: a family whose template reads three kwargs and whose card documents one
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** The template reads `enable_thinking` (documented), `low_effort`
+(undocumented, default false) and `truncate_history_thinking` (undocumented,
+**default true**, and it changes multi-turn behaviour silently). This is the
+read-but-undocumented side of this entry rather than the accepted-but-unread
+side, and it is the more expensive of the two, because an undocumented kwarg
+with a non-neutral default is an uncontrolled variable in every result you take
+on that lane.
+
+`low_effort` works and is worth knowing about: reasoning length fell from about
+190 characters to 46 with content preserved and correct. Note **where** it
+lands: appended to the **last user message**, not to the system message, so any
+client that hashes user content for caching or deduplication sees a different
+message depending on it.
+
+There is also a fourth kwarg read by the **reasoning parser** and not by the
+template at all, which is [trap 65](65-parser-only-rescue-kwarg.md). The
+history gate is [trap 63](63-reasoning-round-trip-one-correct-shape.md).
+
+*Status of this addendum: reproduced here. The kwarg enumeration runs offline
+against the public chat template.*

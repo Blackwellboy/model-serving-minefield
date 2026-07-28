@@ -89,3 +89,39 @@ claim in this entry changed.
 **Found.** 2026-07-26 (grid anomaly and budget map).
 
 **Attribution.** Blackwellboy.
+
+## Added 2026-07-28: a measured floor, and proof there is no safe one to copy
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** Confirmed on all three, with a fully crossed sweep on the 120B
+member. Three samples per cell, two task difficulties, seven budgets from 64 to
+4096:
+
+| Thinking | Task | Floor for non-empty content |
+|---|---|---|
+| on | easy | 64 tokens (already 3/3 at the smallest budget tested) |
+| on | hard | **between 64 and 128**: 0/3 at 64, 3/3 at 128 |
+| off | easy | never empty at any budget |
+| off | hard | never empty at any budget |
+
+**Thinking off was immune.** Across every budget and both difficulties the
+thinking-off arm never produced empty content. If your workload tolerates
+thinking off, this trap does not apply to you, and that is a measured result
+rather than an assumption.
+
+**But there is no floor to copy, and this is the part to take away.** The
+sweep's hard task converted at 128 tokens; the registry doctor's harder probe on
+the same lane still returned empty at 512 with 2007 characters of honest
+reasoning (unique-line ratio 1.00, zlib 0.49, so it was thinking rather than
+degenerating). The budget you need is a function of how long the model chooses
+to think, which is a function of the task. Do not lift a number out of that
+table into production.
+
+**It also fires with media attached**, on the multimodal member: 501 prompt
+tokens for an image, 24 completion tokens, `content` null. Any harness that
+scores an image task zero on a small budget is measuring its budget.
+
+There is a shipped rescue on one member of this family, and it is a kwarg the
+template never reads: see
+[trap 65](../reasoning/65-parser-only-rescue-kwarg.md).
+
+*Status of this addendum: measured here, raw not published.*

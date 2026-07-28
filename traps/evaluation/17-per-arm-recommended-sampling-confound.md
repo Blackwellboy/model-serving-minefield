@@ -43,3 +43,30 @@ and what made the clean replication possible at all.
 
 **Attribution.** @apollo-mg (original data with the disclosure that made
 this checkable); Blackwellboy (controlled replication).
+
+## Added 2026-07-28: a family where the card-versus-config answer differs per member
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** That the answer differs by member *is* the trap:
+
+| Member | Card | `generation_config.json` | Agree |
+|---|---|---|---|
+| 30B | temp 1.0 / top_p 1.0 reasoning; 0.6 / 0.95 for tool calling | temp 1.0 / top_p 1.0 | reasoning yes; the tool-calling recommendation exists **only in card prose**, and clients must apply it per request |
+| 120B | temp 1.0 / top_p 0.95 for everything | temp 1.0 / top_p 0.95 | yes |
+| 30B multimodal | thinking mode `max_tokens` 20480, grace 1024 | `max_tokens` 16384, grace 512 | **no** |
+
+The multimodal member logs the override at startup: `Default vLLM sampling
+parameters have been overridden by the model's generation_config.json`. A
+request that omits `max_tokens` is therefore capped below the card's own
+recommendation, which interacts directly with
+[trap 12](12-empty-content-at-token-ceiling.md).
+
+Checked and **not** a finding: the file at the default branch is byte-identical
+to the file at the pinned revision, so this is a card-versus-file disagreement
+and not revision drift. Recorded because drift is the obvious first hypothesis
+and ruling it out is what makes the rest of this readable.
+
+The generalisable point: **"this family's card and config agree" is not a family
+property.** Check per member, per revision.
+
+*Status of this addendum: reproduced here. Cards, configs and revisions are all
+public.*

@@ -27,6 +27,9 @@ serve on that stack.
 | Qwen 3.6 27B (NVFP4 modelopt checkpoint, offline dequant) | [44](../traps/quantization/44-fp4-dequant-scale-swizzle-layout.md) |
 | Nemotron-H 8B Base 8K (Mamba-2 hybrid, squared-ReLU FFN) | [51](../traps/quantization/51-single-backend-nan-fused-path.md) |
 | Ternary-Bonsai-27B (MLX 2bit, stock mlx_lm server, Apple silicon) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
+| NVIDIA Nemotron 3 Nano 30B A3B NVFP4 (vLLM 0.25.1) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [65](../traps/reasoning/65-parser-only-rescue-kwarg.md), [70](../traps/runtime/70-in-repo-parser-not-bundled.md), [71](../traps/runtime/71-mtp-config-key-and-draft-count.md); addenda in [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [13](../traps/memory/13-utilization-fraction-on-unified-memory.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [21](../traps/versioning/21-no-generation-config-server-defaults-win.md) |
+| NVIDIA Nemotron 3 Super 120B A12B, MIXED_PRECISION (vLLM 0.20.0) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [69](../traps/template/69-minor-template-defects.md), [70](../traps/runtime/70-in-repo-parser-not-bundled.md); addenda in [02](../traps/template/02-orphaned-think-close-tag.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md) |
+| NVIDIA Nemotron 3 Nano Omni 30B A3B NVFP4, multimodal (vLLM 0.20.0) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [64](../traps/reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md), [66](../traps/template/66-in-text-thinking-toggle-mutates-user-text.md), [67](../traps/template/67-history-rendered-as-object-repr.md), [68](../traps/template/68-multimodal-part-order-discarded.md), [72](../traps/runtime/72-media-fetch-errors-are-5xx.md), [73](../traps/evaluation/73-multimodal-token-cost-not-attributable.md), [74](../traps/evaluation/74-non-speech-audio-fabricated-captions.md) |
 
 ## Stack-level traps (apply to any model on that stack)
 
@@ -49,6 +52,8 @@ serve on that stack.
 | Checkpoints whose chat template is Python code behind `trust_remote_code` | [56](../traps/template/56-checkpoint-ships-no-chat-template.md) |
 | Prefix caching on long prompts (any engine that reuses KV across requests) | [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
 | Rope-extended context windows (YaRN and similar) | [55](../traps/evaluation/55-supported-context-is-not-trained-context.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
+| Multimodal serving (content parts, media fetch, usage accounting) | [68](../traps/template/68-multimodal-part-order-discarded.md), [72](../traps/runtime/72-media-fetch-errors-are-5xx.md), [73](../traps/evaluation/73-multimodal-token-cost-not-attributable.md), [74](../traps/evaluation/74-non-speech-audio-fabricated-captions.md) |
+| Checkpoints shipping their own reasoning parser | [70](../traps/runtime/70-in-repo-parser-not-bundled.md) |
 
 ## Clean preflights
 
