@@ -25,8 +25,15 @@ Absence from this registry means nobody has reported it here, not that it is
 safe. These are the gaps we know about, and they are the most useful place to
 send a report:
 
-- **Serving stacks with no entries at all: SGLang, TensorRT-LLM,
-  text-generation-inference.** Ollama came off this list on 2026-07-28 with
+- **Serving stacks with no measured entries at all: SGLang, TensorRT-LLM,
+  text-generation-inference, TabbyAPI/ExLlama, text-generation-webui.**
+  **Updated 2026-07-28:** each of those now has a
+  [stack page](stacks/) that states the gap, names which mechanism classes most
+  likely apply and why, and gives the check a reader could run. Start at
+  [stacks/README.md](stacks/README.md), the pages are written for exactly the
+  person who has one of these and wondered whether anything is known.
+  text-generation-inference is the largest unexplained hole: not one entry
+  names it, in either direction. Ollama came off this list on 2026-07-28 with
   traps [75](traps/versioning/75-release-asset-renamed-pinned-url-404.md) to
   [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
   thinking-plus-tools candidate that was waiting on it is now
@@ -132,6 +139,87 @@ weight it carries.
 Labels may be combined when an entry genuinely has two halves ("reported by
 others and reproduced here"), as long as each half carries its own evidence
 pointer. They may not be blended into a new phrase.
+
+**These five are the labels valid on a registry entry under `traps/`.** There
+is a sixth label, `upstream-reported`, which is valid **only** in
+[`upstream/`](upstream/) and never in `traps/`. It is defined immediately
+below, and the separation is the point of it.
+
+## The fourth tier: upstream-reported
+
+Everything under `traps/` was measured by somebody identifiable: by us, or by
+a named contributor, or by the upstream reporter of a bug we then went and
+tested. [`upstream/`](upstream/) is not that. It publishes reports from
+upstream issue trackers and vendor channels that **nobody here has run**,
+because the stack, the weights or the hardware is not something we have.
+
+The argument for publishing them anyway is short. A maintainer-confirmed bug
+with a reproduction in the thread is real information that will cost somebody
+an evening, and leaving it in a private queue helps nobody. Publishing it also
+creates the one thing a private queue cannot: a place for a reader who *does*
+have that stack to settle it.
+
+The argument against publishing them badly is shorter. An unmeasured claim
+that reads like a measured one destroys the only thing this registry has. So
+the tier is separated by directory rather than by a word in a status line, and
+its requirements are asserted mechanically by
+[`integrity/upstream_integrity.py`](integrity/upstream_integrity.py) rather
+than being observed by convention.
+
+### What an upstream-reported entry must carry
+
+Every one of these is checked. An entry missing any of them fails the build.
+
+| Requirement | Why it is not optional |
+|---|---|
+| **A link to a primary source you have read**, with the date you read it | A desk mining list is a **lead**, not a source. Our own round-2 queue misstated the state or the content of roughly one candidate in four, including two it described as live engine bugs that the thread closed as usage. The date records that a human opened the thread rather than trusting the summary |
+| **Who reported it**, by the handle they publish under | The claim belongs to somebody. Crediting them is the reason this tier is publishable rather than rumour-laundering |
+| **Whether a maintainer engaged**, from a closed vocabulary: `maintainer confirmed`, `maintainer reproduced`, `maintainer responded`, `maintainer disputed`, `none` | A bug a maintainer reproduced in-thread and a report nobody answered are different claims and must not read alike. `maintainer reproduced` is the strongest thing this tier says |
+| **The issue state**, from a closed vocabulary: `open`, `closed, fixed`, `closed, not fixed`, `closed, resolved as usage`, `closed, not planned`, `disputed` | A closed-as-fixed issue is a different claim from an open one, and **closed-as-stale is not closed-as-fixed**. A stale bot closing a bug with a maintainer reproduction still attached changes nothing about whether the bug is there |
+| **A sentence saying plainly that nobody here has reproduced it** | The label implies it. Readers arrive by search, land mid-page, and quote a paragraph. The sentence has to be in the entry |
+| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, per the rule in [OPEN_QUESTIONS](mining/OPEN_QUESTIONS.md). An entry a reader cannot act on is an observation |
+
+### What the tier is not, and cannot become
+
+- **It never appears in [Core](CORE.md).** Core is the measured reading list.
+- **It never counts toward doctor coverage.** That numerator is checks over
+  measured entries; an upstream id in the doctor's `TRAP_PATHS` fails the
+  build.
+- **It never counts toward the registry total.** The count is derived from
+  `traps/<category>/NN-*.md`, and an upstream file inside `traps/` fails the
+  build.
+- **It is never cited as though measured.** An upstream entry carrying a
+  second tier label fails the build, because a compound status would let it
+  claim measurement from inside the tier that exists for the unmeasured.
+- **It is not a holding pen for weak reports.** A tier full of thin
+  single-issue reports devalues every entry beside it. Ten strong ones are
+  worth more than forty weak ones, and the classification pass that opened
+  this tier published eleven of fifty candidates and closed twenty-two.
+
+### Why some entries in `traps/` still say "reported by others"
+
+Twenty-three do, and they predate this tier. They are recorded by name in
+[`integrity/registry_config.json`](integrity/registry_config.json), and the
+checker **refuses any new one**: upstream-sourced material that we have not
+tested now goes to `upstream/`. Without that rule the tier would be
+decorative, because the path of least resistance for the next such report
+would be `traps/` with the old label.
+
+Those entries are not wrong and they are not being quietly downgraded. Several
+carry compound statuses where the other half *is* measured here, and trap
+[25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) is close to
+what this tier now requires, which is where the requirements came from. They
+are a migration backlog, not a defect, and moving one is a decision with a
+CHANGELOG line rather than a tidy-up.
+
+### Promotion out of the tier
+
+An upstream entry that somebody reproduces becomes a registry entry under
+`traps/` with the appropriate measured label, and leaves a pointer behind. The
+reporter keeps the **Found by** line. That is the same promotion path
+[`mining/`](mining/) already has, and the two are different stages of it:
+`mining/` is *our* queue with our verification notes, `upstream/` is
+published, credited, and addressed to a stranger who can settle it.
 
 ### What "reproduced here" requires
 

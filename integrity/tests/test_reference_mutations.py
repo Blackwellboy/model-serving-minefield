@@ -30,7 +30,12 @@ def copy_tree(dst):
     # vocabulary, and the restatement is what VOCAB-SLASH and VOCAB-FULL
     # check. Without it those tests would pass against a tree that does not
     # contain the file they exist for.
-    for name in ("traps", "playbooks", "stacks", "models", "mining",
+    # upstream/ is in the list because REF-EXISTS resolves every relative link
+    # in every tracked markdown file, and CONTRIBUTING, README, the stack pages
+    # and the mining notes all link into it. Omitting it made 48 correct links
+    # dangle inside the copy, so five tests failed against a tree that was
+    # green. A partial copy is a mutation nobody intended.
+    for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
                  "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md",
                  "doctor", "checks", "integrity", ".github", "LICENSE"):
