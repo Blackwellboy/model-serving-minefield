@@ -20,6 +20,12 @@ Candidates that verify get promoted into `traps/` per
 (R2-NN) refer to our mining rounds; the upstream source is linked in each
 note.
 
+**[OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) is the queue above all of this**: every
+question currently unsettled, each with its source marked PRIMARY or secondary,
+the hardware it needs, and its CONFIRM and REFUTE criteria written down **before**
+anyone runs it. It also records settled dispositions, so a closed question stays
+closed. Start there if you want to know what is open rather than what is done.
+
 ## Notes
 
 | Date | Candidate | Result |

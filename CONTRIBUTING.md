@@ -31,11 +31,17 @@ send a report:
   [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
   thinking-plus-tools candidate that was waiting on it is now
   [settled](mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md).
-  The SGLang reasoning-parser null-content report is still open and is still
-  the single most useful thing one person with that stack could settle; we
-  got as far as establishing that SGLang is
-  [not infeasible](mining/2026-07-28-sglang-on-gb10-feasibility.md) on our
-  hardware and stopped short of installing it.
+  SGLang still has no entries here. **Corrected 2026-07-28:** this paragraph
+  previously said we had "stopped short of installing it", and that the
+  reasoning-parser null-content report was the single most useful thing one
+  person could settle. SGLang has since been brought up first-party on our
+  hardware and that report was tested; its disposition is written and awaiting
+  publication, so treat it as answered rather than as the open ask. What is
+  genuinely open on this stack, with criteria, is in
+  [OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md): a template-less-checkpoint
+  test that is **blocked on naming an ungated checkpoint and needs no hardware
+  to help with**, an inconclusive NVFP4 result that must not be cited either
+  way, and a doctor run against the stack.
 - **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
   what is here was measured on two families because those are the weights we
   have.

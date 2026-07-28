@@ -70,6 +70,14 @@ not testable** on the lanes available, and the ones that are **specification
 only, not run**. A negative is information, and it is often the fastest way to
 stop chasing a ghost somebody else already chased.
 
+**What is still open** is published too, in
+[mining/OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md): every unsettled question,
+with its source marked PRIMARY or secondary, the hardware and stack it needs,
+and its CONFIRM and REFUTE criteria fixed **before** anyone runs it. Several are
+things a stranger with the right hardware can close faster than we can, and one
+needs no hardware at all. Settled questions are listed there as closed, with
+their dispositions, so they stay closed.
+
 ## Find your symptom
 
 All 97 entries. If you know what you are running rather than what you are
