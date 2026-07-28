@@ -75,3 +75,50 @@ trap. Ollama-side confirmation still needed before any registry entry.
 
 Evidence: 55-row probe log (both R2-39 and R2-31 probes) plus doctor JSON
 for both lanes, archived with the maintainers; available on request.
+
+## Update 2026-07-28: tested on Ollama. REFUTED as stated, and re-scoped
+
+The note above scoped this candidate to Ollama pending an Ollama-side test,
+because the claimed mechanism was Ollama-side and no lane here ran Ollama. One
+now did.
+
+**Test.** The same 2x2 that refuted it on vLLM: `think` by `tools`, 5 prompts
+per cell, temperature 0, `num_predict` 2048, n=20. Ollama 0.32.5, `qwen3:8b`,
+GB10 aarch64 CUDA 13.
+
+| arm | n | content empty | with tool_calls | HTTP errors | median content chars |
+|---|---|---|---|---|---|
+| think=true, tools=true | 5 | **5/5** | **5/5** | 0 | 0 |
+| think=true, tools=false | 5 | 0/5 | 0/5 | 0 | 832 |
+| think=false, tools=true | 5 | **5/5** | **5/5** | 0 | 0 |
+| think=false, tools=false | 5 | 0/5 | 0/5 | 0 | 345 |
+
+**The thinking half of the claim is refuted outright.** Empty content tracks
+**tools alone**: 5/5 with tools whether thinking is on or off, and 0/5 without
+tools in either thinking state. Thinking is not a factor in it.
+
+**And what remains is not a bug.** Every empty-content response carried exactly
+one tool call. The model was asked something it had a tool for, and it called
+the tool. A harness that reads `content` and ignores `tool_calls` sees "empty
+output" and reports a defect. That is
+[trap 42](../traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md)
+arriving as a bug report rather than as a score, and
+[trap 16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md) is
+the reason it is easy to do.
+
+**Scope of the refutation.** Ollama 0.32.5 with `qwen3:8b` on this hardware.
+The originating upstream issue is against a much older Ollama, so a genuine
+defect that has since been fixed is not excluded. What is excluded is the claim
+as it sat in this note: attributing empty output to *thinking* is wrong on the
+current release, and the mechanism it pointed at is not the mechanism.
+
+**Two live confounds that would reproduce the reported symptom with no bug at
+all**, both measured first-party in the same pass:
+[trap 77](../traps/reasoning/77-only-one-request-field-is-validated.md), where
+`enable_thinking: false` is silently ignored so an arm believed to be
+thinking-off is not, and
+[trap 79](../traps/memory/79-out-of-range-context-request-accepted.md), where a
+budget too small for the reasoning block returns genuinely empty content.
+
+*Status: measured here, raw not published. The 2x2 is 20 requests against a
+freely obtainable stack and re-runs in minutes.*
