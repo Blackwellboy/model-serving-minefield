@@ -34,6 +34,18 @@ agentic-trained expert patch at k=32:
 | base@k32 (the degraded reference) | **+6.10 pt** | 5/15 | **0.041** | significant win |
 | base@k8 (what actually ships) | +3.66 pt | 9/15 | 0.308 | no effect |
 
+> **Quoting these deltas.** Both are **paired** McNemar tests on identical
+> items at n=164, and the discordant counts are what carry the verdict: 5/15
+> and 9/15. The point of the table is that **+3.66 pt reads as no effect**,
+> which is the whole lesson, so quoting either delta without its p-value and
+> discordant counts inverts it. These are not comparable to the plus or minus
+> **1.3 pt at n=600** minimum detectable effect from
+> [our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md),
+> which bounds **unpaired** run-to-run drift at a different n; a paired test
+> on the same items is more sensitive. Quote the MDE when your delta comes
+> from two separate runs, and the discordant counts when it comes from one
+> paired comparison.
+
 The degraded reference was the finder's own k=32 setting, which costs this
 model roughly 3 points before any training (trap
 [33](../routing/33-moe-inference-topk-expansion-tax.md)). Against it he had

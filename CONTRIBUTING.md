@@ -162,13 +162,30 @@ ships in the tree.
 
 ### Accuracy deltas must carry the MDE
 
-Any entry quoting an accuracy or score delta states the **minimum detectable
-effect** for the design it was measured on, next to the number. Our own
-measured floor is **about 1.3 points at n=600** on this stack
-([agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)),
-so a 1-point difference at that n is not a result no matter how clean the
-runs looked. Without the MDE beside it, a delta can be quoted by an external
-reader as significant when the design could never have resolved it.
+Any entry quoting an accuracy or score delta states, next to the number, what
+its design could actually resolve. Without that, an external reader can quote
+a delta as significant when the design could never have separated it from
+noise. Which figure you state depends on the design, and the two are not
+interchangeable:
+
+- **Unpaired deltas** (two separate runs, two boxes, two days) carry the
+  **minimum detectable effect**. Our own measured floor is **about 1.3 points
+  at n=600** on this stack
+  ([agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)),
+  so a 1-point difference at that n is not a result no matter how clean the
+  runs looked.
+- **Paired comparisons on identical items** carry their **discordant-pair
+  counts and an exact paired p-value** instead. A paired test is strictly
+  more sensitive than the unpaired floor, so quoting the 1.3 pt MDE against a
+  paired result understates it and can bury a real effect. Traps
+  [33](traps/routing/33-moe-inference-topk-expansion-tax.md) and
+  [34](traps/evaluation/34-baseline-you-degraded-yourself.md) are the worked
+  examples, and both carry a note saying which figure applies to them.
+
+The MDE also does not transfer across outcome types: it is an accuracy delta
+over four-way multiple-choice items and says nothing about binary-outcome
+results such as firing-rate counts, which carry their own and much wider
+binomial noise.
 
 ## Evidence bar
 

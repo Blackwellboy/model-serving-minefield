@@ -1227,8 +1227,9 @@ def check_ceiling(doc, base, key):
     doc.skip(["22"], "per-size budget floor",
              "trap 22 is a claim about where THIS model size converts reasoning "
              "into content, and a floor is a distribution, not a threshold: the "
-             "registry's own production replication has a 27B fail 0/3 at 8192 "
-             "and 2/3 at 16384. This tool sends ONE request at ONE budget "
+             "registry's own production replication has a 27B convert 0/3 at "
+             "8192 and only 2/3 at 16384, so it still fails 1 in 3 at a budget "
+             "where it also succeeds. This tool sends ONE request at ONE budget "
              "(max_tokens=512) to ONE model, which cannot characterise a "
              "distribution and cannot compare sizes. Whatever the probe below "
              "reports, it is not a trap-22 result. Run the multi-budget, "

@@ -94,15 +94,28 @@ as firing-rate counts, which have their own and much wider binomial noise.
 **Stacks and builds bitten.** Qwen3.6-35B-A3B revision
 `995ad96eacd98c81ed38be0c5b274b04031597b0`, bf16, HF transformers, two hosts
 (8x RTX PRO 6000 and a 2-GPU local box), MMLU/GSM8K by choice-logprob with
-no generation, n=600, shuffle seed 0. The class is stack-independent and
-gets worse, not better, with generation-based benchmarks, where sampling and
-truncation add their own variance.
+no generation, n=600, shuffle seed 0. The class gets worse, not better, with
+generation-based benchmarks, where sampling and truncation add their own
+variance.
 
 Also bitten: Qwen3.6-35B-A3B revision `491c2f1e`, **NVFP4**, **vLLM** nightly
 `a346d589`, two GB10 nodes, MMLU generation-scored to a single letter, n=600,
 shuffle seed 0. That the class shows up on a quantized vLLM generation path at
 the same magnitude as on a bf16 transformers logprob path is the practical
-evidence for calling it stack-independent.
+evidence for it not being a property of one serving stack.
+
+**Scope of that generalisation, stated exactly.** Both measurements are
+**Qwen3.6-35B-A3B**. What varied across them was the serving stack (HF
+transformers and vLLM), the numeric format (bf16 and NVFP4), the scoring
+method (choice-logprob and generation to a single letter) and the hardware
+class (RTX PRO 6000 and GB10). What did **not** vary was the model family, so
+this says the effect is not an artifact of one stack, and it does **not**
+establish a magnitude for any other family. The mechanism (accumulation
+order, kernel selection, batch composition) has no reason to be
+family-specific and we expect it to generalise, but expecting is not
+measuring. Measure your own floor on the model you are actually comparing,
+which is what the check below is for. This is the same caution as the MDE
+non-transfer note above, and for the same reason.
 
 **The check.** Measure your own agreement floor before you trust any small
 delta. Run the **same** model twice, on the two machines (or the two

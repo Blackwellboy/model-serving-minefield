@@ -34,24 +34,25 @@ much it could not check on your stack, and how much it never implements.
 | Two testers, "same model", different behavior | Thinking-kwarg default drifts by revision and upload | [03](traps/reasoning/03-enable-thinking-default-drift.md) | reproduced here |
 | Thinking fires single-turn, collapses multi-turn | Reasoning stripped from replayed history | [04](traps/template/04-history-reasoning-stripping.md) | reproduced here |
 | Verdicts flip on characters nobody looked at | Scorer normalization (curly quotes, unicode) | [05](traps/evaluation/05-scorer-normalization-verdict-flip.md) | reported by others |
-| Thinking dies under any real system prompt | Identity sentence evicted from line one | [06](traps/reasoning/06-identity-sentence-eviction.md) | reported; tested on a second stack, did not reproduce there (tail effect found instead) |
+| Thinking dies under any real system prompt | System-prompt topology moves the gate (which end carries the lever is stack-dependent) | [06](traps/reasoning/06-identity-sentence-eviction.md) | reported by others; the reported prefix-key mechanism did NOT reproduce on a second stack |
+| Thinking dies under an agent prompt with tool schemas specifically | Possibly nothing: the gate is conditioned on apparatus and task, and a 752-byte agent prompt with 3 tool schemas fired 90.4% at n=492 | [06 (apparatus route)](traps/reasoning/06-identity-sentence-eviction.md#if-you-arrived-here-with-an-agent-prompt-and-tools) | contributor-measured, conditions as reported |
 | `reasoning_effort` levels change nothing | Template never reads the parameter | [07](traps/reasoning/07-reasoning-effort-silently-ignored.md) | reproduced here |
 | Healthy load, then death at kernel build or first token | Image toolchain newer than host driver (error 222 class) | [08](traps/runtime/08-image-toolchain-newer-than-driver.md) | reproduced here |
 | Same weights work/fail/crawl depending on nothing obvious | Container image decides the kernel path | [09](traps/runtime/09-image-choice-changes-outcome.md) | reproduced here |
 | "FP4" checkpoint far slower than the format promises | Quant label routes to a weight-only fallback | [10](traps/quantization/10-quant-label-is-not-the-kernel-path.md) | reproduced here |
 | Model got slower after raising speculative depth | Acceptance collapses past the drafter's depth | [11](traps/runtime/11-speculative-depth-peak-and-collapse.md) | reproduced here |
 | Hard tasks return HTTP 200 with empty content (or a missing content key) | Thinking ate the whole token budget | [12](traps/evaluation/12-empty-content-at-token-ceiling.md) | reproduced here |
-| Unified-memory box at 98% RAM, or capacity stranded | Utilization fraction reserving against the OS's pool | [13](traps/memory/13-utilization-fraction-on-unified-memory.md) | measured on our fleet |
-| Finetune/abliterated swap changed more than behavior | Re-upload is a different artifact, shards and drafter included | [14](traps/versioning/14-finetune-reupload-not-drop-in.md) | measured on our fleet |
+| Unified-memory box at 98% RAM, or capacity stranded | Utilization fraction reserving against the OS's pool | [13](traps/memory/13-utilization-fraction-on-unified-memory.md) | measured here, raw not published |
+| Finetune/abliterated swap changed more than behavior | Re-upload is a different artifact, shards and drafter included | [14](traps/versioning/14-finetune-reupload-not-drop-in.md) | measured here, raw not published |
 | Multiple-choice evals hang or score near zero | Server lacks echo+logprobs; lm-eval wedges | [15](traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md) | reported by others |
-| Scores move when you re-bucket cap-hits | finish_reason used as a pass/fail signal | [16](traps/evaluation/16-finish-reason-is-not-a-failure-signal.md) | reported + reproduced |
-| Clean A/B effect that will not replicate | Each arm ran its own "recommended" sampling | [17](traps/evaluation/17-per-arm-recommended-sampling-confound.md) | reported + reproduced |
+| Scores move when you re-bucket cap-hits | finish_reason used as a pass/fail signal | [16](traps/evaluation/16-finish-reason-is-not-a-failure-signal.md) | reported by others + reproduced here |
+| Clean A/B effect that will not replicate | Each arm ran its own "recommended" sampling | [17](traps/evaluation/17-per-arm-recommended-sampling-confound.md) | reported by others + reproduced here |
 | Decode collapses with depth, shallow bench fine | Flash attention off; penalty grows with depth | [18](traps/runtime/18-flash-attention-off-halves-deep-decode.md) | reported by others |
 | Model "cannot tool-call", describes calls in prose | Server template/parser flags; native schema dropped | [19](traps/tools/19-missing-jinja-breaks-tool-parsing.md) | reported by others |
-| Trap 04's fix "does not work", render still stripped | Reasoning resent under the wrong write field for the runtime | [20](traps/reasoning/20-reasoning-write-field-name-diverges.md) | reported + reproduced |
+| Trap 04's fix "does not work", render still stripped | Reasoning resent under the wrong write field for the runtime | [20](traps/reasoning/20-reasoning-write-field-name-diverges.md) | contributor-measured + reproduced here; behavioral half under test |
 | One client's requests think and blow budgets on a reasoning-off lane | Server thinking flag is a default, not a gate; client kwarg overrides | [29](traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md) | reproduced here |
 | Your "model defaults" differ from everyone else's | Checkpoint ships no generation_config; server built-ins win | [21](traps/versioning/21-no-generation-config-server-defaults-win.md) | reproduced here |
-| Sibling model empty at the family's "safe" token budget | Thinking budget floor differs by size within a family | [22](traps/evaluation/22-family-card-budget-floors-differ-by-size.md) | reproduced here |
+| Sibling model empty at the family's "safe" token budget | Thinking budget floor differs by size within a family | [22](traps/evaluation/22-family-card-budget-floors-differ-by-size.md) | reproduced here (published 40-sample map) + measured here, raw not published (the per-size claim) |
 | Streamed replies blank, non-streamed fine | Answer routed into reasoning deltas, content empty | [23](traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md) | reported by others |
 | Tools broken on llama.cpp/LM Studio, fine on vLLM | Official template uses Python-only Jinja constructs | [24](traps/template/24-official-template-breaks-cpp-jinja.md) | reported by others |
 | Prefix cache misses, junk empty think pairs in history | Template emits think wrappers for empty reasoning | [25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) | reported by others |
@@ -59,7 +60,7 @@ much it could not check on your stack, and how much it never implements.
 | NVFP4 model fast but suddenly "does not know basics" | Quant ignore-list miss or version-scoped kernel path | [27](traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) | reported by others |
 | MTP lane green in bench, hangs/crashes in production | Speculative fails only under concurrency or mid temperature | [28](traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md) | reported by others |
 | Every system-prompt condition differs from bare, on every axis at once | Template's default system message is replaced wholesale by any caller system message | [30](traps/template/30-default-system-message-silently-replaced.md) | reproduced here |
-| Historical eval score nobody can regenerate, far above the committed engine | Leftover oracle re-ranker wrote into the honest metrics namespace | [31](traps/evaluation/31-leftover-oracle-reranker.md) | reproduced here |
+| Historical eval score nobody can regenerate, far above the committed engine | Leftover oracle re-ranker wrote into the honest metrics namespace | [31](traps/evaluation/31-leftover-oracle-reranker.md) | measured here, raw not published |
 | A client request runs past the server's --max-tokens launch flag | mlx_lm's flag is a per-request default, not a ceiling | [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) | reproduced here |
 | You gave a MoE more active experts and it got *worse* | Renormalization dilutes the original top-8; selection is intact | [33](traps/routing/33-moe-inference-topk-expansion-tax.md) | reported by others |
 | A clean significant win that evaporates against the shipped model | The baseline is a configuration you degraded yourself | [34](traps/evaluation/34-baseline-you-degraded-yourself.md) | reported by others |
@@ -70,7 +71,7 @@ much it could not check on your stack, and how much it never implements.
 | Output is complete gibberish after a previously working run | `device_map="auto"` spilled the model onto a device you excluded | [39](traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md) | reported by others |
 | Contamination gate removes a third of your corpus | One boilerplate n-gram, or a gram too short for the alphabet | [40](traps/evaluation/40-ngram-decontamination-false-positives.md) | reported by others |
 | Batched the loop, GPU hit 100%, the job took exactly as long | A static batch waits for its longest sequence | [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) | reported by others |
-| Adding an agent prompt and tool schemas drops your benchmark score hard | Tool-call exits are being scored as wrong answers | [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md) | reported by others |
+| Adding an agent prompt and tool schemas drops your benchmark score hard | Tool-call exits are being scored as wrong answers | [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md) | contributor-measured, conditions as reported |
 
 If you run one check from this registry, make it
 [Trap 04](traps/template/04-history-reasoning-stripping.md). It is the one
