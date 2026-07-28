@@ -44,10 +44,17 @@ entries is too many to read; none of these asks you to.
   [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
   [Ollama](stacks/ollama.md) or [mlx_lm](stacks/mlx.md), plus the three checks
   to run before anything else.
-  [HF transformers](stacks/hf-transformers.md) and
-  [SGLang](stacks/sglang.md) have pages too, and both open by saying what they
-  do not have: nothing on the HF page was measured here on that stack, and
-  SGLang has no entries at all yet. The
+  **Every stack has a page, including the ones we have never run**:
+  [HF transformers](stacks/hf-transformers.md),
+  [SGLang](stacks/sglang.md), [TensorRT-LLM](stacks/tensorrt-llm.md),
+  [text-generation-inference](stacks/text-generation-inference.md),
+  [TabbyAPI and ExLlama](stacks/tabbyapi.md),
+  [LM Studio](stacks/lm-studio.md) and
+  [text-generation-webui](stacks/text-generation-webui.md). Those open by
+  saying what they do **not** have, then name which mechanism classes most
+  likely apply there and why, with the check you would run. "We have not tested
+  this, here is what to look for" is more useful than an absent page, which
+  reads as nothing to see. The
   **[per-model and per-stack index](models/README.md)** is the full map,
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
@@ -74,6 +81,17 @@ candidates we tested that **did not reproduce**, the ones that are **blocked or
 not testable** on the lanes available, and the ones that are **specification
 only, not run**. A negative is information, and it is often the fastest way to
 stop chasing a ghost somebody else already chased.
+
+**Reports we have not been able to run** are published too, in
+[upstream/](upstream/), and they are kept in their own directory rather than
+mixed in so the difference is obvious at a glance. Eleven credited reports from
+other people's issue trackers, on stacks and hardware we do not have, each
+carrying the primary source, who reported it, whether a maintainer engaged, the
+issue state, a plain statement that **nobody here has reproduced it**, and what
+you would run to settle it. Two of them were reproduced by a maintainer and
+then closed by a staleness bot, which is not the same as fixed. They never
+appear in [Core](CORE.md), never count toward doctor coverage, and never count
+toward the registry total; a checker asserts all three on every run.
 
 **What is still open** is published too, in
 [mining/OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md): every unsettled question,
