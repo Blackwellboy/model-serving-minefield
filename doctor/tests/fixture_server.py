@@ -21,11 +21,19 @@ Scenario flags (all default to the well-behaved value):
                         silence the doctor must not call clean.
   thinking_effective    bool. False reproduces an accepted-and-ignored
                         enable_thinking kwarg: every arm looks identical.
+  explicit_off_honored  bool. False makes the lane fire reasoning even when the
+                        caller sends enable_thinking=false. The off switch is
+                        not an off switch, which is trap 03's defect and was
+                        being reported as a characterised map.
   tool_choice_supported bool. False returns 400 on tool_choice, removing the
                         deterministic control and forcing INCONCLUSIVE.
   tool_calls            "always" | "forced_only" | "never".
   tool_markup           bool. Emit raw <tool_call> text instead of a parsed
                         array.
+  tool_markup_alongside bool. Emit a parsed tool_calls array AND leave raw
+                        <tool_call> markup in the content. Half the traffic
+                        escapes the parser, which the doctor used to log as
+                        "no raw markup" with markup_seen=True beside it.
   render                bool. Whether the vLLM render/detokenize routes answer.
   preserve_history      bool. Whether prior-turn reasoning survives assembly.
   kwarg_rejection       None | "unknown" | "known". "unknown" rejects any
@@ -35,7 +43,12 @@ Scenario flags (all default to the well-behaved value):
                         NOT be credited as a strict server.
   accepts_images        bool.
   image_reject_names_modality  bool.
-  ceiling               "content" | "empty_at_cap" | "empty_not_at_cap".
+  ceiling               "content" | "content_at_cap" | "empty_at_cap"
+                        | "empty_not_at_cap". "content" finishes early with
+                        content, which never exercises the cap at all;
+                        "content_at_cap" hits the cap and returns content
+                        anyway, which is the only one of the four that rules
+                        the trap-12 failure mode out.
   stream_channel        "content" | "reasoning" | None.
 """
 import json
@@ -58,9 +71,11 @@ DEFAULTS = {
     "props": None,
     "reasoning_field": "reasoning_content",
     "thinking_effective": True,
+    "explicit_off_honored": True,
     "tool_choice_supported": True,
     "tool_calls": "always",
     "tool_markup": False,
+    "tool_markup_alongside": False,
     "render": True,
     "preserve_history": True,
     "kwarg_rejection": None,
@@ -143,7 +158,10 @@ def _make_lane_handler(cfg):
         def _message(self, body):
             kw = body.get("chat_template_kwargs") or {}
             want_think = kw.get("enable_thinking", True)
-            fires = cfg["thinking_effective"] and want_think and cfg["reasoning_field"]
+            # A lane whose off switch is ignored fires on every arm, including
+            # the one that explicitly asked for thinking off.
+            honoured = want_think or not cfg["explicit_off_honored"]
+            fires = cfg["thinking_effective"] and honoured and cfg["reasoning_field"]
             msg = {"role": "assistant", "content": "OK"}
             if fires:
                 msg[cfg["reasoning_field"]] = "a brief trace"
@@ -156,7 +174,9 @@ def _make_lane_handler(cfg):
                     msg["tool_calls"] = [{"id": "call_0", "type": "function",
                                           "function": {"name": "get_time",
                                                        "arguments": '{"timezone":"Asia/Tokyo"}'}}]
-                    msg["content"] = None
+                    msg["content"] = (
+                        '<tool_call>{"name": "get_time"}</tool_call>'
+                        if cfg["tool_markup_alongside"] else None)
                 elif emit and cfg["tool_markup"]:
                     msg["content"] = ('<tool_call>{"name": "get_time", '
                                       '"arguments": {"timezone": "Asia/Tokyo"}}</tool_call>')
@@ -175,6 +195,11 @@ def _make_lane_handler(cfg):
                 return ({"role": "assistant", "content": "",
                          cfg["reasoning_field"] or "reasoning_content": "short trace"},
                         "stop")
+            if mode == "content_at_cap":
+                # The cap was reached and content came back anyway: the only
+                # observation that rules the trap-12 failure mode out.
+                return ({"role": "assistant", "content": "def parse(s):\n    ...\n"},
+                        "length")
             return ({"role": "assistant", "content": "def parse(s):\n    ...\n"},
                     "stop")
 
