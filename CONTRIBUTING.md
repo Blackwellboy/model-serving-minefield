@@ -390,6 +390,48 @@ the controls as a documented manual procedure with recorded output instead.
 We will land it. What we will not land is a check with no failing case at
 all, because nobody can tell that from a check that never fires.
 
+#### Checks that are not Python
+
+A shell check cannot declare Python callables, so it declares them in a
+sidecar at `checks/tests/controls_<stem>.py`, which drives the script
+out-of-process and returns its exit code. The harness then judges it exactly
+as it judges a Python check. See
+[`controls_util_vs_power_tell.py`](checks/tests/controls_util_vs_power_tell.py),
+whose controls put a stub `nvidia-smi` first on `PATH`, so the real script
+runs against a chosen sample stream with no GPU and no driver.
+
+**A non-Python check with no sidecar is a contract violation, not a skip.**
+This is a hole we shipped: discovery globbed `*.py` only, so
+`util_vs_power_tell.sh` was never contract-tested, and the harness still
+printed `ALL PASS (8 checks conform)` over a set that silently excluded it.
+The number was right and the set was wrong, which is the same defect this
+contract exists to catch, one level up from where we were looking for it.
+Found by a contributor's PR sitting in review, not by us.
+
+#### Guarding a specific past defect: `REGRESSION_ASSERTS`
+
+Optional third slot. Most checks have none.
+
+```python
+REGRESSION_ASSERTS = [
+    ("decode-only figure is still declined as a server total",
+     lambda: server_total_seconds({"timings": {"predicted_ms": 400.0}})[0] is None),
+]
+```
+
+Each callable returns `True` if the defect is still dead. The harness fails
+the build if any returns `False`.
+
+This exists because a contributor tried to express exactly that as a negative
+control and could not do it honestly. A negative control feeds an input to
+the check and reads the check's verdict; a regression guard asserts that a
+helper still *refuses* something, and never calls the check at all. Written
+as a negative control it has to be inverted, so that correct behaviour
+"fails" the control, which makes `NEGATIVE_CONTROLS` untrue for anyone
+reading it as "inputs that make this check fail". They flagged the
+inversion themselves rather than letting it pass as ordinary. The contract
+was missing a slot; the workaround was the evidence.
+
 ## External PR policy
 
 This is the standing rule, not a decision taken once. It exists because the
