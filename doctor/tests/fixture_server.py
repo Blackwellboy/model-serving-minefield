@@ -22,9 +22,24 @@ Scenario flags (all default to the well-behaved value):
   thinking_effective    bool. False reproduces an accepted-and-ignored
                         enable_thinking kwarg: every arm looks identical.
   explicit_off_honored  bool. False makes the lane fire reasoning even when the
-                        caller sends enable_thinking=false. The off switch is
+                        caller sends the off control. The off switch is
                         not an off switch, which is trap 03's defect and was
                         being reported as a characterised map.
+  off_kwarg             "enable_thinking" | "reasoning_effort". Which request
+                        field this lane actually reads to turn thinking off.
+                        Ollama reads reasoning_effort and silently ignores
+                        chat_template_kwargs entirely, so a doctor that only
+                        knows vLLM's spelling sees every arm fire and cannot
+                        tell that from a broken off switch.
+  ollama                bool. Answer GET /api/version, and nothing else that
+                        identifies a stack. This is how a real Ollama lane is
+                        told apart from an anonymous OpenAI-compatible one.
+  anonymous             bool. Answer none of /props, /version or /api/version,
+                        so the lane is OpenAI-compatible and nothing more. This
+                        is the honest generic bucket: on such a lane the tool
+                        does not know which kwarg turns thinking off, and a
+                        firing off arm cannot be attributed to a broken switch
+                        rather than to the wrong word.
   tool_choice_supported bool. False returns 400 on tool_choice, removing the
                         deterministic control and forcing INCONCLUSIVE.
   tool_calls            "always" | "forced_only" | "never".
@@ -72,6 +87,9 @@ DEFAULTS = {
     "reasoning_field": "reasoning_content",
     "thinking_effective": True,
     "explicit_off_honored": True,
+    "off_kwarg": "enable_thinking",
+    "ollama": False,
+    "anonymous": False,
     "tool_choice_supported": True,
     "tool_calls": "always",
     "tool_markup": False,
@@ -148,8 +166,12 @@ def _make_lane_handler(cfg):
                 if cfg["props"]:
                     return self._send(200, cfg["props"])
                 return self._send(404, {"error": "not found"})
+            if self.path == "/api/version":
+                if cfg["ollama"]:
+                    return self._send(200, {"version": "0.32.5"})
+                return self._send(404, {"error": "not found"})
             if self.path == "/version":
-                if cfg["props"]:
+                if cfg["props"] or cfg["ollama"] or cfg["anonymous"]:
                     return self._send(404, {"error": "not found"})
                 return self._send(200, {"version": "0.25.0"})
             return self._send(404, {"error": "not found"})
@@ -157,7 +179,12 @@ def _make_lane_handler(cfg):
         # -- generation -----------------------------------------------------
         def _message(self, body):
             kw = body.get("chat_template_kwargs") or {}
-            want_think = kw.get("enable_thinking", True)
+            if cfg["off_kwarg"] == "reasoning_effort":
+                # chat_template_kwargs is not read at all on this lane, which
+                # is the Ollama behaviour: accepted, ignored, no error.
+                want_think = body.get("reasoning_effort") != "none"
+            else:
+                want_think = kw.get("enable_thinking", True)
             # A lane whose off switch is ignored fires on every arm, including
             # the one that explicitly asked for thinking off.
             honoured = want_think or not cfg["explicit_off_honored"]
