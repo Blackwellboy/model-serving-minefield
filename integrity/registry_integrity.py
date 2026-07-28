@@ -384,6 +384,34 @@ def check_word_counts(root, n_entries, findings):
                         % (m.group(1), n, m.group(0))))
 
 
+DOCTOR_PROSE_RE = re.compile(r"Its\s+(\d+)\s+checks")
+
+
+def check_doctor_prose(root, findings):
+    """doctor/README's opening sentence must equal len(TRAP_PATHS).
+
+    It said "Its 18 checks" while the same file said 19 two hundred lines
+    later and the tool itself carried 19. That mattered beyond the page: the
+    site generator parses this exact sentence, so the public homepage
+    published 18. A number that another repo reads is not prose.
+    """
+    p = os.path.join(root, "doctor", "README.md")
+    if not os.path.exists(p):
+        return
+    implemented = doctor_implemented_count(root)
+    if implemented is None:
+        return
+    text = read(p)
+    for m in DOCTOR_PROSE_RE.finditer(text):
+        if int(m.group(1)) != implemented:
+            ln = text.count("\n", 0, m.start()) + 1
+            findings.append(Finding(
+                "DOCTOR-PROSE", "doctor/README.md:%d" % ln,
+                "opening sentence says %s checks, TRAP_PATHS has %d. The site "
+                "generator parses this sentence, so a mismatch publishes the "
+                "wrong number off-repo" % (m.group(1), implemented)))
+
+
 def check_counts(root, n_entries, findings):
     implemented = doctor_implemented_count(root)
     for dp, dns, fns in os.walk(root):
@@ -554,6 +582,7 @@ def run(root):
 
     implemented = check_counts(root, len(entries), findings)
     check_word_counts(root, len(entries), findings)
+    check_doctor_prose(root, findings)
     return findings, len(entries), len(stubs), implemented
 
 
