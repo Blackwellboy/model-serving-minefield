@@ -356,6 +356,72 @@ class ClaimLedgerMutations(unittest.TestCase):
         self.assertIn("carried_by surface does not exist",
                       json.dumps(out["ledger_errors"]))
 
+    def test_30_a_nested_checkout_is_not_scanned_as_this_repo(self):
+        """The bug that turned CI red on its first run.
+
+        actions/checkout put the peer repo INSIDE the workspace. Every peer
+        file was then scanned twice: once correctly as laguna:<path>, and once
+        as minefield:.peer/laguna-s21-lab/<path>, a name no laguna: exemption
+        matches. A correctly exempt line in gate-study/README.md came back
+        FLAGGED and the whole run went red on a non-finding.
+
+        Both halves are asserted: the nested copy must not be scanned under the
+        outer repo's name, and the outer repo must still be scanned.
+        """
+        outer = os.path.join(self.tmp, "outer")
+        write(os.path.join(outer, "OUTER.md"), "# Outer\n\nNothing to see.\n")
+        nested = os.path.join(outer, ".peer", "laguna-s21-lab")
+        os.makedirs(os.path.join(nested, ".git"))
+        write(os.path.join(nested, "TWEET_PACK_V3.1.md"),
+              "As posted: reasoning length collapses monotonically with dose.\n")
+
+        rc, out = run_claims(self.save(), {"minefield": outer})
+        paths = [h["path"] for h in out["hits"]]
+        self.assertFalse(
+            any(".peer" in p for p in paths),
+            "a nested checkout of another repo was scanned under this repo's "
+            "name: %s" % paths)
+        self.assertEqual([h for h in out["hits"] if h["verdict"] == "FLAGGED"],
+                         [], out["hits"])
+
+    def test_31_pruning_does_not_silently_stop_scanning_everything(self):
+        """Negative control for 30, and the false-healthy guard.
+
+        The cheapest way to make test 30 pass is to scan nothing. This asserts
+        the scanner still reads ordinary content in the same tree, so a prune
+        that swallowed the whole walk would fail here.
+        """
+        outer = os.path.join(self.tmp, "outer2")
+        write(os.path.join(outer, "TWEET_PACK_V3.1.md"),
+              "As posted: reasoning length collapses monotonically with dose.\n")
+        nested = os.path.join(outer, "vendor", "someone-else")
+        os.makedirs(os.path.join(nested, ".git"))
+        write(os.path.join(nested, "THEIRS.md"), "unrelated\n")
+
+        rc, out = run_claims(self.save(), {"laguna": outer})
+        self.assertTrue(
+            any(h["path"] == "TWEET_PACK_V3.1.md" for h in out["hits"]),
+            "pruning nested repos also stopped the scanner reading the repo "
+            "it was pointed at: %s" % out["hits"])
+
+    def test_32_flagged_hits_emit_a_github_annotation(self):
+        """A red badge has to say what and where. The first red run's only
+        annotation was 'Process completed with exit code 1'."""
+        root = os.path.join(self.tmp, "annot")
+        write(os.path.join(root, "OPERATORS.md"),
+              "# Operator advice\n\n"
+              "Keep the system prompt lean: every rule block you add shortens "
+              "the reasoning you get even when it still fires.\n")
+        r = subprocess.run(
+            [PY, os.path.join(INTEGRITY, "claim_propagation.py"),
+             "--ledger", self.save(), "--github", "--repo", "laguna=%s" % root],
+            capture_output=True, text=True, cwd=root)
+        self.assertEqual(r.returncode, 1)
+        lines = [l for l in r.stdout.splitlines() if l.startswith("::error")]
+        self.assertTrue(lines, r.stdout)
+        self.assertTrue(any("file=OPERATORS.md" in l for l in lines), lines)
+        self.assertTrue(any("depth-dose-suppression" in l for l in lines), lines)
+
     def test_29_live_tree_scan_runs_and_is_reported(self):
         """Not an assertion that the live tree is clean. It asserts the scan
         actually reaches both repos and produces classified hits, so a run that

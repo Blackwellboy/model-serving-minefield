@@ -6,6 +6,17 @@ name: integrity
 # to a public runner would publish the thing it protects. That check runs from
 # the private kit in the pre-push hook, and integrity/README.md says so in the
 # same words, so nobody reads a green badge here as a sanitizer pass.
+#
+# The peer repo is checked out to RUNNER_TEMP, OUTSIDE the workspace. The first
+# red run put it at .peer/ inside the workspace, so every peer file was scanned
+# twice: once correctly under its own repo name, once under this repo's name,
+# where its exemptions did not apply. A correctly exempt line was reported as a
+# failure. The checkers now also prune nested checkouts on their own, so this
+# layout choice is the belt and the pruning is the braces.
+#
+# Every check step runs even if an earlier one failed. The first red run
+# skipped four checks after the first failure, so the badge said one thing was
+# broken and nothing at all about the rest.
 
 on:
   push:
@@ -17,57 +28,107 @@ jobs:
   integrity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/checkout@v4
+      - name: check out the peer repo outside the workspace
+        uses: actions/checkout@v5
         with:
           repository: Blackwellboy/laguna-s21-lab
-          path: .peer/laguna-s21-lab
+          path: peer-laguna
           fetch-depth: 1
         continue-on-error: true
 
-      - uses: actions/setup-python@v5
+      - name: move the peer clone out of the workspace
+        id: peer
+        run: |
+          if [ -d peer-laguna ]; then
+            mkdir -p "$RUNNER_TEMP/peer"
+            mv peer-laguna "$RUNNER_TEMP/peer/laguna-s21-lab"
+            echo "path=$RUNNER_TEMP/peer/laguna-s21-lab" >> "$GITHUB_OUTPUT"
+            echo "Peer repo at $RUNNER_TEMP/peer/laguna-s21-lab"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "::warning::peer repo unavailable; claim propagation will scan this repo only and will say so."
+          fi
+
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: registry integrity
-        run: python3 integrity/registry_integrity.py
+        id: registry
+        if: always()
+        run: python3 integrity/registry_integrity.py --github
 
       - name: claim propagation
+        id: claims
+        if: always()
         run: |
-          if [ -d .peer/laguna-s21-lab ]; then
-            python3 integrity/claim_propagation.py \
-              --repo minefield=. --repo laguna=.peer/laguna-s21-lab
+          if [ -n "${{ steps.peer.outputs.path }}" ]; then
+            python3 integrity/claim_propagation.py --github \
+              --repo minefield=. --repo laguna="${{ steps.peer.outputs.path }}"
           else
-            echo "peer repo unavailable; scanning this repo only."
-            python3 integrity/claim_propagation.py --repo minefield=.
+            python3 integrity/claim_propagation.py --github --repo minefield=.
           fi
 
       - name: do-not-cite on added text
+        id: dnc
+        if: always()
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           if [ -z "$BASE" ]; then BASE="${{ github.event.before }}"; fi
           if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
             BASE="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
           fi
-          python3 integrity/do_not_cite.py --base "$BASE"
+          python3 integrity/do_not_cite.py --github --base "$BASE"
 
       - name: mutation suite (the checks must have teeth)
+        id: mutations
+        if: always()
         env:
-          MINEFIELD_PEER_REPO: .peer/laguna-s21-lab
+          MINEFIELD_PEER_REPO: ${{ steps.peer.outputs.path }}
         run: python3 -m unittest discover -s integrity/tests -t integrity/tests
 
       - name: doctor suite
+        id: doctor
+        if: always()
         run: python3 -m unittest discover -s doctor/tests -t doctor/tests
 
       - name: checks suite
-        run: python3 -m unittest discover -s checks/tests -t checks/tests
+        id: checks
+        if: always()
+        run: python3 checks/tests/test_preflight_kwargs.py
 
       - name: sanitizer status
+        if: always()
         run: |
           echo "SANITIZER WHOLE-TREE SCAN: not run here, by design."
           echo "Its pattern file lists the internal names it scans for and"
           echo "cannot be published. It runs from the private kit via the"
           echo "pre-push hook: see integrity/README.md."
+
+      # A single place that says what failed, so the badge is readable without
+      # opening five collapsed step logs.
+      - name: verdict
+        if: always()
+        run: |
+          fail=0
+          for pair in \
+            "registry integrity=${{ steps.registry.outcome }}" \
+            "claim propagation=${{ steps.claims.outcome }}" \
+            "do-not-cite=${{ steps.dnc.outcome }}" \
+            "mutation suite=${{ steps.mutations.outcome }}" \
+            "doctor suite=${{ steps.doctor.outcome }}" \
+            "checks suite=${{ steps.checks.outcome }}"; do
+            name="${pair%%=*}"; outcome="${pair##*=}"
+            if [ "$outcome" = "success" ]; then
+              echo "PASS  $name"
+            else
+              echo "FAIL  $name ($outcome)"
+              echo "::error title=integrity::$name failed. Its step log above names the file and the finding."
+              fail=1
+            fi
+          done
+          exit $fail

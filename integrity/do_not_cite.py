@@ -42,6 +42,37 @@ def read(path):
         return fh.read()
 
 
+
+# --- GitHub Actions annotations ------------------------------------------
+# "Process completed with exit code 1" was the entire annotation on the first
+# red run. A stranger reading a red badge learned nothing. These emit the
+# workflow-command form so the annotation names the file, the line and the
+# missing thing, on the commit and in the PR diff.
+def gha(level, message, path=None, line=None, title=None):
+    def esc(v):
+        return (str(v).replace("%", "%25").replace("\r", "%0D")
+                .replace("\n", "%0A").replace(":", "%3A").replace(",", "%2C"))
+    props = []
+    if path:
+        # Only annotate files inside the workspace; GitHub cannot anchor an
+        # annotation to a path outside the checkout, and a bogus path silently
+        # drops the annotation rather than erroring.
+        try:
+            rel = os.path.relpath(os.path.abspath(path), os.getcwd())
+        except ValueError:
+            rel = None
+        if rel and not rel.startswith(".."):
+            props.append("file=%s" % esc(rel))
+            if line:
+                props.append("line=%d" % int(line))
+    if title:
+        props.append("title=%s" % esc(title))
+    body = (str(message).replace("%", "%25")
+            .replace("\r", "%0D").replace("\n", "%0A"))
+    print("::%s %s::%s" % (level, ",".join(props), body) if props
+          else "::%s::%s" % (level, body))
+
+
 def git(root, *args):
     return subprocess.run(["git"] + list(args), cwd=root, capture_output=True,
                           text=True)
@@ -98,10 +129,34 @@ def added_lines(root, base, staged):
     return out
 
 
-def all_lines(root):
+# A nested checkout is a DIFFERENT repository. Walking into it reports its
+# files under THIS repo's name, which silently voids every exemption keyed to
+# the other repo and double-counts every hit. That is exactly what CI did:
+# actions/checkout put the peer repo at .peer/laguna-s21-lab inside the
+# workspace, laguna's gate-study README was scanned a second time as
+# "minefield:.peer/laguna-s21-lab/gate-study/README.md", its laguna: exemption
+# did not apply to that name, and a correctly exempt line was reported as a
+# failure. The workflow now checks the peer out elsewhere; this function makes
+# the tool right regardless of where anyone puts a clone.
+def prune_nested_repos(dirpath, dirnames, pruned):
+    keep = []
+    for d in dirnames:
+        if d in SKIP_DIRS:
+            continue
+        full = os.path.join(dirpath, d)
+        # .git is a directory in a clone and a file in a worktree or submodule.
+        if os.path.exists(os.path.join(full, ".git")):
+            pruned.append(full)
+            continue
+        keep.append(d)
+    dirnames[:] = keep
+
+
+def all_lines(root, pruned=None):
+    pruned = pruned if pruned is not None else []
     out = []
     for dp, dns, fns in os.walk(root):
-        dns[:] = [d for d in dns if d not in SKIP_DIRS]
+        prune_nested_repos(dp, dns, pruned)
         for fn in sorted(fns):
             if not fn.endswith(SCAN_EXTS):
                 continue
@@ -128,6 +183,8 @@ def main():
     ap.add_argument("--staged", action="store_true")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--github", action="store_true",
+                    help="also emit GitHub Actions annotations")
     args = ap.parse_args()
 
     root = os.path.abspath(os.path.expanduser(args.root))
@@ -166,6 +223,14 @@ def main():
         print(json.dumps({"scope": scope, "hits": hits, "exempt": skipped,
                           "manual_only": cfg.get("manual_only", [])}, indent=2))
         return 1 if hits else 0
+
+    if args.github:
+        for h in hits:
+            gha("error",
+                "do-not-cite item %r: matched %r. %s Instead: %s"
+                % (h["id"], h["match"], h["why"], h["instead"]),
+                os.path.join(root, h["path"]), h["line"],
+                "do-not-cite: %s" % h["id"])
 
     print("do-not-cite: %s, %d enforced rules, %d lines examined"
           % (scope, len(rules), len(lines)))
