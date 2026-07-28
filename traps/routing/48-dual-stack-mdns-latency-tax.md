@@ -66,4 +66,4 @@ completed, those fixes were real and stood on their own, but this was the actual
 
 **Attribution.** TheTom.
 
-**Check script.** The runnable version of this check is in review separately: every check in this repo must declare the negative and empty-set controls described in [the check contract](../../checks/README.md), and this one does not yet. The assertion above is the check; the script is a convenience wrapper for it.
+**Check script.** [`checks/latency_reconciliation.py`](../../checks/latency_reconciliation.py) declares the negative and empty-set controls required by [the check contract](../../checks/README.md), so it is able to report a problem. The inline assertion above remains the check; the script is a convenience wrapper for it.

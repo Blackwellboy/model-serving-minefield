@@ -19,7 +19,8 @@ handles both shapes.
 
 **Stacks and builds bitten.** Any Jinja chat template with this shape. Confirmed in an XML-dialect
 tool template (`<tool_call><function=NAME><parameter=KEY>...`); the equivalent ChatML/JSON dialect
-templates have their own variants of the same guard. Engine-independent, it's the template, so it
+templates plausibly carry their own variants of the same guard, though we have not audited one
+and that part is unverified. Engine-independent, it's the template, so it
 bites llama.cpp/minja, vLLM, and anything else rendering the same file.
 
 **The check.** Render the template twice with the same logical call, once with `arguments` as an
@@ -65,4 +66,4 @@ warranted a retrain. It did not; it was template-only.
 whose release prompted the investigation; the string-args `elif` and the no-`fromjson` constraint
 are ours.
 
-**Check script.** The runnable version of this check is in review separately: every check in this repo must declare the negative and empty-set controls described in [the check contract](../../checks/README.md), and this one does not yet. The assertion above is the check; the script is a convenience wrapper for it.
+**Check script.** [`checks/tool_args_dialect_probe.py`](../../checks/tool_args_dialect_probe.py) declares the negative and empty-set controls required by [the check contract](../../checks/README.md), so it is able to report a problem. The inline assertion above remains the check; the script is a convenience wrapper for it.
