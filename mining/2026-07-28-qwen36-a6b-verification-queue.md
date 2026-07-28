@@ -43,6 +43,26 @@ directory (or an edited copy), not two requests. That also means the two arms
 cannot be interleaved, which is a weaker design than his and should be noted
 in any result.
 
+**DESIGN UNBLOCKED 2026-07-28 by Q2, which measured what that obstacle costs:
+nothing detectable.** Restart pairs agreed at 97.50% and 97.33% against a
+within-process pair at 97.33%, and cross-machine pairs straddled it. Separate
+server starts, on one node or across two, sit at the same floor as two passes
+of a single process. The weaker-design caveat still belongs in the write-up as
+a statement of method, but it is no longer a reason to discount the result.
+
+Two further consequences for Q1:
+
+- The reported effect is 3.66 points, roughly **2.7x** the measured 1.3 point
+  band at n=600, so it is detectable at the planned n.
+- The **Confirm** clause below allows "a significant but much smaller effect"
+  as a directional confirmation. That clause now has a floor under it: an
+  effect near 1 point at n=600 is inside the noise and must not be reported as
+  a confirmation without raising n.
+
+Both nodes now hold the identical checkpoint (revision `491c2f1e`) and the
+identical image (`a720df3e84a8`), so the two arms can be split across nodes if
+that is convenient, or kept serial on one. **Not yet run.**
+
 **Second obstacle.** He scored MMLU by choice-logprob, which has no
 truncation by construction. Our lane is an OpenAI-compatible endpoint, and
 per trap [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md) it
@@ -103,6 +123,19 @@ detectable effect we cite.
 Cheapest item in this queue and the one with the broadest payoff, since it
 calibrates every A/B we publish.
 
+**ANSWERED 2026-07-28.** Result:
+[Greedy is not reproducible on this stack](2026-07-28-our-agreement-floor-greedy-not-reproducible.md).
+Pooled **3513/3600 = 97.58%** item agreement across six pairings of four
+identical-configuration runs (MMLU n=600, greedy, concurrency 1, prefix caching
+off, Qwen3.6-35B-A3B NVFP4 on two GB10 nodes). The cross-machine pairs (97.17%,
+97.83%, 98.33%) straddle the within-process pair (97.33%), so machine identity
+is not the variable. Speculative decoding ruled out. Trap 35 promoted to
+reproduced-here. **Adopted calibration: plus or minus 1.3 points at n=600 for
+MMLU-style paired comparisons**, an accuracy delta over four-way
+multiple-choice items that does not transfer to binary-outcome results. Cost
+came in near the estimate; the unplanned expense was copying the checkpoint and
+image to the second node, which is now sunk and benefits Q1.
+
 ## Q3: first-N subsetting bias (candidate, not yet an entry)
 
 **Why it is not an entry.** He records that taking the first N MMLU items
@@ -121,6 +154,9 @@ becomes an entry.
 
 **Refute.** The delta sits inside the Q2 noise floor, in which case it is a
 tidiness rule and not a trap, and it stays here.
+
+**Threshold now defined.** Q2 puts that floor at **1.3 points at n=600**. The
+score half of this check confirms only if the delta exceeds it.
 
 **Cost.** The subject-distribution half is free and needs no GPU: load the
 benchmark and count. Run that first; only spend GPU on the score half if the
