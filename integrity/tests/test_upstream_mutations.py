@@ -54,7 +54,7 @@ def an_entry(root):
     this does not need editing when entries are added or renamed."""
     d = os.path.join(root, "upstream")
     for fn in sorted(os.listdir(d)):
-        if re.match(r"^U\d{2}-.+\.md$", fn):
+        if re.match(r"^U\d{2,}-.+\.md$", fn):
             return os.path.join(d, fn)
     raise AssertionError("no upstream entry found in the copied tree")
 

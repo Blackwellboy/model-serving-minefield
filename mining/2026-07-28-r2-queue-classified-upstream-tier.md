@@ -17,8 +17,10 @@ they stop being re-queued. The rest were already covered or already settled.
 ## The finding that should change how the next mining round is used
 
 **The mining summaries were wrong often enough that publishing from them would
-have published false claims.** Not occasionally: on this queue, one candidate
-in four that had a real source was materially misdescribed by its own summary.
+have published false claims.** Not occasionally: on this queue, six candidates
+across four classes (out of roughly thirty-five with a primary source we could
+read) were materially misdescribed by their own summaries. That is nearer one
+in six of the sourced set, not one in four of the whole round.
 
 Four specific classes, all found by opening the tab:
 
@@ -102,7 +104,7 @@ every entry beside it, and an un-closed candidate gets re-queued forever. Each
 of these was read; none meets the bar of a maintainer confirmation or a clear
 in-thread reproduction on a live claim.
 
-**No citable primary source (9).** R2-09, R2-32, R2-35, R2-36, R2-50 rest on
+**No citable primary source (11).** R2-09, R2-32, R2-35, R2-36, R2-50 rest on
 X posts; R2-20, R2-21, R2-44 on Reddit threads; R2-19, R2-22 and R2-42 on
 commercial blog posts. We could not read several of them at all, and the tier
 requires a source that was read. A social post is a lead for a search, not

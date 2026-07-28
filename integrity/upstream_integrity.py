@@ -70,7 +70,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-ENTRY_RE = re.compile(r"^(U\d{2})-.+\.md$")
+ENTRY_RE = re.compile(r"^(U\d{2,})-.+\.md$")
 ABS_LINK_RE = re.compile(r"https?://[^\s)>\]]+")
 # \s+ and not " ": entries are hard-wrapped, so "read on" and its date land on
 # different lines about a third of the time. A single-space version of this
@@ -289,7 +289,7 @@ def check_entry(root, tid, rel, cfg, findings):
 
 def check_separation(root, entries, cfg, findings):
     ids = set(entries)
-    id_re = re.compile(r"\bU\d{2}\b")
+    id_re = re.compile(r"\bU\d{2,}\b")
 
     # US-NOT-CORE
     core = os.path.join(root, "CORE.md")
@@ -329,7 +329,7 @@ def check_separation(root, entries, cfg, findings):
         if line.startswith("|") and "upstream/" in line and "](upstream/" in line:
             # A pointer to the directory from prose is fine; a SYMPTOM-TABLE
             # row is not, because that table is the measured registry's index.
-            if re.search(r"\|\s*\[U\d{2}\]\(upstream/", line):
+            if re.search(r"\|\s*\[U\d{2,}\]\(upstream/", line):
                 findings.append(Finding(
                     "US-NOT-COUNTED", "README.md",
                     "an upstream entry has a row in the symptom table"))
