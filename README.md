@@ -60,7 +60,7 @@ it checks most of this registry for you in under a minute.
 | A client request runs past the server's --max-tokens launch flag | mlx_lm's flag is a per-request default, not a ceiling | [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) | reproduced here |
 | You gave a MoE more active experts and it got *worse* | Renormalization dilutes the original top-8; selection is intact | [33](traps/routing/33-moe-inference-topk-expansion-tax.md) | reported by others |
 | A clean significant win that evaporates against the shipped model | The baseline is a configuration you degraded yourself | [34](traps/evaluation/34-baseline-you-degraded-yourself.md) | reported by others |
-| Same weights and items, different score on a different box | Cross-machine item agreement is 98.7%, not 100% | [35](traps/evaluation/35-identical-weights-do-not-score-identically.md) | reported by others |
+| Same weights and items, different score on a re-run (any box, even the same process) | Item agreement is 97.6% to 98.7%, not 100%; the machine is not the variable | [35](traps/evaluation/35-identical-weights-do-not-score-identically.md) | reproduced here |
 | Multiple-choice collapses, or two arms truncate at wildly different rates | The token cap binds differently per arm | [36](traps/evaluation/36-token-cap-is-an-arm-level-handicap.md) | reported by others |
 | A benchmark reads zero for every arm, with zero infra errors | Harness fault, not model inability | [37](traps/evaluation/37-uniform-zero-is-a-harness-verdict.md) | reported by others |
 | Offline rollouts parse as malformed, interactive output is fine | The template supplies the opening think tag, the model does not | [38](traps/template/38-template-owns-the-opening-think-tag.md) | reported by others |

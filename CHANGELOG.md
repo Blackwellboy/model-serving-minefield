@@ -6,6 +6,27 @@ few days.
 
 ## 2026-07-28
 
+- Trap [35](traps/evaluation/35-identical-weights-do-not-score-identically.md)
+  promoted from **reported by others** to **reproduced here**, and generalised.
+  [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b) remains the
+  originating report (98.7% cross-machine agreement, bf16 under HF
+  transformers). First-party measurement on a different build class,
+  Qwen3.6-35B-A3B NVFP4 under vLLM nightly `a346d589` on two GB10 nodes:
+  pooled 3513/3600 = **97.58%** item agreement across six pairings of four
+  identical-configuration runs, MMLU n=600 greedy. The generalisation is that
+  **two machines are not required**: the cross-machine pairs (97.17%, 97.83%,
+  98.33%) straddle the within-process pair (97.33%), so the disagreement lives
+  inside a single server process and same-machine serial execution does not buy
+  determinism. Speculative decoding ruled out as the cause (97.33% to 98.17%
+  with overlapping intervals). Raw, serial scorer and an independent
+  re-derivation script published in
+  [mining/2026-07-28-agreement-floor-data/](mining/2026-07-28-agreement-floor-data/);
+  write-up in
+  [mining/](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md).
+  Calibration adopted: an MMLU-style paired delta below about **1.3 points at
+  n=600** is not distinguishable from a re-run on that stack. The band is an
+  accuracy delta over four-way multiple-choice items and does **not** transfer
+  to binary-outcome results such as firing-rate counts.
 - Trap
   [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md):
   a single-turn eval harness scores tool-call exits as wrong answers.
