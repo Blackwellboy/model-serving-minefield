@@ -114,6 +114,11 @@ def main():
         else:
             adj = os.path.join(HERE, "sanitizer_adjudicated.txt")
             extra = ["--adjudicated", adj] if os.path.exists(adj) else []
+            # This repo IS a publish target, so a hit here blocks. The kit
+            # refuses to run without being told, because the same hit means
+            # different things on a private control-plane tree and it once
+            # printed DO NOT PUSH over one it had no standing to gate.
+            extra += ["--surface", "public"]
             r1 = run("4a. SANITIZER WHOLE-TREE SCAN",
                      [py, scan, "--dir", root] + extra)
             r2 = run("4b. SUPPLEMENTARY SHAPE SCAN",
