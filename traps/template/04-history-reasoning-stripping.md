@@ -10,10 +10,29 @@ wrong finding about model behavior*.
 
 **Symptom.** Thinking fires normally at single turn and collapses toward
 zero as the conversation deepens. It looks exactly like a genuine,
-interesting property of the model. Measured on Laguna S 2.1: **60 to 72%
-firing single-turn** against **~0.1% across a 12-hour multi-turn soak**
-(3 of 3,096 turns), with real effort spent theorizing about "context mass"
-and "turn depth" as the mechanism. The mechanism was the template.
+interesting property of the model, and real effort went into theorizing
+about "context mass" and "turn depth" as the mechanism. The mechanism was
+the template.
+
+**The controlled result, which is the one to quote.** Identical transcripts,
+prior-turn reasoning stripped versus resent, nothing else varied:
+**0/10 versus 10/10 firing at depth 10, and 0/10 versus 10/10 at depth 20**
+(3.25bpw hybrid lane, ~8K tokens, 45% single-turn baseline). One variable,
+total separation, plus a wire-level confirmation on a second client and
+serving pair. That is the entry.
+
+**A 12-hour production soak is consistent with it, and is not a measurement
+of it.** The soak fired on 3 of 3,096 turns (~0.1%) against a 60 to 72%
+single-turn rate elsewhere. Those two numbers are not a controlled contrast
+and an earlier version of this entry led with them as though they were: the
+soak carried agent apparatus, tool schemas, a replaced system prompt and
+different client field names, any of which moves firing on its own
+([trap 42](../evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md),
+[trap 30](30-default-system-message-silently-replaced.md),
+[trap 20](../reasoning/20-reasoning-write-field-name-diverges.md),
+[trap 06](../reasoning/06-identity-sentence-eviction.md)). Read the soak as a
+multi-confounded production rate that is consistent with the mechanism, and
+quote the 0/10 versus 10/10 for the magnitude.
 
 **Mechanism.** With thinking enabled, the chat template renders prior
 assistant turns into the history **without** their reasoning, emitting an

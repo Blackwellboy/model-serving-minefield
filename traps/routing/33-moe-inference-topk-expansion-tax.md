@@ -47,6 +47,18 @@ measurement; each is stated on its own terms:
   GSM8K: k8 536/600 (89.33%), k16 533 (88.83%), k24 527 (87.83%), k32 519
   (86.50%); k8 to k32 is **-2.83 pt**, discordant 31/14, exact paired
   p=0.016. Monotone in k on both benchmarks.
+> **Quoting these deltas.** Every number in this section is a **paired**
+> comparison on identical items, reported with its discordant-pair counts and
+> an exact paired p-value, which is why 3-point effects are resolvable here.
+> Do not compare them against the plus or minus **1.3 pt at n=600** minimum
+> detectable effect from
+> [our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md):
+> that figure bounds **unpaired** run-to-run drift, and a paired test on the
+> same items is strictly more sensitive than it. The MDE is the bar for a
+> delta assembled from two separate runs. If you are quoting one of these
+> numbers, quote the discordant counts and the p-value with it, and if you are
+> quoting an unpaired delta of your own, quote the MDE with that.
+
 - **2026-07-11, gpu-host, four arms serial.** base@k8 85.00% vs base@k32
   81.83%, **-3.17 pt**, CI95 [-5.53, -0.80], exact paired p=0.013.
 - **2026-07-12 and 2026-07-16, local.** base@k8 84.67% (508/600) vs base@k32
