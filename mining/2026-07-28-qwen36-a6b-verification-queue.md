@@ -182,3 +182,9 @@ adopt, not claims to replicate. Trap 39 was observed on a multi-GPU
 workstation with a reserved device; we could reproduce it, but deliberately
 mis-placing a model to confirm that it returns garbage is not a good use of a
 lane.
+
+## Q1 answered 2026-07-28: CONFIRM
+
+Q1 ran against the Qwen 3.6 35B-A3B NVFP4 lane under the criteria pre-registered above, which are not restated here in altered form. The verdict is CONFIRM and trap [33](../traps/routing/33-moe-inference-topk-expansion-tax.md) is now **reported by others + reproduced here**. Numbers, both protocols, the truncation accounting and the limits are in [the Q1 writeup](2026-07-28-trap-33-q1-nvfp4-confirmed.md).
+
+The other items on this page are unchanged, including the first-N subsetting-bias candidate still held for want of a measured magnitude.

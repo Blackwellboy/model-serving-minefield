@@ -3,10 +3,20 @@
 **Found by [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)
 ([reports/ALPHA_DIAL_20260712.md](https://github.com/hikarioyama/qwen36-a6b/blob/main/reports/ALPHA_DIAL_20260712.md)).**
 
-**Status: reported by others.** Measured by the finder across three runs on
-two machines; the per-item JSON he publishes was re-scored here and the dose
-curve confirmed from his raw. Not yet run on our own hardware; queued
-against our Qwen 3.6 35B-A3B NVFP4 lane.
+**Status: reported by others** (measured by the finder across three runs on
+two machines, with the per-item JSON he publishes re-scored here and the dose
+curve confirmed from his raw) **and reproduced here** since 2026-07-28, on our
+own Qwen 3.6 35B-A3B **NVFP4** lane, at n=600 paired, two independent passes,
+in both scoring protocols. Method, numbers and the runnable scripts are in
+[the Q1 writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
+
+**This is the second time a first-party run has confirmed an external
+contributor's finding in this registry**, and it is worth naming as a pattern
+rather than as a one-off: the reported-by-others tier is not a holding pen for
+claims we doubt, it is where a credited finding waits for hardware. Trap
+[35](../evaluation/35-identical-weights-do-not-score-identically.md) was the
+first. In both cases the finding survived, and in both cases the **Found by**
+line did not move.
 
 **Symptom.** You raise the number of experts a MoE activates per token,
 because more active parameters should mean more capability, and the model
@@ -122,3 +132,38 @@ who published the mechanism, the sweep, the per-item JSON, and the negative
 results around them. Prior art for the phenomenon: Elastic MoE
 (arXiv:2509.21892). Dose-curve re-scoring from his published per-item JSON
 by Blackwellboy.
+
+## Confirmed here 2026-07-28, on a quantised build
+
+The finder's every number is bf16 under HF transformers. We hold the same base
+model family in an **NVFP4** build, and under this registry's own rule that a
+different quantisation is a different unit under test, whether the effect
+survives quantising the expert weights was genuinely open.
+
+It survives, at roughly the reported magnitude, monotone across four values of
+k, in two independent scoring protocols, on two independent passes each.
+
+| k | pass 1 | pass 2 |
+|---|---|---|
+| **8** (shipped) | 518/600 = 86.33% | 513/600 = 85.50% |
+| 16 | 501/600 = 83.50% | 500/600 = 83.33% |
+| 24 | 494/600 = 82.33% | 495/600 = 82.50% |
+| **32** | 491/600 = 81.83% | 489/600 = 81.50% |
+
+Pre-registered primary contrast, k=8 against k=32, n=600 **paired**, pass 1:
+**-4.50 points**, discordant 37 right-at-k8 against 10 the other way, exact
+McNemar two-sided **p = 9.8e-05**. Pass 2 replicates independently at -4.00
+points, 37/13, p = 0.000936.
+
+**Quoting these deltas.** They are paired, so they carry their discordant
+counts and an exact paired p-value, and the plus-or-minus 1.3 point figure from
+[our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+is **not** the right bar for them: that figure bounds unpaired drift and a
+paired test on identical items is strictly more sensitive. It is quoted here
+only as a scale reference, where the effect is 3.46x it, and because the same
+run re-measured it: all four same-k restart pairs landed inside the band, the
+largest at 0.83 points, while every raised-k contrast landed outside it.
+
+Full method, the choice-logprob arms, the truncation accounting and what this
+does **not** show are in
+[the writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
