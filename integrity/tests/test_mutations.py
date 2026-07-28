@@ -484,6 +484,73 @@ class ClaimLedgerMutations(unittest.TestCase):
         repos_seen = {h["repo"] for h in out["hits"]}
         self.assertIn("laguna", repos_seen)
 
+    def test_33_a_bare_run_cannot_report_clean_over_nothing(self):
+        """The footgun this pair exists for. With no --repo the tool built an
+        empty repo map, every loop in scan() ran zero times, nothing was
+        FLAGGED, and it printed PASS and exited 0. CI always passed --repo, so
+        only a human or an agent running it plainly got the false clean, on
+        the one tool built to prevent false cleans."""
+        r = subprocess.run(
+            [PY, os.path.join(INTEGRITY, "claim_propagation.py"),
+             "--ledger", os.path.join(INTEGRITY, "claims.json")],
+            capture_output=True, text=True, cwd=REPO)
+        # It must say what it scanned, and the count must not be zero.
+        self.assertIn("SCANNED:", r.stdout, r.stdout[-800:])
+        self.assertNotIn("SCANNED: minefield=0 files", r.stdout)
+        # And it must have announced the default rather than applying it
+        # silently.
+        self.assertIn("no --repo given", r.stdout)
+        # A PASS is only acceptable here because it scanned the live tree.
+        if "PASS" in r.stdout:
+            self.assertEqual(r.returncode, 0)
+
+    def test_34_a_repo_holding_no_files_is_exit_3_not_pass(self):
+        """The general form: the guard is on what was actually opened, not on
+        whether --repo was typed. A path that exists but holds nothing
+        scannable is the same empty comparison set."""
+        empty = os.path.join(self.tmp, "empty-repo")
+        os.makedirs(empty)
+        r = subprocess.run(
+            [PY, os.path.join(INTEGRITY, "claim_propagation.py"),
+             "--ledger", self.save(), "--repo", "minefield=%s" % empty],
+            capture_output=True, text=True, cwd=REPO)
+        self.assertEqual(r.returncode, 3, r.stdout[-800:])
+        self.assertIn("REFUSING TO REPORT CLEAN", r.stdout)
+        self.assertNotIn("PASS:", r.stdout)
+
+    def test_35_an_empty_peer_does_not_hide_behind_a_good_repo(self):
+        """A real repo plus an unreachable peer must not read as clean. This
+        is the shape a missing peer checkout actually takes on a laptop."""
+        empty = os.path.join(self.tmp, "empty-peer")
+        os.makedirs(empty)
+        r = subprocess.run(
+            [PY, os.path.join(INTEGRITY, "claim_propagation.py"),
+             "--ledger", self.save(),
+             "--repo", "minefield=%s" % REPO,
+             "--repo", "laguna=%s" % empty],
+            capture_output=True, text=True, cwd=REPO)
+        self.assertEqual(r.returncode, 3, r.stdout[-800:])
+        self.assertIn("laguna", r.stdout)
+        self.assertNotIn("PASS:", r.stdout)
+
+    def test_36_the_guard_does_not_swallow_a_real_flagged_hit(self):
+        """The negative control for the guard itself. A guard that turned every
+        run into exit 3 would also stop reporting real findings, so this plants
+        a retracted phrasing with no correction and asserts the ordinary FAIL
+        still comes through."""
+        root = os.path.join(self.tmp, "planted")
+        write(os.path.join(root, "OPERATORS.md"),
+              "# Operator advice\n\n"
+              "Keep the system prompt lean: every rule block you add shortens "
+              "the reasoning you get even when it still fires.\n")
+        r = subprocess.run(
+            [PY, os.path.join(INTEGRITY, "claim_propagation.py"),
+             "--ledger", self.save(), "--repo", "laguna=%s" % root],
+            capture_output=True, text=True, cwd=root)
+        self.assertEqual(r.returncode, 1, r.stdout[-800:])
+        self.assertIn("FAIL:", r.stdout)
+        self.assertNotIn("REFUSING TO REPORT CLEAN", r.stdout)
+
 
 class DoNotCiteMutations(unittest.TestCase):
 

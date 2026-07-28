@@ -33,7 +33,9 @@ Usage:
     python3 integrity/claim_propagation.py --repo minefield=. --repo laguna=../laguna-s21-lab
     python3 integrity/claim_propagation.py --repo laguna=. --ledger ../model-serving-minefield/integrity/claims.json
 
-Exit 0 clean, 1 on a FLAGGED hit or an invalid ledger.
+Exit 0 clean, 1 on a FLAGGED hit or an invalid ledger, 3 if the run
+scanned no files at all. A bare run with no --repo defaults to the
+repo this file lives in, and never reports PASS over nothing.
 """
 import argparse
 import json
@@ -318,6 +320,24 @@ def main():
         name, _, path = spec.partition("=")
         repos[name] = os.path.abspath(os.path.expanduser(path))
 
+    if not repos:
+        # A bare run used to scan nothing and print PASS. It now defaults to
+        # the repo this checker lives in, and says so, so that the default is
+        # visible rather than assumed.
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        repos["minefield"] = here
+        if not args.json:
+            print("NOTE: no --repo given, so this run defaults to the repo "
+                  "this checker lives in: minefield=%s" % here)
+            print("      Pass --repo explicitly to scan a peer repo as well. "
+                  "Repos you do not pass are not scanned.")
+            print("")
+
+    # Inventory of what this run can actually open. Computed here rather than
+    # inside scan() so that scan() keeps its signature and its own tests.
+    scanned = {n: sum(1 for _ in walk_files(r, pruned=[]))
+               for n, r in repos.items()}
+
     errs = validate_ledger(ledger)
     if errs:
         print("LEDGER INVALID")
@@ -332,10 +352,39 @@ def main():
     hits, manual, pruned = scan(ledger, repos)
     flagged = [h for h in hits if h.verdict == "FLAGGED"]
 
+    # The empty-set guard. This project's own check contract names "a PASS
+    # over an empty comparison set" as a defect shape, and this tool had it:
+    # with no --repo, or with a --repo path holding no scannable file, every
+    # loop in scan() is empty, nothing is FLAGGED, and the run printed PASS
+    # and exited 0. A clean result over nothing is not a clean result, so it
+    # is now an error with its own exit code rather than a pass.
+    empty = [n for n, c in scanned.items() if not c]
+    scanned_nothing = (not scanned) or bool(empty)
+
     if args.json:
         print(json.dumps({"hits": [h.as_dict() for h in hits],
-                          "manual": manual, "ledger_errors": errs}, indent=2))
+                          "manual": manual, "ledger_errors": errs,
+                          "scanned": scanned,
+                          "scanned_nothing": scanned_nothing}, indent=2))
+        if scanned_nothing:
+            return 3
         return 1 if (flagged or errs) else 0
+
+    if scanned_nothing:
+        for n in (empty or ["<none>"]):
+            msg = ("claim propagation scanned 0 files for repo %r (path: %s)"
+                   % (n, repos.get(n, "not given")))
+            print("REFUSING TO REPORT CLEAN: %s" % msg)
+            if args.github:
+                gha("error", msg, os.path.abspath(args.ledger), None,
+                    "claim propagation scanned nothing")
+        print("")
+        print("A clean result over an empty set is not a clean result. Exit 3.")
+        return 3
+
+    print("SCANNED: %s" % ", ".join("%s=%d files" % (n, scanned[n])
+                                    for n in sorted(scanned)))
+    print("")
 
     if args.github:
         for h in hits:
