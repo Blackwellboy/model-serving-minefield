@@ -131,7 +131,7 @@ The doctor implements checks for **17 of the registry's 81 numbered entries**
 run ends with a coverage line:
 
 ```
-implemented 17/81 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 25
+implemented 17/81 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 64
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -151,7 +151,7 @@ depth, and the coverage block says so every time:
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
 - **04, 20, 25** need a render path. On a stack that exposes none they cannot
   run at all.
-- The remaining **25** numbered traps have no check in this tool.
+- The remaining **64** numbered traps have no check in this tool.
 
 The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
 `mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of

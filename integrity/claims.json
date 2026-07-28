@@ -675,6 +675,64 @@
         "non-monotonic",
         "two-axis"
       ]
+    },
+    {
+      "id": "cold-warm-ten-versus-ten",
+      "title": "The cold-versus-warm cache separation was ten against ten with no exceptions",
+      "state": "retracted",
+      "retracted_on": "2026-07-28",
+      "authority": "minefield:traps/runtime/60-cold-prefill-and-cache-hit-disagree.md",
+      "superseded_by": "Ten requests carry per-request prefix-cache counters, not twenty. Four at 79.44% coverage or below, all with finish_reason length; six at 99.81% or above, all with stop. The separation is four against six. Recovery of the planted fact on the low-cache arm was 1 of 4, not zero, and 524,281 is an explicit counterexample where the cold run surfaced the passphrase and then failed to stop. The original aggregation pooled six ladder runs and four framing runs whose cache fractions were never measured, and placed one arm in the high-cache group when its own TTFT says it prefilled cold. The direction of the finding is unchanged; its n is smaller and it now carries a counterexample.",
+      "carried_by": [
+        {
+          "surface": "minefield:traps/runtime/60-cold-prefill-and-cache-hit-disagree.md",
+          "state": "corrected in place; the entry retracted the aggregation on the day it landed but went on resting its claim on it two sections earlier, which is the defect this entry records"
+        },
+        {
+          "surface": "minefield:models/deepseek-v4-flash.md",
+          "state": "corrected in place; it had inherited the retracted form"
+        },
+        {
+          "surface": "minefield:mining/2026-07-28-chunked-prefill-vs-cache-replay-experiment.md",
+          "state": "premise rewritten, not merely renumbered: the specification pre-registered its primary endpoint against the retracted figure, so it was designed against an effect nobody measured"
+        }
+      ],
+      "exempt_paths": [
+        {
+          "surface": "minefield:integrity/claims.json",
+          "reason": "this register; it must quote what it retracts"
+        }
+      ],
+      "correction_anchors": [
+        "four-versus-six",
+        "four against six",
+        "retracted",
+        "1 of 4",
+        "aggregation was wrong",
+        "counterexample"
+      ],
+      "search_phrasings": [
+        {
+          "pattern": "(?<![/\\d])(?:10|ten)[\\s-]*(?:versus|vs\\.?|against)[\\s-]*(?:10|ten)(?![/\\d])",
+          "note": "the headline form. The lookbehind and lookahead keep it off trap 04's '0/10 versus 10/10' firing rates, which are a different claim on a different lane and were never retracted. An earlier version used a trailing (?![\\s/]) which also blocked the plain 'ten versus ten split' form; the mutation test caught that."
+        },
+        {
+          "pattern": "perfect\\s+(?:10|ten)[\\s-]*(?:versus|vs\\.?|against)[\\s-]*(?:10|ten)",
+          "note": "the form that also asserts perfection, which is the half that was most wrong: there is a counterexample at 524,281"
+        },
+        {
+          "pattern": "(?:ten|10)\\s+runs\\s+at\\s+99",
+          "note": "the restatement that invents a second arm of ten"
+        },
+        {
+          "pattern": "(?:ten|10)\\s+runs\\s+at\\s+79",
+          "note": "the same invention on the low-cache side"
+        },
+        {
+          "pattern": "about\\s+4\\s+successes\\s+in\\s+10",
+          "note": "the retracted cold-recovery rate; it was 1 of 4"
+        }
+      ]
     }
   ]
 }

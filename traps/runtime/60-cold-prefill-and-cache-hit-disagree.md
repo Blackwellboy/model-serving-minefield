@@ -116,9 +116,11 @@ So temperature-zero reproducibility on this lane is **task-dependent, and that
 is a measured fact with an unproven mechanism**. The practical consequence for
 this entry is direct: **a single cold/warm pair proves nothing here**, and any
 n=1 result on this lane should be treated the same way. The claim below rests
-on the 10-versus-10 separation across many prompts and lengths, not on any
-individual pair, precisely because the per-pair noise floor is non-zero and we
-cannot currently explain it.
+on the four-versus-six `finish_reason` separation set out in the table, not on
+any individual pair, precisely because the per-pair noise floor is non-zero and
+we cannot currently explain it. An earlier draft of this sentence cited a
+ten-versus-ten separation; that aggregation was retracted further down this
+page and this sentence should have been corrected with it.
 
 What carries the claim is the consistency of the direction across every run at
 depth where the cache-hit fraction was actually recorded. **Ten requests carry
@@ -154,12 +156,21 @@ precedes the document. Whatever is failing is better described as losing the
 instruction than as failing to reach the fact.
 
 An earlier draft of this entry pooled the ladder and the framing control into
-the measured set and reported a ten-versus-ten split with no exceptions. That
-aggregation was wrong in two ways: it treated six ladder runs and four framing
-runs as having cache fractions that were never measured, and it placed arm C in
-the high-cache arm when its own TTFT says it prefilled cold. The corrected
-counts are above. The direction of the finding is unchanged; its n is smaller
-and it now carries a counterexample.
+the measured set and reported a ten-versus-ten split. That aggregation was
+wrong in two ways: it treated six ladder runs and four framing runs as having
+cache fractions that were never measured, and it placed arm C in the high-cache
+arm when its own TTFT says it prefilled cold. The corrected counts are above:
+**four low-cache runs, all `finish_reason: length`, against six high-cache runs,
+all `stop`**. The direction of the finding is unchanged; its n is smaller and it
+now carries a counterexample.
+
+**If you are searching for the retracted figure**, the phrasings to look for are
+"10-versus-10", "ten-versus-ten" and "10 versus 10", and they should appear
+nowhere in this repository except in this paragraph and in the do-not-cite
+register. The claim they encoded, that the separation was ten against ten with
+no exceptions, is retracted: cold recovery of the planted fact was **1 of 4**,
+not a clean sweep, and 524,281 is an explicit counterexample where the cold run
+did surface the passphrase.
 
 **Mechanism, offered as a hypothesis and explicitly not established here.** The
 two paths compute the same KV by different routes. A cold prefill of 262,139
