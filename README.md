@@ -27,24 +27,48 @@ protects is your ability to tell them apart at a glance.
 
 ## Start here
 
-Two doors, and which one you want depends on why you are here.
+Four doors, and which one you want depends on why you are here. Ninety entries
+is too many to read; none of these asks you to.
 
-- **"What am I running?"** The **[per-model and per-stack index](models/README.md)**
-  is the place to start if you are about to serve something, or you already are.
-  It maps model families and serving stacks to the traps observed on them, so
-  you can read the handful that apply to you instead of all 81. Absence from it
-  means nobody has reported on that model here, not that it is safe.
-- **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is directly
-  below, all 81 entries, one row each, sorted by number. It is the answer to a
-  weird number you are holding right now. That is the premise of this registry
-  and it has not moved; it is second on the page rather than first only because
-  most visitors arrive before the symptom rather than during it.
+- **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
+  for the four jobs people actually arrive with:
+  [before you publish an A/B](playbooks/before-you-publish-an-ab.md),
+  [thinking died when I made it multi-turn](playbooks/thinking-died-multi-turn.md),
+  [porting a harness to a new server](playbooks/porting-a-harness.md), and
+  [long context looks broken](playbooks/long-context-looks-broken.md). Each step
+  names the entry it guards against and the check to run. Nothing in them is
+  new; they are the existing entries, sequenced.
+- **"What am I running?"** The **[per-stack pages](stacks/)** give you the five
+  entries most likely to bite on
+  [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
+  [Ollama](stacks/ollama.md) or [mlx_lm](stacks/mlx.md), plus the three checks
+  to run before anything else. The
+  **[per-model and per-stack index](models/README.md)** is the full map,
+  including layers that are not serving stacks. Absence from either means
+  nobody has reported on that model here, not that it is safe.
+- **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
+  directly below, all 90 entries, one row each, sorted by number. It is the
+  answer to a weird number you are holding right now. That is the premise of
+  this registry and it has not moved; it is placed after these doors only
+  because most visitors arrive before the symptom rather than during it.
+- **"What should I read first?"** The **[Core 12](CORE.md)**, chosen on
+  evidence of what has cost people evenings rather than on which entries have
+  the best data. Everything else is Extended, which means specific rather than
+  lesser.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
-it. It has checks for **18 of these 90 entries** and runs in under a minute. It
-is not a broad bill of health, and it prints its own coverage line at the end of
-every run so you can see exactly how much of the registry it touched, how much
-it could not check on your stack, and how much it never implements.
+it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
+for **18 of these 90 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 72. It runs
+in under a minute and prints its own coverage line at the end of every run so
+you can see exactly how much of the registry it touched, how much it could not
+check on your stack, and how much it never implements.
+
+**Things that did not work out** are collected in [mining/](mining/): the
+candidates we tested that **did not reproduce**, the ones that are **blocked or
+not testable** on the lanes available, and the ones that are **specification
+only, not run**. A negative is information, and it is often the fastest way to
+stop chasing a ghost somebody else already chased.
 
 ## Find your symptom
 
@@ -153,12 +177,25 @@ independent testers a combined multi-week detour.
 
 About to serve a specific model? The
 [per-model index](models/README.md) maps model families to the traps
-observed on them.
+observed on them, and the [per-stack pages](stacks/) give you the five that
+bite hardest on your serving stack plus the three checks to run first.
+
+Holding a job rather than a symptom? The [playbooks](playbooks/) sequence
+these entries into ordered checklists for publishing an A/B, recovering
+multi-turn thinking, porting a harness, and diagnosing long context.
 
 ## Run the doctor
 
-One stdlib-only file, no install, that diagnoses your endpoint against
-18 of this registry's 90 entries in under a minute:
+**Name it honestly: this is a thinking-stack preflight, not a minefield
+doctor.** Its checks cluster on reasoning fields, chat templates, thinking
+control, tool parsing and token ceilings, because that is where its
+request-shaped probes can reach. It has nothing to say about quantisation
+kernel paths, container toolchains, memory allocation, eval-harness confounds
+or long-context behaviour, which is most of this registry. A clean run is a
+statement about a handful of trap ids, never a bill of health.
+
+With that said, one stdlib-only file, no install, that diagnoses your endpoint
+against 18 of this registry's 90 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
