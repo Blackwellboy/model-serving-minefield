@@ -2,9 +2,11 @@
 
 **Found by @Defilan.**
 
-**Status: reproduced by @Defilan on llama.cpp** (deterministic render probe,
-byte-for-byte); **our vLLM side reproduced here** (passthrough verified by
-prompt_tokens). Behavioral effect on llama.cpp is under test by @Defilan,
+**Status: contributor-measured, conditions as reported** (@Defilan on
+llama.cpp, deterministic render probe, byte-for-byte), and **reproduced
+here** on the vLLM side (passthrough verified by `prompt_tokens`; the check
+below is the procedure, runnable on your own lane, and our own rows are not
+published). The behavioral effect on llama.cpp is **under test** by @Defilan,
 who has committed to report the result either way.
 
 **Symptom.** You implement trap 04's fix: resend prior-turn reasoning on

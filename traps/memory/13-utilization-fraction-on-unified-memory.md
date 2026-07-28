@@ -2,7 +2,12 @@
 
 **Found by Blackwellboy.**
 
-**Status: measured on our fleet** (raw not published); the fixed-bytes fix pattern is public in our container recipe.
+**Status: measured here, raw not published.** Measured on DGX Spark class
+hardware; the rows are not published, so nothing below is checkable by
+reading our data. The check is runnable on any unified-memory box, and the
+fixed-bytes fix pattern is public in our container recipe. This entry becomes
+"reproduced here" when either the raw lands or the check grows a pass/fail
+assertion a reader can run.
 
 **Symptom.** A unified-memory box (DGX Spark class, 121 GiB usable) sits at
 119 of 121 GiB used with under 2 GiB available for the OS, or conversely a

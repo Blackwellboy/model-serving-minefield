@@ -2,7 +2,12 @@
 
 **Found by Blackwellboy and TheTom.**
 
-**Status: measured on our fleet** (per-shard hash comparison; raw not published). The behavioral half is documented upstream.
+**Status: measured here, raw not published**, and **reported by others** for
+the behavioral half. Our per-shard hash table is not published, so the
+specific digests below cannot be checked by reading our data. The check is a
+command a reader runs against the two public repos themselves, which
+re-derives the finding without us. The behavioral non-superset half is
+documented upstream and linked.
 
 **Symptom.** You swap a base model for its abliterated or finetuned
 re-upload and assume "same model, one behavior patched". Then shards differ,
