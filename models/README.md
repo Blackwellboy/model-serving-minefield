@@ -20,6 +20,7 @@ serve on that stack.
 | Qwen 3.6 27B (Q4_K_M, llama.cpp) | [22](../traps/evaluation/22-family-card-budget-floors-differ-by-size.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md); control case in [21](../traps/versioning/21-no-generation-config-server-defaults-win.md) |
 | Qwen 3.5 / 3.6 family broadly (dense, A3B MoE, Next hybrids; upstream reports) | [23](../traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md), [24](../traps/template/24-official-template-breaks-cpp-jinja.md), [25](../traps/template/25-empty-think-blocks-poison-prefix-cache.md), [26](../traps/tools/26-tool-call-inside-unclosed-think.md), [27](../traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) |
 | DeepSeek V4-Flash (MTP builds; upstream reports) | [28](../traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md) |
+| DeepSeek V4-Flash, community-abliterated FP8 + NVFP4 MLA KV, vLLM, 2x DGX Spark ([full page](deepseek-v4-flash.md)) | [56](../traps/template/56-checkpoint-ships-no-chat-template.md), [57](../traps/reasoning/57-thinking-kwarg-truthiness-coercion.md), [58](../traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md), [59](../traps/reasoning/59-reasoning-roundtrip-confabulation.md), [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md), [62](../traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md); also [14](../traps/versioning/14-finetune-reupload-not-drop-in.md) (it is an abliterated re-upload) |
 | Hy3-class ~295B MoE (community MXFP4 / NVFP4 compressed-tensors checkpoints) | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) |
 | MiniMax-M3 | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md) |
 | ~600B-class MoE with MTP drafter (community abliterated re-upload) | [14](../traps/versioning/14-finetune-reupload-not-drop-in.md) |
@@ -45,6 +46,9 @@ serve on that stack.
 | Agent clients and gateways (the client-side half) | [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) |
 | HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
 | Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md) |
+| Checkpoints whose chat template is Python code behind `trust_remote_code` | [56](../traps/template/56-checkpoint-ships-no-chat-template.md) |
+| Prefix caching on long prompts (any engine that reuses KV across requests) | [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
+| Rope-extended context windows (YaRN and similar) | [55](../traps/evaluation/55-supported-context-is-not-trained-context.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
 
 ## Clean preflights
 
