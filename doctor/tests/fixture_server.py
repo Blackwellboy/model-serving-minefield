@@ -91,6 +91,7 @@ DEFAULTS = {
     "ollama": False,
     "anonymous": False,
     "tool_choice_supported": True,
+    "tool_choice_none_honored": True,
     "tool_calls": "always",
     "tool_markup": False,
     "tool_markup_alongside": False,
@@ -197,6 +198,13 @@ def _make_lane_handler(cfg):
                 forced = body.get("tool_choice") not in (None, "none", "auto")
                 mode = cfg["tool_calls"]
                 emit = (mode == "always") or (mode == "forced_only" and forced)
+                # trap 78: a server that accepts tool_choice and ignores it
+                # fails OPEN. The default here is the correct server, which
+                # suppresses; set tool_choice_none_honored False for the lane
+                # that takes the parameter and calls anyway.
+                if body.get("tool_choice") == "none" \
+                        and cfg["tool_choice_none_honored"]:
+                    emit = False
                 if emit and not cfg["tool_markup"]:
                     msg["tool_calls"] = [{"id": "call_0", "type": "function",
                                           "function": {"name": "get_time",
@@ -282,7 +290,11 @@ def _make_lane_handler(cfg):
                 return self._send(400, {"error": {
                     "message": "reasoning_effort is not accepted on this model"}})
 
-            if body.get("tool_choice") not in (None, "none", "auto") \
+            # A lane that does not support tool_choice rejects EVERY form of it,
+            # including "none". Previously "none" slipped through unsupported
+            # lanes, which meant no scenario could produce the loud-rejection
+            # verdict and the CLEAN_CONTRACT stale check caught it.
+            if body.get("tool_choice") not in (None, "auto") \
                     and not cfg["tool_choice_supported"]:
                 return self._send(400, {"error": {
                     "message": "tool_choice is not supported by this server"}})
