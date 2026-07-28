@@ -18,3 +18,13 @@ populated or tool_calls structured (see the
 [R2-39 note](2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md)).
 The null-content symptom is claimed for SGLang specifically and remains
 untested.
+
+## Update 2026-07-28: R2-29 is no longer blocked
+
+Nemotron weights reached a lane, both members named by the candidate were
+served, and R2-29 was tested. It is
+[refuted as worded and reframed](2026-07-28-r2-29-tool-calls-refuted-as-worded.md):
+the leaked format is nested XML rather than JSON, and on vLLM the ordinary path
+is protected by a hard HTTP 400 when the tool-parser flags are missing, so the
+plain claim is unreachable there. The other three candidates on this page remain
+blocked for the reasons stated above.

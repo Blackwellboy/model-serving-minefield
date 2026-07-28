@@ -41,3 +41,24 @@ Re-attributed 2026-07-27 after the full-precision reproduction.
 [quant-floor/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/quant-floor),
 [spine-probes/fullprecision/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes/fullprecision),
 [pr10-replication/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication).
+
+## Added 2026-07-28: the parser-less default on a current family
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** Served with no `--reasoning-parser`, `content` carries the full
+reasoning text, then a bare `</think>`, then the answer, with **no opening
+`<think>`**, because the template pre-opens the block in the prompt and the
+model only ever emits the closer. That is
+[trap 38](38-template-owns-the-opening-think-tag.md)'s mechanism producing this
+entry's symptom, which is worth seeing once in one place.
+
+Confirmed on both text-only members; the saved control-server response is 1370
+completion tokens with the reasoning half sitting in `content` ahead of a lone
+`</think>`.
+
+These checkpoints ship their own reasoning parser inside the model repository,
+which is [its own entry](../runtime/70-in-repo-parser-not-bundled.md). Without
+mounting it, the above is the default experience.
+
+*Status of this addendum: reproduced here. The pre-opened block is in the
+public chat template and the parser-less arm is one serve flag away on any
+lane.*

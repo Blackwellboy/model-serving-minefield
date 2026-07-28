@@ -53,3 +53,29 @@ have not probed.
 [trap 20](20-reasoning-write-field-name-diverges.md) (write side),
 [trap 12](../evaluation/12-empty-content-at-token-ceiling.md) (a different
 cause of empty content with HTTP 200).
+
+## Added 2026-07-28: a third route to an empty `content`
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** This entry and
+[trap 29](29-server-reasoning-off-is-not-an-off-switch.md) cover streaming delta
+placement and a non-functional off switch. This family adds a third route: when
+the request keyword and an in-text toggle disagree in one specific direction,
+the **whole answer** is delivered in `reasoning` with `content: null`, HTTP 200,
+`finish_reason: "stop"`. Full six-cell control matrix in
+[trap 64](64-answer-lands-in-reasoning-on-toggle-conflict.md).
+
+The cross-reference worth carrying: if you are debugging an empty `content`,
+there are three candidates and they have different fixes.
+
+1. The token ceiling ([trap 12](../evaluation/12-empty-content-at-token-ceiling.md)),
+   distinguishable by `finish_reason: "length"` and by the reasoning being a
+   genuine trace.
+2. Streaming delta placement, which is this entry.
+3. The toggle conflict ([trap 64](64-answer-lands-in-reasoning-on-toggle-conflict.md)),
+   which returns `finish_reason: "stop"` and a complete answer in the wrong field.
+
+Only the first is solved by a bigger budget, which is why it is worth telling
+them apart before you raise anything.
+
+*Status of this addendum: reproduced here. The six-cell matrix in trap 64 is
+runnable on the reader's own lane.*

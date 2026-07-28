@@ -57,3 +57,25 @@ such thing on that model.
 
 **Attribution.** Blackwellboy. Probe JSONs in the sweep results
 (`probe_qwen35-9b*.json`, `probe_qwen36-27b*.json`).
+
+## Added 2026-07-28: the inverted instance, where the file is present and disagrees
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1.** This entry covers `generation_config.json` being **absent**. Here it
+is present and **disagrees with `config.json`**:
+
+| File | `eos_token_id` |
+|---|---|
+| `config.json` | `2` |
+| `generation_config.json` | `[2, 11]` |
+
+A stack that reads the model config rather than the generation config gets one
+stop id instead of two, which is a candidate cause of over-generation. A stack
+that reads a scalar `eos_token_id` honours only the first entry of the list.
+Both sibling checkpoints ship the list form.
+
+`transformers_version` also disagrees between the two files. That is cosmetic on
+its own, but it tells you the pair was written at different times, and it is a
+cheap signal that the two are worth diffing.
+
+*Status of this addendum: reproduced here. Both files are public and the
+disagreement is visible in a two-line diff.*

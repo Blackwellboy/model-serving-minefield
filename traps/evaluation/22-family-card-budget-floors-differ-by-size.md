@@ -128,3 +128,15 @@ follow-up. That inverted the evidence: the weakest table set the headline and
 the strongest one read as an addendum, and the entry's own check told readers
 one request would settle a question its own data showed one request cannot.
 The tables are unchanged; which one leads, and what the status claims, are.
+
+## Added 2026-07-28: a third family, and why its floor is not transferable either
+
+A fully crossed budget sweep on the NVIDIA Nemotron 3 family found a hard-task
+floor between 64 and 128 tokens on one member while a harder probe on the same
+lane still returned empty at 512. The full table and its conditions are in
+[trap 12](12-empty-content-at-token-ceiling.md). It is recorded there rather
+than here because it is a within-member task effect, but it belongs next to
+this entry for one reason: it is a second demonstration that a floor measured
+on one task, one member and one difficulty is not a number to copy anywhere.
+
+*Status of this addendum: measured here, raw not published.*

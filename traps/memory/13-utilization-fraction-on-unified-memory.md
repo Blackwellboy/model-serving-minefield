@@ -45,3 +45,18 @@ anything shared or long-running.
 2026-07-23.
 
 **Attribution.** Blackwellboy.
+
+## Added 2026-07-28: the pressure arrives host-side, not as a CUDA OOM
+
+**NVIDIA Nemotron 3 family, three checkpoints (Nano 30B A3B NVFP4, Nano Omni 30B A3B NVFP4, Super 120B A12B NVFP4), GB10-class single nodes, vLLM 0.20.0 and 0.25.1**, on 121 GB unified-memory nodes. Default utilisation on one build
+(0.92 effective) sized a KV pool of 29.7M tokens for a 19 GB-weight model and
+took host RAM to **118 of 121 GB**. At an explicit 0.90 on a 74.8 GiB
+checkpoint, **115 of 121 GB** with the server idle, about 6 GB of headroom.
+
+The detail worth adding: on unified memory the KV pool and the operating system
+compete for the same physical RAM, so the failure **does not look like a GPU
+problem and will not be diagnosed as one**. There is no CUDA OOM to find. It is
+correct behaviour for a dedicated node and dangerous the moment anything else
+has to run there.
+
+*Status of this addendum: measured here, raw not published.*
