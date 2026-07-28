@@ -32,11 +32,46 @@ python3 checks/preflight_template.py --base-url http://HOST:PORT/v1 \
     --json results/template_forensics.json
 ```
 
-Exit codes: 0 forensics complete (read the verdicts), 1 lane unreachable,
+Exit codes: 0 forensics complete and nothing blocking, 1 lane unreachable,
 2 completed with a blocking finding (stripped reasoning, or an undocumented
-kwarg that changes assembly).
+kwarg that changes assembly), **3 ran but inspected nothing** (no render path
+was available, so no assembly could be examined).
+
+Exit 3 is new. This previously exited `0` when no render path was available,
+so a CI gate keyed on the exit code read "I could not look at anything" as
+"nothing is wrong". That is a pass over an empty comparison set, and it is
+the defect described in
+[the check contract](../CONTRIBUTING.md#contributed-checks-must-be-able-to-fail).
+If you gate on this check, treat anything other than `0` as not-clean.
 
 Jinja2 is used for the local render path if importable, but it is optional.
+
+## The contract every check here must satisfy
+
+```bash
+python3 checks/tests/test_check_contract.py
+```
+
+A check that cannot report a problem is worse than no check, because it emits
+a clean verdict a reader will act on. Every check in this directory declares
+two controls at module level, and the harness runs them:
+
+- `NEGATIVE_CONTROLS`: inputs that **must** make the check fail. Writing one
+  is how you find out your assertion was unfalsifiable.
+- `EMPTY_SET_CONTROL`: the check run with nothing to compare, which must
+  **not** report success.
+
+Both run in-process against synthetic fixtures: no lane, no network, no
+weights. The rule and the two defect shapes it catches (an assertion whose
+sentinel is also in its own input, and a PASS over an empty comparison set)
+are in
+[CONTRIBUTING](../CONTRIBUTING.md#contributed-checks-must-be-able-to-fail).
+If you add a check here, add its controls in the same PR.
+
+The harness is itself mutation-proven: reintroducing the vacuous pass, making
+a negative control unfailable, or deleting either declaration each fail the
+build. A harness that cannot fail would be the very defect it tests for,
+which is also why it refuses to pass over zero discovered checks.
 
 ## Tests
 
