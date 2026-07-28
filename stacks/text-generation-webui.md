@@ -1,5 +1,8 @@
 # text-generation-webui (oobabooga)
 
+**Measured here:** no (no first-party run)
+
+
 **We have measured nothing on this stack and we hold no upstream reports about
 it.** No entry names it. Absence means nobody has reported to us, not that the
 stack is clean.

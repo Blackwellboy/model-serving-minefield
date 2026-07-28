@@ -1,5 +1,8 @@
 # text-generation-inference (TGI)
 
+**Measured here:** no (no first-party run)
+
+
 **We have measured nothing on this stack and we hold no upstream reports about
 it.** Not one entry names it, not even in passing. This is the emptiest page in
 the directory, and it is here because "no page" and "no problems" read the same

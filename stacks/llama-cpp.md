@@ -1,5 +1,8 @@
 # llama.cpp and GGUF
 
+**Measured here:** yes (51 entries across our own lanes; the stack most of this registry was measured on)
+
+
 **34 entries name llama.cpp or GGUF** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 This stack has the registry's densest template coverage, because it is the one

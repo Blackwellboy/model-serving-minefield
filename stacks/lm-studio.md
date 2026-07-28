@@ -1,5 +1,8 @@
 # LM Studio
 
+**Measured here:** no (no first-party run)
+
+
 **We have measured nothing on this stack directly.** One entry names it, trap
 [24](../traps/template/24-official-template-breaks-cpp-jinja.md), and it names
 it as one of the environments a **C++ Jinja portability defect** applies to,

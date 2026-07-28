@@ -1,5 +1,8 @@
 # vLLM, especially with reasoning models
 
+**Measured here:** yes (the primary serving lane here)
+
+
 **51 entries name vLLM** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)),
 which makes it the most-covered stack here and also the one where a count is

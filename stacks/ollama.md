@@ -1,5 +1,8 @@
 # Ollama
 
+**Measured here:** yes (first-party on our own hardware)
+
+
 **9 entries name Ollama** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)):
 five numbered for this stack, and four where an Ollama finding landed as an

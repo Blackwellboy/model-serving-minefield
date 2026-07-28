@@ -1,5 +1,8 @@
 # HF transformers `generate()` and accelerate placement
 
+**Measured here:** no (seven entries name it and not one was measured here)
+
+
 **7 entries name HF transformers or accelerate** in their evidence surfaces
 (see [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 
