@@ -76,10 +76,9 @@ One trap per file. Use these sections, in this order:
 
 **Found by <the handle they publish under>.**
 
-**Status: reproduced here | reported by others | under test.** One line on
-who measured it and where. "Reproduced here" means you ran it and can link
-or produce the raw; "reported by others" means credited and linked, not
-independently reproduced; "under test" means a replication is running.
+**Status: <label> (<evidence pointer>).** One line on who measured it and
+where. The label comes from the closed vocabulary below, and the evidence
+pointer is not optional. See [Status vocabulary](#status-vocabulary).
 
 **Symptom.** What a reader would actually observe, first. The weird number,
 the corrupted string, the impossible verdict. This is the section people
@@ -103,6 +102,74 @@ exact assertion. A check the reader cannot run is a story, not a check.
 Link the raw data if it is public.
 ```
 
+## Status vocabulary
+
+Every entry carries exactly one status label from this closed set, plus an
+evidence pointer. Anything outside the set is a bug in the entry, not a
+nuance: prose like "measured on our fleet" or "reproduced by @someone" reads
+as a status while belonging to no tier, so a reader cannot tell how much
+weight it carries.
+
+| Label | What it claims | Who it applies to |
+|---|---|---|
+| **reproduced here** | we ran it, and a stranger can check the result without asking us for anything | us |
+| **contributor-measured, conditions as reported** | someone else measured it and published their conditions; we have not independently reproduced it | a named contributor |
+| **reported by others** | credited and linked, not independently reproduced and not measured by us either | upstream issues, bug reports, other labs |
+| **measured here, raw not published** | we ran it, and the evidence is **not** checkable by a stranger | us |
+| **under test** | a replication is running, and the entry says what would change it | anyone |
+
+Labels may be combined when an entry genuinely has two halves ("reported by
+others and reproduced here"), as long as each half carries its own evidence
+pointer. They may not be blended into a new phrase.
+
+### What "reproduced here" requires
+
+**Reproduced here** is the strongest thing this registry says, so it has a
+hard bar: **a stranger must be able to check it without asking us for
+anything.** One of these three, named in the entry:
+
+1. **A URL to the raw**, which they can open.
+2. **In-repo raw**, under the conditions in
+   [MAINTAINING.md](MAINTAINING.md#shipping-raw-data-in-the-repo).
+3. **A runnable procedure against a publicly obtainable artifact**: a shipped
+   chat template, a public source file, a config on the hub, or an endpoint
+   on the reader's own lane. When the check section is a command a stranger
+   can run to re-derive the finding for themselves, that is verification, and
+   for structural findings it is a better one than our rows would be.
+
+"We can produce the raw on request" does **not** qualify, and used to. A
+promise is not evidence: it cannot be checked by the person reading the
+entry, which is the only person the label exists for. An entry we measured
+whose evidence meets none of the three is **measured here, raw not
+published**. That is an honest label, not a demotion, and it converts to
+reproduced here the day the raw lands or a runnable check is written.
+
+### The gold standard
+
+The strongest form of evidence in this repo is **in-repo raw plus an
+independent verifier**: the data ships in the tree and a program written
+separately from whatever produced the numbers re-derives every published
+figure and prints pass or fail. A reader re-runs one command and needs to
+trust nobody.
+
+[The agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+is the worked example and the standard other calibration entries are held
+to. Writing its verifier caught two defects in the draft before publication,
+which is the argument for the standard in one sentence. Entries that other
+entries cite as a threshold, floor or baseline are expected to reach it; see
+[MAINTAINING.md](MAINTAINING.md#shipping-raw-data-in-the-repo) for when raw
+ships in the tree.
+
+### Accuracy deltas must carry the MDE
+
+Any entry quoting an accuracy or score delta states the **minimum detectable
+effect** for the design it was measured on, next to the number. Our own
+measured floor is **about 1.3 points at n=600** on this stack
+([agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)),
+so a 1-point difference at that n is not a result no matter how clean the
+runs looked. Without the MDE beside it, a delta can be quoted by an external
+reader as significant when the design could never have resolved it.
+
 ## Evidence bar
 
 - **Measured, not inferred.** An entry states what was observed on a real
@@ -119,6 +186,58 @@ Link the raw data if it is public.
 - **Name what you cannot claim.** If you saw it on one stack, say one stack.
   If the mechanism is a hypothesis, label it a hypothesis and keep it out of
   the symptom and check sections.
+
+## External PR policy
+
+This is the standing rule, not a decision taken once. It exists because the
+first large external PR asked all four of these questions at the same time,
+and a contributor deserves to know the answers before they do the work rather
+than after.
+
+**Status on a contributor's own measurements.** If you measured it yourself
+and your raw lives on machines we cannot reach, the entry lands as
+**contributor-measured, conditions as reported**, with your conditions and
+counts in full. That is the correct label, and it is not a penalty:
+
+- It is **not** "reproduced here". That label means a stranger can check the
+  result, and it is scoped to measurements taken on our hardware. Nothing
+  about your rigour changes that; the label describes who can verify, not how
+  good the work is.
+- It is **not** "under test" either, which several contributors have offered
+  as the strict option. "Under test" means a replication is actually running.
+  Applying it to a finished measurement understates it and describes work
+  nobody is doing.
+
+You do not need to hand over private raw, and we will not ask. Sanitized
+extracts are welcome and upgrade nothing by themselves; a **runnable check**
+does, because it moves the entry to a procedure a stranger can run (form 3
+under [what "reproduced here" requires](#what-reproduced-here-requires)).
+If we later reproduce it here, the entry gains the second half of a compound
+status and you keep the **Found by** line.
+
+**Numbering.** Take the next free numbers at the time you open the PR and do
+not renumber while it is in review. The registry count lives in
+`doctor/minefield_doctor.py` as `REGISTRY_TRAP_COUNT`, and a test fails the
+build if it disagrees with the trap files, so collisions surface mechanically
+rather than being someone's job to notice. If entries land underneath you
+while your PR is open, **we** rebase the numbers at merge, not you.
+
+**Volume.** Large PRs are welcome and do not need splitting on our account.
+We will land them in category-sized commits and say which entries went where.
+If we want a split, we will ask for a specific one rather than sending the
+whole thing back. A PR is never rejected for size.
+
+**Deduplication.** An entry that overlaps an existing one is not wasted. The
+three outcomes are: it lands as its own entry, it lands as a qualifier on the
+existing entry with your data and credit attached, or it becomes a row in the
+existing entry's "Stacks and builds bitten". All three are contributions and
+all three are credited. You are not expected to have read all 42 entries
+before opening a PR; finding the overlap is a maintainer's job.
+
+**Partial merges.** We will land the entries we can verify or accept and say
+plainly, in the PR, which ones we are holding and what would unblock each.
+Entries we are not ready to land go to [mining/](mining/) rather than being
+closed, so the work stays findable and stays yours.
 
 ## Credit
 

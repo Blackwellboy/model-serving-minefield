@@ -4,7 +4,12 @@
 
 **Status: reproduced here** (two production llama.cpp lanes, n=3 and n=2,
 plus negative controls), and reproduced on a second stack (mlx_lm,
-2026-07-27).
+2026-07-27). **Evidence:** the check below is a two-request procedure you can
+run on your own lane, which is what makes this checkable without us. Our own
+rows are **not** published, so treat the n=3 and n=2 counts as our conditions
+rather than as figures you can verify, and do not quote them as a measured
+rate; the finding is the direction, and you can re-derive that yourself in
+two requests.
 
 **Symptom.** Blank assistant turns (content empty, finish_reason=length,
 large reasoning field) only on requests from one particular client, while

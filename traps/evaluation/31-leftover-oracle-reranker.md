@@ -2,9 +2,13 @@
 
 **Found by Blackwellboy.**
 
-**Status: reproduced here** (one harness, one frozen 100-item gold suite
-with 65 content-scored items, one committed engine, single deterministic
-run, no RNG; numbers are scoped to this corpus).
+**Status: measured here, raw not published.** One harness, one frozen
+100-item gold suite with 65 content-scored items, one committed engine,
+single deterministic run, no RNG; numbers are scoped to this corpus. The
+gold suite and the metrics both live in a private return and the corpus
+cannot be published, so no number here is checkable by a reader, and this
+entry ships no runnable check either. Read it as a pattern to look for in
+your own harness, not as a verified measurement.
 
 ## The trap
 

@@ -30,13 +30,20 @@ the writing and verification work to a maintainer.
 3. **Write the entry** in the CONTRIBUTING format, in the reporter's terms
    where possible; their phrasing of the symptom is usually the phrasing the
    next victim will search for.
-4. **Mark status honestly.** The convention:
-   - **reproduced here**: we ran it and can link or produce the raw.
-   - **reported by others**: credited and linked, not independently
-     reproduced. This is a normal, welcome status, not a second-class one.
-   - **under test**: a replication is running; the entry says what would
-     change it.
-   Reported-but-unreproduced entries are labelled, never rejected.
+4. **Mark status honestly.** The vocabulary is a closed set and it is defined
+   once, in
+   [CONTRIBUTING.md](CONTRIBUTING.md#status-vocabulary). Do not restate it
+   here and do not paraphrase it in an entry: this file used to say
+   "reproduced here: we ran it and can link **or produce** the raw", which
+   let a promise stand in for evidence. It cannot. A stranger reading the
+   entry is the only person the label exists for, and they cannot act on an
+   offer to send them files.
+
+   The labels are **reproduced here**, **contributor-measured, conditions as
+   reported**, **reported by others**, **measured here, raw not published**,
+   and **under test**. Each carries an evidence pointer. Reported,
+   contributor-measured and unpublished-raw entries are labelled, never
+   rejected.
 5. **Credit the reporter.** Their handle goes in the **Found by** line at
    the top of the entry, in the Attribution section, and in
    [HALL_OF_FAME.md](HALL_OF_FAME.md). Link the originating issue from the
@@ -51,17 +58,25 @@ the writing and verification work to a maintainer.
 
 ## Status transitions
 
-- **under test** resolves to **reproduced here** or stays **reported by
-  others** with a dated note on what the replication attempt found. A failed
-  replication is recorded in the entry, not silently deleted; "did not
-  reproduce on stack X" is information.
+- **under test** resolves to **reproduced here** or drops to **reported by
+  others** or **contributor-measured** with a dated note on what the
+  replication attempt found. A failed replication is recorded in the entry,
+  not silently deleted; "did not reproduce on stack X" is information.
+- **measured here, raw not published** converts to **reproduced here** the
+  day either the raw is published at a URL, the raw ships in-repo, or someone
+  writes a check a stranger can run to re-derive the finding. That last one
+  is usually the cheapest of the three and it is the one to reach for first.
+- **contributor-measured** gains the second half of a compound status when we
+  reproduce it here. The contributor keeps the **Found by** line either way.
 - Corrections to any entry or attribution are fixed fast; open an issue.
 
 ## Shipping raw data in the repo
 
-This is a text-first repo. The default is that an entry **links or can produce**
-its raw, and the raw lives outside the tree. Keeping it that way is what makes
-the registry cheap to clone and quick to read.
+This is a text-first repo. The default is that an entry **links** its raw, or
+ships a check a stranger can run, and the raw itself lives outside the tree.
+Keeping it that way is what makes the registry cheap to clone and quick to
+read. Note that "we can produce it on request" is not one of the options: see
+[the status vocabulary](CONTRIBUTING.md#what-reproduced-here-requires).
 
 There is one exception, and it is deliberate rather than an oversight:
 

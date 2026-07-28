@@ -2,9 +2,14 @@
 
 **Found by [@apollo-mg](https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067).**
 
-**Status: reported and measured at scale by its finder (n=492), with raw
-published; the underlying exit-path mechanism independently measured on a
-second stack.**
+**Status: contributor-measured, conditions as reported** (n=492 by
+[@apollo-mg](https://github.com/TheTom/offlabel/pull/10#issuecomment-5093534067),
+with **raw published at a public URL**, linked below), and **reproduced
+here** for the underlying exit-path mechanism, independently measured on a
+second stack
+([c7-depth-collapse](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/c7-depth-collapse)).
+The published raw is what makes the contributor half checkable by a stranger,
+which is the strongest form this label reaches.
 
 **Symptom.** You attach an agent system prompt and tool schemas to a model,
 re-run your benchmark, and the score falls by a large margin. The obvious
