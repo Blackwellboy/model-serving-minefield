@@ -56,8 +56,9 @@
     },
     {
       "id": "warm-cache-latency",
-      "pattern": "warm[- ]cache",
+      "pattern": "(?i)(?:warm[-\\s]?cache[^.!?\\n]{0,60}?(?:\\b\\d+(?:\\.\\d+)?\\s*(?:ms|msec|sec|secs|seconds?|s|tok/s|tokens?/s|t/s)\\b|\\blatenc(?:y|ies)\\b|\\bTTFT\\b)|(?:\\b\\d+(?:\\.\\d+)?\\s*(?:ms|msec|sec|secs|seconds?|tok/s|tokens?/s|t/s)\\b|\\blatenc(?:y|ies)\\b|\\bTTFT\\b)[^.!?\\n]{0,60}?warm[-\\s]?cache)",
       "why": "banned phrasing, TWEET_PACK_V3.1: no warm-cache latency figure at depth. Our depth latencies are cold-cache and the warm numbers were never protocol-controlled.",
+      "narrowed": "2026-07-28: pattern narrowed from the bare phrase 'warm[- ]cache' to the FIGURE it guards, that is, a warm-cache mention co-occurring within one sentence with a latency or throughput number, or with 'latency'/'TTFT' as the claim noun. Reason: the bare phrase fired on every legitimate mention of the topic. It blocked a contributed entry whose whole subject is warning operators that warm caches manufacture fake speedups, and three of its five hits were our own CHANGELOG and index rows merely naming that entry. A guard that fires on legitimate use gets waved through as routine, and a habitually-overridden guard is worse than none because it teaches the override reflex. The intake session declined to add a path exemption precisely so this would be narrowed deliberately rather than bypassed by exception. Scope of the ban is unchanged: every form of the retracted claim is still caught, verified by mutation test in both directions (7/7 retracted-claim forms still blocked, 7/7 legitimate mentions now pass, and the old pattern failed 5 of those 7).",
       "instead": "Publish the cold-cache figure and say it is cold."
     }
   ],
