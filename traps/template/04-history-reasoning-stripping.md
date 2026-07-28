@@ -164,3 +164,20 @@ by @Defilan
 ([offlabel #16](https://github.com/TheTom/offlabel/issues/16#issuecomment-5086926968)).
 Raw data and writeup:
 [context-mass/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/context-mass).
+
+## Added 2026-07-28: confirmed on Ollama's Go template
+
+**Ollama 0.32.5, `qwen3:8b`, GB10 aarch64 CUDA 13.** Confirmed on both sides:
+the discarding condition is visible in the template source, and a two-arm
+request confirmed the behaviour empirically.
+
+This matters for the fix section above rather than for the mechanism. Ollama's
+template is Go rather than Jinja, so the kwarg names and template-level levers
+documented here for other stacks do not exist to be set. On this stack the
+reasoning you resend is read under
+[the route's own field name](../reasoning/01-reasoning-field-two-names.md),
+which is a third name and is not `reasoning_content`; getting that wrong looks
+identical to the stripping this entry describes.
+
+*Status of this addendum: reproduced here. The template ships with the model and
+the two-arm probe runs against a freely obtainable stack.*

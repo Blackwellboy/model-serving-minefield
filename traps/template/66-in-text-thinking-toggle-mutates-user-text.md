@@ -100,3 +100,47 @@ declared. The answer-loss consequence is a separate draft,
 **Found.** 2026-07-27, first multimodal lane characterised in this line of work.
 
 **Attribution.** Blackwellboy.
+
+## The mirror case: injection, on Ollama
+
+The entry above is a template that **scans for the marker and deletes it**.
+There is a second shape of the same mechanism, and it is the opposite
+operation: a template that **appends the marker and lets it leak into the
+answer**. Same idea, same last-user-message target, opposite direction, and it
+damages a different thing.
+
+**Ollama 0.32.5 with the qwen3 template, `qwen3:8b`, GB10 aarch64 CUDA 13.**
+When thinking is active the template appends a literal marker to the **last
+user message**:
+
+```
+{{- if and $.IsThinkSet (eq $i $lastUserIdx) }}{{ if $.Think }}{{" "}}/think{{ else }}{{" "}}/no_think{{ end }}{{ end }}
+```
+
+Asked `"Reply with exactly: OK"` at temperature 0:
+
+| arm | content |
+|---|---|
+| `think: true` | `"OK /think"` <- **the marker is in the answer** |
+| *(think absent)* | `"OK /think"` <- **also leaked** |
+| `think: false` | `"OK"` |
+
+Reproduced on four separate `num_predict` settings.
+
+**The leak is not reliably introspectable**, which is the part that wastes an
+afternoon: asked to echo its own message back verbatim, the model returned it
+**without** the marker, in both arms. So the obvious diagnostic, asking the
+model what it received, actively tells you nothing is wrong.
+
+**Consequence.** Exact-output evaluation, string-equality assertions and
+diff-based scoring are all contaminated by a token the operator never sent. A
+harness scoring `"OK"` against `"OK /think"` records a failure that is entirely
+the template's.
+
+**The fix on this half.** Strip a trailing ` /think` or ` /no_think` before
+scoring, or send `think: false` where the workload allows it. As with the
+deletion half: render, compare against what you sent character for character,
+and do not trust the model's account of its own input.
+
+*Status of this addendum: reproduced here. The template is public, the marker
+is one grep, and the leak is one temperature-0 request.*

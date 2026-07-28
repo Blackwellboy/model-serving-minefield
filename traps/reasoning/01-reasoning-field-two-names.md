@@ -84,3 +84,27 @@ your stack at once, plus the positive-control assertion in your preflight.
 [cross-model/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/cross-model)
 and
 [spine-probes/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes).
+
+## Added 2026-07-28: three names on one server, and `reasoning_content` is none of them
+
+**Ollama 0.32.5, `qwen3:8b`, GB10 aarch64 CUDA 13.** This entry is titled for
+two names because two was the number when it was written. One server now
+carries three, and splits them **by route**:
+
+| Route | Where the reasoning is |
+|---|---|
+| `/api/chat` | `message.thinking` |
+| `/api/generate` | top-level `thinking` |
+| `/v1/chat/completions` | `choices[].message.reasoning` |
+
+**`reasoning_content` does not exist on any of them.** That is the name a
+client written against a vLLM lane sends and reads, so the failure mode is this
+entry's original one at full strength: reasoning silently absent, firing rate
+reads zero, and the model is visibly reasoning.
+
+The new part is the same-server split. A client that probes one route and
+records "this server calls it X" is right about that route and wrong about the
+next one. Enumerate the keys on **each route you use**, not once per server.
+
+*Status of this addendum: reproduced here. Both the server and the model are
+free to obtain and the three routes are three curl calls.*

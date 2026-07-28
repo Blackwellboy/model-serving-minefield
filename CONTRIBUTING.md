@@ -25,12 +25,17 @@ Absence from this registry means nobody has reported it here, not that it is
 safe. These are the gaps we know about, and they are the most useful place to
 send a report:
 
-- **Serving stacks with no entries at all: Ollama, SGLang, TensorRT-LLM,
-  text-generation-inference.** Two candidates are already sitting in
-  [mining/](mining/) unresolved because we could not test them: a
-  thinking-plus-tools failure that did not reproduce on vLLM and looks
-  Ollama-side, and an SGLang reasoning-parser null-content report. Either
-  could be settled by one person who runs that stack.
+- **Serving stacks with no entries at all: SGLang, TensorRT-LLM,
+  text-generation-inference.** Ollama came off this list on 2026-07-28 with
+  traps [75](traps/versioning/75-release-asset-renamed-pinned-url-404.md) to
+  [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
+  thinking-plus-tools candidate that was waiting on it is now
+  [settled](mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md).
+  The SGLang reasoning-parser null-content report is still open and is still
+  the single most useful thing one person with that stack could settle; we
+  got as far as establishing that SGLang is
+  [not infeasible](mining/2026-07-28-sglang-on-gb10-feasibility.md) on our
+  hardware and stopped short of installing it.
 - **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
   what is here was measured on two families because those are the weights we
   have.

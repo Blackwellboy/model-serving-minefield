@@ -125,3 +125,22 @@ template never reads: see
 [trap 65](../reasoning/65-parser-only-rescue-kwarg.md).
 
 *Status of this addendum: measured here, raw not published.*
+
+## Added 2026-07-28: confirmed on Ollama, exactly as described
+
+**Ollama 0.32.5, `qwen3:8b`, GB10 aarch64 CUDA 13.** At `num_predict` 16 and at
+64: `done_reason: "length"`, `content` empty, and the reasoning field populated.
+That is this entry's mechanism on a stack it had not been recorded on, with
+nothing new to add, which is why it is a stack line rather than an entry.
+
+Two Ollama-specific notes that keep it from being confused with its neighbours:
+
+- The out-of-range **context** request produces the same response shape for a
+  different reason, and a bigger budget makes it worse rather than better. That
+  is [trap 79](../memory/79-out-of-range-context-request-accepted.md).
+- A streamed request at `max_tokens` 512 sent 511 **empty content deltas** on
+  this stack before content appeared at 4096. That is this entry wearing a
+  different hat, not an independent channel-routing finding, and it is recorded
+  that way deliberately: calling it channel routing would have been wrong.
+
+*Status of this addendum: reproduced here. Freely obtainable stack, two requests.*
