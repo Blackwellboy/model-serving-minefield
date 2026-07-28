@@ -363,10 +363,19 @@ this section: it is a property of the project, not a disclaimer to reattach to
 each artifact.
 
 **Our own work.** The registry as a whole is produced this way, which is why
-individual entries do not repeat the fact. Reports we open in someone else's
-tracker do carry it inline, because this file is not present there: the line is
-"Drafted with AI assistance (Claude); reviewed and submitted by @Blackwellboy",
-in the visible body rather than an HTML comment. The prior art we follow is
+individual entries do not repeat the fact. Anything we post in someone else's
+tracker does carry it inline, because this file is not present there. The rule,
+stated exactly because the loose version already drifted:
+
+> One visible line, never an HTML comment, on **the first thing we post in a
+> thread**, whether that is an issue we open or our first reply in a thread
+> somebody else started. Later replies in the same thread do not repeat it. A
+> comment written to stand alone as a report, carrying its own measurement and
+> citable on its own, carries the line as well, because people reach those by
+> permalink rather than by scrolling to the top.
+
+The line is "Drafted with AI assistance (Claude); reviewed and submitted by
+@Blackwellboy". The prior art we follow is
 [oven-sh/bun#36049](https://github.com/oven-sh/bun/issues/36049), which opens
 with a note stating the bug was found, root-caused and written up by an AI
 agent on behalf of and reviewed by a named human. It was accepted and fixed the
