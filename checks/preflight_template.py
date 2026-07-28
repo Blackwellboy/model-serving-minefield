@@ -475,12 +475,77 @@ def main():
     out["verdicts"] = verdicts
     out["blocking"] = blocking
     out["multi_turn_safe"] = (not blocking) and out["assembly_default"].get("prior_reasoning_preserved", False)
-
+    # Nothing was inspected. Exiting 0 here reported "no problem found" for a
+    # run that could not look at anything, which is a pass over an empty
+    # comparison set: every universal claim is true of the empty set, which is
+    # why it must not be a pass. See CONTRIBUTING, "Contributed checks must be
+    # able to fail".
+    out["inspected"] = bool(out["assembly_default"].get("available"))
     print(json.dumps(out, indent=2))
     if args.json:
         with open(args.json, "w") as f:
             json.dump(out, f, indent=2)
-    sys.exit(2 if blocking else 0)
+    if blocking:
+        sys.exit(2)
+    sys.exit(0 if out["inspected"] else 3)
+
+
+# ------------------------------------------------------- contract controls
+#
+# Required of every check in this directory and executed by
+# checks/tests/test_check_contract.py. A check that cannot be made to fail is
+# not a check, and the only way to know yours can is to write the input that
+# fails it. Both controls below are pure and in-process: no lane, no network.
+
+def _asm(preserved, available=True):
+    """A synthetic assembly result, as analyse_assembly would return one."""
+    if not available:
+        return {"available": False}
+    return {"available": True, "chars": 200,
+            "prior_reasoning_preserved": preserved,
+            "prior_content_preserved": True, "first_user_preserved": True,
+            "empty_think_blocks": 0 if preserved else 2,
+            "think_open_tags": 2, "think_close_tags": 2,
+            "roles_seen": ["assistant", "system", "user"],
+            "sent_message_count": 6, "prompt_head": "", "prompt_tail": ""}
+
+
+def _stripped_history_is_blocking():
+    """Trap 04's defect must produce a BLOCKING verdict, not a clean one."""
+    _v, blocking = build_verdicts(_asm(preserved=False), None, set(), set(),
+                                  None, {})
+    return 2 if blocking else 0
+
+
+def _undocumented_kwarg_is_blocking():
+    """A thinking-gating kwarg the card never documents must block."""
+    _v, blocking = build_verdicts(_asm(preserved=True), None,
+                                  {"enable_thinking", "secret_undocumented_knob"},
+                                  {"secret_undocumented_knob"},
+                                  ["enable_thinking"], {})
+    return 2 if blocking else 0
+
+
+def _nothing_rendered_is_not_a_pass():
+    """No render path means nothing was compared, so it cannot be a pass.
+
+    Mirrors main()'s exit rule exactly: blocking wins, then an uninspected
+    run exits 3 rather than 0.
+    """
+    asm = _asm(preserved=False, available=False)
+    _v, blocking = build_verdicts(asm, None, set(), set(), None, {})
+    if blocking:
+        return 2
+    return 0 if asm.get("available") else 3
+
+
+NEGATIVE_CONTROLS = [
+    ("stripped prior-turn reasoning is blocking", _stripped_history_is_blocking),
+    ("read-but-undocumented kwarg is blocking", _undocumented_kwarg_is_blocking),
+]
+
+EMPTY_SET_CONTROL = ("no render path available, nothing inspected",
+                     _nothing_rendered_is_not_a_pass)
 
 if __name__ == "__main__":
     main()

@@ -124,8 +124,27 @@ pointer. They may not be blended into a new phrase.
 
 ### What "reproduced here" requires
 
-**Reproduced here** is the strongest thing this registry says, so it has a
-hard bar: **a stranger must be able to check it without asking us for
+**First, whose label it is.** "Reproduced **here**" means reproduced by the
+registry, on our hardware. It is not a quality grade and it is not a
+statement about how carefully you worked. A contributor's own measurement,
+however rigorous, is **contributor-measured** because the "here" is the
+part that is false, not the "reproduced".
+
+> **This sentence was our bug, and it cost a contributor.** CONTRIBUTING used
+> to define the label as "you ran it and can link **or produce** the raw".
+> Read literally, and addressed to a contributor as the surrounding section
+> was, an external contributor who ran all fifteen of their entries and could
+> produce the raw on request **satisfied that definition exactly**. At least
+> one did, marked their entries "reproduced here", flagged the tension
+> themselves, and offered to take whatever stricter option we wanted. They
+> were right and the documentation was wrong. We meant *reproduced by the
+> registry*, and we never wrote it down. If you marked an entry
+> "reproduced here" under the old wording, you followed the spec that was
+> published; nothing about that is a contributor error, and a maintainer
+> relabelling it is fixing our text, not correcting you.
+
+**Second, the evidence bar.** Reproduced here is the strongest thing this
+registry says, so a stranger must be able to check it **without asking us for
 anything.** One of these three, named in the entry:
 
 1. **A URL to the raw**, which they can open.
@@ -139,10 +158,19 @@ anything.** One of these three, named in the entry:
 
 "We can produce the raw on request" does **not** qualify, and used to. A
 promise is not evidence: it cannot be checked by the person reading the
-entry, which is the only person the label exists for. An entry we measured
+entry, which is the only person the label exists for. An entry **we** measured
 whose evidence meets none of the three is **measured here, raw not
 published**. That is an honest label, not a demotion, and it converts to
 reproduced here the day the raw lands or a runnable check is written.
+
+Note that the two halves are independent, and the first one binds first: an
+entry can meet the evidence bar completely and still not be "reproduced
+here", because a contributor measured it. That entry is
+**contributor-measured, conditions as reported**, and if its raw is published
+at a URL it is contributor-measured at full strength, which is the strongest
+form that label reaches. Trap
+[42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md)
+is the worked example.
 
 ### The gold standard
 
@@ -204,6 +232,65 @@ binomial noise.
   If the mechanism is a hypothesis, label it a hypothesis and keep it out of
   the symptom and check sections.
 
+## Contributed checks must be able to fail
+
+A check that cannot report a problem is worse than no check, because it
+produces a clean verdict that a reader will act on. This is the same defect
+class the registry's own tooling was audited for three times, and it arrives
+from outside as readily as it grows inside: the rule is not about trust, it
+is about a shape that is genuinely hard to see in your own code.
+
+Two shapes, both of which have been found in real checks in this project and
+in submissions to it:
+
+1. **The unfailable assertion.** The check looks for a sentinel that is also
+   present in its own input. A model that ignored the prompt entirely still
+   passes, because the string the check greps for was in the prompt it sent.
+   Any check whose PASS condition is "the expected token appears somewhere"
+   needs to prove that token could only have come from the thing under test.
+2. **The vacuous PASS.** The check reports success over an empty comparison
+   set: zero tensors compared and a fidelity of 1.0, zero items scored and a
+   100% agreement rate, nothing rendered and an exit code of 0. An empty set
+   satisfies every universal claim you can make about it, which is exactly
+   why it must never be a pass.
+
+**Our own `preflight_template.py` had shape 2** and exited `0` when no render
+path was available, so a CI gate keyed on its exit code read "I could not
+look at anything" as "nothing is wrong". It now exits `3`. We are not asking
+contributors for a standard we were meeting.
+
+### The contract, which is enforced mechanically
+
+Every check under `checks/` declares two controls at module level, and
+`checks/tests/test_check_contract.py` runs them and fails the build if either
+is missing or does not behave:
+
+```python
+NEGATIVE_CONTROLS = [
+    ("stripped history is blocking", lambda: <run the check on input that
+        MUST fail; return its verdict or exit code>),
+]
+EMPTY_SET_CONTROL = ("nothing to compare", lambda: <run the check with an
+        empty or unavailable comparison set; return its verdict or exit code>)
+```
+
+The harness asserts that **every negative control reports failure** and that
+**the empty-set control does not report success**. A check that has no input
+which makes it fail cannot satisfy the first, which is the point: writing the
+control is how you discover the assertion was unfalsifiable.
+
+This is the same rule the doctor's own test suite applies to itself through
+`CLEAN_CONTRACT` (`doctor/tests/test_doctor_verdicts.py`), where every clean
+verdict is enumerated with the failure mode it rules **out** and a sweep
+fails the build in both directions. A PASS, like a CLEAN, has to rule
+something out rather than merely fail to observe it.
+
+If your check genuinely cannot express these in-process (it needs real
+hardware, a licensed engine, a 40 GB checkpoint), say so in the PR and ship
+the controls as a documented manual procedure with recorded output instead.
+We will land it. What we will not land is a check with no failing case at
+all, because nobody can tell that from a check that never fires.
+
 ## External PR policy
 
 This is the standing rule, not a decision taken once. It exists because the
@@ -211,15 +298,19 @@ first large external PR asked all four of these questions at the same time,
 and a contributor deserves to know the answers before they do the work rather
 than after.
 
-**Status on a contributor's own measurements.** If you measured it yourself
-and your raw lives on machines we cannot reach, the entry lands as
-**contributor-measured, conditions as reported**, with your conditions and
-counts in full. That is the correct label, and it is not a penalty:
+**Status on a contributor's own measurements.** If you measured it yourself,
+the entry lands as **contributor-measured, conditions as reported**, with
+your conditions and counts in full. This holds whether your raw is private or
+published at a URL; publishing it makes the label stronger, not different.
+That is the correct label, and it is not a penalty:
 
-- It is **not** "reproduced here". That label means a stranger can check the
-  result, and it is scoped to measurements taken on our hardware. Nothing
-  about your rigour changes that; the label describes who can verify, not how
-  good the work is.
+- It is **not** "reproduced here", because the **"here" is the registry**.
+  Nothing about your rigour changes that. If you marked entries
+  "reproduced here" because the old CONTRIBUTING said "you ran it and can
+  link or produce the raw", **you read it correctly and we wrote it wrong**;
+  see [the note above](#what-reproduced-here-requires). A maintainer
+  relabelling those entries is repairing our sentence, and it is not a
+  finding against your work or a reason to hold your PR.
 - It is **not** "under test" either, which several contributors have offered
   as the strict option. "Under test" means a replication is actually running.
   Applying it to a finished measurement understates it and describes work
