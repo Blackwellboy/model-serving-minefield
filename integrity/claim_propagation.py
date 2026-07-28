@@ -55,6 +55,37 @@ def read(path):
         return fh.read()
 
 
+
+# --- GitHub Actions annotations ------------------------------------------
+# "Process completed with exit code 1" was the entire annotation on the first
+# red run. A stranger reading a red badge learned nothing. These emit the
+# workflow-command form so the annotation names the file, the line and the
+# missing thing, on the commit and in the PR diff.
+def gha(level, message, path=None, line=None, title=None):
+    def esc(v):
+        return (str(v).replace("%", "%25").replace("\r", "%0D")
+                .replace("\n", "%0A").replace(":", "%3A").replace(",", "%2C"))
+    props = []
+    if path:
+        # Only annotate files inside the workspace; GitHub cannot anchor an
+        # annotation to a path outside the checkout, and a bogus path silently
+        # drops the annotation rather than erroring.
+        try:
+            rel = os.path.relpath(os.path.abspath(path), os.getcwd())
+        except ValueError:
+            rel = None
+        if rel and not rel.startswith(".."):
+            props.append("file=%s" % esc(rel))
+            if line:
+                props.append("line=%d" % int(line))
+    if title:
+        props.append("title=%s" % esc(title))
+    body = (str(message).replace("%", "%25")
+            .replace("\r", "%0D").replace("\n", "%0A"))
+    print("::%s %s::%s" % (level, ",".join(props), body) if props
+          else "::%s::%s" % (level, body))
+
+
 def validate_ledger(ledger):
     """The rule that makes the rest of this work. Returns a list of errors."""
     errs = []
@@ -126,9 +157,33 @@ def surface_repo_path(surface):
     return None, surface
 
 
-def walk_files(root):
+# A nested checkout is a DIFFERENT repository. Walking into it reports its
+# files under THIS repo's name, which silently voids every exemption keyed to
+# the other repo and double-counts every hit. That is exactly what CI did:
+# actions/checkout put the peer repo at .peer/laguna-s21-lab inside the
+# workspace, laguna's gate-study README was scanned a second time as
+# "minefield:.peer/laguna-s21-lab/gate-study/README.md", its laguna: exemption
+# did not apply to that name, and a correctly exempt line was reported as a
+# failure. The workflow now checks the peer out elsewhere; this function makes
+# the tool right regardless of where anyone puts a clone.
+def prune_nested_repos(dirpath, dirnames, pruned):
+    keep = []
+    for d in dirnames:
+        if d in SKIP_DIRS:
+            continue
+        full = os.path.join(dirpath, d)
+        # .git is a directory in a clone and a file in a worktree or submodule.
+        if os.path.exists(os.path.join(full, ".git")):
+            pruned.append(full)
+            continue
+        keep.append(d)
+    dirnames[:] = keep
+
+
+def walk_files(root, pruned=None):
+    pruned = pruned if pruned is not None else []
     for dp, dns, fns in os.walk(root):
-        dns[:] = [d for d in dns if d not in SKIP_DIRS]
+        prune_nested_repos(dp, dns, pruned)
         for fn in sorted(fns):
             if fn.endswith(SCAN_EXTS):
                 yield os.path.join(dp, fn)
@@ -157,6 +212,7 @@ def scan(ledger, repos):
                          re.I)
     hits = []
     manual = []
+    pruned = []
 
     for claim in ledger["claims"]:
         state = claim.get("state")
@@ -173,7 +229,7 @@ def scan(ledger, repos):
             exempts.append((repo, rest, e["reason"]))
 
         for repo_name, root in repos.items():
-            for path in walk_files(root):
+            for path in walk_files(root, pruned):
                 rel = os.path.relpath(path, root).replace("\\", "/")
                 lines = read(path).splitlines()
                 ex_reason = None
@@ -221,7 +277,7 @@ def scan(ledger, repos):
                            "what": r.get("what", ""), "state": r.get("state", ""),
                            "phrasings": [p["pattern"] for p in claim["search_phrasings"]]})
 
-    return hits, manual
+    return hits, manual, sorted(set(pruned))
 
 
 def check_carried_by(ledger, repos):
@@ -247,6 +303,8 @@ def main():
                          "repos block. Repos you do not pass are simply not "
                          "scanned, and the run says so.")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--github", action="store_true",
+                    help="also emit GitHub Actions annotations")
     args = ap.parse_args()
 
     ledger = json.loads(read(args.ledger))
@@ -260,16 +318,34 @@ def main():
         print("LEDGER INVALID")
         for e in errs:
             print("  %s" % e)
+            if args.github:
+                gha("error", e, os.path.abspath(args.ledger), None,
+                    "claims ledger invalid")
         return 1
     errs = check_carried_by(ledger, repos)
 
-    hits, manual = scan(ledger, repos)
+    hits, manual, pruned = scan(ledger, repos)
     flagged = [h for h in hits if h.verdict == "FLAGGED"]
 
     if args.json:
         print(json.dumps({"hits": [h.as_dict() for h in hits],
                           "manual": manual, "ledger_errors": errs}, indent=2))
         return 1 if (flagged or errs) else 0
+
+    if args.github:
+        for h in hits:
+            if h.verdict != "FLAGGED":
+                continue
+            gha("error",
+                "%s still carries the %s claim: /%s/ matched, %s. Correct form: %s"
+                % (h.rel, h.claim, h.pattern, h.why,
+                   next((c["superseded_by"] for c in ledger["claims"]
+                         if c["id"] == h.claim), "see integrity/claims.json")),
+                os.path.join(repos.get(h.repo, ""), h.rel), h.lineno,
+                "retracted claim still published: %s" % h.claim)
+        for e in errs:
+            gha("error", e, os.path.abspath(args.ledger), None,
+                "claims ledger stale")
 
     print("claim propagation: %d claims, %d enforced, repos scanned: %s"
           % (len(ledger["claims"]),
@@ -278,6 +354,8 @@ def main():
     missing = [r for r in ledger.get("repos", {}) if r not in repos]
     if missing:
         print("  NOT SCANNED this run: %s" % ", ".join(sorted(missing)))
+    for pth in pruned:
+        print("  PRUNED, nested checkout of another repo: %s" % pth)
     print("")
 
     for verdict in ("FLAGGED", "CONTEXT", "EXEMPT"):

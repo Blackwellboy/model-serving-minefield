@@ -90,6 +90,37 @@ def status_ok(text, stems):
     return True
 
 
+
+# --- GitHub Actions annotations ------------------------------------------
+# "Process completed with exit code 1" was the entire annotation on the first
+# red run. A stranger reading a red badge learned nothing. These emit the
+# workflow-command form so the annotation names the file, the line and the
+# missing thing, on the commit and in the PR diff.
+def gha(level, message, path=None, line=None, title=None):
+    def esc(v):
+        return (str(v).replace("%", "%25").replace("\r", "%0D")
+                .replace("\n", "%0A").replace(":", "%3A").replace(",", "%2C"))
+    props = []
+    if path:
+        # Only annotate files inside the workspace; GitHub cannot anchor an
+        # annotation to a path outside the checkout, and a bogus path silently
+        # drops the annotation rather than erroring.
+        try:
+            rel = os.path.relpath(os.path.abspath(path), os.getcwd())
+        except ValueError:
+            rel = None
+        if rel and not rel.startswith(".."):
+            props.append("file=%s" % esc(rel))
+            if line:
+                props.append("line=%d" % int(line))
+    if title:
+        props.append("title=%s" % esc(title))
+    body = (str(message).replace("%", "%25")
+            .replace("\r", "%0D").replace("\n", "%0A"))
+    print("::%s %s::%s" % (level, ",".join(props), body) if props
+          else "::%s::%s" % (level, body))
+
+
 class Finding(object):
     def __init__(self, check, where, message):
         self.check = check
@@ -250,7 +281,13 @@ def doctor_implemented_count(root):
 def check_counts(root, n_entries, findings):
     implemented = doctor_implemented_count(root)
     for dp, dns, fns in os.walk(root):
-        dns[:] = [d for d in dns if d not in COUNT_SKIP_DIRS]
+        # Same reason as claim_propagation's prune: a nested checkout is a
+        # different repo, and its count sentences are not this repo's to
+        # enforce. Without this a peer clone inside the workspace makes the
+        # count check argue with a document it does not own.
+        dns[:] = [d for d in dns
+                  if d not in COUNT_SKIP_DIRS
+                  and not os.path.exists(os.path.join(dp, d, ".git"))]
         for fn in sorted(fns):
             if not fn.endswith(COUNT_SCAN_EXTS) or fn in COUNT_SKIP_FILES:
                 continue
@@ -397,6 +434,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=os.path.dirname(HERE))
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--github", action="store_true",
+                    help="also emit GitHub Actions annotations, so a red badge "
+                         "names the file and the missing thing")
     args = ap.parse_args()
     root = os.path.abspath(os.path.expanduser(args.root))
 
@@ -410,6 +450,14 @@ def main():
             "findings": [f.as_dict() for f in findings],
         }, indent=2))
         return 1 if findings else 0
+
+    if args.github:
+        for f in findings:
+            where = f.where.split(":")
+            path = os.path.join(root, where[0])
+            ln = int(where[1]) if len(where) > 1 and where[1].isdigit() else None
+            gha("error", "%s: %s" % (f.where, f.message), path, ln,
+                "registry integrity: %s" % f.check)
 
     print("registry integrity: %s" % root)
     print("  entries counted: %d   redirect stubs (not counted): %d   "
