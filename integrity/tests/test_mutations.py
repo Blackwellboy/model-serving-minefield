@@ -46,6 +46,36 @@ def copy_tree(dest):
     return dest
 
 
+def entry_numbers(root):
+    """The numbered entries in a tree, derived rather than declared.
+
+    Counts only files under a category directory, so the seven flat redirect
+    stubs at traps/*.md are excluded, which is the same rule the checker
+    applies. Three tests here used to hard-code 42 and 41 and had to be edited
+    by hand every time an entry landed; a count that has to be maintained by
+    hand is exactly the drift these tests exist to catch.
+    """
+    nums = set()
+    traps = os.path.join(root, "traps")
+    for cat in sorted(os.listdir(traps)):
+        d = os.path.join(traps, cat)
+        if not os.path.isdir(d):
+            continue
+        for name in os.listdir(d):
+            m = re.match(r"^(\d+)-.+\.md$", name)
+            if m:
+                nums.add(int(m.group(1)))
+    return nums
+
+
+def entry_count(root):
+    return len(entry_numbers(root))
+
+
+def next_free(root):
+    return max(entry_numbers(root)) + 1
+
+
 def read(p):
     with open(p, encoding="utf-8") as fh:
         return fh.read()
@@ -123,24 +153,33 @@ class RegistryMutations(unittest.TestCase):
 
     def test_02_stale_count_in_the_doctor_constant(self):
         """The stale-count failure, constant side."""
+        n = entry_count(self.root)
         p = os.path.join(self.root, "doctor", "minefield_doctor.py")
-        write(p, read(p).replace("REGISTRY_TRAP_COUNT = 42",
-                                 "REGISTRY_TRAP_COUNT = 41"))
+        before = read(p)
+        after = before.replace("REGISTRY_TRAP_COUNT = %d" % n,
+                               "REGISTRY_TRAP_COUNT = %d" % (n - 1))
+        self.assertNotEqual(before, after,
+                            "fixture drift: the doctor constant does not read "
+                            "REGISTRY_TRAP_COUNT = %d for a tree of %d entries"
+                            % (n, n))
+        write(p, after)
         rc, out = run_registry(self.root)
         self.assertEqual(rc, 1)
         counts = findings_of(out, "COUNT")
         self.assertTrue(any("minefield_doctor.py" in f["where"] for f in counts))
-        self.assertTrue(any("declares registry total 41" in f["message"]
-                            and "tree has 42" in f["message"] for f in counts),
+        self.assertTrue(any("declares registry total %d" % (n - 1) in f["message"]
+                            and "tree has %d" % n in f["message"] for f in counts),
                         counts)
 
     def test_03_stale_count_in_a_launch_document(self):
         """The stale-count failure, prose side: a new entry lands and the
         README coverage sentence keeps the old total."""
+        n = entry_count(self.root)
+        free = next_free(self.root)
         write(os.path.join(self.root, "traps", "routing",
-                           "43-a-new-entry-for-the-mutation-test.md"),
-              "# Trap 43: fixture\n\n**Found by Blackwellboy.**\n\n"
-              "**Status: reproduced here** (fixture).\n")
+                           "%d-a-new-entry-for-the-mutation-test.md" % free),
+              "# Trap %d: fixture\n\n**Found by Blackwellboy.**\n\n"
+              "**Status: reproduced here** (fixture).\n" % free)
         rc, out = run_registry(self.root)
         self.assertEqual(rc, 1)
         counts = findings_of(out, "COUNT")
@@ -148,16 +187,26 @@ class RegistryMutations(unittest.TestCase):
         self.assertIn("README.md", wheres)
         self.assertIn("doctor/README.md", wheres)
         self.assertIn("doctor/minefield_doctor.py", wheres)
-        self.assertTrue(any("tree has 43 entries" in f["message"] for f in counts))
+        self.assertTrue(any("tree has %d entries" % (n + 1) in f["message"]
+                            for f in counts), counts)
 
     def test_04_redirect_stubs_are_counted_as_entries(self):
         """The counting rule itself. If the seven flat stubs were ever counted
-        as entries the total would read 49 and every count check would invert.
-        This asserts the tool's own arithmetic, which is the thing all the
-        other count assertions rest on."""
+        as entries the total would read seven too high and every count check
+        would invert. This asserts the tool's own arithmetic, which is the
+        thing all the other count assertions rest on.
+
+        Both sides are derived from the tree: the expected entry count from the
+        category directories, and the stub count from the flat files. A
+        hard-coded number here would make this test agree with the checker by
+        being edited alongside it, which is not agreement."""
+        stubs = len([n for n in os.listdir(os.path.join(self.root, "traps"))
+                     if re.match(r"^\d+-.+\.md$", n)])
         rc, out = run_registry(self.root)
-        self.assertEqual(out["entries"], 42)
-        self.assertEqual(out["stubs"], 7)
+        self.assertEqual(out["entries"], entry_count(self.root))
+        self.assertEqual(out["stubs"], stubs)
+        self.assertGreater(out["entries"], out["stubs"],
+                           "stubs are being counted as entries")
 
     def test_05_entry_not_announced_in_the_changelog(self):
         p = os.path.join(self.root, "CHANGELOG.md")

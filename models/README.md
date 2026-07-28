@@ -23,13 +23,15 @@ serve on that stack.
 | Hy3-class ~295B MoE (community MXFP4 / NVFP4 compressed-tensors checkpoints) | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) |
 | MiniMax-M3 | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md) |
 | ~600B-class MoE with MTP drafter (community abliterated re-upload) | [14](../traps/versioning/14-finetune-reupload-not-drop-in.md) |
+| Qwen 3.6 27B (NVFP4 modelopt checkpoint, offline dequant) | [44](../traps/quantization/44-fp4-dequant-scale-swizzle-layout.md) |
+| Nemotron-H 8B Base 8K (Mamba-2 hybrid, squared-ReLU FFN) | [51](../traps/quantization/51-single-backend-nan-fused-path.md) |
 | Ternary-Bonsai-27B (MLX 2bit, stock mlx_lm server, Apple silicon) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
 
 ## Stack-level traps (apply to any model on that stack)
 
 | Stack or layer | Traps |
 |---|---|
-| Eval harnesses and scorers | [05](../traps/evaluation/05-scorer-normalization-verdict-flip.md), [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [31](../traps/evaluation/31-leftover-oracle-reranker.md), [34](../traps/evaluation/34-baseline-you-degraded-yourself.md), [35](../traps/evaluation/35-identical-weights-do-not-score-identically.md), [36](../traps/evaluation/36-token-cap-is-an-arm-level-handicap.md), [37](../traps/evaluation/37-uniform-zero-is-a-harness-verdict.md), [40](../traps/evaluation/40-ngram-decontamination-false-positives.md), [42](../traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md) |
+| Eval harnesses and scorers | [05](../traps/evaluation/05-scorer-normalization-verdict-flip.md), [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [31](../traps/evaluation/31-leftover-oracle-reranker.md), [34](../traps/evaluation/34-baseline-you-degraded-yourself.md), [35](../traps/evaluation/35-identical-weights-do-not-score-identically.md), [36](../traps/evaluation/36-token-cap-is-an-arm-level-handicap.md), [37](../traps/evaluation/37-uniform-zero-is-a-harness-verdict.md), [40](../traps/evaluation/40-ngram-decontamination-false-positives.md), [42](../traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md), [49](../traps/evaluation/49-prompt-not-tokenized-to-target.md), [52](../traps/evaluation/52-speed-measured-on-a-broken-config.md), [54](../traps/evaluation/54-run-order-and-warm-cache-artifacts.md), [55](../traps/evaluation/55-supported-context-is-not-trained-context.md) |
 | MoE serving config (any sparse-MoE checkpoint) | [33](../traps/routing/33-moe-inference-topk-expansion-tax.md) |
 | HF transformers `generate()` and accelerate placement | [39](../traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md), [41](../traps/runtime/41-static-batching-buys-power-not-throughput.md) |
 | Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md) |
@@ -37,6 +39,12 @@ serve on that stack.
 | llama.cpp attention and serve flags | [18](../traps/runtime/18-flash-attention-off-halves-deep-decode.md), [19](../traps/tools/19-missing-jinja-breaks-tool-parsing.md) |
 | mlx_lm server (fields, launch-flag defaults, unvalidated request body) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
 | Reasoning-model serving generally (fields, templates, budgets) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [04](../traps/template/04-history-reasoning-stripping.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md) |
+| Chat templates rendering tool calls (engine-independent) | [43](../traps/template/43-tool-args-string-not-mapping.md) |
+| llama.cpp CUDA and HIP builds (KV-quant kernel coverage) | [45](../traps/quantization/45-fa-all-quants-cpu-fallback.md), [46](../traps/versioning/46-stale-build-missing-arch-kernel.md) |
+| vLLM serving hybrid mamba or DeltaNet architectures | [47](../traps/runtime/47-prefix-caching-autodisabled-hybrid.md) |
+| Agent clients and gateways (the client-side half) | [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) |
+| HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
+| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md) |
 
 ## Clean preflights
 

@@ -106,6 +106,39 @@ If an entry does not meet all three conditions, link the data instead. If a
 calibration entry's data would be large enough to change the character of the
 repo, prefer a release asset and say in the entry where it lives.
 
+## Numbering in this merge
+
+**Numbers in the 43-and-up range are provisional until the contributors whose
+work they carry have had a chance to object.** Stating that here rather than
+only in a PR thread, because a thread scrolls and this file does not.
+
+On 2026-07-28 five independently staged sets all wanted numbers from 43 upward:
+one large external contribution and four first-party coverage batches. There is
+no ordering of five competing sets that leaves every set's provisional numbers
+intact, so the numbers were assigned **at merge, in merge order, gapless**,
+which is what [CONTRIBUTING](CONTRIBUTING.md#external-pr-policy) already
+promises external contributors ("if entries land underneath you while your PR is
+open, **we** rebase the numbers at merge, not you").
+
+What that meant in practice:
+
+- The external block landed **first and at its own base**, so no entry in it
+  moved and its internal cross-references were unchanged. That was deliberate:
+  it is the only set whose numbering was already visible to somebody outside
+  this repo, so it is the only set where renumbering would cost a third party
+  rather than us.
+- Every first-party set was renumbered around it, not the other way round.
+- One title collided. Both entries were real and distinct, so both landed and
+  **ours was the one renamed**, because the phrase came from the contributor's
+  corpus in the first place. The two cross-link.
+
+If you contributed to this range and want any of it renumbered or renamed,
+including a title, say so and we will run the sweep. That is not a courtesy
+offer with a cost attached to taking it up: the sweep is parameterised by the
+base and it is verified against dangling links in filenames, headers, in-body
+references and index rows, so moving a block is cheap and moving it back is
+equally cheap.
+
 ## Cadence
 
 Reports get a first maintainer response within a few days. Entries land as

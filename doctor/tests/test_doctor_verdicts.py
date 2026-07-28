@@ -566,7 +566,7 @@ class TestCoverage(DoctorVerdictCase):
         for token in ("implemented", "executed on this stack", "clean",
                       "problems", "inconclusive", "not implemented"):
             self.assertIn(token, line)
-        self.assertIn(f"implemented {len(md.TRAP_PATHS)}/42", line)
+        self.assertIn(f"implemented {len(md.TRAP_PATHS)}/{md.REGISTRY_TRAP_COUNT}", line)
         self.assertEqual(len(cov["clean"]) + len(cov["problems"]),
                          len(cov["executed"]))
         # a run with no --hf-repo cannot have executed the hub-only traps
@@ -582,7 +582,7 @@ class TestCoverage(DoctorVerdictCase):
             md.emit(doc, SimpleNamespace(base_url="http://fixture", report=False))
         out = buf.getvalue()
         self.assertIn("== COVERAGE ==", out)
-        self.assertIn("implemented 17/42", out)
+        self.assertIn(f"implemented 17/{md.REGISTRY_TRAP_COUNT}", out)
         self.assertIn("== INCONCLUSIVE (", out)
         self.assertIn("no check in this tool", out)
         for n in md.TRAPS_SHARED_HEURISTIC:
