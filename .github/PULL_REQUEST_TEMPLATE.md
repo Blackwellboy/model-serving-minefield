@@ -2,7 +2,7 @@
 
 Thanks. Checklist for a new entry (see CONTRIBUTING.md for the format):
 
-- [ ] One file under the right category, `traps/<category>/NN-short-slug.md`, next free global number
+- [ ] One file under the right category, `traps/<category>/NN-short-slug.md`. For the number, run `python3 integrity/registry_integrity.py` and read the `next free trap number` line. **You do not have to get this right:** numbers are provisional and we rebase them at merge, so do not renumber while your PR is in review even if entries land underneath you
 - [ ] **Found by** line directly under the title, naming the finder by the handle they publish under
 - [ ] Status line up top, using **exactly one label from the closed set** below, plus its evidence pointer
 - [ ] Sections in order: Symptom, Mechanism, Stacks and builds bitten, The check, The fix, Found, Attribution

@@ -334,7 +334,10 @@ under [what "reproduced here" requires](#what-reproduced-here-requires)).
 If we later reproduce it here, the entry gains the second half of a compound
 status and you keep the **Found by** line.
 
-**Numbering.** Take the next free numbers at the time you open the PR and do
+**Numbering.** Run `python3 integrity/registry_integrity.py` and read the
+`next free trap number` line; it is derived from the tree on every run rather
+than stored anywhere, so it cannot go stale and there is no file to keep in
+sync. Take the next free numbers at the time you open the PR and do
 not renumber while it is in review. The registry count lives in
 `doctor/minefield_doctor.py` as `REGISTRY_TRAP_COUNT`, and a test fails the
 build if it disagrees with the trap files, so collisions surface mechanically
