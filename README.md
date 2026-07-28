@@ -60,7 +60,7 @@ entries is too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 97 entries, one row each, sorted by number. It is the
+  directly below, all 103 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -71,7 +71,7 @@ entries is too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 97 entries**, weighted toward reasoning fields, templates and
+for **19 of these 103 entries**, weighted toward reasoning fields, templates and
 tool parsing, and a clean run from it says nothing about the other 78. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
@@ -104,7 +104,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 97 entries. If you know what you are running rather than what you are
+All 103 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -207,6 +207,12 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | You are about to caveat a number because another model shares the host | Two lanes on two GPUs of one host perturbed neither correctness nor decode, so the caveat is unearned | [95](traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) | measured here, raw not published |
 | The serving binary reports more free VRAM than the card has in total | `--list-devices` prints host available memory as device free memory | [96](traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) | reproduced here |
 | A lane runs at a few percent of its achievable decode rate and nothing says why | Partial GPU offload, named by no log line and no `/props` field, with VRAM use no proxy for it | [97](traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md) | reproduced here |
+| `hipErrorInvalidValue` on `torch.cat`, not on the SDPA call that caused it | Causal SDPA fails on gfx1151; error is async, reported at the next GPU op | [99](traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md) | contributor-measured, conditions as reported |
+| GPU memory allocates but every kernel fails with `hipErrorInvalidImage` (209) | OEM kernel KFD rejects all gfx1151 code objects; mainline 7.1.4 needed | [100](traps/runtime/100-oem-kernel-kfd-rejects-gfx1151-code-objects.md) | contributor-measured, conditions as reported |
+| Model loads fine, then crashes at inference with `unexpected keyword argument 'input_embeds'` | `transformers` 5.6.0 silently removed the kwarg and changed `create_causal_mask` | [101](traps/template/101-transformers-minor-version-removes-kwarg.md) | contributor-measured, conditions as reported |
+| NVFP4 MoE serve is "stuck" at a throughput ceiling no flag can break | BF16 GEMMs (44%) are the bottleneck, not the MoE path (22%) | [102](traps/quantization/102-nvfp4-bottleneck-is-bf16-gemm-not-moe.md) | contributor-measured, conditions as reported |
+| `AutoProcessor.from_pretrained` fails with torchvision ImportError on ROCm | TheRock wheel ABI mismatch blocks torchvision; AutoTokenizer fallback needed | [103](traps/template/103-torchvision-abi-mismatch-blocks-autoprocessor.md) | contributor-measured, conditions as reported |
+| Restart from a different startup path silently reverts all hardening | Stale launch script still carries pre-hardening config; running process was correct | [104](traps/versioning/104-stale-launch-script-silently-reverts-config.md) | contributor-measured, conditions as reported |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -234,7 +240,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 97 entries in under a minute:
+against 19 of this registry's 103 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
