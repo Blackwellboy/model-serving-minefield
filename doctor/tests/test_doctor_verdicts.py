@@ -22,6 +22,7 @@ that it always says the same thing.
 
     python3 doctor/tests/test_doctor_verdicts.py
 """
+import re
 import importlib.util
 import json
 import sys
@@ -589,7 +590,9 @@ class TestCoverage(DoctorVerdictCase):
 
     def test_registry_count_matches_the_tree(self):
         traps = REPO_ROOT / "traps"
-        ids = {p.name[:2] for p in traps.glob("*/*.md")}
+        ids = {mm.group(1) for mm in
+               (re.match(r"^(\d{2,})-", p.name)
+                for p in traps.glob("*/*.md")) if mm}
         self.assertEqual(len(ids), md.REGISTRY_TRAP_COUNT,
                          f"REGISTRY_TRAP_COUNT is {md.REGISTRY_TRAP_COUNT} but "
                          f"the tree holds {len(ids)} numbered traps: {sorted(ids)}")

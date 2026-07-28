@@ -52,8 +52,8 @@ import contradiction_gate as _contradiction
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-ENTRY_RE = re.compile(r"^(\d{2})-.+\.md$")
-STUB_RE = re.compile(r"^(\d{2})-.+\.md$")
+ENTRY_RE = re.compile(r"^(\d{2,})-.+\.md$")
+STUB_RE = re.compile(r"^(\d{2,})-.+\.md$")
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 STATUS_LINE_RE = re.compile(r"^\*\*Status:\s*(.+?)\*\*", re.M)
 STATUS_LOOSE_RE = re.compile(r"^\*\*Status:\s*(.+)$", re.M)
@@ -198,7 +198,7 @@ def readme_rows(root):
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if len(cells) < 4 or set(cells[0]) <= set("- "):
                 continue
-            m = re.search(r"\[(\d{2})\]\(traps/", cells[2])
+            m = re.search(r"\[(\d{2,})\]\(traps/", cells[2])
             if m:
                 rows[m.group(1)] = (cells[3], i)
     return rows
@@ -272,7 +272,7 @@ COUNT_SKIP_FILES = {"CHANGELOG.md"}
 COUNT_SKIP_DIRS = {".git", "__pycache__", "integrity"}
 
 
-RANGE_RE = re.compile(r"(?:\[)?(\d{2})(?:\][^)]*\))?\s+through\s+(?:\[)?(\d{2})")
+RANGE_RE = re.compile(r"(?:\[)?(\d{2,})(?:\][^)]*\))?\s+through\s+(?:\[)?(\d{2,})")
 
 
 def changelog_covered(changelog, cfg):
@@ -306,7 +306,7 @@ def doctor_implemented_count(root):
     m = re.search(r"TRAP_PATHS\s*=\s*\{(.*?)\n\}", text, re.S)
     if not m:
         return None
-    return len(re.findall(r'"\d{2}"\s*:', m.group(1)))
+    return len(re.findall(r'"\d{2,}"\s*:', m.group(1)))
 
 
 def check_counts(root, n_entries, findings):

@@ -52,9 +52,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 MD_LINK = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
-ENTRY_FILE = re.compile(r"^(\d{2})-.+\.md$")
+ENTRY_FILE = re.compile(r"^(\d{2,})-.+\.md$")
 STATUS_START = re.compile(r"^\*\*Status:.*", re.M)
-BARE_ID = re.compile(r"^(\d{2})$")
+BARE_ID = re.compile(r"^(\d{2,})$")
 
 # Same skip rule registry_integrity uses for repo-relative GitHub namespaces:
 # these are correct links with no on-disk target.
@@ -196,7 +196,8 @@ def check_links_and_numbers(root, findings):
             m = BARE_ID.match(label.strip())
             if m and clean.endswith(".md"):
                 fn = os.path.basename(clean)
-                if fn[:2].isdigit() and fn[:2] != m.group(1):
+                fid = re.match(r"^(\d{2,})-", fn)
+                if fid and fid.group(1) != m.group(1):
                     findings.append(Finding(
                         "REF-NUMBER", "%s:%d" % (rel, ln),
                         "label [%s] points at %s: the text and the href "
@@ -254,7 +255,7 @@ def parse_table(path, idcol, statuscol):
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if len(cells) <= max(idcol, statuscol):
             continue
-        m = re.search(r"\[(\d{2})[,\]]", cells[idcol])
+        m = re.search(r"\[(\d{2,})[,\]]", cells[idcol])
         if m:
             rows[m.group(1)] = (cells[statuscol], i)
     return rows
