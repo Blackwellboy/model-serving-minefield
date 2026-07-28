@@ -24,6 +24,47 @@ One command, from either repo:
 python3 integrity/run_checks.py --peer ../laguna-s21-lab
 ```
 
+### If you do not have the peer repo
+
+You do not need it, and this section exists so you can tell a peerless run from
+a broken one. Drop the flag:
+
+```bash
+python3 integrity/run_checks.py
+```
+
+**What a correct peerless run looks like.** These lines are the run working, not
+the run failing:
+
+```
+claim propagation: 11 claims, 11 enforced, repos scanned: minefield
+  NOT SCANNED this run: bbio, laguna
+```
+
+```
+Ran 93 tests in 10.295s
+
+OK
+```
+
+The mutation suite is green at 93 tests with or without a peer. Exactly one
+test needs the peer checkout, and it skips itself with
+`peer repo not found; set MINEFIELD_PEER_REPO` rather than failing. A skip is
+not a failure and `OK` is not a partial pass. The cross-repo half of claim
+propagation is the only thing you lose, and it announces its own absence by
+name rather than reporting a clean scan it did not perform.
+
+**So if the suite goes red without a peer, the peer is not why.** Read the
+failure. It is a real one.
+
+This is written down because a contributor lost an afternoon to its absence.
+He ran the suite, saw it red, and spent the time deciding whether his own
+change had caused it, with nothing to compare against. The machinery was
+already honest: the loud skip and the `NOT SCANNED` line both date from the
+first integrity commit. What was missing was any statement of the baseline, so
+there was no way to rule the environment out. A guard that behaves correctly
+and is documented nowhere still costs somebody their afternoon.
+
 ## Run one check
 
 ```bash
