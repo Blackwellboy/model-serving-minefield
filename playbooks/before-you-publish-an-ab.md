@@ -136,6 +136,38 @@ couple of percent the row is invalid, not caveated.
 2. Fixed warm-up count, then an N-run median. Then check the warmed runs are
    stable: monotonic degradation across them is thermal throttling, a
    different artifact with the same shape.
+
+   **The replicate standard: three, of whatever unit actually carries your
+   variance.** Two replicates tell you whether the arms agree in direction.
+   They cannot tell you how far apart replicates of the *same* arm normally
+   sit, because two points have one degree of freedom and no usable spread.
+   Three is the smallest number that estimates its own noise.
+
+   The unit is not always a sampling seed. Identify what your variance
+   actually rides on and replicate *that*:
+
+   | Design | Replication unit |
+   |---|---|
+   | Sampled decoding, temperature above 0 | sampling seed |
+   | Greedy or logprob-scored, load-time property under test | **server restart** |
+   | Cross-machine claim | machine, then restart within machine |
+
+   Replicating seeds on a temperature-0 arm measures nothing, and replicating
+   restarts on a sampled arm confounds two sources. Name the unit next to the
+   count: "three restarts", not "three runs".
+
+   **The one substitution we accept.** You may run two replicates instead of
+   three if the variance estimate comes from a *dedicated* calibration measured
+   under the conditions you are running, rather than from the two replicates
+   themselves. Our agreement floor is that calibration. When you use it, say so
+   explicitly and re-measure the floor inside the run as a check, which costs
+   one extra arm per configuration and is what makes the substitution
+   auditable. Two replicates with no external floor is a single-seed result
+   with extra steps, and publishes as one.
+
+   The adjacent trap: reporting an aggregate across replicates that were not
+   the same configuration. Do not combine checkpoints, baselines, or transient
+   snapshots under one percentage.
 3. **Test the null.** Run the improved configuration on a build that does not
    contain the improvement. Cheapest disproof available, and the one that
    settled the finder's case.
