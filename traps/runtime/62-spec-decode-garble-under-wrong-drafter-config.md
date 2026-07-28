@@ -124,3 +124,24 @@ this entry 2026-07-28.
 community-reported by the serving stack's maintainer, inherited via our
 2026-07-22 operational note. Configuration forensics, the broken-versus-fixed
 table, the drafter-guard distinction and the check: Blackwellboy.
+
+## Added 2026-07-28: full CUDA graphs wedge decode on this hardware
+
+**Found by [@drowzeys](https://github.com/drowzeys) (Keys)**, shared from his public notes at [notes-for-DSV4F-DSpark-Abliteration](https://github.com/drowzeys/notes-for-DSV4F-DSpark-Abliteration). **Status: reported by others.** Not reproduced here, and not measured here either: this is a credited
+report from a stack we do not run, recorded because it sits on the same
+drafter-and-graph-capture surface this entry is about.
+
+On a dual DGX Spark (GB10, sm_121a) serving DeepSeek-V4-Flash under vLLM, Keys
+reports that enabling **full CUDA graphs** wedges decode. His working
+configuration disables them, and his notes treat that as a required setting
+rather than a tuning preference.
+
+Why it belongs here rather than as its own entry: this entry is already about a
+speculative-decode configuration that produces broken output rather than an
+error, and graph capture interacts with the drafter directly. Two configuration
+surfaces, one symptom class, and neither announces itself.
+
+**What this does NOT establish.** We have not reproduced it, we have not
+isolated it from the rest of his serve line, and no causal attribution is
+claimed. If you are debugging garbled or wedged decode on a speculative lane,
+add "are full CUDA graphs on" to the list of things to vary, one at a time.

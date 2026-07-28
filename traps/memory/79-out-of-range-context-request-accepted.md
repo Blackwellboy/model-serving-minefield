@@ -69,3 +69,18 @@ recorded cannot be diagnosed later.
 [trap 12](../evaluation/12-empty-content-at-token-ceiling.md),
 [trap 13](13-utilization-fraction-on-unified-memory.md),
 [trap 77](../reasoning/77-only-one-request-field-is-validated.md).
+
+## Added 2026-07-28: sizing max_tokens to the model rather than to the serve
+
+**Found by [@drowzeys](https://github.com/drowzeys) (Keys)**, shared from his public notes at [notes-for-DSV4F-DSpark-Abliteration](https://github.com/drowzeys/notes-for-DSV4F-DSpark-Abliteration). **Status: reported by others.** Not reproduced here.
+
+This entry is about a **context** request the server accepts and cannot honour.
+Keys reports the mirror-image sizing error on the **output** side: `max_tokens`
+chosen from what the model advertises rather than from what the lane was
+actually launched with. The two share a cause, which is that a number taken
+from the model card is not a statement about the running server, and they share
+a symptom, which is a request that is accepted and then cannot complete.
+
+The practical rule is the one this entry already gives, applied to the other
+parameter: read what the **serve line** established, not what the checkpoint
+advertises, and clamp client-side against that.
