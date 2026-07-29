@@ -273,4 +273,6 @@ different budget, different task mix.
 which is trap 12's own standing warning, and this addendum is an instance of it
 rather than an exception. Single serve, no baseline arm.
 
-*Status of this addendum: measured here, raw not published. Single serve, no baseline arm.*
+*Status of this addendum: reproduced here. Single serve, no baseline arm.*
+
+*Evidence for this addendum: [study](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/README.md), [scrubbed raw](https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/), [verify.py](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/verify.py) (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), [redaction record](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/REDACTIONS.md).*

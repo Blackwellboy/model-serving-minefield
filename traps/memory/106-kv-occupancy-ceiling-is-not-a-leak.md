@@ -2,12 +2,23 @@
 
 **Found by Blackwellboy.**
 
-**Status: measured here, raw not published.** 2026-07-28, a 2,400-request
+**Status: reproduced here.** 2026-07-28, a 2,400-request
 soak across 40 fixed request-count windows on a community abliterated
 DeepSeek-V4-Flash checkpoint, vLLM `0.21.1rc1.dev339+g1967a5627bc3`, tensor
-parallel 2 across two DGX Spark GB10 nodes, prefix caching enabled. The
-per-window counter snapshots are not published; the check below reproduces the
-reasoning from two counters on any lane.
+parallel 2 across two DGX Spark GB10 nodes, prefix caching enabled. The per-window counter snapshots are published in scrubbed form with a
+verifier; the check below additionally reproduces the reasoning from two
+counters on any lane.
+
+**Evidence.** Scrubbed raw, drivers and analysis are published and pinned to an
+immutable commit: [study README](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/README.md) -
+[methods](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/METHODS.md) -
+[scrubbed raw](https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/raw-scrubbed/) -
+[verify.py](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/verify.py) (17 checks, re-derives every number below) -
+[manifest](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/MANIFEST.md) -
+[checksums](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/SHA256SUMS) -
+[redaction record](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/REDACTIONS.md).
+Model-generated prose was removed and replaced by hashes and lengths; no record
+was dropped and every field these numbers are computed from is untouched.
 
 **The cause here was our own instrumentation, not the serve.** That is stated
 up front because it is the entire reason the entry is worth reading: we built
