@@ -18,14 +18,14 @@ added to the first column.
 | Ollama | [ollama.md](ollama.md) | 9 | 5 |
 | mlx_lm | [mlx.md](mlx.md) | 9 | 1 |
 | HF transformers `generate()` | [hf-transformers.md](hf-transformers.md) | 7 | 0 |
-| SGLang | [sglang.md](sglang.md) | 0 | 3 |
+| SGLang | [sglang.md](sglang.md) | 3 | 3 |
 | TensorRT-LLM | [tensorrt-llm.md](tensorrt-llm.md) | 0 | 0 |
 | text-generation-inference | [text-generation-inference.md](text-generation-inference.md) | 0 | 0 |
 | TabbyAPI, ExLlamaV2/V3 | [tabbyapi.md](tabbyapi.md) | 0 | 0 |
 | LM Studio | [lm-studio.md](lm-studio.md) | 1 | 0 |
 | text-generation-webui | [text-generation-webui.md](text-generation-webui.md) | 0 | 0 |
 
-The five stacks at zero measured entries have pages that say so and then do the
+The four stacks at zero measured entries have pages that say so and then do the
 only useful thing left: name **which of our mechanism classes most likely
 apply and why**, with the measured entry each class comes from, and how a
 reader would test for them. A page saying "we have not tested this, here is
@@ -54,20 +54,18 @@ Two honest limits on the numbers:
   **EXL3** as a quantization format and none of them names TabbyAPI or
   ExLlamaV2 as the server, which is why the TabbyAPI row is 0 rather than 5.
 - A low count means **nobody has reported here**, not that a stack is clean.
-  Every stack now has a page, including the five that have nothing first-party
+  Every stack now has a page, including the four that have nothing first-party
   to show, because "no page" and "no entries" read identically from outside
-  and mean different things. SGLang has zero entries and a
-  [feasibility note](../mining/2026-07-28-sglang-on-gb10-feasibility.md);
-  HF transformers has seven entries and not one of them measured here on that
-  stack. Both pages say so at the top.
+  and mean different things. HF transformers has seven entries and not one of
+  them measured here on that stack. Its page says so at the top.
 
   **Corrected 2026-07-28:** this paragraph previously said that no server had
   been started on SGLang for this registry. That stopped being true when
   SGLang was brought up first-party on our own hardware, and
   [CONTRIBUTING](../CONTRIBUTING.md#where-coverage-is-thin) was corrected at
-  the time while this page was not. The results of that session are written
-  and awaiting publication; the count above stays at zero until they land,
-  because the count is of published entries.
+  the time while this page was not. A later contributor field run now gives the
+  stack three published evidence surfaces in traps 02, 12 and 77; the count is
+  of those published entries, not of the still-unpublished first-party session.
 
 ## The rest of the map
 

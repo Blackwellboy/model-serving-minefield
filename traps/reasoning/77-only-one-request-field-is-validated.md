@@ -75,3 +75,17 @@ class this belongs to;
 [trap 03](03-enable-thinking-default-drift.md), which is why the default matters
 so much here; [trap 29](29-server-reasoning-off-is-not-an-off-switch.md), the
 same failure from the other direction.
+
+## Added 2026-07-28: SGLang accepts the invented top-level field too
+
+**SGLang 0.5.16, DGX Spark GB10, Nemotron 3 Nano NVFP4 and Laguna S 2.1
+NVFP4.** The paired baseline completed with HTTP 200, and the same request with
+an invented top-level field also completed with HTTP 200. The finding held on
+both checkpoints. Acceptance was not treated as proof that any real field was
+read: the thinking-off state was checked from the response on every measured
+arm.
+
+*Status of this addendum: contributor-measured, conditions as reported, by
+[@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
+conditions and the paired doctor assertions are in the
+[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
