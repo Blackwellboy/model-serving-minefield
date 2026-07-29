@@ -339,8 +339,17 @@ already accepts `--template-file`.
 
 ## Portability notes: SGLang 0.5.16 on DGX Spark
 
-Two contributor-measured runs completed all 14 requests against pinned NVFP4
-checkpoints on a GB10 lane. The Nemotron run executed 11 numbered checks and
+Two contributor-measured runs each issued **14 chat requests** against pinned
+NVFP4 checkpoints on a GB10 lane.
+
+**14 is what those two runs observed, not a maximum.** How many requests a run
+issues depends on which probes apply to the lane: a strict multimodal lane on
+which the primary off-control fires reaches **up to 17**, counted from the call
+sites as 2 request-validation, 4 reasoning controls (on, off, absent, plus one
+alternate off spelling), 1 streaming, 3 kwarg-deadness, 2 multimodal, 2 tool,
+2 tool-choice and 1 ceiling. Treat 14 as the observed count on those two lanes
+and 17 as the reachable budget, and do not size a rate limit or a lane window
+on the observed number. The Nemotron run executed 11 numbered checks and
 the Laguna run executed 8. The saved assertions matched independent request
 controls: trap 77's invented top-level field was accepted on both lanes, and
 Laguna reproduced the trap 12 cap-hit and trap 02 orphan-close response shapes.

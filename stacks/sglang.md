@@ -6,10 +6,11 @@
 **3 entries name SGLang** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 
-This page exists anyway, because "no page" and "no entries" read the same from
-outside and they mean different things. **Zero entries here does not mean this
-stack is clean.** It means nobody has reported one, which for most of this
-registry's life was because nobody here had run it.
+This page began as a zero-entry page, when "no page" and "no entries" read the
+same from outside and meant different things. **That is no longer the case:
+three entries now name SGLang**, all contributor-measured. The zero-entry
+caveat is kept below only as the reason the page was created, not as a
+description of the stack today.
 
 ## Where this stack actually stands
 
@@ -111,8 +112,16 @@ plain questions in the
 does the rest. Scrub hostnames, paths and tokens out of anything you paste;
 the form shows you how.
 
-The most valuable single report would be **the reasoning field and the
-thinking toggle**: which key the reasoning text arrives under, which spelling
-of the toggle the server accepts, and what it does with the spellings it does
-not accept. That combination is where this registry has found the most damage
-on every other stack, and on this one it is unwritten.
+The reasoning field and thinking toggle are **no longer unwritten on this
+stack**. The contributor field run established the reasoning field, exercised
+the toggle, and its evidence is why SGLang now appears in
+`STACKS_WITH_KNOWN_OFF_CONTROL`, with a regression test behind it. Status is
+**contributor-measured, conditions as reported**; the maintainers have not
+reproduced those conditions.
+
+**What is still unwritten here** is narrower and worth naming precisely: the
+**degraded longer-form Laguna output** and its mechanism. The run recorded
+incoherent chat-completion output and a transformers Mistral-regex warning, ran
+no controlled fix, and deliberately did not attribute the degradation to the
+tokenizer, the quantisation, the parser pairing or any other layer. That
+remains open and unowned.
