@@ -291,19 +291,33 @@ ORPHAN_PATTERNS = [
 ]
 
 CAPTURED_OUTPUT_DIRS = ("mining/",)
-FENCE_RE = re.compile(r"^\s*```")
+# A fence is at most three spaces indented; four or more spaces is an
+# INDENTED CODE BLOCK, not a fence, and treating it as one would flip
+# in_fence and exempt every live count claim after it. Both CommonMark fence
+# characters are recognised, and a fence is only closed by its own character,
+# so a ``` inside a ~~~ block does not end it.
+FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 
 
 def _code_spans(line):
-    """Character ranges covered by inline `code` spans on this line."""
+    """Character ranges covered by inline `code` spans on this line.
+
+    A BACKSLASH-ESCAPED backtick does not open or close a span: Markdown
+    renders it literally. Counting it would let ordinary prose that happens to
+    contain escaped backticks look like captured output, which would exempt a
+    live claim.
+    """
     spans, start = [], None
     for i, ch in enumerate(line):
-        if ch == "`":
-            if start is None:
-                start = i
-            else:
-                spans.append((start, i))
-                start = None
+        if ch != "`":
+            continue
+        if i and line[i - 1] == "\\":
+            continue
+        if start is None:
+            start = i
+        else:
+            spans.append((start, i))
+            start = None
     return spans
 
 
@@ -499,11 +513,17 @@ def check_counts(root, n_entries, findings):
                 continue
             rel = os.path.relpath(os.path.join(dp, fn), root).replace("\\", "/")
             text = read(os.path.join(dp, fn))
-            in_fence = False
+            fence_char = None
             for i, line in enumerate(text.splitlines(), 1):
-                if FENCE_RE.match(line):
-                    in_fence = not in_fence
+                fm = FENCE_RE.match(line)
+                if fm:
+                    ch = fm.group(1)[0]
+                    if fence_char is None:
+                        fence_char = ch
+                    elif ch == fence_char:
+                        fence_char = None
                     continue
+                in_fence = fence_char is not None
                 for rx, total_g, impl_g in TOTAL_PATTERNS:
                     for m in rx.finditer(line):
                         if is_captured_output(rel, line, m.span(), in_fence):

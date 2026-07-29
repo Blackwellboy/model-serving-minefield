@@ -27,6 +27,7 @@ import tempfile
 import unittest
 
 NL = chr(10)
+BT = chr(96)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INTEGRITY = os.path.dirname(HERE)
@@ -351,6 +352,56 @@ class RegistryMutations(unittest.TestCase):
         self.assertTrue(any("SCRATCH_NOTE.md" in f["where"]
                             for f in findings_of(out, "COUNT")))
 
+
+
+    # Three Markdown-parsing edge cases Codex found on the first version of
+    # this rule. Two of them widened the exemption, which is the dangerous
+    # direction: an over-strict rule annoys, an over-loose one lets a stale
+    # live claim through.
+
+    def test_50_indented_backticks_are_not_a_fence(self):
+        """Four or more leading spaces is an indented code block, not a fence.
+        Treating it as one would flip fence state and exempt every live count
+        claim after it."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-indented.md")
+        body = NL.join(["# note", "",
+                        "    " + BT * 3,
+                        "", "The doctor covers 19 of these %d entries." % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-indented.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "an indented backtick line must not open a fence")
+
+    def test_51_tilde_fenced_capture_is_exempt(self):
+        """Tilde fences are valid Markdown and carry captured output too."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-tilde.md")
+        body = NL.join(["# note", "", "~~~",
+                        "implemented 19/%d" % (n - 4),
+                        "~~~"]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-tilde.md" in f["where"]]
+        self.assertEqual(counts, [], "a tilde-fenced capture must be exempt")
+
+    def test_52_escaped_backticks_do_not_make_a_code_span(self):
+        """Escaped backticks render literally. Counting them would let prose
+        masquerade as captured output."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-escaped.md")
+        esc = chr(92) + BT
+        body = NL.join(["# note", "",
+                        "Prose with " + esc + "implemented 19/%d" % (n - 4) + esc + " inline."]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-escaped.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "escaped backticks must not open a code span")
 
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
