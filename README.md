@@ -26,6 +26,17 @@ check it), and **under test**. Entries that are reported, contributed or
 unreproduced are welcome here and labelled, never rejected; what the label
 protects is your ability to tell them apart at a glance.
 
+[![integrity](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml)
+[![surfaces](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml)
+
+The second badge is the one worth explaining. `surfaces` runs hourly and asks
+whether the public pages still agree with this tree, including the Pages site
+in another repo. It does not gate a push, because the site rebuilds after the
+push that moves this tree and cannot have caught up at that moment. It goes red
+when a published figure has actually drifted. It is here rather than only in the
+Actions tab because the last two guards in this project were built and then sat
+unwired, and a count nobody looks at is not a check.
+
 > **Reading this as an agent?** [`llms.txt`](llms.txt) is a short routing file
 > written for you: the three doors, the order to try them, how to read a status
 > line, and what to do on a miss. It names no counts, on purpose.
