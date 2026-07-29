@@ -213,6 +213,20 @@ Two Ollama-specific notes that keep it from being confused with its neighbours:
 
 *Status of this addendum: reproduced here. Freely obtainable stack, two requests.*
 
+## Added 2026-07-28: reproduced on SGLang
+
+**SGLang 0.5.16, Laguna S 2.1 NVFP4 on DGX Spark GB10.** The doctor's hard
+task returned HTTP 200 with `finish_reason=length`, empty content and 569
+characters of reasoning at `max_tokens=512`. Its one-sample degeneration
+screen read as honest truncation (unique-line ratio 1.00, zlib ratio 0.34).
+This establishes the cap-hit shape on the stack; it does not establish a
+conversion floor.
+
+*Status of this addendum: contributor-measured, conditions as reported, by
+[@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
+conditions and the complete doctor coverage line are in the
+[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+
 ## Added 2026-07-29: the rate under organic load, and which families carry it
 
 **Status: reproduced here.** 2,045 turns over 13.009 h,

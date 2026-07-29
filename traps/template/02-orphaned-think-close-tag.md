@@ -62,3 +62,16 @@ mounting it, the above is the default experience.
 *Status of this addendum: reproduced here. The pre-opened block is in the
 public chat template and the parser-less arm is one serve flag away on any
 lane.*
+
+## Added 2026-07-28: reproduced on SGLang
+
+**SGLang 0.5.16, `poolside_v1` reasoning parser, Laguna S 2.1 NVFP4 on DGX
+Spark GB10.** The doctor's absent-kwarg arm started visible content with an
+orphan `</think>`. Neither explicit arm did. An independent three-arm request
+also exposed a bare closer in the absent arm, while explicit thinking-on and
+thinking-off responses carried no visible think tags.
+
+*Status of this addendum: contributor-measured, conditions as reported, by
+[@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
+conditions and the Q7/Q8 disposition are in the
+[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*

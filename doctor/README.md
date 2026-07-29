@@ -216,8 +216,10 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **12 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. It also calls render or tokenise routes
+  **17 chat completions**, each capped at 512 output tokens or less, all at
+  temperature 0. 17 is the reachable budget when every applicable probe runs;
+  a lane that skips probes issues fewer, and two contributor-measured SGLang
+  runs issued 14. Size any rate limit on 17, not on an observed count. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.
@@ -336,6 +338,39 @@ skip had left invisible (trap 20's mlx_lm section), which is the argument for
 building it. Until then, use
 [checks/preflight_template.py](../checks/preflight_template.py), which
 already accepts `--template-file`.
+
+## Portability notes: SGLang 0.5.16 on DGX Spark
+
+Two contributor-measured runs each issued **14 chat requests** against pinned
+NVFP4 checkpoints on a GB10 lane.
+
+**14 is what those two runs observed, not a maximum.** How many requests a run
+issues depends on which probes apply to the lane: a strict multimodal lane on
+which the primary off-control fires reaches **up to 17**, counted from the call
+sites as 2 request-validation, 4 reasoning controls (on, off, absent, plus one
+alternate off spelling), 1 streaming, 3 kwarg-deadness, 2 multimodal, 2 tool,
+2 tool-choice and 1 ceiling. Treat 14 as the observed count on those two lanes
+and 17 as the reachable budget, and do not size a rate limit or a lane window
+on the observed number. The Nemotron run executed 11 numbered checks and
+the Laguna run executed 8. The saved assertions matched independent request
+controls: trap 77's invented top-level field was accepted on both lanes, and
+Laguna reproduced the trap 12 cap-hit and trap 02 orphan-close response shapes.
+Inconclusive quantisation and toggle results stayed inconclusive. Full
+conditions and the Q7/Q8 disposition are in the
+[SGLang field note](../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).
+
+The probes were portable; stack detection was not. SGLang exposes neither
+`/props` nor `/version`, so both reports originally printed the anonymous
+OpenAI-compatible label even though `/v1/models` returned
+`owned_by: "sglang"`. The detector now reads that model-row field before it
+falls through to the anonymous bucket. A fixture carrying the real response
+shape failed before this change and passes after it. The same field run
+established that SGLang reads
+`chat_template_kwargs.enable_thinking`, so SGLang is also in the doctor's set
+of stacks with a known off-control spelling.
+
+*Status of this field report: contributor-measured, conditions as reported, by
+[@newageinvestments25-byte](https://github.com/newageinvestments25-byte).*
 
 ## What it cannot see
 

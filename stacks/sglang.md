@@ -1,19 +1,21 @@
 # SGLang
 
-**Measured here:** yes (served first-party on GB10; zero published entries yet, which is a different thing from not having run it)
+**Measured here:** yes (served first-party and contributor-measured on GB10)
 
 
-**0 entries name SGLang** in their evidence surfaces (see
+**3 entries name SGLang** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 
-This page exists anyway, because "no page" and "no entries" read the same from
-outside and they mean different things. **Zero entries here does not mean this
-stack is clean.** It means nobody has reported one, which for most of this
-registry's life was because nobody here had run it.
+This page began as a zero-entry page, when "no page" and "no entries" read the
+same from outside and meant different things. **That is no longer the case:
+three entries now name SGLang**, all contributor-measured. The zero-entry
+caveat is kept below only as the reason the page was created, not as a
+description of the stack today.
 
 ## Where this stack actually stands
 
-Two things have happened, and neither of them is a published entry yet.
+Three things have happened. The newest one is published and closes two of the
+stack's pre-registered questions.
 
 **It is not infeasible on this hardware class.** The packaging question was
 settled on 2026-07-28 and the working is published:
@@ -27,9 +29,18 @@ published here yet.**
 [CONTRIBUTING](../CONTRIBUTING.md#where-coverage-is-thin) carries the dated
 correction: SGLang has been brought up on our own hardware, the
 reasoning-parser null-content report that was the standing open ask has been
-tested, and its disposition is written and awaiting publication. Until those
-land, **this page has nothing first-party to show you**, and saying so is more
-useful than an empty table implying the stack was examined and found clean.
+that report was tested, and its disposition is written and awaiting publication.
+
+**A contributor then ran the control SGLang session through generation and
+ran the doctor against both endpoints.** The
+[DGX Spark field note](../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md)
+records the pinned models, package set, launch conditions and response shapes.
+Q7 is refuted under its pre-registered first-generation criterion: the
+non-Laguna NVFP4 control generated first, then Laguna loaded its
+`CompressedTensorsW4A4Nvfp4MoE` path and generated a correct first token. Q8 is
+confirmed: two doctor runs completed with meaningful bounded verdicts. Longer
+Laguna output was degraded, so none of this is a correctness or production
+support claim.
 
 The blocked-candidate records from before that session are still worth reading
 for what they rule out and why:
@@ -39,10 +50,13 @@ and
 
 ## What to check anyway, from the cross-stack classes
 
-None of these is an SGLang finding. They are the registry's stack-independent
-classes, and they are the cheapest things to run on a server nobody here has
-characterised. If one of them bites you on SGLang, that is exactly the report
-this page is missing.
+Three of these are now SGLang findings: orphan `</think>` in the absent-kwarg
+arm ([02](../traps/template/02-orphaned-think-close-tag.md)), empty content at a
+real token ceiling ([12](../traps/evaluation/12-empty-content-at-token-ceiling.md))
+and silent acceptance of an invented top-level request field
+([77](../traps/reasoning/77-only-one-request-field-is-validated.md)). They are
+all contributor-measured, conditions as reported. The remaining classes are
+still cross-stack checks rather than SGLang findings.
 
 **1. Read every plausible spelling of the reasoning field.** The name of the
 field carrying chain-of-thought is a property of the serving stack, not of the
@@ -77,25 +91,37 @@ and the quant label not being the kernel path
 
 ## What the doctor can do here
 
-The [doctor](../doctor/) talks to an OpenAI-compatible endpoint, and SGLang
-serves one, so the request-shaped checks should run. **Should** is the right
-word: no field report for this stack is published, and the doctor's own README
-is explicit that a clean run is a statement about the handful of trap ids in
-its `clean` count and never a bill of health. Run it, and if it reports
-something odd or refuses to identify the stack, that is worth an issue on its
-own.
+The [doctor](../doctor/) now has a field run against SGLang 0.5.16. It completed
+14 requests against each of two models and produced meaningful verdicts. That
+run also found a reporting defect: SGLang exposes neither `/props` nor
+`/version`, so the report fell into the anonymous OpenAI-compatible bucket even
+though `/v1/models` said `owned_by: "sglang"`. The doctor now recognises that
+response shape, with a regression fixture. Its own README remains explicit
+that a clean count covers only the numbered checks it actually executed and is
+never a bill of health.
 
 ## Where a report would help most
 
-Anything at all. This is the emptiest page in the registry and the bar is low:
-you do not need a writeup, a reproduction, or confidence that what you hit was
-real. Four plain questions in the
+The highest-value next report is a controlled fix for the degraded Laguna
+output recorded in the field note. The same lane emitted a Mistral-regex
+tokenizer warning, selected compressed-tensors NVFP4, and produced degraded
+text; no single cause was isolated, so the mechanism remains open. A report
+does not need a writeup or confidence that the first hypothesis is right. Four
+plain questions in the
 [easy door](../../../issues/new?template=report-a-trap.yml), and a maintainer
 does the rest. Scrub hostnames, paths and tokens out of anything you paste;
 the form shows you how.
 
-The most valuable single report would be **the reasoning field and the
-thinking toggle**: which key the reasoning text arrives under, which spelling
-of the toggle the server accepts, and what it does with the spellings it does
-not accept. That combination is where this registry has found the most damage
-on every other stack, and on this one it is unwritten.
+The reasoning field and thinking toggle are **no longer unwritten on this
+stack**. The contributor field run established the reasoning field, exercised
+the toggle, and its evidence is why SGLang now appears in
+`STACKS_WITH_KNOWN_OFF_CONTROL`, with a regression test behind it. Status is
+**contributor-measured, conditions as reported**; the maintainers have not
+reproduced those conditions.
+
+**What is still unwritten here** is narrower and worth naming precisely: the
+**degraded longer-form Laguna output** and its mechanism. The run recorded
+incoherent chat-completion output and a transformers Mistral-regex warning, ran
+no controlled fix, and deliberately did not attribute the degradation to the
+tokenizer, the quantisation, the parser pairing or any other layer. That
+remains open and unowned.
