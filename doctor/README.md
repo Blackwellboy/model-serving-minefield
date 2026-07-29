@@ -216,8 +216,10 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **14 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. It also calls render or tokenise routes
+  **17 chat completions**, each capped at 512 output tokens or less, all at
+  temperature 0. 17 is the reachable budget when every applicable probe runs;
+  a lane that skips probes issues fewer, and two contributor-measured SGLang
+  runs issued 14. Size any rate limit on 17, not on an observed count. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.
