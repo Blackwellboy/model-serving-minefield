@@ -52,8 +52,8 @@ import contradiction_gate as _contradiction
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-ENTRY_RE = re.compile(r"^(\d{2})-.+\.md$")
-STUB_RE = re.compile(r"^(\d{2})-.+\.md$")
+ENTRY_RE = re.compile(r"^(\d{2,})-.+\.md$")
+STUB_RE = re.compile(r"^(\d{2,})-.+\.md$")
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 STATUS_LINE_RE = re.compile(r"^\*\*Status:\s*(.+?)\*\*", re.M)
 STATUS_LOOSE_RE = re.compile(r"^\*\*Status:\s*(.+)$", re.M)
@@ -165,6 +165,22 @@ def collect_entries(root):
     return entries, stubs
 
 
+def next_free_number(root):
+    """The lowest unused two-digit id, counting stubs as used.
+
+    Lowest-unused rather than highest-plus-one on purpose: a gap in the
+    sequence is a number nobody holds, and handing it out is better than
+    letting the range creep. If there is no gap this is highest-plus-one
+    anyway. Returns a string so it prints with its leading zero.
+    """
+    entries, stubs = collect_entries(root)
+    taken = {int(k) for k in list(entries) + list(stubs) if k.isdigit()}
+    n = 1
+    while n in taken:
+        n += 1
+    return "%02d" % n
+
+
 def readme_rows(root):
     """Parse the README symptom table into {id: (status_cell, line_no)}."""
     rows = {}
@@ -182,7 +198,7 @@ def readme_rows(root):
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if len(cells) < 4 or set(cells[0]) <= set("- "):
                 continue
-            m = re.search(r"\[(\d{2})\]\(traps/", cells[2])
+            m = re.search(r"\[(\d{2,})\]\(traps/", cells[2])
             if m:
                 rows[m.group(1)] = (cells[3], i)
     return rows
@@ -236,6 +252,12 @@ TOTAL_PATTERNS = [
     (re.compile(r"implemented\s+(\d+)\s*/\s*(\d+)"), 2, 1),
     # the same line built in a test f-string: implemented {len(md.TRAP_PATHS)}/42
     (re.compile(r"implemented\s+\{[^}]*\}\s*/\s*(\d+)"), 1, None),
+    # "all 42 entries", "All 42 entries". Two of these sat in README.md
+    # unguarded while the neighbouring "N of these 42 entries" lines were
+    # checked, so the same number was enforced in one sentence and typed by
+    # hand two paragraphs later. A total is a total however the sentence
+    # around it is phrased.
+    (re.compile(r"\b[Aa]ll\s+(\d+)\s+entries\b"), 1, None),
 ]
 
 # Counts that state neither the total nor the implemented count, but their
@@ -256,7 +278,7 @@ COUNT_SKIP_FILES = {"CHANGELOG.md"}
 COUNT_SKIP_DIRS = {".git", "__pycache__", "integrity"}
 
 
-RANGE_RE = re.compile(r"(?:\[)?(\d{2})(?:\][^)]*\))?\s+through\s+(?:\[)?(\d{2})")
+RANGE_RE = re.compile(r"(?:\[)?(\d{2,})(?:\][^)]*\))?\s+through\s+(?:\[)?(\d{2,})")
 
 
 def changelog_covered(changelog, cfg):
@@ -290,7 +312,127 @@ def doctor_implemented_count(root):
     m = re.search(r"TRAP_PATHS\s*=\s*\{(.*?)\n\}", text, re.S)
     if not m:
         return None
-    return len(re.findall(r'"\d{2}"\s*:', m.group(1)))
+    return len(re.findall(r'"\d{2,}"\s*:', m.group(1)))
+
+
+# ---- counts written as words, and the playbook list -----------------------
+# A total spelled out as a word is invisible to every pattern above, because
+# they all match digits. README.md carried "Ninety-seven entries is too many to
+# read" on its first screen while five digit-written totals beside it were
+# enforced and correct. Nothing could have caught it: the guard was not weak
+# here, it was blind. So spelled-out cardinals in front of "entries" are simply
+# refused, and the fix is to write the number in digits where the COUNT
+# patterns can see it.
+WORD_TOTAL_RE = re.compile(
+    r"(?i)\b((?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)"
+    r"(?:[-\s](?:one|two|three|four|five|six|seven|eight|nine))?|"
+    r"a hundred|one hundred)\s+entries\b")
+
+# The playbooks list is a second count with no guard: README named four jobs
+# and linked four files while the tree held five, and playbooks/README said
+# "all four" in a heading. Counted from the tree, checked against both.
+PLAYBOOK_COUNT_RE = re.compile(
+    r"(?i)\b(three|four|five|six|seven|eight|nine|ten|\d+)\s+"
+    r"(?:ordered\s+checklists|jobs\b)")
+PLAYBOOK_ALL_RE = re.compile(r"(?i)\bbelongs to all (three|four|five|six|seven|eight|nine|ten|\d+)\b")
+_WORDNUM = {"three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+            "eight": 8, "nine": 9, "ten": 10}
+
+
+def _as_int(tok):
+    return _WORDNUM.get(tok.lower(), None) if not tok.isdigit() else int(tok)
+
+
+def check_word_counts(root, n_entries, findings):
+    for rel in ("README.md", "CORE.md", "CONTRIBUTING.md"):
+        p = os.path.join(root, rel)
+        if not os.path.exists(p):
+            continue
+        # Scanned as ONE string, not line by line. The instance this was built
+        # for was wrapped across a line break ("Ninety-seven\nentries is too
+        # many to read"), so a per-line scan cannot see it, which is how the
+        # first version of this check passed its own mutation test. The line
+        # number is recovered from the match offset.
+        text = read(p)
+        for m in WORD_TOTAL_RE.finditer(text):
+            ln = text.count("\n", 0, m.start()) + 1
+            findings.append(Finding(
+                "COUNT-WORD", "%s:%d" % (rel, ln),
+                "registry total written as a word (%r). Every COUNT pattern "
+                "matches digits, so a word is unguarded and goes stale "
+                "silently. Write it in digits."
+                % " ".join(m.group(1).split())))
+
+    pb = os.path.join(root, "playbooks")
+    if not os.path.isdir(pb):
+        return
+    n = len([f for f in os.listdir(pb)
+             if f.endswith(".md") and f != "README.md"])
+    for rel, rx in (("README.md", PLAYBOOK_COUNT_RE),
+                    ("playbooks/README.md", PLAYBOOK_COUNT_RE),
+                    ("playbooks/README.md", PLAYBOOK_ALL_RE)):
+        p = os.path.join(root, rel)
+        if not os.path.exists(p):
+            continue
+        for i, line in enumerate(read(p).splitlines(), 1):
+            for m in rx.finditer(line):
+                v = _as_int(m.group(1))
+                if v is not None and v != n:
+                    findings.append(Finding(
+                        "PLAYBOOK-COUNT", "%s:%d" % (rel, i),
+                        "declares %s playbooks, tree has %d (%s)"
+                        % (m.group(1), n, m.group(0))))
+
+
+DOCTOR_PROSE_RE = re.compile(r"Its\s+(\d+)\s+checks")
+
+
+def check_doctor_prose(root, findings):
+    """doctor/README's opening sentence must equal len(TRAP_PATHS).
+
+    It said "Its 18 checks" while the same file said 19 two hundred lines
+    later and the tool itself carried 19. That mattered beyond the page: the
+    site generator parses this exact sentence, so the public homepage
+    published 18. A number that another repo reads is not prose.
+    """
+    p = os.path.join(root, "doctor", "README.md")
+    if not os.path.exists(p):
+        return
+    implemented = doctor_implemented_count(root)
+    if implemented is None:
+        return
+    text = read(p)
+    for m in DOCTOR_PROSE_RE.finditer(text):
+        if int(m.group(1)) != implemented:
+            ln = text.count("\n", 0, m.start()) + 1
+            findings.append(Finding(
+                "DOCTOR-PROSE", "doctor/README.md:%d" % ln,
+                "opening sentence says %s checks, TRAP_PATHS has %d. The site "
+                "generator parses this sentence, so a mismatch publishes the "
+                "wrong number off-repo" % (m.group(1), implemented)))
+
+
+# llms.txt is a routing file for agents and must carry NO counts. Every count
+# in this repo has gone stale at least once, on the README first screen, in the
+# doctor's opening sentence, in the playbook list and on the public site. A
+# routing file that names a number rots the same way, and unlike a prose page
+# nobody re-reads it. The rule is simpler to enforce than to remember, so it is
+# enforced: any bare two-or-more digit number fails.
+LLMS_COUNT_RE = re.compile(r"(?<![\w.\-/])\d{2,}(?![\w.\-/])")
+
+
+def check_llms_txt(root, findings):
+    p = os.path.join(root, "llms.txt")
+    if not os.path.exists(p):
+        return
+    text = read(p)
+    for m in LLMS_COUNT_RE.finditer(text):
+        ln = text.count("\n", 0, m.start()) + 1
+        findings.append(Finding(
+            "LLMS-COUNT", "llms.txt:%d" % ln,
+            "bare number %r. llms.txt must name no counts: every count in this "
+            "repo has gone stale at least once, and a routing file that carries "
+            "one rots the same way with nobody re-reading it" % m.group(0)))
 
 
 def check_counts(root, n_entries, findings):
@@ -462,6 +604,9 @@ def run(root):
             check_links(root, rel, findings)
 
     implemented = check_counts(root, len(entries), findings)
+    check_word_counts(root, len(entries), findings)
+    check_doctor_prose(root, findings)
+    check_llms_txt(root, findings)
     return findings, len(entries), len(stubs), implemented
 
 
@@ -497,6 +642,16 @@ def main():
     print("registry integrity: %s" % root)
     print("  entries counted: %d   redirect stubs (not counted): %d   "
           "doctor TRAP_PATHS: %s" % (n_entries, n_stubs, implemented))
+    # Derived, never stored. A NEXT_NUMBER file would be a second place the
+    # number lives, it would go stale the moment somebody landed without
+    # updating it, and two concurrent contributions would collide on the
+    # coordination mechanism as well as on the number. This is computed from
+    # the tree every run, so it is correct at the moment it is read and there
+    # is nothing to keep in sync. Stubs count as taken: a redirect stub is a
+    # number that was used and must not be handed out again.
+    print("  next free trap number: %s   (derived from the tree, not stored; "
+          "numbers are provisional and rebased at merge, see CONTRIBUTING)"
+          % next_free_number(root))
     if not findings:
         print("  CLEAN: %d checks over %d entries, no findings"
               % (8 * n_entries + n_stubs, n_entries))

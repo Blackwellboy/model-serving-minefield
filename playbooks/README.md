@@ -23,7 +23,7 @@ weighted-aggregate reasoning is adapted from
 (MIT), and the measured Simpson's-paradox example in it is ours and new. It is
 credited in the playbook text.
 
-## One rule that belongs to all four
+## One rule that belongs to all five
 
 **Readiness is a completed generation, not an endpoint answering.** Wherever a
 playbook says "wait for the lane", that means one small request with a real
@@ -36,5 +36,5 @@ things it has already cost, are in
 ## If you would rather not work through a list
 
 [Run the doctor](../doctor/) against the endpoint. It implements checks for
-18 of this registry's 97 numbered entries, it is a thinking-stack preflight
+19 of this registry's 103 numbered entries, it is a thinking-stack preflight
 rather than a broad bill of health, and it prints its own coverage every run.

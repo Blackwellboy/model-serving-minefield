@@ -58,6 +58,12 @@ def main():
                     help="path to the other public repo, so claim propagation "
                          "can see both. Without it the run says which repo was "
                          "NOT scanned.")
+    ap.add_argument("--bbio", default=os.environ.get("MINEFIELD_BBIO_REPO"),
+                    help="path to a clone of the Blackwellboy.github.io Pages "
+                         "site. CI scans it and this script could not, so a "
+                         "pre-push run passed while the most public surface "
+                         "of the three went unchecked. Pass it, or set "
+                         "MINEFIELD_BBIO_REPO.")
     ap.add_argument("--kit", default=os.environ.get("MINEFIELD_SANITIZER_KIT",
                                                     DEFAULT_KIT))
     ap.add_argument("--base", default=None, help="diff base for do-not-cite")
@@ -79,6 +85,15 @@ def main():
                         run("1b. REFERENCE INTEGRITY",
                             [py, os.path.join(HERE, "reference_integrity.py"),
                              "--root", root])))
+        # Separate from registry integrity because it enforces a different
+        # contract over a different directory: upstream/ is the fourth tier,
+        # its entries are not registry entries, and folding the two together
+        # would put unmeasured material inside the checker whose job is the
+        # measured registry.
+        results.append(("upstream tier",
+                        run("1c. UPSTREAM TIER",
+                            [py, os.path.join(HERE, "upstream_integrity.py"),
+                             "--root", root])))
     else:
         print("1. REGISTRY INTEGRITY: not applicable, %s has no traps/ tree\n"
               % root)
@@ -93,6 +108,16 @@ def main():
     for k, v in repos.items():
         if v:
             cmd += ["--repo", "%s=%s" % (k, v)]
+    if args.bbio:
+        bb = os.path.abspath(os.path.expanduser(args.bbio))
+        if os.path.isdir(bb):
+            cmd += ["--repo", "bbio=%s" % bb]
+        else:
+            print("NOTE: --bbio %s is not a directory; the Pages site will "
+                  "NOT be scanned by this run.\n" % bb)
+    else:
+        print("NOTE: no --bbio path given. The Pages site is the most public "
+              "of the three surfaces and CI scans it; this run does not.\n")
     results.append(("claim propagation", run("2. CLAIM PROPAGATION", cmd)))
 
     dnc = [py, os.path.join(HERE, "do_not_cite.py"), "--root", root]
@@ -151,6 +176,26 @@ def main():
                                              [py, os.path.join(suite, fn)],
                                              cwd=root) or 0)
                 results.append((suite, rc))
+
+    # 6. Public surfaces. Local surfaces gate here; peer surfaces are printed
+    # with a DEFERRED block naming the scheduled workflow that gates them.
+    #
+    # The peer half cannot gate a push. The site rebuilds AFTER the push that
+    # moves HEAD, so at push time it cannot have caught up, and asserting that
+    # it has would fail on every push. A missing peer still fails, in both
+    # modes: absent is not stale.
+    # --bbio, not --peer. --peer is the laguna lab, for claim propagation;
+    # the Pages site is a different repo and already has its own flag. Passing
+    # the site as --peer registers it as laguna and makes claim propagation
+    # scan the wrong tree, which is how this was first written and how the
+    # suite caught it.
+    surf = [py, os.path.join(HERE, "verify_surfaces.py"),
+            "--root", root, "--peer-mode", "defer"]
+    if args.bbio:
+        surf += ["--peer",
+                 "bbio=%s" % os.path.abspath(os.path.expanduser(args.bbio))]
+    results.append(("public surfaces (peers deferred)",
+                    run("6. PUBLIC SURFACES", surf, cwd=root)))
 
     print("=" * 72)
     print("SUMMARY")

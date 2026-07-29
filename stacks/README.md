@@ -4,14 +4,33 @@ One page per stack: the five entries most likely to bite you there, and the
 three checks to run before anything else. This is reorganisation, not new
 material. Every claim on these pages is published in the entry it links.
 
-| Stack | Page | Entries naming this stack |
-|---|---|---|
-| vLLM | [vllm.md](vllm.md) | 51 |
-| llama.cpp and GGUF | [llama-cpp.md](llama-cpp.md) | 34 |
-| Ollama | [ollama.md](ollama.md) | 9 |
-| mlx_lm | [mlx.md](mlx.md) | 9 |
-| HF transformers `generate()` | no page yet | 7 |
-| SGLang | no page yet | 0 |
+**Two columns, and the difference between them is the point.** *Entries* are
+measured: somebody ran it. *Upstream-reported* entries are from
+[`upstream/`](../upstream/), where **nobody here has reproduced anything**:
+they are credited reports from other people's trackers, published so a reader
+with the stack can settle them. They never count as coverage and they are never
+added to the first column.
+
+| Stack | Page | Entries naming this stack | Upstream-reported |
+|---|---|---|---|
+| vLLM | [vllm.md](vllm.md) | 51 | 3 |
+| llama.cpp and GGUF | [llama-cpp.md](llama-cpp.md) | 34 | 0 |
+| Ollama | [ollama.md](ollama.md) | 9 | 5 |
+| mlx_lm | [mlx.md](mlx.md) | 9 | 1 |
+| HF transformers `generate()` | [hf-transformers.md](hf-transformers.md) | 7 | 0 |
+| SGLang | [sglang.md](sglang.md) | 0 | 3 |
+| TensorRT-LLM | [tensorrt-llm.md](tensorrt-llm.md) | 0 | 0 |
+| text-generation-inference | [text-generation-inference.md](text-generation-inference.md) | 0 | 0 |
+| TabbyAPI, ExLlamaV2/V3 | [tabbyapi.md](tabbyapi.md) | 0 | 0 |
+| LM Studio | [lm-studio.md](lm-studio.md) | 1 | 0 |
+| text-generation-webui | [text-generation-webui.md](text-generation-webui.md) | 0 | 0 |
+
+The five stacks at zero measured entries have pages that say so and then do the
+only useful thing left: name **which of our mechanism classes most likely
+apply and why**, with the measured entry each class comes from, and how a
+reader would test for them. A page saying "we have not tested this, here is
+what to check" narrows a stranger's search without claiming anything. Absence
+of a page did not.
 
 ## How those counts were derived, and what they do not mean
 
@@ -28,10 +47,27 @@ Two honest limits on the numbers:
   both count toward vLLM, and in both the vLLM mention is the working path
   rather than the defect. Read the count as "entries that have something to
   say about this stack", not "defects in this stack".
-- A stack with no page and a low count means **nobody has reported here**, not
-  that it is clean. SGLang has zero entries and one
-  [feasibility note](../mining/2026-07-28-sglang-on-gb10-feasibility.md); no
-  server has been started on it for this registry.
+- The LM Studio count of 1 is **inherited, not measured**: trap
+  [24](../traps/template/24-official-template-breaks-cpp-jinja.md) names it as
+  an environment the C++ Jinja portability defect applies to, and that entry
+  was measured on llama.cpp. Its page says so. Similarly, five entries name
+  **EXL3** as a quantization format and none of them names TabbyAPI or
+  ExLlamaV2 as the server, which is why the TabbyAPI row is 0 rather than 5.
+- A low count means **nobody has reported here**, not that a stack is clean.
+  Every stack now has a page, including the five that have nothing first-party
+  to show, because "no page" and "no entries" read identically from outside
+  and mean different things. SGLang has zero entries and a
+  [feasibility note](../mining/2026-07-28-sglang-on-gb10-feasibility.md);
+  HF transformers has seven entries and not one of them measured here on that
+  stack. Both pages say so at the top.
+
+  **Corrected 2026-07-28:** this paragraph previously said that no server had
+  been started on SGLang for this registry. That stopped being true when
+  SGLang was brought up first-party on our own hardware, and
+  [CONTRIBUTING](../CONTRIBUTING.md#where-coverage-is-thin) was corrected at
+  the time while this page was not. The results of that session are written
+  and awaiting publication; the count above stays at zero until they land,
+  because the count is of published entries.
 
 ## The rest of the map
 

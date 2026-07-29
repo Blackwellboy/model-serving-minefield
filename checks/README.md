@@ -68,9 +68,23 @@ are in
 [CONTRIBUTING](../CONTRIBUTING.md#contributed-checks-must-be-able-to-fail).
 If you add a check here, add its controls in the same PR.
 
+Optionally a check may also declare `REGRESSION_ASSERTS`, a list of
+`(name, callable)` where the callable returns `True` if a specific past defect
+is still dead. That is a different thing from a negative control, which feeds
+an input to the check and reads the check's own verdict, and it has its own
+slot so that a guard does not have to be written inverted and make
+`NEGATIVE_CONTROLS` misleading.
+
+**Shell checks are covered too.** A non-Python check declares its controls in
+a sidecar at `checks/tests/controls_<stem>.py`, and a non-Python check with no
+sidecar fails the build. Discovery used to glob `*.py` only, so
+`util_vs_power_tell.sh` escaped the contract entirely while the harness
+reported `ALL PASS (8 checks conform)`: the right count over the wrong set.
+
 The harness is itself mutation-proven: reintroducing the vacuous pass, making
-a negative control unfailable, or deleting either declaration each fail the
-build. A harness that cannot fail would be the very defect it tests for,
+a negative control unfailable, deleting either declaration, deleting a shell
+check's controls sidecar, or a regression assert coming back false each fail
+the build. A harness that cannot fail would be the very defect it tests for,
 which is also why it refuses to pass over zero discovered checks.
 
 ## tool_args_dialect_probe.py (trap 43)

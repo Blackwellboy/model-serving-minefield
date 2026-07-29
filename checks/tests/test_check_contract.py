@@ -25,9 +25,27 @@ Each check declares, at module level:
 
     NEGATIVE_CONTROLS = [(name, callable), ...]   # each MUST report failure
     EMPTY_SET_CONTROL = (name, callable)          # MUST NOT report success
+    REGRESSION_ASSERTS = [(name, callable), ...]  # optional; MUST return True
 
 Each callable runs the check in-process against a fixture and returns the
 exit code the check would use. No lane, no network, no weights.
+
+REGRESSION_ASSERTS exists because a contributor found the hole. A guard for a
+specific past defect is not a negative control: it does not feed an input to
+the check and read the check's verdict, it asserts that a helper still refuses
+something. Expressed as a negative control it has to be written inverted, so
+that CORRECT behaviour "fails" the control, which makes NEGATIVE_CONTROLS lie
+to anyone reading it as "inputs that make this check fail". Each callable here
+returns True if the defect is still dead. Optional: most checks have none.
+
+**Non-Python checks are covered too.** A shell check cannot declare Python
+callables, so it declares them in a sidecar at
+`checks/tests/controls_<stem>.py`, which drives the script out-of-process and
+returns its exit code. A non-Python check with no sidecar is a CONTRACT
+VIOLATION, not a skip: discovery used to glob "*.py" only, so
+util_vs_power_tell.sh was never contract-tested and the harness still reported
+"ALL PASS (8 checks conform)". A clean verdict over a set that silently
+excludes a member is the same defect this file exists to catch, one level up.
 
 Exit codes across checks in this directory:
     0  ran, nothing blocking      2  ran, blocking finding
@@ -35,6 +53,7 @@ Exit codes across checks in this directory:
 
     python3 checks/tests/test_check_contract.py
 """
+import json
 import importlib.util
 import sys
 from pathlib import Path
@@ -50,9 +69,160 @@ def load(path):
     return m
 
 
-def discover():
+TESTS_DIR = Path(__file__).resolve().parent
+NON_PYTHON_GLOBS = ("*.sh",)
+
+
+def discover_python():
     return sorted(p for p in CHECKS_DIR.glob("*.py")
                   if not p.name.startswith("_"))
+
+
+def discover_non_python():
+    out = []
+    for pattern in NON_PYTHON_GLOBS:
+        out += [p for p in CHECKS_DIR.glob(pattern)
+                if not p.name.startswith("_")]
+    return sorted(out)
+
+
+def controls_sidecar(path):
+    """Where a non-Python check's controls live. Absence is a violation."""
+    return TESTS_DIR / f"controls_{path.stem}.py"
+
+
+def discover():
+    """Every check the contract binds, Python or not.
+
+    Returns a list of (display_name, source_path, controls_path). For a Python
+    check the controls live in the check itself; for a non-Python check they
+    live in its sidecar. A non-Python check whose sidecar is missing is still
+    returned, with controls_path=None, so the harness reports it as a
+    violation rather than passing over a set it quietly narrowed.
+    """
+    items = [(p.name, p, p) for p in discover_python()]
+    for p in discover_non_python():
+        side = controls_sidecar(p)
+        items.append((p.name, p, side if side.exists() else None))
+    return sorted(items, key=lambda t: t[0])
+
+
+def _check_module(name, controls_path, fails):
+    """Import the module holding this check's controls, or record why not."""
+    if controls_path is None:
+        fails.append(f"{name}: non-Python check with no controls sidecar at "
+                     f"checks/tests/controls_{Path(name).stem}.py; it would "
+                     f"otherwise escape the contract entirely")
+        return None
+    try:
+        return load(controls_path)
+    except Exception as e:
+        fails.append(f"{name}: could not import controls ({e})")
+        return None
+
+
+def _run_controls(name, mod, fails, verbose=False):
+    controls = getattr(mod, "NEGATIVE_CONTROLS", None)
+    if not controls:
+        fails.append(f"{name}: no NEGATIVE_CONTROLS declared")
+        if verbose:
+            print("   FAIL: declares no input that makes it fail. A check "
+                  "with no failing case cannot be told apart from a check "
+                  "that never fires.")
+    else:
+        for label, fn in controls:
+            try:
+                code = fn()
+            except Exception as e:
+                fails.append(f"{name}: negative control {label!r} raised ({e})")
+                if verbose:
+                    print(f"   FAIL negative control {label!r}: raised {e}")
+                continue
+            if code == OK:
+                fails.append(f"{name}: negative control {label!r} PASSED")
+                if verbose:
+                    print(f"   FAIL negative control {label!r}: returned 0. "
+                          f"This input was supposed to fail the check.")
+            elif code == NOTHING_INSPECTED:
+                fails.append(f"{name}: negative control {label!r} inspected nothing")
+                if verbose:
+                    print(f"   FAIL negative control {label!r}: returned 3 "
+                          f"(inspected nothing). A negative control has to "
+                          f"FAIL, not decline to look.")
+            elif verbose:
+                print(f"   ok  negative control {label!r} -> {code}")
+
+    empty = getattr(mod, "EMPTY_SET_CONTROL", None)
+    if not empty:
+        fails.append(f"{name}: no EMPTY_SET_CONTROL declared")
+        if verbose:
+            print("   FAIL: declares no empty-comparison-set control, so a "
+                  "pass over nothing would go unnoticed.")
+    else:
+        label, fn = empty
+        try:
+            code = fn()
+        except Exception as e:
+            fails.append(f"{name}: empty-set control {label!r} raised ({e})")
+            if verbose:
+                print(f"   FAIL empty-set control {label!r}: raised {e}")
+        else:
+            if code == OK:
+                fails.append(f"{name}: empty-set control {label!r} PASSED")
+                if verbose:
+                    print(f"   FAIL empty-set control {label!r}: returned 0. "
+                          f"The check reported success having compared "
+                          f"nothing.")
+            elif verbose:
+                print(f"   ok  empty-set control {label!r} -> {code}")
+
+    # Optional. A check with none declares nothing and is not penalised.
+    for label, fn in getattr(mod, "REGRESSION_ASSERTS", []) or []:
+        try:
+            alive = fn()
+        except Exception as e:
+            fails.append(f"{name}: regression assert {label!r} raised ({e})")
+            if verbose:
+                print(f"   FAIL regression assert {label!r}: raised {e}")
+            continue
+        if not alive:
+            fails.append(f"{name}: regression assert {label!r} FAILED; the "
+                         f"defect it guards has come back")
+            if verbose:
+                print(f"   FAIL regression assert {label!r}: the defect it "
+                      f"guards has come back.")
+        elif verbose:
+            print(f"   ok  regression assert {label!r}")
+
+
+MANIFEST_PATH = CHECKS_DIR / "MANIFEST.json"
+
+
+def manifest_failures(checks):
+    """Two-way: what the manifest expects vs what discovery found.
+
+    The harness already refuses to pass over an empty set. That is not enough:
+    a set of one is not empty and is still wrong if the registry expects two.
+    Coverage was silent, so discovery could narrow and nothing would say so.
+    """
+    fails = []
+    if not MANIFEST_PATH.exists():
+        return [f"{MANIFEST_PATH.name} is missing; coverage is unasserted and "
+                f"a narrowed discovery set would pass silently"]
+    try:
+        expected = set(json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))["checks"])
+    except Exception as e:
+        return [f"{MANIFEST_PATH.name} is unreadable ({e}); coverage is unasserted"]
+    found = {name for name, _src, _c in checks}
+    for missing in sorted(expected - found):
+        fails.append(f"{missing}: in {MANIFEST_PATH.name} but NOT discovered. "
+                     f"Either it moved or its extension stopped matching, and "
+                     f"the harness would otherwise report ALL PASS without it")
+    for extra in sorted(found - expected):
+        fails.append(f"{extra}: discovered but NOT in {MANIFEST_PATH.name}. A "
+                     f"check nobody recorded is a check nobody decided to "
+                     f"cover; add it to the manifest deliberately")
+    return fails
 
 
 def conformance_failures():
@@ -62,38 +232,12 @@ def conformance_failures():
     if not checks:
         return ["no checks discovered; this harness would pass vacuously over "
                 "an empty set, which is the defect it tests for"], []
-    for path in checks:
-        try:
-            mod = load(path)
-        except Exception as e:
-            fails.append(f"{path.name}: could not import ({e})")
+    fails += manifest_failures(checks)
+    for name, _src, controls_path in checks:
+        mod = _check_module(name, controls_path, fails)
+        if mod is None:
             continue
-        controls = getattr(mod, "NEGATIVE_CONTROLS", None)
-        if not controls:
-            fails.append(f"{path.name}: no NEGATIVE_CONTROLS declared")
-        else:
-            for label, fn in controls:
-                try:
-                    code = fn()
-                except Exception as e:
-                    fails.append(f"{path.name}: negative control {label!r} raised ({e})")
-                    continue
-                if code == OK:
-                    fails.append(f"{path.name}: negative control {label!r} PASSED")
-                elif code == NOTHING_INSPECTED:
-                    fails.append(f"{path.name}: negative control {label!r} inspected nothing")
-        empty = getattr(mod, "EMPTY_SET_CONTROL", None)
-        if not empty:
-            fails.append(f"{path.name}: no EMPTY_SET_CONTROL declared")
-        else:
-            label, fn = empty
-            try:
-                code = fn()
-            except Exception as e:
-                fails.append(f"{path.name}: empty-set control {label!r} raised ({e})")
-            else:
-                if code == OK:
-                    fails.append(f"{path.name}: empty-set control {label!r} PASSED")
+        _run_controls(name, mod, fails)
     return fails, checks
 
 
@@ -119,62 +263,18 @@ def main():
               "vacuously over an empty set, which is the defect it tests for")
         sys.exit(1)
 
-    for path in checks:
-        name = path.name
+    for f in manifest_failures(checks):
+        print(f"MANIFEST: {f}")
+        fails.append(f)
+
+    for name, _src, controls_path in checks:
         print(f"== {name}")
-        try:
-            mod = load(path)
-        except Exception as e:
-            fails.append(f"{name}: could not import ({e})")
-            print(f"   IMPORT FAILED: {e}")
+        mod = _check_module(name, controls_path, fails)
+        if mod is None:
+            print(f"   FAIL: no controls for {name}. A check the harness "
+                  f"cannot exercise is not a covered check.")
             continue
-
-        controls = getattr(mod, "NEGATIVE_CONTROLS", None)
-        if not controls:
-            fails.append(f"{name}: no NEGATIVE_CONTROLS declared")
-            print("   FAIL: declares no input that makes it fail. A check "
-                  "with no failing case cannot be told apart from a check "
-                  "that never fires.")
-        else:
-            for label, fn in controls:
-                try:
-                    code = fn()
-                except Exception as e:
-                    fails.append(f"{name}: negative control {label!r} raised ({e})")
-                    print(f"   FAIL negative control {label!r}: raised {e}")
-                    continue
-                if code == OK:
-                    fails.append(f"{name}: negative control {label!r} PASSED")
-                    print(f"   FAIL negative control {label!r}: returned 0. "
-                          f"This input was supposed to fail the check.")
-                elif code == NOTHING_INSPECTED:
-                    fails.append(f"{name}: negative control {label!r} inspected nothing")
-                    print(f"   FAIL negative control {label!r}: returned 3 "
-                          f"(inspected nothing). A negative control has to "
-                          f"FAIL, not decline to look.")
-                else:
-                    print(f"   ok  negative control {label!r} -> {code}")
-
-        empty = getattr(mod, "EMPTY_SET_CONTROL", None)
-        if not empty:
-            fails.append(f"{name}: no EMPTY_SET_CONTROL declared")
-            print("   FAIL: declares no empty-comparison-set control, so a "
-                  "pass over nothing would go unnoticed.")
-        else:
-            label, fn = empty
-            try:
-                code = fn()
-            except Exception as e:
-                fails.append(f"{name}: empty-set control {label!r} raised ({e})")
-                print(f"   FAIL empty-set control {label!r}: raised {e}")
-            else:
-                if code == OK:
-                    fails.append(f"{name}: empty-set control {label!r} PASSED")
-                    print(f"   FAIL empty-set control {label!r}: returned 0. "
-                          f"The check reported success having compared "
-                          f"nothing.")
-                else:
-                    print(f"   ok  empty-set control {label!r} -> {code}")
+        _run_controls(name, mod, fails, verbose=True)
 
     print()
     if fails:
@@ -182,7 +282,9 @@ def main():
         for f in fails:
             print(f"  - {f}")
         sys.exit(1)
-    print(f"ALL PASS ({len(checks)} check(s) conform)")
+    n_sh = len(discover_non_python())
+    detail = f" ({n_sh} non-Python)" if n_sh else ""
+    print(f"ALL PASS ({len(checks)} check(s) conform{detail})")
 
 
 if __name__ == "__main__":

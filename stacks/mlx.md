@@ -1,5 +1,8 @@
 # mlx_lm on Apple silicon
 
+**Measured here:** yes (Apple silicon lane, first-party)
+
+
 **9 entries name mlx_lm or MLX** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)):
 one numbered for this stack, and eight where an MLX-scoped section was added

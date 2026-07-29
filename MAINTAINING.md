@@ -39,6 +39,7 @@ the writing and verification work to a maintainer.
    entry is the only person the label exists for, and they cannot act on an
    offer to send them files.
 
+   <!-- status-vocabulary: full-set -->
    The labels are **reproduced here**, **contributor-measured, conditions as
    reported**, **reported by others**, **measured here, raw not published**,
    and **under test**. Each carries an evidence pointer. Reported,
@@ -105,6 +106,127 @@ publication, which is the argument for the rule in one sentence.
 If an entry does not meet all three conditions, link the data instead. If a
 calibration entry's data would be large enough to change the character of the
 repo, prefer a release asset and say in the entry where it lives.
+
+## Merge contributor PRs, do not apply them
+
+**Merge through GitHub. Do not `git checkout <branch> -- <paths>` onto `main`.**
+
+Applying a contributor's files to `main` produces a result that looks identical
+in the tree and is not identical to them. Their branch and `main` have then
+independently modified the same paths, so their PR shows conflicts on every file
+they wrote plus whatever else moved, and their check run is their branch against
+a `main` that has moved past it. They see a red X on their own work while the
+maintainer comments say it is merged.
+
+It also throws away the only attribution git records. Entry credit lines,
+HALL_OF_FAME and the CHANGELOG survive, because those name the person. The merge
+does not, and it cannot be added afterwards.
+
+This happened to traps 99 to 104 and the PR had to be closed unmerged with an
+explanation. The remainder of that batch, trap 98, is deliberately being held so
+it can land as its own PR and carry his merge.
+
+**Checklist when a contributor PR needs maintainer edits before it can land:**
+
+1. Push the edits to their branch if they have granted maintainer access, or ask
+   for them, or land the batch minus the contested entries and take the rest as
+   a follow-up PR. All three preserve the merge.
+2. If none of those is possible and it must be applied directly, say so **in the
+   PR at the time**, name the attribution cost, and offer the remainder as its
+   own PR. The [contributor-facing statement](CONTRIBUTING.md#how-your-pr-gets-landed-and-what-that-does-to-your-attribution)
+   is what we have committed to them.
+3. Never leave a PR showing conflicts against content `main` already has.
+   Resolving it reconciles their branch against work that is already in, and it
+   can quietly reintroduce anything the maintainer deliberately held back. Close
+   it with an explanation instead.
+
+**One platform note, because it is easy to promise and impossible to deliver.**
+`state_reason: completed` cannot be set on a pull request. It is an issues-only
+field: a PR is merged or it is closed, and a close carries no completed or
+not-planned distinction. If the intent is to say the work was completed rather
+than abandoned, that has to be in the closing comment, because the API will not
+carry it.
+
+## main is protected: branch and PR, not direct push
+
+Direct pushes to `main` are blocked. Every change goes through a branch and a
+pull request, and the `integrity` check must be green before it merges.
+
+```bash
+git checkout -b <short-name>
+# work, then:
+git push -u origin <short-name>
+gh pr create --fill
+# wait for integrity to go green, then:
+gh pr merge --squash --delete-branch
+```
+
+**Why, given this is mostly a single-maintainer repo.** Two reasons, and the
+second is the one that decided it.
+
+Force-push and branch deletion are blocked, so an accident cannot quietly
+rewrite published history. The registry's whole value is that a cited entry
+stays where it was cited from.
+
+And it aligns the maintainer path with the contributor path. Traps 99 to 104
+were applied to `main` directly instead of merged, which cost that contributor
+his merge attribution and left his own PR showing conflicts against content
+`main` already had. CONTRIBUTING now promises that contributor work merges
+through GitHub. A maintainer who pushes straight to `main` is using a path
+contributors are not allowed to use, and that asymmetry is what produced the
+incident.
+
+**What is NOT required, deliberately.** The private sanitizer kit is not a
+required check: its pattern file is the list of internal names it protects, so
+it cannot run on a public runner and can only ever be a pre-push discipline. The
+`surfaces` workflow is not required either: it gates peer surfaces that
+legitimately lag a push, so requiring it would block every merge for as long as
+the site takes to rebuild.
+
+**The pre-push hook still runs on your branch push**, which is where the
+sanitizer and the local surfaces check actually catch things. Protection does
+not replace it; CI cannot run the half that matters most.
+
+## The site bot races you, and index.html is generated
+
+Pushing to this repo triggers the build workflow in
+`Blackwellboy/Blackwellboy.github.io`, which regenerates `index.html` from this
+tree and commits it. If you are editing that repo's sources at the same time,
+your push is rejected and you are left holding a conflict in a **generated**
+file.
+
+**Resolution, and it is not the obvious one.** Do not merge `index.html`. Take
+your `build.py` and `index.template.html`, then **regenerate** `index.html` and
+stage the result:
+
+```bash
+git checkout <your-commit> -- build.py index.template.html
+python3 build.py --registry ../model-serving-minefield
+git add build.py index.template.html index.html
+git rebase --continue
+```
+
+Hand-merging a generated file produces something neither generator would emit,
+and the next scheduled build silently replaces it, so any hand-resolution you
+did is lost without a signal.
+
+**Why not just serialise them.** The bot fires on push and has no way to know a
+human is mid-edit, and adding a lock the bot must respect means the bot can
+block on a stale lock and the page stops updating. A page that quietly stops
+regenerating is the failure mode this repo has already had twice. A rejected
+push is loud and costs one rebase; a wedged generator is silent and costs days.
+
+**What to do before a session that touches both.** Take the claim on the site
+clone the same way as the registry, which stops two *humans* colliding even
+though it cannot stop the bot:
+
+```bash
+repo-claim claim ~/publish/model-serving-minefield --session <name>
+repo-claim claim <site-clone> --session <name>
+```
+
+Land registry changes first, let the bot rebuild, then edit the site. The race
+only bites when the order is reversed.
 
 ## Numbering in this merge
 

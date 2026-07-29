@@ -15,6 +15,7 @@ these.
 Each entry leads with the symptom you would actually observe, then the
 mechanism, the stacks and builds it bit, the check that catches it, and the
 fix. Each carries exactly one status from a
+<!-- status-vocabulary: full-set -->
 [closed vocabulary](CONTRIBUTING.md#status-vocabulary), and the status says how
 much weight the entry carries: **reproduced here** (we ran it, and you can
 check the result without asking us for anything), **contributor-measured,
@@ -25,29 +26,57 @@ check it), and **under test**. Entries that are reported, contributed or
 unreproduced are welcome here and labelled, never rejected; what the label
 protects is your ability to tell them apart at a glance.
 
+[![integrity](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml)
+[![surfaces](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml)
+
+The second badge is the one worth explaining. `surfaces` runs hourly and asks
+whether the public pages still agree with this tree, including the Pages site
+in another repo. It does not gate a push, because the site rebuilds after the
+push that moves this tree and cannot have caught up at that moment. It goes red
+when a published figure has actually drifted. It is here rather than only in the
+Actions tab because the last two guards in this project were built and then sat
+unwired, and a count nobody looks at is not a check.
+
+> **Reading this as an agent?** [`llms.txt`](llms.txt) is a short routing file
+> written for you: the three doors, the order to try them, how to read a status
+> line, and what to do on a miss. It names no counts, on purpose.
+
 ## Start here
 
-Four doors, and which one you want depends on why you are here. Ninety-seven
-entries is too many to read; none of these asks you to.
+Four doors, and which one you want depends on why you are here. All 103
+entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
-  for the four jobs people actually arrive with:
+  for the five jobs people actually arrive with:
   [before you publish an A/B](playbooks/before-you-publish-an-ab.md),
   [thinking died when I made it multi-turn](playbooks/thinking-died-multi-turn.md),
-  [porting a harness to a new server](playbooks/porting-a-harness.md), and
-  [long context looks broken](playbooks/long-context-looks-broken.md). Each step
+  [porting a harness to a new server](playbooks/porting-a-harness.md),
+  [long context looks broken](playbooks/long-context-looks-broken.md), and
+  [reading a soak](playbooks/reading-a-soak.md). Each step
   names the entry it guards against and the check to run. Nothing in them is
   new; they are the existing entries, sequenced.
 - **"What am I running?"** The **[per-stack pages](stacks/)** give you the five
   entries most likely to bite on
   [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
-  [Ollama](stacks/ollama.md) or [mlx_lm](stacks/mlx.md), plus the three checks
-  to run before anything else. The
+  [Ollama](stacks/ollama.md), [sglang](stacks/sglang.md) or
+  [mlx_lm](stacks/mlx.md), plus the three checks
+  to run before anything else.
+  **Every stack has a page, including the ones we have never run**:
+  [HF transformers](stacks/hf-transformers.md),
+  [SGLang](stacks/sglang.md), [TensorRT-LLM](stacks/tensorrt-llm.md),
+  [text-generation-inference](stacks/text-generation-inference.md),
+  [TabbyAPI and ExLlama](stacks/tabbyapi.md),
+  [LM Studio](stacks/lm-studio.md) and
+  [text-generation-webui](stacks/text-generation-webui.md). Those open by
+  saying what they do **not** have, then name which mechanism classes most
+  likely apply there and why, with the check you would run. "We have not tested
+  this, here is what to look for" is more useful than an absent page, which
+  reads as nothing to see. The
   **[per-model and per-stack index](models/README.md)** is the full map,
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 97 entries, one row each, sorted by number. It is the
+  directly below, all 103 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -58,8 +87,8 @@ entries is too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **18 of these 97 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 79. It runs
+for **19 of these 103 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 78. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -69,6 +98,17 @@ candidates we tested that **did not reproduce**, the ones that are **blocked or
 not testable** on the lanes available, and the ones that are **specification
 only, not run**. A negative is information, and it is often the fastest way to
 stop chasing a ghost somebody else already chased.
+
+**Reports we have not been able to run** are published too, in
+[upstream/](upstream/), and they are kept in their own directory rather than
+mixed in so the difference is obvious at a glance. Eleven credited reports from
+other people's issue trackers, on stacks and hardware we do not have, each
+carrying the primary source, who reported it, whether a maintainer engaged, the
+issue state, a plain statement that **nobody here has reproduced it**, and what
+you would run to settle it. Two of them were reproduced by a maintainer and
+then closed by a staleness bot, which is not the same as fixed. They never
+appear in [Core](CORE.md), never count toward doctor coverage, and never count
+toward the registry total; a checker asserts all three on every run.
 
 **What is still open** is published too, in
 [mining/OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md): every unsettled question,
@@ -80,7 +120,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 97 entries. If you know what you are running rather than what you are
+All 103 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -183,6 +223,12 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | You are about to caveat a number because another model shares the host | Two lanes on two GPUs of one host perturbed neither correctness nor decode, so the caveat is unearned | [95](traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) | measured here, raw not published |
 | The serving binary reports more free VRAM than the card has in total | `--list-devices` prints host available memory as device free memory | [96](traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) | reproduced here |
 | A lane runs at a few percent of its achievable decode rate and nothing says why | Partial GPU offload, named by no log line and no `/props` field, with VRAM use no proxy for it | [97](traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md) | reproduced here |
+| `hipErrorInvalidValue` on `torch.cat`, not on the SDPA call that caused it | Causal SDPA fails on gfx1151; error is async, reported at the next GPU op | [99](traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md) | contributor-measured, conditions as reported |
+| GPU memory allocates but every kernel fails with `hipErrorInvalidImage` (209) | OEM kernel KFD rejects all gfx1151 code objects; mainline 7.1.4 needed | [100](traps/runtime/100-oem-kernel-kfd-rejects-gfx1151-code-objects.md) | contributor-measured, conditions as reported |
+| Model loads fine, then crashes at inference with `unexpected keyword argument 'input_embeds'` | `transformers` 5.6.0 silently removed the kwarg and changed `create_causal_mask` | [101](traps/template/101-transformers-minor-version-removes-kwarg.md) | contributor-measured, conditions as reported |
+| NVFP4 MoE serve is "stuck" at a throughput ceiling no flag can break | BF16 GEMMs (44%) are the bottleneck, not the MoE path (22%) | [102](traps/quantization/102-nvfp4-bottleneck-is-bf16-gemm-not-moe.md) | contributor-measured, conditions as reported |
+| `AutoProcessor.from_pretrained` fails with torchvision ImportError on ROCm | TheRock wheel ABI mismatch blocks torchvision; AutoTokenizer fallback needed | [103](traps/template/103-torchvision-abi-mismatch-blocks-autoprocessor.md) | contributor-measured, conditions as reported |
+| Restart from a different startup path silently reverts all hardening | Stale launch script still carries pre-hardening config; running process was correct | [104](traps/versioning/104-stale-launch-script-silently-reverts-config.md) | contributor-measured, conditions as reported |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -197,7 +243,8 @@ bite hardest on your serving stack plus the three checks to run first.
 
 Holding a job rather than a symptom? The [playbooks](playbooks/) sequence
 these entries into ordered checklists for publishing an A/B, recovering
-multi-turn thinking, porting a harness, and diagnosing long context.
+multi-turn thinking, porting a harness, diagnosing long context, and reading
+a soak.
 
 ## Run the doctor
 
@@ -210,7 +257,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 18 of this registry's 97 entries in under a minute:
+against 19 of this registry's 103 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

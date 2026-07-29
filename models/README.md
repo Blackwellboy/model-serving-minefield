@@ -57,7 +57,7 @@ shortlists.
 | vLLM serving hybrid mamba or DeltaNet architectures | [47](../traps/runtime/47-prefix-caching-autodisabled-hybrid.md) |
 | Agent clients and gateways (the client-side half) | [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) |
 | HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
-| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md) |
+| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md) |
 | Checkpoints whose chat template is Python code behind `trust_remote_code` | [56](../traps/template/56-checkpoint-ships-no-chat-template.md) |
 | Prefix caching on long prompts (any engine that reuses KV across requests) | [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
 | Rope-extended context windows (YaRN and similar) | [55](../traps/evaluation/55-supported-context-is-not-trained-context.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
@@ -72,6 +72,9 @@ shortlists.
 | Device memory reporting from the serving binary (WSL2, `--list-devices`) | [96](../traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) |
 | Weight-editing and quantisation ladders (shared inodes, in-place edits) | [89](../traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) |
 | Kernel libraries and arch-specific cubins | [90](../traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md) |
+| ROCm on gfx1151 (Strix Halo class): kernel image, library ABI, attention path | [99](../traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md), [100](../traps/runtime/100-oem-kernel-kfd-rejects-gfx1151-code-objects.md), [103](../traps/template/103-torchvision-abi-mismatch-blocks-autoprocessor.md) |
+| `transformers` minor-version upgrades (kwargs and internals removed without a major bump) | [101](../traps/template/101-transformers-minor-version-removes-kwarg.md) |
+| NVFP4 MoE serving on SM120 (profiling before flag-tuning) | [102](../traps/quantization/102-nvfp4-bottleneck-is-bf16-gemm-not-moe.md) |
 
 ## Clean preflights
 

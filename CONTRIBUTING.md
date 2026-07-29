@@ -25,8 +25,15 @@ Absence from this registry means nobody has reported it here, not that it is
 safe. These are the gaps we know about, and they are the most useful place to
 send a report:
 
-- **Serving stacks with no entries at all: SGLang, TensorRT-LLM,
-  text-generation-inference.** Ollama came off this list on 2026-07-28 with
+- **Serving stacks with no measured entries at all: SGLang, TensorRT-LLM,
+  text-generation-inference, TabbyAPI/ExLlama, text-generation-webui.**
+  **Updated 2026-07-28:** each of those now has a
+  [stack page](stacks/) that states the gap, names which mechanism classes most
+  likely apply and why, and gives the check a reader could run. Start at
+  [stacks/README.md](stacks/README.md), the pages are written for exactly the
+  person who has one of these and wondered whether anything is known.
+  text-generation-inference is the largest unexplained hole: not one entry
+  names it, in either direction. Ollama came off this list on 2026-07-28 with
   traps [75](traps/versioning/75-release-asset-renamed-pinned-url-404.md) to
   [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
   thinking-plus-tools candidate that was waiting on it is now
@@ -132,6 +139,87 @@ weight it carries.
 Labels may be combined when an entry genuinely has two halves ("reported by
 others and reproduced here"), as long as each half carries its own evidence
 pointer. They may not be blended into a new phrase.
+
+**These five are the labels valid on a registry entry under `traps/`.** There
+is a sixth label, `upstream-reported`, which is valid **only** in
+[`upstream/`](upstream/) and never in `traps/`. It is defined immediately
+below, and the separation is the point of it.
+
+## The fourth tier: upstream-reported
+
+Everything under `traps/` was measured by somebody identifiable: by us, or by
+a named contributor, or by the upstream reporter of a bug we then went and
+tested. [`upstream/`](upstream/) is not that. It publishes reports from
+upstream issue trackers and vendor channels that **nobody here has run**,
+because the stack, the weights or the hardware is not something we have.
+
+The argument for publishing them anyway is short. A maintainer-confirmed bug
+with a reproduction in the thread is real information that will cost somebody
+an evening, and leaving it in a private queue helps nobody. Publishing it also
+creates the one thing a private queue cannot: a place for a reader who *does*
+have that stack to settle it.
+
+The argument against publishing them badly is shorter. An unmeasured claim
+that reads like a measured one destroys the only thing this registry has. So
+the tier is separated by directory rather than by a word in a status line, and
+its requirements are asserted mechanically by
+[`integrity/upstream_integrity.py`](integrity/upstream_integrity.py) rather
+than being observed by convention.
+
+### What an upstream-reported entry must carry
+
+Every one of these is checked. An entry missing any of them fails the build.
+
+| Requirement | Why it is not optional |
+|---|---|
+| **A link to a primary source you have read**, with the date you read it | A desk mining list is a **lead**, not a source. Our own round-2 queue misstated the state or the content of six candidates across four classes (roughly thirty-five with a primary source we could read), including two it described as live engine bugs that the thread closed as usage. The date records that a human opened the thread rather than trusting the summary |
+| **Who reported it**, by the handle they publish under | The claim belongs to somebody. Crediting them is the reason this tier is publishable rather than rumour-laundering |
+| **Whether a maintainer engaged**, from a closed vocabulary: `maintainer confirmed`, `maintainer reproduced`, `maintainer responded`, `maintainer disputed`, `none` | A bug a maintainer reproduced in-thread and a report nobody answered are different claims and must not read alike. `maintainer reproduced` is the strongest thing this tier says |
+| **The issue state**, from a closed vocabulary: `open`, `closed, fixed`, `closed, not fixed`, `closed, resolved as usage`, `closed, not planned`, `disputed` | A closed-as-fixed issue is a different claim from an open one, and **closed-as-stale is not closed-as-fixed**. A stale bot closing a bug with a maintainer reproduction still attached changes nothing about whether the bug is there |
+| **A sentence saying plainly that nobody here has reproduced it** | The label implies it. Readers arrive by search, land mid-page, and quote a paragraph. The sentence has to be in the entry |
+| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, per the rule in [OPEN_QUESTIONS](mining/OPEN_QUESTIONS.md). An entry a reader cannot act on is an observation |
+
+### What the tier is not, and cannot become
+
+- **It never appears in [Core](CORE.md).** Core is the measured reading list.
+- **It never counts toward doctor coverage.** That numerator is checks over
+  measured entries; an upstream id in the doctor's `TRAP_PATHS` fails the
+  build.
+- **It never counts toward the registry total.** The count is derived from
+  `traps/<category>/NN-*.md`, and an upstream file inside `traps/` fails the
+  build.
+- **It is never cited as though measured.** An upstream entry carrying a
+  second tier label fails the build, because a compound status would let it
+  claim measurement from inside the tier that exists for the unmeasured.
+- **It is not a holding pen for weak reports.** A tier full of thin
+  single-issue reports devalues every entry beside it. Ten strong ones are
+  worth more than forty weak ones, and the classification pass that opened
+  this tier published eleven of fifty candidates and closed twenty-two.
+
+### Why some entries in `traps/` still say "reported by others"
+
+Twenty-three do, and they predate this tier. They are recorded by name in
+[`integrity/registry_config.json`](integrity/registry_config.json), and the
+checker **refuses any new one**: upstream-sourced material that we have not
+tested now goes to `upstream/`. Without that rule the tier would be
+decorative, because the path of least resistance for the next such report
+would be `traps/` with the old label.
+
+Those entries are not wrong and they are not being quietly downgraded. Several
+carry compound statuses where the other half *is* measured here, and trap
+[25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) is close to
+what this tier now requires, which is where the requirements came from. They
+are a migration backlog, not a defect, and moving one is a decision with a
+CHANGELOG line rather than a tidy-up.
+
+### Promotion out of the tier
+
+An upstream entry that somebody reproduces becomes a registry entry under
+`traps/` with the appropriate measured label, and leaves a pointer behind. The
+reporter keeps the **Found by** line. That is the same promotion path
+[`mining/`](mining/) already has, and the two are different stages of it:
+`mining/` is *our* queue with our verification notes, `upstream/` is
+published, credited, and addressed to a stranger who can settle it.
 
 ### What "reproduced here" requires
 
@@ -302,6 +390,48 @@ the controls as a documented manual procedure with recorded output instead.
 We will land it. What we will not land is a check with no failing case at
 all, because nobody can tell that from a check that never fires.
 
+#### Checks that are not Python
+
+A shell check cannot declare Python callables, so it declares them in a
+sidecar at `checks/tests/controls_<stem>.py`, which drives the script
+out-of-process and returns its exit code. The harness then judges it exactly
+as it judges a Python check. See
+[`controls_util_vs_power_tell.py`](checks/tests/controls_util_vs_power_tell.py),
+whose controls put a stub `nvidia-smi` first on `PATH`, so the real script
+runs against a chosen sample stream with no GPU and no driver.
+
+**A non-Python check with no sidecar is a contract violation, not a skip.**
+This is a hole we shipped: discovery globbed `*.py` only, so
+`util_vs_power_tell.sh` was never contract-tested, and the harness still
+printed `ALL PASS (8 checks conform)` over a set that silently excluded it.
+The number was right and the set was wrong, which is the same defect this
+contract exists to catch, one level up from where we were looking for it.
+Found by a contributor's PR sitting in review, not by us.
+
+#### Guarding a specific past defect: `REGRESSION_ASSERTS`
+
+Optional third slot. Most checks have none.
+
+```python
+REGRESSION_ASSERTS = [
+    ("decode-only figure is still declined as a server total",
+     lambda: server_total_seconds({"timings": {"predicted_ms": 400.0}})[0] is None),
+]
+```
+
+Each callable returns `True` if the defect is still dead. The harness fails
+the build if any returns `False`.
+
+This exists because a contributor tried to express exactly that as a negative
+control and could not do it honestly. A negative control feeds an input to
+the check and reads the check's verdict; a regression guard asserts that a
+helper still *refuses* something, and never calls the check at all. Written
+as a negative control it has to be inverted, so that correct behaviour
+"fails" the control, which makes `NEGATIVE_CONTROLS` untrue for anyone
+reading it as "inputs that make this check fail". They flagged the
+inversion themselves rather than letting it pass as ordinary. The contract
+was missing a slot; the workaround was the evidence.
+
 ## External PR policy
 
 This is the standing rule, not a decision taken once. It exists because the
@@ -334,7 +464,10 @@ under [what "reproduced here" requires](#what-reproduced-here-requires)).
 If we later reproduce it here, the entry gains the second half of a compound
 status and you keep the **Found by** line.
 
-**Numbering.** Take the next free numbers at the time you open the PR and do
+**Numbering.** Run `python3 integrity/registry_integrity.py` and read the
+`next free trap number` line; it is derived from the tree on every run rather
+than stored anywhere, so it cannot go stale and there is no file to keep in
+sync. Take the next free numbers at the time you open the PR and do
 not renumber while it is in review. The registry count lives in
 `doctor/minefield_doctor.py` as `REGISTRY_TRAP_COUNT`, and a test fails the
 build if it disagrees with the trap files, so collisions surface mechanically
@@ -357,6 +490,38 @@ registry before opening a PR; finding the overlap is a maintainer's job.
 plainly, in the PR, which ones we are holding and what would unblock each.
 Entries we are not ready to land go to [mining/](mining/) rather than being
 closed, so the work stays findable and stays yours.
+
+## How your PR gets landed, and what that does to your attribution
+
+**Default: your PR is merged through GitHub.** That is the only way the commits
+carry your name, appear in your contribution graph, and leave a merge in the
+history that says you wrote them. Where a batch needs maintainer edits first,
+those go on your branch or into a follow-up, not around it.
+
+**We got this wrong once and it is worth stating what went wrong.** A
+seven-entry contribution was applied to `main` directly instead of merged. The
+entries landed correctly and the credit lines, HALL_OF_FAME row and CHANGELOG
+entry were all accurate, but the contributor's own PR then showed conflicts on
+every file he had written and a failing check, because his branch and `main`
+had independently modified the same paths. From his side the page said his work
+was in conflict while our comments said it was merged, and nobody explained the
+gap. The merge attribution was lost and it was not recoverable after the fact.
+
+**If we do need to land something directly**, which happens when an entry has to
+be split, held or renumbered against other in-flight work, then we owe you three
+things and they are not optional:
+
+- **Saying so in the PR, at the time**, not after you notice a red check.
+- **Naming what it costs you**: the merge does not appear against your name and
+  those commits will not show in your contribution graph. The entry credit,
+  HALL_OF_FAME and CHANGELOG are unaffected, and those are the durable surfaces,
+  but they are not the same thing.
+- **Offering the remainder as its own PR** so at least part of the batch carries
+  your merge, where any part of it is still outstanding.
+
+A closed pull request is a weak credit surface. The entry's `Found by` line,
+the HALL_OF_FAME row and the CHANGELOG announcement are the durable ones, and
+all three name you rather than pointing at a PR number.
 
 ## Credit
 
@@ -409,3 +574,90 @@ corrections in this repo signed the same way as the claims.
 Plain language. No hype. Counts and conditions next to every claim. Generic
 references for tools that are not public ("a spine-probe runner") and named
 references for tools that are.
+
+**No em dashes, en dashes or figure dashes** (U+2012 to U+2015). Use a comma, a
+colon or a full stop. Arrows and mathematical symbols are fine and are
+deliberately not checked.
+
+That is a style preference and not a safety rule, and the difference decides
+where it applies:
+
+- **It does not gate the body of your entry.** A registry entry under
+  `traps/<category>/` whose Status line says `contributor-measured` is exempt
+  from it. Your prose is yours. If we want house style in it, normalising it is
+  our job at merge, not a condition of your contribution.
+- **It does apply to everything we write**: README, CONTRIBUTING, CORE,
+  CHANGELOG, HALL_OF_FAME, SECURITY, MAINTAINING, and everything under
+  `playbooks/`, `stacks/`, `models/`, `mining/`, `upstream/`, `integrity/`,
+  `doctor/` and `.github/`.
+
+The rule used to be enforced with no scoping at all, and it appeared in no
+contributor-facing document. It refused an external contributor's push on
+punctuation, over a rule they had no way to read. That was our defect, not
+theirs. It is written down here now and it no longer blocks an entry body.
+
+**The leak checks are separate, and they are not scoped.** Internal hostnames,
+ports, home directory paths, private LAN and tailnet addresses, and corpus
+identifiers block in every file, including yours, with no exemption. That check
+protects you as much as it protects us: a path or a port pasted out of your own
+terminal is the most common way a report publishes something its author did not
+mean to. Replace them with `HOST:PORT` or a placeholder.
+
+### A worked example, because the abstract version does not land
+
+You are reporting a trap and the useful thing to paste is the request that
+showed it. This is what you ran:
+
+```
+curl -s http://gpu-node-07.ml.internal.example.com:PORT/v1/chat/completions \
+  -H "Authorization: Bearer sk-live-8f3aQ2vRkT9wL" \
+  -d '{"model":"qwen3-35b-a3b-nvfp4","max_tokens":8192,"chat_template_kwargs":{"enable_thinking":true}}'
+```
+
+(The real command had a port number where that `PORT` is. Why it is not
+printed here is the point of this section.)
+
+This is what to paste:
+
+```
+curl -s http://HOST:PORT/v1/chat/completions \
+  -H "Authorization: Bearer REDACTED" \
+  -d '{"model":"qwen3-35b-a3b-nvfp4","max_tokens":8192,"chat_template_kwargs":{"enable_thinking":true}}'
+```
+
+The hostname and the credential are gone. **The body is untouched**, and the
+body is the trap: the model, the token ceiling and the kwarg name are the three
+things anyone reproducing this needs. Scrubbing them would leave a report we
+cannot act on.
+
+Now the part that catches people, and the reason the block above says `PORT`
+rather than a number.
+
+A specific set of internal lane ports is on our private pattern list. A paste
+carrying one of them fails the scan even with the hostname already gone, because
+an unusual port is enough on its own to fingerprint a lane. **We are not going
+to print which ports those are**, and an earlier draft of this very section did:
+it named one, and the scan correctly refused the push over the file that teaches
+the rule. That is the third time a redaction example here has failed on its own
+bad example, and the fix is always to rebuild the example rather than to add an
+exception for it.
+
+So: **when in doubt, write `HOST:PORT`**. A port number is almost never what
+makes a trap reproducible. `HOST:8000` is fine and tells us it was an
+OpenAI-compatible lane; if the specific number genuinely matters, say so in
+words rather than in a URL and we will ask.
+
+**Do not try to guess the list.** It is private on purpose, because it is a list
+of the internal names it exists to catch, and publishing it would publish them.
+There is no version of this where you can check your paste against it yourself,
+and there is no version where we hand you the list so that you can. That is our
+problem to absorb, not yours to solve, and it is why the rule is a placeholder
+rather than a lookup.
+
+**Where this is checked, and where it is not.** Both scans are a **local
+pre-push discipline**. They run from a private kit on a maintainer's machine,
+wired into the `pre-push` hook, and they **never run in CI**. The pattern file
+is a list of the internal names it hunts for, so shipping it to a public runner
+would publish the thing it protects. A green CI badge on your PR therefore says
+nothing at all about these scans. If a push is refused by one, it prints the
+file, the line and the reason.

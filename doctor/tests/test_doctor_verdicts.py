@@ -22,6 +22,7 @@ that it always says the same thing.
 
     python3 doctor/tests/test_doctor_verdicts.py
 """
+import re
 import importlib.util
 import json
 import sys
@@ -358,6 +359,48 @@ class TestIgnoredThinkingKwarg(DoctorVerdictCase):
 # Task 3: the tool probe must separate "did not call" from "cannot call".
 # --------------------------------------------------------------------------
 
+class TestRequestValidation(DoctorVerdictCase):
+    """Trap 77. The check is three lines of logic and one of them is the
+    control, so these cases mostly exist to prove the control is load-bearing.
+    """
+
+    def test_an_unvalidated_lane_is_a_problem(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertIn("UNKNOWN_FIELD_ACCEPTED", codes(doc, "PROBLEM"))
+        self.no_clean_for(doc, "77")
+
+    def test_a_validating_lane_is_clean(self):
+        with FixtureLane(validates_top_level=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertIn("VALIDATION_REJECTS_UNKNOWN_FIELD", codes(doc, "OK"))
+
+    def test_the_problem_names_the_arm_consequence_not_just_the_status(self):
+        """The operator cost of trap 77 is a whole experimental arm measured
+        on the wrong configuration. A finding that says only "returns 200 for
+        anything" reads as pedantry and gets skipped."""
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        f = [x for x in doc.findings
+             if x["code"] == "UNKNOWN_FIELD_ACCEPTED"][0]
+        blob = (f["title"] + " " + (f["detail"] or "")).lower()
+        self.assertIn("arm", blob)
+        self.assertIn("status code", blob)
+
+    def test_a_lane_that_rejects_everything_is_not_credited(self):
+        """The control. A 400 on the probe means nothing if the baseline was
+        also refused: a wrong model name, an expired key or a server still
+        loading produces exactly that, and crediting it would be the
+        false-CLEAN shape this tool has emitted four times."""
+        with FixtureLane(reject_everything=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "77")
+        self.assertIn("VALIDATION_NO_BASELINE", codes(doc))
+
+
 class TestToolProbe(DoctorVerdictCase):
 
     def test_non_tool_calling_model_with_forced_control_is_a_problem(self):
@@ -547,7 +590,9 @@ class TestCoverage(DoctorVerdictCase):
 
     def test_registry_count_matches_the_tree(self):
         traps = REPO_ROOT / "traps"
-        ids = {p.name[:2] for p in traps.glob("*/*.md")}
+        ids = {mm.group(1) for mm in
+               (re.match(r"^(\d{2,})-", p.name)
+                for p in traps.glob("*/*.md")) if mm}
         self.assertEqual(len(ids), md.REGISTRY_TRAP_COUNT,
                          f"REGISTRY_TRAP_COUNT is {md.REGISTRY_TRAP_COUNT} but "
                          f"the tree holds {len(ids)} numbered traps: {sorted(ids)}")
@@ -840,6 +885,15 @@ CLEAN_CONTRACT = {
         "prompt, so history reasoning demonstrably survives",
     "WRITE_FIELD_SINGLE":
         "exactly one of the two field names carried the marker through",
+    "VALIDATION_REJECTS_UNKNOWN_FIELD":
+        "an invented top-level field was rejected while the IDENTICAL request "
+        "without it returned 200, so the rejection is attributable to the "
+        "field rather than to a lane that rejects everything. That paired "
+        "control is the whole verdict: without the 200 baseline this would be "
+        "satisfied by a wrong model name or an expired key. Scoped narrowly: "
+        "it rules out 'a misspelled or unimplemented parameter is silently "
+        "accepted', and it does NOT rule out a known-but-unimplemented field "
+        "being accepted and ignored, which stays with traps 03 and 29",
     "TOOL_CHOICE_NONE_BINDS":
         "a control WITH tools and no tool_choice produced a tool call on this "
         "lane, and the identical request with tool_choice none did not, so the "
@@ -898,6 +952,7 @@ SWEEP = [
     {"ollama": True, "off_kwarg": "reasoning_effort"},
     {"off_kwarg": "reasoning_effort"},
     {"kwarg_rejection": "unknown"}, {"kwarg_rejection": "known"},
+    {"validates_top_level": True},
     {"tool_calls": "never", "tool_choice_supported": True},
     {"tool_choice_none_honored": False},
     {"tool_calls": "never", "tool_choice_supported": False},

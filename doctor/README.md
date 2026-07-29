@@ -5,7 +5,7 @@
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 18 checks cluster almost entirely on one region of the registry: reasoning
+Its 19 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
@@ -152,12 +152,12 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **18 of the registry's 97 numbered entries**
-(01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 78). Every
-run ends with a coverage line:
+The doctor implements checks for **19 of the registry's 103 numbered entries**
+(01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 77, 78).
+Every run ends with a coverage line:
 
 ```
-implemented 18/97 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 79
+implemented 19/103 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 84
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -177,7 +177,16 @@ depth, and the coverage block says so every time:
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
 - **04, 20, 25** need a render path. On a stack that exposes none they cannot
   run at all.
-- The remaining **79** numbered traps have no check in this tool.
+- **77** is the newest and the cheapest: one baseline request and one request
+  carrying an invented top-level field. It runs first, because it decides
+  whether a 200 from this lane carries any information at all about whether a
+  parameter was read, and every check after it sends parameters. Its CLEAN is
+  paired and narrow: the invented field must be rejected **while the identical
+  request without it returns 200**, which is what stops a wrong model name or
+  an expired key reading as a strict server. It rules out "your typo is
+  silently accepted"; it does **not** rule out a known-but-unimplemented field
+  being accepted and ignored, which stays with 03 and 29.
+- The remaining **84** numbered traps have no check in this tool.
 
 The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
 `mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of
