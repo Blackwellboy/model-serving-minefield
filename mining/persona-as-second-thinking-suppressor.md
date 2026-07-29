@@ -46,7 +46,7 @@ respective sources; the cross-family generalization question is ours.
 
 ## Maintainer adjudication, 2026-07-29
 
-**Accepted as a mining candidate. Largely ANSWERED, and in TheTom's favour.**
+**Accepted as a mining candidate. Substantially answered on the task split, and in TheTom's favour, but NOT at the sample size he preregistered.**
 Everything above this line is his text as submitted in PR
 [#1](https://github.com/Blackwellboy/model-serving-minefield/pull/1) and is
 unedited. This section is ours.
@@ -88,7 +88,26 @@ as a persona-only figure, and it is not evidence for this candidate in either
 direction. Counts and derivation:
 [laguna-s21-lab soak](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/soak).
 
-**Promotion gate: cross-family evidence.** This is one model family. One family
+**The preregistered n was NOT met, and that is a second open gate.** He
+specified **at least 50 turns per arm**, and said why: the right-skewed
+variance in reasoning length. (His text cites "Trap 30" for that variance;
+trap 30 in this tree is a default-system-message entry, so that number appears
+to predate a renumbering. Left as he wrote it rather than silently repointed.)
+Our arms are **n=40**, below his floor, and the per-task cells that carry the
+headline result are **n=10**. So the arm-level firing rates above are
+under-powered against his own criterion, and the 30/40 versus 18/40 contrast in
+particular should not be read as having cleared the bar he set.
+
+We are recording this rather than rounding it away, because the grid was run
+for our own purposes and only afterwards recognised as his experiment. It was
+never sized to his spec. What survives the shortfall is the **task split**,
+where the code cells are 10/10 against 0/10 with no overlap at all, which is a
+separation that a larger n would sharpen rather than reverse. What does not
+survive it is any precise claim about the size of the pooled persona effect.
+
+**Promotion gate 1: n at or above 50 per arm**, on the arms as he wrote them.
+
+**Promotion gate 2: cross-family evidence.** This is one model family. One family
 makes it a model quirk. The gate is the second family he named, and it is
 unchanged by anything above.
 
