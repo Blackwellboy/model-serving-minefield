@@ -151,37 +151,6 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
 - **Note.** **Naming a small, ungated, genuinely template-less checkpoint is a
   complete contribution to this queue.** No hardware needed to help.
 
-### Q7. Is SGLang's NVFP4 path broken, or does it merely lack one architecture?
-
-- **Claim under test.** R2-14, that SGLang's NVFP4 path is broken for Laguna.
-- **Source.** secondary, a single-source report. Our own attempt is
-  **INCONCLUSIVE and must not be cited either way**: two arms were designed to
-  separate "the NVFP4 path is broken" from "there is no Laguna architecture
-  support", and **neither arm produced a generation**. A non-Laguna NVFP4
-  checkpoint (Nemotron-H) did load cleanly with `quant_algo=NVFP4` selected
-  against an `sm121` autotune cache key, which is evidence against the blanket
-  claim but is not a refutation, because nothing generated.
-- **Needs.** SGLang on a GB10-class node, a Laguna NVFP4 checkpoint, and enough
-  lane time to reach generation rather than autotune.
-- **CONFIRM.** Laguna NVFP4 fails to generate on SGLang while an equivalent
-  non-Laguna NVFP4 checkpoint succeeds, which localises it to the architecture.
-- **REFUTE.** Laguna NVFP4 generates.
-- **Cost.** M, and it needs the node not to be reclaimed mid-run, which is what
-  ended the last attempt.
-
-### Q8. A doctor run against a fifth stack
-
-- **Claim under test.** Whether [the doctor](../doctor/) is portable to SGLang,
-  or whether its probes assume something four stacks happened to share.
-- **Source.** PRIMARY, ours. A session had a live SGLang endpoint for roughly
-  forty minutes and sequenced this too late to get it, which is the only reason
-  it is open.
-- **Needs.** Any SGLang endpoint. Read-only, bounded, under a minute.
-- **CONFIRM.** The doctor runs and its verdicts are meaningful on that stack.
-- **REFUTE.** Probes break or return misleading verdicts, in which case the fix
-  is the finding.
-- **Cost.** S. This is the cheapest item in the file.
-
 ### Q9. Which uncovered entries deserve a doctor check?
 
 - **Claim under test.** The doctor implements checks for **19 of 97** entries and
@@ -268,6 +237,8 @@ as much a result as an entry.
 | What is our own agreement floor? | **ANSWERED**: 97.58% pooled item agreement, calibrated to plus or minus 1.3 points at n=600 for MMLU-style paired comparisons, explicitly not transferable to binary outcomes | [note](2026-07-28-our-agreement-floor-greedy-not-reproducible.md) |
 | Is temp-0 reproducibility a property of the card? | **ANSWERED as a regime, not a ranking.** Both architectures diverge at 220 tokens; only one still does at 444 | trap [94](../traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md) |
 | Does co-tenancy on one host perturb a lane? | **NEGATIVE**, for two GPUs with headroom. Does **not** cover two models on one GPU | trap [95](../traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) |
+| Q7: is SGLang's NVFP4 path broken for Laguna? | **REFUTED under the pre-registered generation criterion.** The non-Laguna NVFP4 control generated first, then Laguna loaded through `CompressedTensorsW4A4Nvfp4MoE` and generated a correct first token. Longer Laguna output was degraded, so this is not a correctness or support claim | [note](2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md) |
+| Q8: is the doctor portable to SGLang? | **CONFIRMED.** Two 14-request runs completed with meaningful bounded verdicts. The generic stack label was a real reporting defect and has a regression-tested SGLang detector | [note](2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md) |
 
 ---
 

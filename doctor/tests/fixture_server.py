@@ -34,6 +34,8 @@ Scenario flags (all default to the well-behaved value):
   ollama                bool. Answer GET /api/version, and nothing else that
                         identifies a stack. This is how a real Ollama lane is
                         told apart from an anonymous OpenAI-compatible one.
+  sglang                bool. Publish owned_by=sglang from /v1/models, as a
+                        real SGLang 0.5.16 lane does, and expose no /version.
   anonymous             bool. Answer none of /props, /version or /api/version,
                         so the lane is OpenAI-compatible and nothing more. This
                         is the honest generic bucket: on such a lane the tool
@@ -100,6 +102,7 @@ DEFAULTS = {
     "explicit_off_honored": True,
     "off_kwarg": "enable_thinking",
     "ollama": False,
+    "sglang": False,
     "anonymous": False,
     "tool_choice_supported": True,
     "tool_choice_none_honored": True,
@@ -175,7 +178,10 @@ def _make_lane_handler(cfg):
 
         def do_GET(self):
             if self.path == "/v1/models":
-                return self._send(200, {"data": [{"id": MODEL}]})
+                model = {"id": MODEL}
+                if cfg["sglang"]:
+                    model["owned_by"] = "sglang"
+                return self._send(200, {"data": [model]})
             if self.path == "/props":
                 if cfg["props"]:
                     return self._send(200, cfg["props"])
@@ -185,7 +191,8 @@ def _make_lane_handler(cfg):
                     return self._send(200, {"version": "0.32.5"})
                 return self._send(404, {"error": "not found"})
             if self.path == "/version":
-                if cfg["props"] or cfg["ollama"] or cfg["anonymous"]:
+                if (cfg["props"] or cfg["ollama"] or cfg["sglang"]
+                        or cfg["anonymous"]):
                     return self._send(404, {"error": "not found"})
                 return self._send(200, {"version": "0.25.0"})
             return self._send(404, {"error": "not found"})

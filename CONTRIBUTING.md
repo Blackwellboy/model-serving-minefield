@@ -25,7 +25,7 @@ Absence from this registry means nobody has reported it here, not that it is
 safe. These are the gaps we know about, and they are the most useful place to
 send a report:
 
-- **Serving stacks with no measured entries at all: SGLang, TensorRT-LLM,
+- **Serving stacks with no measured entries at all: TensorRT-LLM,
   text-generation-inference, TabbyAPI/ExLlama, text-generation-webui.**
   **Updated 2026-07-28:** each of those now has a
   [stack page](stacks/) that states the gap, names which mechanism classes most
@@ -38,17 +38,21 @@ send a report:
   [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
   thinking-plus-tools candidate that was waiting on it is now
   [settled](mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md).
-  SGLang still has no entries here. **Corrected 2026-07-28:** this paragraph
+  SGLang came off this list with contributor-measured additions to traps
+  [02](traps/template/02-orphaned-think-close-tag.md),
+  [12](traps/evaluation/12-empty-content-at-token-ceiling.md) and
+  [77](traps/reasoning/77-only-one-request-field-is-validated.md), plus a
+  [pinned field note](mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).
+  **Corrected 2026-07-28:** this paragraph
   previously said we had "stopped short of installing it", and that the
   reasoning-parser null-content report was the single most useful thing one
   person could settle. SGLang has since been brought up first-party on our
-  hardware and that report was tested; its disposition is written and awaiting
-  publication, so treat it as answered rather than as the open ask. What is
-  genuinely open on this stack, with criteria, is in
-  [OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md): a template-less-checkpoint
-  test that is **blocked on naming an ungated checkpoint and needs no hardware
-  to help with**, an inconclusive NVFP4 result that must not be cited either
-  way, and a doctor run against the stack.
+  hardware and that report was tested. The contributor field run independently
+  closes the NVFP4 generation and doctor-portability questions. What remains
+  open on this stack, with criteria, is in
+  [OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md), including a
+  template-less-checkpoint test that is **blocked on naming an ungated
+  checkpoint and needs no hardware to help with**.
 - **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
   what is here was measured on two families because those are the weights we
   have.

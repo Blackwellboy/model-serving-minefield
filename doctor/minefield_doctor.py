@@ -276,8 +276,11 @@ def detect_stack(doc, base, root, key):
     st, txt = get(base + "/models", key)
     if st != 200:
         return False
+    models_owner = None
     try:
-        doc.model = json.loads(txt)["data"][0]["id"]
+        model_row = json.loads(txt)["data"][0]
+        doc.model = model_row["id"]
+        models_owner = model_row.get("owned_by")
     except Exception:
         pass
     st, txt = get(root + "/api/version", key, timeout=8)
@@ -301,9 +304,16 @@ def detect_stack(doc, base, root, key):
         except Exception:
             pass
     else:
-        # mlx server and vLLM both lack /props; tell them apart cheaply
-        st2, _ = get(root + "/version", key, timeout=8)
-        doc.stack = "vllm" if st2 == 200 else "openai-compatible (vLLM/MLX/other)"
+        # SGLang 0.5.16 has neither /props nor /version, but identifies its
+        # model rows. Check that before falling through to the anonymous
+        # OpenAI-compatible bucket.
+        if models_owner == "sglang":
+            doc.stack = "sglang"
+        else:
+            # mlx server and vLLM both lack /props; tell them apart cheaply
+            st2, _ = get(root + "/version", key, timeout=8)
+            doc.stack = ("vllm" if st2 == 200
+                         else "openai-compatible (vLLM/MLX/other)")
     return True
 
 
@@ -327,7 +337,7 @@ EFFORT_ON = ("reasoning_effort=high", {"reasoning_effort": "high"})
 # these may "the off switch does not work" be asserted from a firing off arm:
 # anywhere else, a firing off arm is equally consistent with having sent a
 # name the stack never reads.
-STACKS_WITH_KNOWN_OFF_CONTROL = {"vllm", "llama.cpp", "ollama"}
+STACKS_WITH_KNOWN_OFF_CONTROL = {"vllm", "llama.cpp", "ollama", "sglang"}
 
 
 def on_control_for(stack):

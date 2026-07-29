@@ -271,6 +271,27 @@ class TestIgnoredThinkingKwarg(DoctorVerdictCase):
                                 "once the right control is sent")
         self.assertEqual(f["level"], "OK")
 
+    def test_sglang_lane_is_identified_from_models_owner(self):
+        # SGLang 0.5.16 exposes neither /props nor /version, but its model row
+        # identifies the server. Treating it as anonymous makes the report
+        # name the wrong stack and prevents stack-specific control handling.
+        with FixtureLane(sglang=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(doc.stack, "sglang")
+
+    def test_sglang_uses_the_established_vllm_style_off_control(self):
+        # The DGX Spark field run established this spelling from response
+        # behavior, not API acceptance. Once SGLang is identified, an off arm
+        # that still fires is therefore attributable to a broken control.
+        with FixtureLane(sglang=True, explicit_off_honored=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "EXPLICIT_OFF_STILL_FIRES")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertEqual(f["traps"], ["03"])
+
     def test_ollama_off_control_found_via_alternate_spelling(self):
         # Same lane, but detection deliberately defeated: no /api/version. The
         # doctor must still find the working control by trying it, rather than
