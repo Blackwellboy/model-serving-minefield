@@ -96,3 +96,13 @@ serving defect and belongs in `traps/`, not here. It is **not** claimed on the
 strength of a WSL incident: generalising one infrastructure observation into a
 serving claim is exactly the over-reach the status vocabulary exists to
 prevent. The note is here so that if it is observed, it is recognised.
+
+## A companion note, from different tooling
+
+[False-healthy failures inside the tooling built to detect false-healthy](2026-07-29-false-healthy-inside-detection-tooling.md)
+records the same class from a serving soak harness rather than from this
+repository's integrity checks. **The two share no defect**: those six are a
+memory sampler, a readiness guard, a token accounting error, a garble scanner,
+a close-marker parser and an NTP-skewed clock. They are cross-linked rather
+than merged because one habit showing up in two unrelated toolchains on the
+same day is the argument, and merging them would hide that.
