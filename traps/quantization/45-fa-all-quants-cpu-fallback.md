@@ -10,7 +10,8 @@ certain K/V quant combinations. `llama-bench` prints a clean table and **does no
 mark the row**. The obvious reading is "this KV quant is slow", and that reading gets published.
 
 **Mechanism.** The CUDA/HIP flash-attention path only compiles kernels for a subset of K/V quant
-pairs unless the build enables all of them. Unsupported pairs silently take a CPU path. Nothing in
+pairs unless the build enables all of them. Unsupported pairs silently take a much slower
+non-tensor-core path. Nothing in
 the runtime says so; you only see it in the throughput.
 
 This is [trap 10](10-quant-label-is-not-the-kernel-path.md)'s lesson, the label is not the kernel
@@ -18,8 +19,11 @@ path, in its **build-flag** form: here the checkpoint and the arch are both fine
 `cmake` line that decided which kernels exist. Same class, different lever, and it applies to the KV
 cache rather than the weights.
 
-**Stacks and builds bitten.** llama.cpp CUDA and HIP builds without
-`-DGGML_CUDA_FA_ALL_QUANTS=ON`. Reproduced on ROCm 7.2 / gfx942. Asymmetric combos such as
+**Stacks and builds bitten.** **Measured on HIP/ROCm 7.2, gfx942, only.** The CUDA half is
+source-inferred: the same build flag gates the same kernel set, but we did not run it on an
+NVIDIA box, so treat CUDA as untested here. What was measured is the throughput collapse and
+its signature; that the slow path is literally CPU-resident is an inference from the magnitude,
+not something we instrumented. llama.cpp builds without `-DGGML_CUDA_FA_ALL_QUANTS=ON`. Asymmetric combos such as
 `q8_0` K with `q4_0` V are the common victims. Note that a fork may carry a narrow patch covering
 only one specific combination (e.g. f16/bf16 K with `q8_0`), which makes the problem *look* fixed
 while every other pair still falls back.

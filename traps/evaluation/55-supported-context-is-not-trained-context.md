@@ -14,12 +14,18 @@ battery at 1M tokens:
 
 | model | native training context | score at 1M |
 |---|---|---|
-| a 7B instruct model | 32K native | **0.31** |
-| a 14B model actually trained at 1M | 1M | **0.65** |
+| `Qwen2.5-7B-Instruct` | 32K native | **0.31** |
+| `Qwen2.5-14B-Instruct-1M` | 1M | **0.65** |
 
 The 7B is running in rope-extension territory at ~30x its native length and its retrieval collapses.
-**Long-context training matters more than parameter count at long context**: which is exactly the
-conclusion you would draw backwards if you attributed the gap to size.
+**In this pair, training context dominated a 2x parameter advantage**: the smaller model was the
+one inside its trained regime at every other bin, and the larger one held at 1M only because it was
+trained there.
+
+Scope, because the stronger claim is not carried by this data: n=30 per bin on one MRCR-style
+retrieval battery, one pair. Same family, so family is controlled, but parameter count and training
+regime move together and cannot be separated here. Read it as a reason to state the training
+context, not as a general ranking of training over scale.
 
 There is a second, purely mechanical version of the same trap: the file you serve may have been
 exported with a *reduced* extension factor, so the number your server enforces is smaller than the

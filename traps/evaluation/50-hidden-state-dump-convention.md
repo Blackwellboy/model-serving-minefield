@@ -70,4 +70,4 @@ activations; our forward was f32 and therefore *closer to ground truth*, so cosi
 
 **Attribution.** TheTom.
 
-**Check script.** The runnable version of this check is in review separately: every check in this repo must declare the negative and empty-set controls described in [the check contract](../../checks/README.md), and this one does not yet. The assertion above is the check; the script is a convenience wrapper for it.
+**Check script.** [`checks/hidden_state_align.py`](../../checks/hidden_state_align.py) declares the negative and empty-set controls required by [the check contract](../../checks/README.md), so it is able to report a problem. The inline assertion above remains the check; the script is a convenience wrapper for it.

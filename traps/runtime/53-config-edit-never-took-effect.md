@@ -29,6 +29,13 @@ The related trap on the other side of the same problem: a graceful signal can le
 uninterruptible sleep still holding VRAM for seconds, so the replacement cannot allocate even when
 the old one *is* dying (see [trap 46](../versioning/46-stale-build-missing-arch-kernel.md)).
 
+**A near miss worth separating.** @Blackwellboy hit a stale process holding a port while a
+lingering instance answered `/health`, on systemd user units on Linux, with a climbing `NRestarts`
+in the journal as the tell. That is the same collision but **not** this trap: their restart
+reported failure correctly and no false conclusion followed. The entry's weight comes from the
+restart reporting *success*, twice. Recorded here so the shared half is findable and the
+distinction is not quietly lost. Credit: @Blackwellboy, internal observation.
+
 **Stacks and builds bitten.** A model-swapping router under a Windows Scheduled Task on WSL2 in our
 case, but the shape is generic: systemd units, launchd jobs, Docker restart policies, and process
 managers all report on the action rather than the outcome. Any stack where "restart" and "the thing

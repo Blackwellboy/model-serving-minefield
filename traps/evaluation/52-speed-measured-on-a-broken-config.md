@@ -29,8 +29,9 @@ The same shape shows up in three other forms we hit:
 - A **quality claim in a stale docstring.** "3-bit +20.59% perplexity" turned out to be 10 to 30x
   pessimistic against measurement on the current path. Numbers rot; re-measure before quoting your
   own repo.
-- **Speed parity between architecturally different things.** A checkpoint whose branding implies
-  ~2B effective parameters served with an on-disk parameter count of ~4.65B. The tok/s comparison
+- **Speed parity between architecturally different things.** `gemma-4-E2B-it`: the E2B branding is
+  MatFormer-style "~2B effective", while the served count is `n_params: 4,647,450,147` (~4.65B),
+  which the server prints at load. The tok/s comparison
   against a true 2B is not the comparison you think.
 
 **Stacks and builds bitten.** Ours was a Metal quantized-matmul path on Apple silicon, but nothing
@@ -65,4 +66,4 @@ already been quoted.
 
 **Attribution.** TheTom.
 
-**Check script.** The runnable version of this check is in review separately: every check in this repo must declare the negative and empty-set controls described in [the check contract](../../checks/README.md), and this one does not yet. The assertion above is the check; the script is a convenience wrapper for it.
+**Check script.** The correctness half of this gate is [`checks/dequant_fidelity.py`](../../checks/dequant_fidelity.py), whose generation probes are exactly the discriminative pair described above. The rule itself, that no throughput number is recorded without a correctness artifact from the same build, is process rather than script.

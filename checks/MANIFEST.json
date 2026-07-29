@@ -14,6 +14,14 @@
     "here, which is the point."
   ],
   "checks": [
-    "preflight_template.py"
+    "cache_hit_probe.py",
+    "dequant_fidelity.py",
+    "hidden_state_align.py",
+    "latency_reconciliation.py",
+    "preflight_template.py",
+    "reasoning_budget_probe.py",
+    "tokenized_length_assert.py",
+    "tool_args_dialect_probe.py",
+    "util_vs_power_tell.sh"
   ]
 }
