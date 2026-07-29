@@ -462,6 +462,87 @@ class RegistryMutations(unittest.TestCase):
                   if "2026-01-01-bareclose.md" in f["where"]]
         self.assertEqual(counts, [], "a non-bare delimiter line is content: %s" % counts)
 
+
+    # --- doctor-coverage prose in mining/OPEN_QUESTIONS.md ---------------
+    #
+    # This sentence drifted to "19 of 97 / 78 uncovered" while the tree grew
+    # to 107, because its bold spans BOTH numbers and no pattern required
+    # that shape, and because "uncovered" states the DIFFERENCE rather than a
+    # total. Two patterns now cover it. These fixtures pin both, and pin that
+    # each fails for its own assertion rather than for the other one.
+
+    def _oq(self):
+        return os.path.join(self.root, "mining", "OPEN_QUESTIONS.md")
+
+    def test_57_correct_coverage_prose_passes(self):
+        """POSITIVE: the corrected sentence produces no COUNT finding."""
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "OPEN_QUESTIONS.md" in f["where"]]
+        self.assertEqual(counts, [], "clean tree must not flag the prose: %s" % counts)
+
+    def test_58_stale_registry_total_fails(self):
+        """NEGATIVE: 107 -> 97 fails, and names the TOTAL assertion."""
+        n = entry_count(self.root)
+        t = read(self._oq())
+        after = t.replace("**19 of %d** entries" % n, "**19 of %d** entries" % (n - 10), 1)
+        self.assertNotEqual(t, after, "fixture drift: coverage sentence")
+        write(self._oq(), after)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = [f for f in findings_of(out, "COUNT")
+                if "OPEN_QUESTIONS.md" in f["where"] and "registry total" in f["message"]]
+        self.assertTrue(hits, "must fail on the registry total specifically")
+
+    def test_59_stale_uncovered_count_fails(self):
+        """NEGATIVE: 88 -> 78 fails, and names the not-implemented assertion,
+        with the registry total left correct so the two cannot be confused."""
+        n = entry_count(self.root)
+        t = read(self._oq())
+        after = t.replace("  %d uncovered entries" % (n - 19),
+                          "  %d uncovered entries" % (n - 29), 1)
+        self.assertNotEqual(t, after, "fixture drift: uncovered sentence")
+        write(self._oq(), after)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = [f for f in findings_of(out, "COUNT")
+                if "OPEN_QUESTIONS.md" in f["where"] and "not-implemented" in f["message"]]
+        self.assertTrue(hits, "must fail on the uncovered count specifically")
+        totals = [f for f in findings_of(out, "COUNT")
+                  if "OPEN_QUESTIONS.md" in f["where"] and "registry total" in f["message"]]
+        self.assertEqual(totals, [], "must NOT also fire the total assertion")
+
+    def test_60_stale_doctor_coverage_fails(self):
+        """NEGATIVE: 19 -> 18 fails on the doctor-coverage half."""
+        n = entry_count(self.root)
+        t = read(self._oq())
+        after = t.replace("**19 of %d** entries" % n, "**18 of %d** entries" % n, 1)
+        self.assertNotEqual(t, after, "fixture drift")
+        write(self._oq(), after)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = [f for f in findings_of(out, "COUNT")
+                if "OPEN_QUESTIONS.md" in f["where"] and "doctor coverage" in f["message"]]
+        self.assertTrue(hits, "must fail on doctor coverage specifically")
+
+    def test_61_patterns_actually_match_a_known_string(self):
+        """A guard whose regex silently matches nothing passes every tree.
+
+        The first version of the uncovered-count pattern was written with a
+        literal backspace byte instead of a word boundary, so it compiled,
+        loaded and matched NOTHING. Zero inspected matches must not be able to
+        look like a pass, so assert the patterns fire on a known string.
+        """
+        import registry_integrity as ri
+        total_line = "checks for **19 of 107** entries and"
+        orphan_line = "  88 uncovered entries are reachable"
+        self.assertTrue(
+            any(rx.search(total_line) for rx, _t, _i in ri.TOTAL_PATTERNS),
+            "no TOTAL pattern matches the bold-spanning coverage sentence")
+        self.assertTrue(
+            any(rx.search(orphan_line) for rx in ri.ORPHAN_PATTERNS),
+            "no ORPHAN pattern matches the uncovered-entries sentence")
+
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
     whole thing enforceable."""

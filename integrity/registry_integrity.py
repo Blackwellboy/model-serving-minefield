@@ -269,6 +269,12 @@ TOTAL_PATTERNS = [
     (re.compile(r"implemented\s+(\d+)\s*/\s*(\d+)"), 2, 1),
     # the same line built in a test f-string: implemented {len(md.TRAP_PATHS)}/42
     (re.compile(r"implemented\s+\{[^}]*\}\s*/\s*(\d+)"), 1, None),
+    # "**19 of 97** entries", where the bold spans BOTH numbers and there is
+    # no "these"/"this registry's" between them. This exact shape sat in
+    # mining/OPEN_QUESTIONS.md and drifted to 19 of 97 while the tree grew to
+    # 107, because every pattern above requires a qualifier word the sentence
+    # does not have. A coverage total is a total however the bold is placed.
+    (re.compile(r"\*\*(\d+)\s+of\s+(\d+)\*\*\s+entries"), 2, 1),
     # "all 42 entries", "All 42 entries". Two of these sat in README.md
     # unguarded while the neighbouring "N of these 42 entries" lines were
     # checked, so the same number was enforced in one sentence and typed by
@@ -287,6 +293,10 @@ TOTAL_PATTERNS = [
 # cannot go stale again.
 ORPHAN_PATTERNS = [
     re.compile(r"not\s+implemented\s+\*{0,2}(\d+)\*{0,2}\b"),
+    # "the 78 uncovered entries". Same fossilising shape as "not implemented
+    # N": it states the DIFFERENCE, so no total-pattern sees it, and it
+    # survived a registry expansion in mining/OPEN_QUESTIONS.md.
+    re.compile(r"\b(\d+)\s+uncovered\s+entries\b"),
     re.compile(r"remaining\s+\*{0,2}(\d+)\*{0,2}\s+numbered\s+traps"),
 ]
 
