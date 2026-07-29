@@ -43,7 +43,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 103
+Four doors, and which one you want depends on why you are here. All 107
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -76,7 +76,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 103 entries, one row each, sorted by number. It is the
+  directly below, all 107 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -87,8 +87,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 103 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 78. It runs
+for **19 of these 107 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 88. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -120,7 +120,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 103 entries. If you know what you are running rather than what you are
+All 107 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -229,6 +229,10 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | NVFP4 MoE serve is "stuck" at a throughput ceiling no flag can break | BF16 GEMMs (44%) are the bottleneck, not the MoE path (22%) | [102](traps/quantization/102-nvfp4-bottleneck-is-bf16-gemm-not-moe.md) | contributor-measured, conditions as reported |
 | `AutoProcessor.from_pretrained` fails with torchvision ImportError on ROCm | TheRock wheel ABI mismatch blocks torchvision; AutoTokenizer fallback needed | [103](traps/template/103-torchvision-abi-mismatch-blocks-autoprocessor.md) | contributor-measured, conditions as reported |
 | Restart from a different startup path silently reverts all hardening | Stale launch script still carries pre-hardening config; running process was correct | [104](traps/versioning/104-stale-launch-script-silently-reverts-config.md) | contributor-measured, conditions as reported |
+| Acceptance rate quoted with no estimator named; two defensible numbers 6.31 points apart on the same requests | Token-weighted and request-weighted estimators weight by generation length; the pooled figure is a property of the workload mix, and `/metrics` hands you a third, process-wide number | [105](traps/evaluation/105-acceptance-estimator-unnamed.md) | measured here, raw not published |
+| KV cache occupancy climbs to a ceiling and pins there, preemptions at zero | Prefix caching retains blocks until eviction, so a cache doing its job fills up; occupancy is cache fill, not memory pressure | [106](traps/memory/106-kv-occupancy-ceiling-is-not-a-leak.md) | measured here, raw not published |
+| Memory rises monotonically for hours and a longer run on the same process shows it fully reverts | The rise is a bounded transient; a short soak samples only its upward leg and reports a leak and a throughput decline that do not exist | [107](traps/memory/107-soak-duration-changes-the-verdict.md) | measured here, raw not published |
+| A fixed-seed temperature-0 burn canary keeps changing output, in both directions | The serve settles into two outputs and alternates; a detector comparing consecutive samples fires on every switch | [108](traps/evaluation/108-burn-canary-is-bistable-not-degrading.md) | measured here, raw not published |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -257,7 +261,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 103 entries in under a minute:
+against 19 of this registry's 107 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
