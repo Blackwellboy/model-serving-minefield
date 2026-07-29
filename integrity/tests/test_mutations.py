@@ -533,7 +533,17 @@ class RegistryMutations(unittest.TestCase):
         loaded and matched NOTHING. Zero inspected matches must not be able to
         look like a pass, so assert the patterns fire on a known string.
         """
-        import registry_integrity as ri
+        # Loaded from an absolute path derived from INTEGRITY, not from
+        # sys.path. Running this file as `python3 -m unittest
+        # integrity.tests.test_mutations` does not put integrity/ on the path,
+        # and a bare import would raise ModuleNotFoundError, which is an ERROR
+        # rather than this assertion failing. A guard test that cannot run is
+        # the same defect class it exists to catch.
+        import importlib.util
+        _spec = importlib.util.spec_from_file_location(
+            "_ri_for_test", os.path.join(INTEGRITY, "registry_integrity.py"))
+        ri = importlib.util.module_from_spec(_spec)
+        _spec.loader.exec_module(ri)
         total_line = "checks for **19 of 107** entries and"
         orphan_line = "  88 uncovered entries are reachable"
         self.assertTrue(
