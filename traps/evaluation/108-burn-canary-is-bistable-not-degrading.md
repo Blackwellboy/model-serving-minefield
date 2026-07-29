@@ -2,8 +2,19 @@
 
 **Found by Blackwellboy.**
 
-**Status: measured here, raw not published** (25 in-band canary samples over
-13.009 h on one process; raw JSONL held in a staging tree).
+**Status: reproduced here** (25 in-band canary samples over
+13.009 h on one process; raw JSONL published in scrubbed form, see Evidence below).
+
+**Evidence.** Scrubbed raw, drivers and analysis are published and pinned to an
+immutable commit: [study README](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/README.md) -
+[methods](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/METHODS.md) -
+[scrubbed raw](https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/) -
+[verify.py](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/verify.py) (26 checks, re-derives every number below) -
+[manifest](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/MANIFEST.md) -
+[checksums](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/SHA256SUMS) -
+[redaction record](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/REDACTIONS.md).
+Model-generated prose was removed and replaced by hashes and lengths; no record
+was dropped and every field these numbers are computed from is untouched.
 
 **Symptom.** You add a burn detector to a long soak: one fixed prompt,
 `temperature=0`, a fixed seed, a fixed `max_tokens`, fired on a wall-clock
