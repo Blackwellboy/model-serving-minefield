@@ -92,21 +92,30 @@ number most people scrape.
 **The check.** Compute both estimators on your own lane and report the gap.
 Two counters plus your own request log; no model knowledge required.
 
-Token-weighted, straight from the metrics endpoint, over any window:
+Token-weighted. **Subtract two snapshots. Do not divide one.**
+
+`vllm:spec_decode_*` are cumulative process-lifetime counters. A single scrape
+divided in place gives you the ratio since the server started, not the ratio
+over your window, and it silently includes every request anyone else sent. That
+is the same unscoped error this entry is about, so the check must not commit it:
 
 ```bash
-curl -s localhost:8000/metrics | awk '
+snap() { curl -s localhost:8000/metrics | awk '
   /^vllm:spec_decode_num_accepted_tokens_total/ {a=$2}
   /^vllm:spec_decode_num_draft_tokens_total/ {d=$2}
-  END {printf "token-weighted acceptance: %.4f\n", a/d}'
+  END {print a, d}'; }
+
+read A0 D0 < <(snap)      # before your workload
+#   ... run your requests ...
+read A1 D1 < <(snap)      # after
+awk -v a0=$A0 -v d0=$D0 -v a1=$A1 -v d1=$D1   'BEGIN {printf "token-weighted acceptance (this window): %.4f
+", (a1-a0)/(d1-d0)}'
 ```
 
-Request-weighted needs a per-request value. If your stack does not expose one,
-derive it from the stream: **one SSE delta is one decode step**, and a decode
-step emits one target token plus whatever drafts were accepted, so for
-`K` speculative tokens
-
-```
+A one-shot `a/d` is only the window value on a server that has served nothing
+else since boot, which is a condition you have to establish rather than assume.
+Ours had not: a pre-soak baseline and two positive controls sat inside the
+lifetime totals, which is precisely how the 73.4% got quoted.
 tokens_per_step = completion_tokens / decode_steps # in [1, K+1]
 request_acceptance = (tokens_per_step - 1) / K
 ```
@@ -131,6 +140,22 @@ somebody's lane:**
    reasoning-parser plugin does exactly that. Ours never exceeded 4.0 across
    2,400 requests, which is what licenses the derivation *here* and is not
    something you may assume *there*.
+
+   **That is necessary and not sufficient, and the gap matters most where the
+   answer matters most.** Batching only breaches the ceiling when the batched
+   steps were themselves high-acceptance. Batch two *rejected* steps at `K=3`
+   and you get one delta carrying 2 tokens: `tokens_per_step` is 2, comfortably
+   under 4, the assertion passes, and the derivation reports 1/3 acceptance for
+   a pair of steps whose true acceptance was **zero**. Low-acceptance traffic is
+   exactly the traffic that hides inside this guard.
+
+   So the ceiling assertion detects the loud case only. Before trusting the
+   per-request number, establish independently that the transport preserves one
+   engine step per delta: compare `decode_steps` against a server-side step
+   count if your stack exposes one, or confirm `tokens_per_step` actually
+   reaches `K + 1` somewhere in a high-acceptance sample rather than sitting
+   under it uniformly. On a stream that batches, this derivation is not merely
+   noisy, it is biased upward on the worst cells.
 2. **Attribute the counters.** `vllm:spec_decode_*` is process-wide, so any
    other traffic on the lane is silently inside your number. Difference
    `vllm:request_success_total` against your own request count per window; if

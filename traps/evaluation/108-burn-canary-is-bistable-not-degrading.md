@@ -78,12 +78,18 @@ of the series and pooling it would inflate the distinct-output count from 2 to 3
 ```python
 sigs = [row["sha256"] for row in canary_samples] # in-band only
 distinct = len(set(sigs))
-transitions= sum(1 for a, b in zip(sigs, sigs[1:]) if a != b)
-returns = sum(1 for a, b in zip(sigs, sigs[1:]) if a != b and b in sigs[:sigs.index(a)+1])
+trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]
 
-# bistable-and-clean: few distinct outputs, and the series comes back
-if distinct <= 3 and returns > 0:
-    print("BISTABLE, not degrading:", distinct, "outputs,", transitions, "transitions")
+# The operative test is whether the LAST excursion came back, not whether any
+# earlier one did. A series that alternates for hours and then changes for good
+# still has returns somewhere in it. Counting returns anywhere scores
+# A,B,A,C,C as clean, and that C never comes back.
+final_returned = (not trans) or sigs[trans[-1] + 1] in sigs[:trans[-1] + 1]
+
+if distinct <= 3 and final_returned:
+    print("BISTABLE, not degrading:", distinct, "outputs,", len(trans), "transitions")
+elif trans and not final_returned:
+    print("ONE-WAY TRANSITION at sample", trans[-1] + 1, "- did not return. Investigate.")
 # degrading: monotone in a scored dimension, and it never returns
 lengths = [row["chars"] for row in canary_samples]
 if all(x >= y for x, y in zip(lengths, lengths[1:])):
