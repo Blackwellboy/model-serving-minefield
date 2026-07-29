@@ -37,6 +37,23 @@ CHANGELOG.md is deliberately exempt from COUNT. It is an append-only record of
 what was true on a date; a 2026-07-28 line reading "corrected to 17 of 42" must
 keep saying 42 after the tree grows, or the log stops being a log.
 
+The same rule, narrowed, applies to CAPTURED OUTPUT under mining/. A mining
+note records a run: when it pastes the coverage line a tool actually printed,
+"implemented 19/103" has to keep saying 103, because that is what it printed.
+Rewriting a capture to match a tree that has since grown falsifies evidence,
+which is a failure this registry catalogues rather than commits.
+
+The exemption is deliberately NOT "ignore numbers under mining/". It applies
+only where the number sits inside a code span or a fenced block, which is how
+captured output is written and how a live assertion is not. So:
+
+    mining/note.md   `implemented 19/103 | ...`      exempt, it is a capture
+    mining/note.md   19 of these 103 entries          NOT exempt, that is prose
+    README.md        anything                          NOT exempt, ever
+    traps/**         anything                          NOT exempt, ever
+
+A prose sentence in a mining summary is a current claim and stays enforced.
+
 Usage:
     python3 integrity/registry_integrity.py [--root .] [--json]
 
@@ -273,6 +290,38 @@ ORPHAN_PATTERNS = [
     re.compile(r"remaining\s+\*{0,2}(\d+)\*{0,2}\s+numbered\s+traps"),
 ]
 
+CAPTURED_OUTPUT_DIRS = ("mining/",)
+FENCE_RE = re.compile(r"^\s*```")
+
+
+def _code_spans(line):
+    """Character ranges covered by inline `code` spans on this line."""
+    spans, start = [], None
+    for i, ch in enumerate(line):
+        if ch == "`":
+            if start is None:
+                start = i
+            else:
+                spans.append((start, i))
+                start = None
+    return spans
+
+
+def is_captured_output(rel, line, span, in_fence):
+    """True only for a number that is captured tool output, not an assertion.
+
+    Narrow on purpose. Restricted to the directories in CAPTURED_OUTPUT_DIRS,
+    and within those, to numbers inside a fenced block or an inline code span.
+    Prose in the same file is still a live claim and stays enforced.
+    """
+    if not any(rel.startswith(d) for d in CAPTURED_OUTPUT_DIRS):
+        return False
+    if in_fence:
+        return True
+    a, b = span
+    return any(lo < a and b <= hi for lo, hi in _code_spans(line))
+
+
 COUNT_SCAN_EXTS = (".md", ".py")
 COUNT_SKIP_FILES = {"CHANGELOG.md"}
 COUNT_SKIP_DIRS = {".git", "__pycache__", "integrity"}
@@ -450,9 +499,15 @@ def check_counts(root, n_entries, findings):
                 continue
             rel = os.path.relpath(os.path.join(dp, fn), root).replace("\\", "/")
             text = read(os.path.join(dp, fn))
+            in_fence = False
             for i, line in enumerate(text.splitlines(), 1):
+                if FENCE_RE.match(line):
+                    in_fence = not in_fence
+                    continue
                 for rx, total_g, impl_g in TOTAL_PATTERNS:
                     for m in rx.finditer(line):
+                        if is_captured_output(rel, line, m.span(), in_fence):
+                            continue
                         total = int(m.group(total_g))
                         if total != n_entries:
                             findings.append(Finding(
@@ -472,6 +527,8 @@ def check_counts(root, n_entries, findings):
                 expected_orphan = n_entries - implemented
                 for rx in ORPHAN_PATTERNS:
                     for m in rx.finditer(line):
+                        if is_captured_output(rel, line, m.span(), in_fence):
+                            continue
                         got = int(m.group(1))
                         if got != expected_orphan:
                             findings.append(Finding(

@@ -26,6 +26,8 @@ import sys
 import tempfile
 import unittest
 
+NL = chr(10)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 INTEGRITY = os.path.dirname(HERE)
 REPO = os.path.dirname(INTEGRITY)
@@ -281,6 +283,73 @@ class RegistryMutations(unittest.TestCase):
         self.assertEqual(rc, 1)
         fb = findings_of(out, "FOUND-BY")
         self.assertTrue(any("33-moe" in f["where"] for f in fb), fb)
+
+
+    # --- captured-output exemption under mining/ ---------------------------
+    #
+    # A mining note records a run. When it pastes the coverage line a tool
+    # printed, that number must keep saying what it printed. The exemption is
+    # narrow on purpose and these four fixtures pin it: the capture passes,
+    # and prose in the same file, a README count and a code span outside
+    # mining/ all still fail.
+
+    def test_46_captured_output_in_a_mining_note_is_exempt(self):
+        """POSITIVE: a stale count inside a code span under mining/ passes,
+        because it is a capture of what a tool printed on a date."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-captured-run.md")
+        body = NL.join([
+            "# A dated run", "",
+            "The doctor printed:", "",
+            "| Arm | Coverage line |", "|---|---|",
+            "| one | `implemented 19/%d | not implemented 84` |" % (n - 4),
+        ]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-captured-run.md" in f["where"]]
+        self.assertEqual(counts, [], "a captured coverage line under mining/ "
+                                     "must not be read as a live claim: %s" % counts)
+
+    def test_47_prose_in_a_mining_note_is_NOT_exempt(self):
+        """NEGATIVE: the same stale number as ordinary prose in the same
+        directory is a current assertion and must still fail."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-prose-claim.md")
+        body = NL.join(["# A summary", "",
+                        "The doctor covers 19 of these %d entries." % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-prose-claim.md" in f["where"]]
+        self.assertTrue(counts, "prose in a mining note is a live claim and "
+                               "must still be enforced")
+
+    def test_48_readme_count_is_never_exempt(self):
+        """NEGATIVE: the exemption is scoped to mining/ and must not leak."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "README.md")
+        text = read(p)
+        after = text.replace("All %d entries" % n, "All %d entries" % (n - 4), 1)
+        self.assertNotEqual(text, after, "fixture drift: README All N entries")
+        write(p, after)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("README.md" in f["where"]
+                            for f in findings_of(out, "COUNT")))
+
+    def test_49_code_span_outside_mining_is_never_exempt(self):
+        """NEGATIVE: backticks are not on their own a licence. The same
+        capture-shaped line outside mining/ is still enforced."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "doctor", "SCRATCH_NOTE.md")
+        body = NL.join(["# scratch", "", "`implemented 19/%d`" % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("SCRATCH_NOTE.md" in f["where"]
+                            for f in findings_of(out, "COUNT")))
 
 
 class ClaimLedgerMutations(unittest.TestCase):
@@ -630,6 +699,7 @@ class DoNotCiteMutations(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertTrue(any(h["path"] == "NEW_WRITEUP.md" for h in out["hits"]),
                         out)
+
 
 
 if __name__ == "__main__":
