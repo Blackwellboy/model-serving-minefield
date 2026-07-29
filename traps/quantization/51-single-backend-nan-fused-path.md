@@ -21,6 +21,13 @@ are safe by construction.
 `TQ4_1S` weights, `Nemotron-H-8B-Base-8K` (Mamba-2 hybrid with a squared-ReLU FFN). Transformer
 models with GELU/SwiGLU FFNs on the same path are unaffected, which is why it survived so long.
 
+**A stranger cannot run the specific commands below**: `TQ4_1S`, `--tensor-type ssm=q8_0` and the
+`TQ_NO_ROTATE=1` toggle are all specific to a KV/weight-quant fork of llama.cpp
+([TheTom/llama-cpp-turboquant](https://github.com/TheTom/llama-cpp-turboquant)), and the toggle is
+one this entry's author added. **The portable payload is the three-backend agreement test**: run
+the same quantized file through every backend you have and require them to agree, whatever quant
+format and whatever toggle your stack uses. The fork-specific commands are the worked example.
+
 **The check.** Run perplexity on **every backend you have** before drawing a conclusion about a
 quant
 format, and bisect by tensor group rather than by guess:

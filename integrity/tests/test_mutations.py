@@ -26,6 +26,9 @@ import sys
 import tempfile
 import unittest
 
+NL = chr(10)
+BT = chr(96)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 INTEGRITY = os.path.dirname(HERE)
 REPO = os.path.dirname(INTEGRITY)
@@ -282,6 +285,182 @@ class RegistryMutations(unittest.TestCase):
         fb = findings_of(out, "FOUND-BY")
         self.assertTrue(any("33-moe" in f["where"] for f in fb), fb)
 
+
+    # --- captured-output exemption under mining/ ---------------------------
+    #
+    # A mining note records a run. When it pastes the coverage line a tool
+    # printed, that number must keep saying what it printed. The exemption is
+    # narrow on purpose and these four fixtures pin it: the capture passes,
+    # and prose in the same file, a README count and a code span outside
+    # mining/ all still fail.
+
+    def test_46_captured_output_in_a_mining_note_is_exempt(self):
+        """POSITIVE: a stale count inside a code span under mining/ passes,
+        because it is a capture of what a tool printed on a date."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-captured-run.md")
+        body = NL.join([
+            "# A dated run", "",
+            "The doctor printed:", "",
+            "| Arm | Coverage line |", "|---|---|",
+            "| one | `implemented 19/%d | not implemented 84` |" % (n - 4),
+        ]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-captured-run.md" in f["where"]]
+        self.assertEqual(counts, [], "a captured coverage line under mining/ "
+                                     "must not be read as a live claim: %s" % counts)
+
+    def test_47_prose_in_a_mining_note_is_NOT_exempt(self):
+        """NEGATIVE: the same stale number as ordinary prose in the same
+        directory is a current assertion and must still fail."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-prose-claim.md")
+        body = NL.join(["# A summary", "",
+                        "The doctor covers 19 of these %d entries." % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-prose-claim.md" in f["where"]]
+        self.assertTrue(counts, "prose in a mining note is a live claim and "
+                               "must still be enforced")
+
+    def test_48_readme_count_is_never_exempt(self):
+        """NEGATIVE: the exemption is scoped to mining/ and must not leak."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "README.md")
+        text = read(p)
+        after = text.replace("All %d entries" % n, "All %d entries" % (n - 4), 1)
+        self.assertNotEqual(text, after, "fixture drift: README All N entries")
+        write(p, after)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("README.md" in f["where"]
+                            for f in findings_of(out, "COUNT")))
+
+    def test_49_code_span_outside_mining_is_never_exempt(self):
+        """NEGATIVE: backticks are not on their own a licence. The same
+        capture-shaped line outside mining/ is still enforced."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "doctor", "SCRATCH_NOTE.md")
+        body = NL.join(["# scratch", "", "`implemented 19/%d`" % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("SCRATCH_NOTE.md" in f["where"]
+                            for f in findings_of(out, "COUNT")))
+
+
+
+    # Three Markdown-parsing edge cases Codex found on the first version of
+    # this rule. Two of them widened the exemption, which is the dangerous
+    # direction: an over-strict rule annoys, an over-loose one lets a stale
+    # live claim through.
+
+    def test_50_indented_backticks_are_not_a_fence(self):
+        """Four or more leading spaces is an indented code block, not a fence.
+        Treating it as one would flip fence state and exempt every live count
+        claim after it."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-indented.md")
+        body = NL.join(["# note", "",
+                        "    " + BT * 3,
+                        "", "The doctor covers 19 of these %d entries." % (n - 4)]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-indented.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "an indented backtick line must not open a fence")
+
+    def test_51_tilde_fenced_capture_is_exempt(self):
+        """Tilde fences are valid Markdown and carry captured output too."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-tilde.md")
+        body = NL.join(["# note", "", "~~~",
+                        "implemented 19/%d" % (n - 4),
+                        "~~~"]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-tilde.md" in f["where"]]
+        self.assertEqual(counts, [], "a tilde-fenced capture must be exempt")
+
+    def test_52_escaped_backticks_do_not_make_a_code_span(self):
+        """Escaped backticks render literally. Counting them would let prose
+        masquerade as captured output."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-escaped.md")
+        esc = chr(92) + BT
+        body = NL.join(["# note", "",
+                        "Prose with " + esc + "implemented 19/%d" % (n - 4) + esc + " inline."]) + NL
+        write(p, body)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-escaped.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "escaped backticks must not open a code span")
+
+
+    def test_53_multi_backtick_code_span_is_exempt(self):
+        """A code span is delimited by EQUAL-LENGTH backtick runs. Captured
+        output often needs the double form because it contains a backtick."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-multitick.md")
+        inner = BT + "field" + BT
+        line = BT*2 + "implemented 19/%d with %s " % (n - 4, inner) + BT*2
+        write(p, NL.join(["# note", "", line]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-multitick.md" in f["where"]]
+        self.assertEqual(counts, [], "a multi-backtick capture must be exempt")
+
+    def test_54_longer_fence_is_not_closed_by_a_shorter_inner_one(self):
+        """A closing fence must be at least as long as the opener, so a three
+        backtick line inside a four backtick block is content, not a close."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-nested.md")
+        write(p, NL.join(["# note", "",
+                          BT*4,
+                          BT*3 + "text",
+                          "implemented 19/%d" % (n - 4),
+                          BT*3,
+                          BT*4]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-nested.md" in f["where"]]
+        self.assertEqual(counts, [], "an inner shorter fence must not close "
+                                     "the outer block: %s" % counts)
+
+
+    def test_55_invalid_backtick_info_string_does_not_open_a_fence(self):
+        """A backtick fence info string may not contain a backtick. Opening on
+        one would exempt every live claim after it, which is a leak."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-infostring.md")
+        write(p, NL.join(["# note", "",
+                          BT*3 + "python" + BT + "example",
+                          "", "The doctor covers 19 of these %d entries." % (n - 4)]) + NL)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-infostring.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "an invalid backtick info string must not open a fence")
+
+    def test_56_closing_fence_must_be_bare(self):
+        """Non-whitespace after the delimiter means content, not a close."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-bareclose.md")
+        write(p, NL.join(["# note", "", "~~~",
+                          "~~~ still running",
+                          "implemented 19/%d" % (n - 4),
+                          "~~~"]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-bareclose.md" in f["where"]]
+        self.assertEqual(counts, [], "a non-bare delimiter line is content: %s" % counts)
 
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
@@ -630,6 +809,7 @@ class DoNotCiteMutations(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertTrue(any(h["path"] == "NEW_WRITEUP.md" for h in out["hits"]),
                         out)
+
 
 
 if __name__ == "__main__":

@@ -37,6 +37,23 @@ CHANGELOG.md is deliberately exempt from COUNT. It is an append-only record of
 what was true on a date; a 2026-07-28 line reading "corrected to 17 of 42" must
 keep saying 42 after the tree grows, or the log stops being a log.
 
+The same rule, narrowed, applies to CAPTURED OUTPUT under mining/. A mining
+note records a run: when it pastes the coverage line a tool actually printed,
+"implemented 19/103" has to keep saying 103, because that is what it printed.
+Rewriting a capture to match a tree that has since grown falsifies evidence,
+which is a failure this registry catalogues rather than commits.
+
+The exemption is deliberately NOT "ignore numbers under mining/". It applies
+only where the number sits inside a code span or a fenced block, which is how
+captured output is written and how a live assertion is not. So:
+
+    mining/note.md   `implemented 19/103 | ...`      exempt, it is a capture
+    mining/note.md   19 of these 103 entries          NOT exempt, that is prose
+    README.md        anything                          NOT exempt, ever
+    traps/**         anything                          NOT exempt, ever
+
+A prose sentence in a mining summary is a current claim and stays enforced.
+
 Usage:
     python3 integrity/registry_integrity.py [--root .] [--json]
 
@@ -273,6 +290,71 @@ ORPHAN_PATTERNS = [
     re.compile(r"remaining\s+\*{0,2}(\d+)\*{0,2}\s+numbered\s+traps"),
 ]
 
+CAPTURED_OUTPUT_DIRS = ("mining/",)
+# A fence is at most three spaces indented; four or more spaces is an
+# INDENTED CODE BLOCK, not a fence, and treating it as one would flip
+# in_fence and exempt every live count claim after it. Both CommonMark fence
+# characters are recognised, and a fence is only closed by its own character,
+# so a ``` inside a ~~~ block does not end it.
+FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+def _code_spans(line):
+    """Character ranges covered by inline code spans on this line.
+
+    A code span is delimited by backtick runs of EQUAL length, so ``x`` is one
+    span and not two adjacent one-backtick spans. Captured output often needs
+    the longer form precisely because it contains a backtick of its own.
+
+    A BACKSLASH-ESCAPED backtick neither opens nor closes: Markdown renders it
+    literally, and counting it would let ordinary prose look like a capture.
+    """
+    runs = []
+    i, n = 0, len(line)
+    while i < n:
+        if line[i] != "`":
+            i += 1
+            continue
+        if i and line[i - 1] == "\\":
+            i += 1
+            continue
+        j = i
+        while j < n and line[j] == "`":
+            j += 1
+        runs.append((i, j, j - i))
+        i = j
+    spans, open_run = [], None
+    for a, b, ln in runs:
+        if open_run is None:
+            open_run = (a, b, ln)
+        elif ln == open_run[2]:
+            spans.append((open_run[1] - 1, a))
+            open_run = None
+    return spans
+
+
+# KNOWN LIMITATION, accepted deliberately: inline code spans are matched
+# per line. A span whose opening delimiter is on one line and whose number is
+# on the next is not recognised, so that number is treated as a live claim.
+# The failure is therefore CLOSED, not open: an unrecognised capture is
+# reported, never silently exempted. Fixing it properly needs document-level
+# CommonMark parsing, which is a larger change than this rule warrants; the
+# fenced form covers multi-line captured output and is what notes actually use.
+def is_captured_output(rel, line, span, in_fence):
+    """True only for a number that is captured tool output, not an assertion.
+
+    Narrow on purpose. Restricted to the directories in CAPTURED_OUTPUT_DIRS,
+    and within those, to numbers inside a fenced block or an inline code span.
+    Prose in the same file is still a live claim and stays enforced.
+    """
+    if not any(rel.startswith(d) for d in CAPTURED_OUTPUT_DIRS):
+        return False
+    if in_fence:
+        return True
+    a, b = span
+    return any(lo < a and b <= hi for lo, hi in _code_spans(line))
+
+
 COUNT_SCAN_EXTS = (".md", ".py")
 COUNT_SKIP_FILES = {"CHANGELOG.md"}
 COUNT_SKIP_DIRS = {".git", "__pycache__", "integrity"}
@@ -450,9 +532,36 @@ def check_counts(root, n_entries, findings):
                 continue
             rel = os.path.relpath(os.path.join(dp, fn), root).replace("\\", "/")
             text = read(os.path.join(dp, fn))
+            fence = None
             for i, line in enumerate(text.splitlines(), 1):
+                fm = FENCE_RE.match(line)
+                if fm:
+                    run = fm.group(1)
+                    ch, ln = run[0], len(run)
+                    rest = line[fm.end():]
+                    if fence is None:
+                        # A BACKTICK opening fence's info string may not itself
+                        # contain a backtick. Opening on one would exempt every
+                        # live claim after it, so an invalid opener is not a
+                        # fence and the line is ordinary content.
+                        if ch == "`" and "`" in rest:
+                            pass
+                        else:
+                            fence = (ch, ln)
+                            continue
+                    elif ch == fence[0] and ln >= fence[1] and not rest.strip():
+                        # A closing fence must be at least as long as its
+                        # opener AND have nothing but whitespace after it, so
+                        # "~~~ still running" inside a block is content.
+                        fence = None
+                        continue
+                    else:
+                        continue
+                in_fence = fence is not None
                 for rx, total_g, impl_g in TOTAL_PATTERNS:
                     for m in rx.finditer(line):
+                        if is_captured_output(rel, line, m.span(), in_fence):
+                            continue
                         total = int(m.group(total_g))
                         if total != n_entries:
                             findings.append(Finding(
@@ -472,6 +581,8 @@ def check_counts(root, n_entries, findings):
                 expected_orphan = n_entries - implemented
                 for rx in ORPHAN_PATTERNS:
                     for m in rx.finditer(line):
+                        if is_captured_output(rel, line, m.span(), in_fence):
+                            continue
                         got = int(m.group(1))
                         if got != expected_orphan:
                             findings.append(Finding(

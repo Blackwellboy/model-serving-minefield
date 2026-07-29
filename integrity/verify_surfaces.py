@@ -98,6 +98,12 @@ def main():
     ap.add_argument("--peer", action="append", default=[],
                     help="name=path, e.g. bbio=../Blackwellboy.github.io")
     ap.add_argument("--github", action="store_true")
+    ap.add_argument("--peer-mode", choices=("gate", "defer"), default="gate",
+                    help="gate: peer value lag fails (scheduled runs). "
+                         "defer: peer value lag is reported and does not fail "
+                         "(push-time runs). Structural peer problems, a missing "
+                         "peer or an artifact that inspects nothing, fail in "
+                         "BOTH modes: absent is not stale.")
     a = ap.parse_args()
     root = os.path.abspath(a.root)
     peers = {}
@@ -107,7 +113,8 @@ def main():
             peers[k.strip()] = os.path.abspath(v.strip())
 
     cfg = json.loads(read(os.path.join(HERE, "surfaces.json")))
-    fails, inspected = [], 0
+    fails, inspected, deferred = [], 0, []
+    SCHEDULED_JOB = "the 'surfaces' workflow (.github/workflows/surfaces.yml)"
     out = ["verify-public-surfaces: %s" % root,
            "HEAD: %s" % (head_sha(root) or "unknown"), ""]
 
@@ -159,20 +166,33 @@ def main():
             h = head_sha(root)
             for tok in found:
                 if not (h and h.startswith(tok)):
-                    fails.append("%s: site pins registry %s, HEAD is %s. The "
-                                 "page describes a tree that has moved"
-                                 % (s["id"], tok, (h or "unknown")[:12]))
+                    msg = ("%s: site pins registry %s, HEAD is %s. The page "
+                           "describes a tree that has moved"
+                           % (s["id"], tok, (h or "unknown")[:12]))
+                    (deferred if a.peer_mode == "defer" else fails).append(msg)
             out.append("  %-24s pins %s, HEAD %s" % (s["id"], found[0], (h or "?")[:12]))
         else:
             want = DERIVERS[s["derive"]](root)
             for tok in found:
                 if as_int(tok) != want:
-                    fails.append("%s: site says %s, tree derives %d"
-                                 % (s["id"], tok, want))
+                    msg = ("%s: site says %s, tree derives %d"
+                           % (s["id"], tok, want))
+                    (deferred if a.peer_mode == "defer" else fails).append(msg)
             out.append("  %-24s site says %s, tree derives %d"
                        % (s["id"], found[0], want))
 
     out.append("")
+    if deferred:
+        out.append("DEFERRED: checked on schedule, not here. %d peer surface(s) "
+                   "lag the tree. This does NOT gate the push." % len(deferred))
+        for d in deferred:
+            out.append("  " + d)
+        out.append("  Where this IS checked: %s, which runs the same job with "
+                   "--peer-mode gate and hard-fails." % SCHEDULED_JOB)
+        out.append("  A peer that is ABSENT still fails here. Only value lag "
+                   "defers, because the site rebuilds after the push that moves "
+                   "HEAD and cannot have caught up at push time.")
+        out.append("")
     out.append("inspected_count: %d" % inspected)
     if inspected == 0:
         fails.append("inspected_count is 0. Nothing was actually looked at, "
@@ -187,8 +207,10 @@ def main():
             if a.github:
                 print("::error title=surfaces::%s" % f)
     else:
-        out.append("CLEAN: %d surface occurrence(s) re-derived and matched"
-                   % inspected)
+        out.append("CLEAN: %d surface occurrence(s) re-derived and matched%s"
+                   % (inspected,
+                      (", %d deferred to %s" % (len(deferred), SCHEDULED_JOB))
+                      if deferred else ""))
     print("\n".join(out))
     sys.exit(1 if fails else 0)
 

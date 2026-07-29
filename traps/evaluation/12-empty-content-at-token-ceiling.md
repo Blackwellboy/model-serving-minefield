@@ -226,3 +226,67 @@ conversion floor.
 [@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
 conditions and the complete doctor coverage line are in the
 [SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+
+## Added 2026-07-29: the rate under organic load, and which families carry it
+
+**Status: reproduced here.** 2,045 turns over 13.009 h,
+Nemotron 3 Super 120B A12B NVFP4 rev `4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6`,
+vLLM 0.20.0, single GB10-class node, TP=1, MTP `num_speculative_tokens=3`,
+`max_tokens=1024`, `temperature=1.0`, `top_p=0.95`, seven task families
+round-robin, `enable_thinking` alternating so every family sees both settings
+evenly.
+
+Trap 12's existing Nemotron section is a deliberate budget sweep: three samples
+per cell, two difficulties, budgets 64 to 4096. This is the same trap met by
+accident, at one ordinary budget, under continuous load.
+
+**92 of 2,045 turns (4.50%) returned HTTP 200 with empty content.** Every one of
+them: thinking on, `finish_reason: length`, and a populated reasoning block.
+**Thinking off produced 0 empties in 1,022 turns**, which corroborates trap 12's
+immunity result at a much larger n on the same checkpoint.
+
+The failures are not spread evenly across the workload:
+
+| family | turns | empty | rate over all turns | **rate over thinking-on turns** |
+|---|---|---|---|---|
+| reasoning | 292 | 45 | 15.41% | **30.82%** |
+| code | 292 | 28 | 9.59% | **19.18%** |
+| structured | 292 | 16 | 5.48% | **10.96%** |
+| math | 292 | 3 | 1.03% | 2.05% |
+| prose | 293 | 0 | 0% | **0%** |
+| tool | 292 | 0 | 0% | **0%** |
+| summarize | 292 | 0 | 0% | **0%** |
+
+**Nearly one in three thinking-on reasoning requests returned a blank answer,
+and three of the seven families never did it once.**
+
+**Why this changes the advice.** Trap 12's procedure says to establish the floor
+for THIS model and THIS task rather than borrowing a number. This is what that
+looks like when you measure it across a task mix at a single budget: the floor
+is not merely per-model, it is per-family by a wide margin, and a blanket budget
+raise pays the cost of the worst family across every request including the four
+that never needed it. The targeted version is: raise the ceiling for reasoning,
+code and structured output, and leave prose, tool and summarize workloads alone.
+
+**The rate is flat, not climbing.** Across quartiles of thinking-on turns:
+10.20%, 9.02%, 7.84%, 8.91%. That matters because a rate that rose over 13 hours
+would be degradation; a flat rate is a property of the configuration. This is a
+soak-specific observation trap 12 has no way to make from a sweep.
+
+**Corroborating negative from a second serve the same week.** A 10.20 h soak of
+a community-abliterated DeepSeek-V4-Flash build (vLLM, TP=2, MTP K=3,
+`max_tokens=1500`) recorded **400/400 thinking turns closing their reasoning
+block and 0 empty completions**. Its instrument for this was in place and the
+phenomenon did not occur, which is a stronger statement than not having looked.
+So the trap is not universal across reasoning models at a working budget, and the
+DSV4 result bounds it rather than contradicting it: different checkpoint,
+different budget, different task mix.
+
+**Scope.** The 4.50% and every per-family rate are the rates **at
+`max_tokens=1024` on this task mix**. They do not transfer to another budget,
+which is trap 12's own standing warning, and this addendum is an instance of it
+rather than an exception. Single serve, no baseline arm.
+
+*Status of this addendum: reproduced here. Single serve, no baseline arm.*
+
+*Evidence for this addendum: [study](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/README.md), [scrubbed raw](https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/), [verify.py](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/verify.py) (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), [redaction record](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/REDACTIONS.md).*

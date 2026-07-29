@@ -62,6 +62,30 @@ number.
    figure that had been quoted for weeks was simply a high-clock sample about 20% above the locked
    baseline.
 
+**A concrete, default-on instance of this, found independently by two other people.**
+@apollo-mg reported that llama.cpp output at temperature 0 depends on server state, and that one of
+the three channels he found is **on by default**: `cache_prompt = true`. The same request, freshly
+prefilled from a 4,704-token prompt, returns one hash stably; served from a 30-token warm prefix it
+returns a different one. No restart, no concurrency, stock flags. He has concurrent batched decoding
+as a separate channel, reproducing on upstream at `0e4a036`.
+[report](https://github.com/TheTom/offlabel/pull/10#issuecomment-5099416581)
+
+@Defilan then ran the same check on a third stack, Laguna S 2.1 on llama.cpp Vulkan / gfx1151,
+single slot, temp 0, with `cache_prompt: false` set on every request. Cold was deterministic across
+three runs; warm diverged anyway, so on that stack the flag did not fully isolate an identical
+request from what was in the slot before it. He is explicit that n=3 makes it an existence proof
+rather than a rate, and that he has not identified the mechanism.
+[report](https://github.com/TheTom/offlabel/pull/10#issuecomment-5099697368)
+
+Neither had read this entry. Two stacks neither of them shares with the other, and neither with
+this entry's author. Credit for both is theirs.
+
+**What that sharpens, past counterbalancing.** A protocol should state its **prefix-reuse and
+concurrency settings the way it states temperature**, because on these stacks they are as
+determinative and they are not neutral by default. And where this reproduces, **flushing the slot
+between samples is worth more than trusting the flag**: @Defilan's run is the case where setting
+`cache_prompt: false` was not sufficient on its own.
+
 **The fix.** Treat any unpaired, un-counterbalanced measurement as a hypothesis. A result is a
 result when it survives order reversal, a fresh baseline in the same session, and a null-build run.
 

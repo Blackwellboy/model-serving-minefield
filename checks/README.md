@@ -87,6 +87,76 @@ check's controls sidecar, or a regression assert coming back false each fail
 the build. A harness that cannot fail would be the very defect it tests for,
 which is also why it refuses to pass over zero discovered checks.
 
+## tool_args_dialect_probe.py (trap 43)
+
+Does the chat template survive tool-call `arguments` arriving as a **string**? The OpenAI spec
+says it is a string; templates that gate parameter expansion on `arguments is mapping` with no
+`else` render an empty call when a framework replays a prior call with pre-serialized JSON.
+
+Offline mode renders the template both ways and asserts the argument VALUE appears. The sentinel
+is a city the conversation never mentions, deliberately: the first version of this check asserted
+`"Paris" in rendered` while the user turn read "What is the weather in Paris?", so it could not
+fail on the bug it exists to catch. That is the unfailable-assertion shape, and
+`_control_sentinel_not_in_prompt` now guards against it returning.
+
+Offline mode needs `jinja2`; live mode is stdlib.
+
+## reasoning_budget_probe.py (traps 12, 16, 22)
+
+The distribution half of trap 12 step 4. Sends the same prompt N times at a fixed ceiling and
+reports the truncation rate and completion-token distribution; a pileup at exactly the cap is the
+signature. Run at your real eval temperature, since the tail that bites at 0.6 is invisible at 0.
+
+## dequant_fidelity.py (traps 44, 27)
+
+Per-row cosine in float64 plus generation probes. Two assertions, because a flat cosine over a
+billion-element `lm_head` overflows in float32 and can return > 1, and because the
+capital-of-France probe passes on a wrong-layout dequant where a decimal comparison does not.
+
+Exits 3, not 0, when zero tensors were compared. The first version started `worst` at 1.0 and
+skipped tensors on shape mismatch, so a wrong-layout dequant whose shapes did not line up printed
+`p01 1.0000 [None]` and passed: the vacuous-PASS shape, over the empty set.
+
+Weight mode needs `torch` and `safetensors`; generation mode is stdlib.
+
+## util_vs_power_tell.sh (traps 46, 10)
+
+Run while a decode benchmark is in flight. High utilization at low power draw means busy compute
+units that are not saturating tensor cores. Boards that report `[N/A]` power (Jetson and
+GB10-class) now exit 3 rather than being coerced to 0 W, which previously reported SUSPECT
+FALLBACK on every healthy lane on those boards.
+
+## cache_hit_probe.py (trap 47)
+
+Sends a growing conversation with a large stable prefix and reports TTFT per turn plus the
+server-reported cached fraction. Requests `stream_options.include_usage`, without which the
+`cached_tokens` corroboration never arrives on vLLM-dialect servers.
+
+Flat TTFT with no server-side accounting is reported as **inconclusive (exit 3), not a finding**:
+TTFT is a noisy proxy and a short prefix or a fast box hides a working cache. It is blocking only
+when the server itself reports a cached fraction near zero.
+
+## latency_reconciliation.py (trap 48)
+
+Compares client-observed latency against the server's own figure and reports the unexplained gap.
+The server total must include **prefill**: a decode-only field is declined rather than used, since
+using it books prompt-processing time into the client gap and manufactures a false finding on long
+prefills. Also runs the dual-stack resolution check that identifies the usual cause.
+
+## tokenized_length_assert.py (trap 49)
+
+Asserts the server's own prompt-token count against your target. Every probe carries a fresh salt,
+including the growth probes, so no measurement is served from a prefix the check itself just
+warmed. Pass `--repeat` to reproduce a known-bad harness.
+
+## hidden_state_align.py (trap 50)
+
+Before filing a "layer N exploded" bug against your own implementation, prove the two dumps mean
+the same thing. Asserts dump counts, tries both index alignments, and checks whether a reported
+collapse simply lands on `||norm_f.weight||`, which is what RMSNorm does to any input by
+construction. Layers are compared in **index** order, and the excluded pair is the highest index,
+the one that is supposed to disagree. Needs `numpy`.
+
 ## Tests
 
 ```bash
