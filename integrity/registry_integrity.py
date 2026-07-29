@@ -333,6 +333,13 @@ def _code_spans(line):
     return spans
 
 
+# KNOWN LIMITATION, accepted deliberately: inline code spans are matched
+# per line. A span whose opening delimiter is on one line and whose number is
+# on the next is not recognised, so that number is treated as a live claim.
+# The failure is therefore CLOSED, not open: an unrecognised capture is
+# reported, never silently exempted. Fixing it properly needs document-level
+# CommonMark parsing, which is a larger change than this rule warrants; the
+# fenced form covers multi-line captured output and is what notes actually use.
 def is_captured_output(rel, line, span, in_fence):
     """True only for a number that is captured tool output, not an assertion.
 
@@ -531,13 +538,25 @@ def check_counts(root, n_entries, findings):
                 if fm:
                     run = fm.group(1)
                     ch, ln = run[0], len(run)
+                    rest = line[fm.end():]
                     if fence is None:
-                        fence = (ch, ln)
-                    elif ch == fence[0] and ln >= fence[1]:
-                        # A closing fence must be at least as long as the
-                        # opener, so a ``` line inside a ```` block is content.
+                        # A BACKTICK opening fence's info string may not itself
+                        # contain a backtick. Opening on one would exempt every
+                        # live claim after it, so an invalid opener is not a
+                        # fence and the line is ordinary content.
+                        if ch == "`" and "`" in rest:
+                            pass
+                        else:
+                            fence = (ch, ln)
+                            continue
+                    elif ch == fence[0] and ln >= fence[1] and not rest.strip():
+                        # A closing fence must be at least as long as its
+                        # opener AND have nothing but whitespace after it, so
+                        # "~~~ still running" inside a block is content.
                         fence = None
-                    continue
+                        continue
+                    else:
+                        continue
                 in_fence = fence is not None
                 for rx, total_g, impl_g in TOTAL_PATTERNS:
                     for m in rx.finditer(line):

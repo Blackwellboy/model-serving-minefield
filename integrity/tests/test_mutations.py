@@ -434,6 +434,34 @@ class RegistryMutations(unittest.TestCase):
         self.assertEqual(counts, [], "an inner shorter fence must not close "
                                      "the outer block: %s" % counts)
 
+
+    def test_55_invalid_backtick_info_string_does_not_open_a_fence(self):
+        """A backtick fence info string may not contain a backtick. Opening on
+        one would exempt every live claim after it, which is a leak."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-infostring.md")
+        write(p, NL.join(["# note", "",
+                          BT*3 + "python" + BT + "example",
+                          "", "The doctor covers 19 of these %d entries." % (n - 4)]) + NL)
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(any("2026-01-01-infostring.md" in f["where"]
+                            for f in findings_of(out, "COUNT")),
+                        "an invalid backtick info string must not open a fence")
+
+    def test_56_closing_fence_must_be_bare(self):
+        """Non-whitespace after the delimiter means content, not a close."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-bareclose.md")
+        write(p, NL.join(["# note", "", "~~~",
+                          "~~~ still running",
+                          "implemented 19/%d" % (n - 4),
+                          "~~~"]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-bareclose.md" in f["where"]]
+        self.assertEqual(counts, [], "a non-bare delimiter line is content: %s" % counts)
+
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
     whole thing enforceable."""
