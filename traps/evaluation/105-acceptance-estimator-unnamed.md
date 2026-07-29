@@ -6,9 +6,10 @@
 soak across 40 fixed request-count windows on a community abliterated
 DeepSeek-V4-Flash checkpoint, vLLM `0.21.1rc1.dev339+g1967a5627bc3`, tensor
 parallel 2 across two DGX Spark GB10 nodes, MTP `dspark` with 3 draft tokens.
-The per-request rows are not published, so a stranger cannot check our numbers.
-The check below settles it on their own lane from two counters and their own
-request log, which is the cheaper route anyway.
+The per-request rows are published in scrubbed form with a verifier, so a
+stranger can check every number here without asking us for anything. The check
+below additionally settles it on their own lane from two counters and their own
+request log, which is the cheaper route if you only want the answer.
 
 **Evidence.** Scrubbed raw, drivers and analysis are published and pinned to an
 immutable commit: [study README](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/README.md) -

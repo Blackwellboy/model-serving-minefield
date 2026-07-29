@@ -215,7 +215,7 @@ Two Ollama-specific notes that keep it from being confused with its neighbours:
 
 ## Added 2026-07-29: the rate under organic load, and which families carry it
 
-**Status: measured here, raw not published.** 2,045 turns over 13.009 h,
+**Status: reproduced here.** 2,045 turns over 13.009 h,
 Nemotron 3 Super 120B A12B NVFP4 rev `4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6`,
 vLLM 0.20.0, single GB10-class node, TP=1, MTP `num_speculative_tokens=3`,
 `max_tokens=1024`, `temperature=1.0`, `top_p=0.95`, seven task families
