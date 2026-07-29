@@ -177,6 +177,26 @@ def main():
                                              cwd=root) or 0)
                 results.append((suite, rc))
 
+    # 6. Public surfaces. Local surfaces gate here; peer surfaces are printed
+    # with a DEFERRED block naming the scheduled workflow that gates them.
+    #
+    # The peer half cannot gate a push. The site rebuilds AFTER the push that
+    # moves HEAD, so at push time it cannot have caught up, and asserting that
+    # it has would fail on every push. A missing peer still fails, in both
+    # modes: absent is not stale.
+    # --bbio, not --peer. --peer is the laguna lab, for claim propagation;
+    # the Pages site is a different repo and already has its own flag. Passing
+    # the site as --peer registers it as laguna and makes claim propagation
+    # scan the wrong tree, which is how this was first written and how the
+    # suite caught it.
+    surf = [py, os.path.join(HERE, "verify_surfaces.py"),
+            "--root", root, "--peer-mode", "defer"]
+    if args.bbio:
+        surf += ["--peer",
+                 "bbio=%s" % os.path.abspath(os.path.expanduser(args.bbio))]
+    results.append(("public surfaces (peers deferred)",
+                    run("6. PUBLIC SURFACES", surf, cwd=root)))
+
     print("=" * 72)
     print("SUMMARY")
     print("=" * 72)

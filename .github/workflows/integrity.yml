@@ -179,6 +179,60 @@ jobs:
           echo "ran $found check-suite script(s)"
           exit $fail
 
+      # Local surfaces gate here. Peer surfaces are evaluated and printed with
+      # a DEFERRED block naming the scheduled 'surfaces' workflow, which runs
+      # the same job with --peer-mode gate.
+      #
+      # Peers cannot gate a push: the site rebuilds AFTER the push that moves
+      # HEAD, so at push time it cannot have caught up. A missing peer still
+      # fails, because absent is not stale.
+      - name: public surfaces (local gate, peers deferred)
+        id: surfaces
+        if: always()
+        run: |
+          ARGS="--github --peer-mode defer"
+          if [ -n "${{ steps.peer.outputs.bbio }}" ]; then
+            ARGS="$ARGS --peer bbio=${{ steps.peer.outputs.bbio }}"
+          fi
+          python3 integrity/verify_surfaces.py $ARGS
+
+      # Tell the Pages site that the registry moved, so it rebuilds in about a
+      # minute instead of waiting for its own cron. The site workflow already
+      # listens for repository_dispatch: [registry-updated] and nothing has
+      # ever sent it, which is the whole reason the staleness window exists.
+      #
+      # This needs a PAT with repo scope on the SITE repo, as SITE_DISPATCH_TOKEN.
+      # GITHUB_TOKEN is scoped to this repository only and cannot dispatch
+      # across repos. Until that secret exists the step prints that it is
+      # INACTIVE and names what covers the gap instead. It does not fail, and
+      # it does not pretend to have fired: a dispatch step that silently
+      # no-ops would be the same defect as a guard that never runs.
+      - name: notify the Pages site that the registry moved
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "DISPATCH INACTIVE: SITE_DISPATCH_TOKEN is not set, so no"
+            echo "registry-updated event was sent. The site will catch up on"
+            echo "its own schedule instead, and the hourly 'surfaces' workflow"
+            echo "is what reports the lag. To activate: add a PAT with repo"
+            echo "scope on Blackwellboy.github.io as SITE_DISPATCH_TOKEN."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/d.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/Blackwellboy/Blackwellboy.github.io/dispatches \
+            -d '{"event_type":"registry-updated"}')
+          echo "dispatch HTTP $code"
+          # 204 is success. Anything else is reported loudly but does not fail
+          # the integrity run: the site catching up is not this repo's gate.
+          if [ "$code" != "204" ]; then
+            echo "::warning title=dispatch::registry-updated dispatch returned $code; site will fall back to its own schedule"
+            cat /tmp/d.json || true
+          fi
+
       - name: sanitizer status
         if: always()
         run: |
@@ -201,7 +255,8 @@ jobs:
             "do-not-cite=${{ steps.dnc.outcome }}" \
             "mutation suite=${{ steps.mutations.outcome }}" \
             "doctor suite=${{ steps.doctor.outcome }}" \
-            "checks suite=${{ steps.checks.outcome }}"; do
+            "checks suite=${{ steps.checks.outcome }}" \
+            "public surfaces, local=${{ steps.surfaces.outcome }}"; do
             name="${pair%%=*}"; outcome="${pair##*=}"
             if [ "$outcome" = "success" ]; then
               echo "PASS  $name"

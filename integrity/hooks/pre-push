@@ -54,6 +54,31 @@ fi
 
 # The peer repo, so claim propagation sees both public surfaces.
 PEER="${MINEFIELD_PEER_REPO:-}"
+
+# The Pages site clone, for the public-surfaces check. A peer that is ABSENT
+# is a hard failure by design: "I could not look" reported as green is the
+# defect that check exists to catch. That rule has a cost here, and it is
+# worth stating plainly rather than discovering at 2am. Without this set, the
+# surfaces check finds no site clone, fails, and refuses every push.
+#
+# If it is not set explicitly, try the conventional sibling locations before
+# giving up, so a normal layout works without configuration.
+BBIO="${MINEFIELD_BBIO_REPO:-}"
+if [ -z "$BBIO" ]; then
+  for cand in "$ROOT/../Blackwellboy.github.io" \
+              "$ROOT/../bbio-site" \
+              "$HOME/staging/bbio-site" \
+              "$HOME/publish/Blackwellboy.github.io"; do
+    if [ -f "$cand/index.html" ]; then BBIO="$cand"; break; fi
+  done
+fi
+if [ -z "$BBIO" ]; then
+  echo "pre-push: no Pages site clone found, so the public-surfaces check"
+  echo "pre-push: cannot inspect the site and will refuse this push."
+  echo "pre-push: set MINEFIELD_BBIO_REPO=/path/to/Blackwellboy.github.io"
+  echo "pre-push: This is deliberate: an uninspected surface reported green is"
+  echo "pre-push: the defect that check exists to catch."
+fi
 if [ -z "$PEER" ]; then
   for guess in "$(dirname "$ROOT")/laguna-s21-lab" \
                "$(dirname "$ROOT")/model-serving-minefield"; do
@@ -63,6 +88,7 @@ fi
 
 ARGS=(--root "$ROOT")
 [ -n "$PEER" ] && ARGS+=(--peer "$PEER")
+[ -n "$BBIO" ] && ARGS+=(--bbio "$BBIO")
 
 echo "pre-push: running the integrity layer on $ROOT"
 [ -z "$PEER" ] && echo "pre-push: peer repo not found; claim propagation will \
