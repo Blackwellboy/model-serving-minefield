@@ -48,16 +48,43 @@ causal attribution.** Everything above this line is TheTom's text as submitted
 in PR [#1](https://github.com/Blackwellboy/model-serving-minefield/pull/1) and
 is unedited. This section is ours.
 
-**The check lands, and it lands on its own.** Exactly as he separated it:
+**The check lands, but it needs a second step before it licenses any
+inference.** As he wrote it:
 
-> **Time a trivial greeting.** Multi-second latency on "Hi" is evidence of a
-> sampler, thinking or configuration problem, not a model-capability problem.
+> **Time a trivial greeting.** Multi-second latency on "Hi" is not a
+> model-capability problem.
 
-It is portable, it costs one request, it needs no special harness, and it has
-caught real misconfiguration on several stacks including ours. It is true
-whether or not `presence_penalty` is the mechanism, because it names a
-**symptom class** and the inference it licenses is "go and read your effective
-sampler and thinking config", not "your penalty is wrong".
+That negative half is safe. The positive half is not, and this registry already
+holds the counterexample: trap
+[48](../traps/routing/48-dual-stack-mdns-latency-tax.md), **his own entry**,
+records trivial requests taking **30 to 40 s** through an agent client while
+the server's own log showed the work finishing in **1 to 10 s**. The cause was
+a dead IPv6 route on an mDNS hostname, and nothing about the sampler or the
+thinking config was wrong. Trap 48 also names the correct first move on **any**
+unexplained latency, which is not the greeting timing:
+
+> Compare the server's own logged total time against the client-reported
+> latency for the same call. A large, roughly constant, client-only gap is not
+> a model or engine problem.
+
+So the check as stated would send an operator to read sampler and thinking
+settings for what may be a network, queueing or cold-start delay. The fix is
+one extra step, not a retraction:
+
+1. **Time a trivial greeting.** Multi-second latency on "Hi" is not a
+   model-capability problem. Something is wrong; this does not yet say what.
+2. **Reconcile client against server timing** before concluding anything, via
+   [`checks/latency_reconciliation.py`](../checks/latency_reconciliation.py) or
+   the server's own request log. A large client-only gap is trap 48's class:
+   transport, resolution or queueing.
+3. **Only if the server's own total is itself large** does this become a
+   sampler or thinking question, and then the evidence to collect is the
+   **reasoning-token count** on that greeting, which distinguishes "the model
+   thought for pages about Hi" from "generation was slow".
+
+With step 2 in place the check is portable, costs two cheap reads, and has
+caught real misconfiguration on several stacks including ours. Without it, it
+is a symptom with three candidate causes and a prescription for one of them.
 
 **The attribution to `presence_penalty` specifically stays UNVERIFIED**, and
 this note says so rather than letting the check carry it silently. What we

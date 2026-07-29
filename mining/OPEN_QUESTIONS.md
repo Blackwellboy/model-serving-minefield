@@ -246,6 +246,101 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   be narrowed with it.
 - **Cost.** M.
 
+### Q12. Does the persona effect on thinking hold across model families, and at the n he specified?
+
+- **Claim under test.** That a named professional-identity persona suppresses
+  thinking independently of the thinking flag. Candidate:
+  [persona-as-second-thinking-suppressor](persona-as-second-thinking-suppressor.md)
+  (@TheTom).
+- **Source.** PRIMARY, ours for the answered part. Our 10-condition grid is
+  published at
+  [laguna-s21-lab/gate-study](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/gate-study).
+- **What is already settled.** Persona is a real lever and the effect is
+  **persona-by-task, not universal**: on code, C0 fires 10/10, C4 (a named
+  professional persona) fires 0/10, C7 returns to 10/10, while math is 10/10
+  throughout.
+- **What is still open, and it is two things.** (a) **Cross-family.** One family
+  makes it a model quirk. (b) **Sample size.** He preregistered **at least 50
+  turns per arm**; our arms are n=40 and the per-task cells are n=10, so the
+  pooled arm rates are under-powered against his own criterion. The grid was
+  run for other purposes and only later recognised as his experiment.
+- **Needs.** A second model family, and arms at n greater than or equal to 50.
+- **CONFIRM.** The task-conditional pattern reproduces on a second family at
+  n at or above 50 per arm.
+- **REFUTE.** A second family shows no persona effect on any task shape at that n.
+- **Cost.** M.
+- **Do not cite.** The ~0.1% production soak is NOT persona evidence: persona,
+  task gate and a 100K-plus context moved together in that run.
+
+### Q13. Is the 6:1 GQA K-cache guard over-conservative, and does the effective-config rule generalise?
+
+- **Claim under test.** That a KV-quant fork's auto-upgrade of the K cache to
+  `q8_0` at GQA ratio 6 or above costs a third of the context ceiling for
+  negligible quality gain on 256-dim-head models. Candidate:
+  [gqa-guard-k-quant-upgrade](gqa-guard-k-quant-upgrade.md) (@TheTom).
+- **Source.** **secondary.** The perplexity deltas and the 33% ceiling cost are
+  an independent reimplementation's triage, reported through him. Nobody here
+  has reproduced them.
+- **Needs.** Fork lanes at GQA 4:1 through 8:1 across both 128- and 256-dim
+  heads. **We have no lane at 6:1 with 256-dim heads**, which is why this
+  cannot be closed here.
+- **CONFIRM.** Per-architecture calibration shows the guard costs ceiling
+  without buying quality on 256-dim-head models, supporting keying the guard on
+  head dimension as well as GQA ratio.
+- **REFUTE.** 3-bit K is genuinely damaging at 6:1 on 256-dim heads too, in
+  which case the guard is correctly calibrated and only the effective-config
+  logging rule survives.
+- **Cost.** XL, needs hardware and a fork lane nobody here has.
+- **Note.** The **effective-config rule** ("log the effective per-tensor KV type
+  at runtime, do not infer it from the flag") is a separate promotion candidate
+  that does not depend on this question resolving either way.
+
+### Q14. Does current upstream still carry the truncating SDPA partial-block reducer?
+
+- **Claim under test.** That a two-pass SDPA vector kernel reducing with
+  `for b in 0..blocks/BN` at `BN = 32` silently drops remainder partials when
+  `blocks % 32 != 0`. Candidate:
+  [mlx-sdpa-block-count-drops-partials](mlx-sdpa-block-count-drops-partials.md)
+  (@TheTom).
+- **Source.** secondary for the current state of the code. **Nobody here has
+  read current upstream source.**
+- **This question is deliberately ordered first.** Quantifying the damage
+  (top-1 agreement, KL, perplexity at a multiple-of-32 block count versus 88)
+  is the obvious experiment and is the **wrong** first step: if the loop has
+  since been guarded, that measurement attributes a divergence to a defect that
+  no longer exists. **No damage figure should be published ahead of this read.**
+- **Needs.** A read of current upstream source. Effectively free.
+- **CONFIRM.** The truncating loop is still present in current source. Routing
+  decided in advance: this is then most likely an **upstream-reported /
+  kernel-implementation** item rather than an operator-controlled serving trap,
+  because it is a kernel detail rather than something a serving operator
+  configures.
+- **REFUTE.** The loop has been guarded, in which case the candidate closes with
+  the fix linked and only the `ceil_div` lesson is retained.
+- **Cost.** S.
+
+### Q15. Does `presence_penalty` specifically cause multi-second latency on trivial prompts?
+
+- **Claim under test.** That some families are unusually sensitive to
+  `presence_penalty`, and that a wrong value causes massive overthinking read as
+  model bloat. Candidate:
+  [presence-penalty-overthinking](presence-penalty-overthinking.md) (@TheTom).
+- **Source.** secondary. The symptom is observed on our stacks; the
+  `presence_penalty` attribution comes from a single upstream report and has
+  never been isolated here, because the symptom disappeared when several
+  sampler values were pinned **at once**.
+- **Needs.** One lane, one trivial prompt, a one-variable sweep.
+- **CONFIRM.** Holding temperature, top_p, top_k and the thinking flag fixed
+  while varying `presence_penalty` alone reproduces the latency and
+  reasoning-token blow-up, at two quantisation levels.
+- **REFUTE.** Latency and reasoning tokens are flat across the penalty range,
+  in which case the attribution is dropped and only the symptom check survives.
+- **Cost.** S.
+- **Note.** The **greeting-latency check** is separable and is not gated on this
+  question, but it requires client-versus-server timing reconciliation first,
+  because trap [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) produces
+  the identical symptom from a dead IPv6 route with a healthy sampler.
+
 ---
 
 ## CLOSED, so nobody re-opens them
