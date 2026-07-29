@@ -147,6 +147,46 @@ not-planned distinction. If the intent is to say the work was completed rather
 than abandoned, that has to be in the closing comment, because the API will not
 carry it.
 
+## main is protected: branch and PR, not direct push
+
+Direct pushes to `main` are blocked. Every change goes through a branch and a
+pull request, and the `integrity` check must be green before it merges.
+
+```bash
+git checkout -b <short-name>
+# work, then:
+git push -u origin <short-name>
+gh pr create --fill
+# wait for integrity to go green, then:
+gh pr merge --squash --delete-branch
+```
+
+**Why, given this is mostly a single-maintainer repo.** Two reasons, and the
+second is the one that decided it.
+
+Force-push and branch deletion are blocked, so an accident cannot quietly
+rewrite published history. The registry's whole value is that a cited entry
+stays where it was cited from.
+
+And it aligns the maintainer path with the contributor path. Traps 99 to 104
+were applied to `main` directly instead of merged, which cost that contributor
+his merge attribution and left his own PR showing conflicts against content
+`main` already had. CONTRIBUTING now promises that contributor work merges
+through GitHub. A maintainer who pushes straight to `main` is using a path
+contributors are not allowed to use, and that asymmetry is what produced the
+incident.
+
+**What is NOT required, deliberately.** The private sanitizer kit is not a
+required check: its pattern file is the list of internal names it protects, so
+it cannot run on a public runner and can only ever be a pre-push discipline. The
+`surfaces` workflow is not required either: it gates peer surfaces that
+legitimately lag a push, so requiring it would block every merge for as long as
+the site takes to rebuild.
+
+**The pre-push hook still runs on your branch push**, which is where the
+sanitizer and the local surfaces check actually catch things. Protection does
+not replace it; CI cannot run the half that matters most.
+
 ## The site bot races you, and index.html is generated
 
 Pushing to this repo triggers the build workflow in
