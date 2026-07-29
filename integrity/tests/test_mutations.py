@@ -403,6 +403,37 @@ class RegistryMutations(unittest.TestCase):
                             for f in findings_of(out, "COUNT")),
                         "escaped backticks must not open a code span")
 
+
+    def test_53_multi_backtick_code_span_is_exempt(self):
+        """A code span is delimited by EQUAL-LENGTH backtick runs. Captured
+        output often needs the double form because it contains a backtick."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-multitick.md")
+        inner = BT + "field" + BT
+        line = BT*2 + "implemented 19/%d with %s " % (n - 4, inner) + BT*2
+        write(p, NL.join(["# note", "", line]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-multitick.md" in f["where"]]
+        self.assertEqual(counts, [], "a multi-backtick capture must be exempt")
+
+    def test_54_longer_fence_is_not_closed_by_a_shorter_inner_one(self):
+        """A closing fence must be at least as long as the opener, so a three
+        backtick line inside a four backtick block is content, not a close."""
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "mining", "2026-01-01-nested.md")
+        write(p, NL.join(["# note", "",
+                          BT*4,
+                          BT*3 + "text",
+                          "implemented 19/%d" % (n - 4),
+                          BT*3,
+                          BT*4]) + NL)
+        rc, out = run_registry(self.root)
+        counts = [f for f in findings_of(out, "COUNT")
+                  if "2026-01-01-nested.md" in f["where"]]
+        self.assertEqual(counts, [], "an inner shorter fence must not close "
+                                     "the outer block: %s" % counts)
+
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
     whole thing enforceable."""

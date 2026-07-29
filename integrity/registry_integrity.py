@@ -300,24 +300,36 @@ FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 
 
 def _code_spans(line):
-    """Character ranges covered by inline `code` spans on this line.
+    """Character ranges covered by inline code spans on this line.
 
-    A BACKSLASH-ESCAPED backtick does not open or close a span: Markdown
-    renders it literally. Counting it would let ordinary prose that happens to
-    contain escaped backticks look like captured output, which would exempt a
-    live claim.
+    A code span is delimited by backtick runs of EQUAL length, so ``x`` is one
+    span and not two adjacent one-backtick spans. Captured output often needs
+    the longer form precisely because it contains a backtick of its own.
+
+    A BACKSLASH-ESCAPED backtick neither opens nor closes: Markdown renders it
+    literally, and counting it would let ordinary prose look like a capture.
     """
-    spans, start = [], None
-    for i, ch in enumerate(line):
-        if ch != "`":
+    runs = []
+    i, n = 0, len(line)
+    while i < n:
+        if line[i] != "`":
+            i += 1
             continue
         if i and line[i - 1] == "\\":
+            i += 1
             continue
-        if start is None:
-            start = i
-        else:
-            spans.append((start, i))
-            start = None
+        j = i
+        while j < n and line[j] == "`":
+            j += 1
+        runs.append((i, j, j - i))
+        i = j
+    spans, open_run = [], None
+    for a, b, ln in runs:
+        if open_run is None:
+            open_run = (a, b, ln)
+        elif ln == open_run[2]:
+            spans.append((open_run[1] - 1, a))
+            open_run = None
     return spans
 
 
@@ -513,17 +525,20 @@ def check_counts(root, n_entries, findings):
                 continue
             rel = os.path.relpath(os.path.join(dp, fn), root).replace("\\", "/")
             text = read(os.path.join(dp, fn))
-            fence_char = None
+            fence = None
             for i, line in enumerate(text.splitlines(), 1):
                 fm = FENCE_RE.match(line)
                 if fm:
-                    ch = fm.group(1)[0]
-                    if fence_char is None:
-                        fence_char = ch
-                    elif ch == fence_char:
-                        fence_char = None
+                    run = fm.group(1)
+                    ch, ln = run[0], len(run)
+                    if fence is None:
+                        fence = (ch, ln)
+                    elif ch == fence[0] and ln >= fence[1]:
+                        # A closing fence must be at least as long as the
+                        # opener, so a ``` line inside a ```` block is content.
+                        fence = None
                     continue
-                in_fence = fence_char is not None
+                in_fence = fence is not None
                 for rx, total_g, impl_g in TOTAL_PATTERNS:
                     for m in rx.finditer(line):
                         if is_captured_output(rel, line, m.span(), in_fence):
