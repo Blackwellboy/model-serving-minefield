@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from minefield.coverage import build_coverage
-from minefield.generator import build
+from minefield.generator import _portable_bytes, build
 from minefield.mcp_server import TOOLS, call_tool, serve
 from minefield.registry import (
     ROOT, RegistryError, _load_overrides, _status_labels, canonical_paths,
@@ -14,6 +14,12 @@ from minefield.registry import (
 
 
 class RegistryPlatformTests(unittest.TestCase):
+    def test_pack_text_bytes_are_platform_independent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "fixture.md"
+            path.write_bytes(b"one\r\ntwo\rthree\n")
+            self.assertEqual(_portable_bytes(path), b"one\ntwo\nthree\n")
+
     @classmethod
     def setUpClass(cls):
         cls.registry = compile_registry()

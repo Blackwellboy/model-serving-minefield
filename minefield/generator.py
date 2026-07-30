@@ -37,6 +37,20 @@ def _hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+PORTABLE_TEXT_SUFFIXES = {
+    ".css", ".html", ".js", ".json", ".md", ".py", ".sh", ".toml",
+    ".txt", ".yaml", ".yml",
+}
+
+
+def _portable_bytes(path: Path) -> bytes:
+    """Return platform-independent bytes for text shipped in the agent pack."""
+    data = path.read_bytes()
+    if path.suffix.lower() in PORTABLE_TEXT_SUFFIXES:
+        return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return data
+
+
 def _write_if_changed(path: Path, data: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists() or path.read_bytes() != data:
@@ -159,7 +173,7 @@ def build(root: Path = ROOT) -> dict[str, Any]:
     )
     _write_if_changed(
         root / "minefield" / "data" / "minefield_doctor.py",
-        (root / "doctor" / "minefield_doctor.py").read_bytes(),
+        _portable_bytes(root / "doctor" / "minefield_doctor.py"),
     )
     lite_hash = _hash(products["MINEFIELD_AGENT_BUNDLE_LITE.md"])
     skill_router = (
@@ -206,15 +220,17 @@ def build(root: Path = ROOT) -> dict[str, Any]:
         *[dist / name for name in sorted(products)],
     ]
     files = [path for path in pack_sources if path.is_file()]
-    manifest_lines = [
-        f"{path.relative_to(root).as_posix()}\t{path.stat().st_size}\t{_hash(path.read_bytes())}"
-        for path in sorted(files, key=lambda item: item.relative_to(root).as_posix())
-    ]
+    manifest_lines = []
+    for path in sorted(files, key=lambda item: item.relative_to(root).as_posix()):
+        data = _portable_bytes(path)
+        manifest_lines.append(
+            f"{path.relative_to(root).as_posix()}\t{len(data)}\t{_hash(data)}"
+        )
     manifest = ("path\tbytes\tsha256\n" + "\n".join(manifest_lines) + "\n").encode()
     _write_if_changed(dist / "MANIFEST.txt", manifest)
     checksum_files = files + [dist / "MANIFEST.txt"]
     checksums = "\n".join(
-        f"{_hash(path.read_bytes())}  {path.relative_to(dist).as_posix() if dist in path.parents else path.relative_to(root).as_posix()}"
+        f"{_hash(_portable_bytes(path))}  {path.relative_to(dist).as_posix() if dist in path.parents else path.relative_to(root).as_posix()}"
         for path in sorted(checksum_files, key=lambda item: item.as_posix())
     ) + "\n"
     _write_if_changed(dist / "SHA256SUMS", checksums.encode())
@@ -226,7 +242,7 @@ def build(root: Path = ROOT) -> dict[str, Any]:
             info = zipfile.ZipInfo(path.relative_to(root).as_posix(), (1980, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
-            archive.writestr(info, path.read_bytes())
+            archive.writestr(info, _portable_bytes(path))
     return {
         "canonical_traps": registry["canonical_trap_count"],
         "coverage": coverage["summary"],
