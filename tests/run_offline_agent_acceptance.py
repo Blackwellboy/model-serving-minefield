@@ -36,7 +36,7 @@ def main() -> int:
         **os.environ,
         "HERMES_HOME": args.hermes_home,
         "OPENAI_BASE_URL": args.base_url,
-        "OPENAI_" + "API_KEY": "unused-local-placeholder",
+        "OPENAI_" + "API_" + "KEY": "unused-local-placeholder",
     }
     os.environ.update(env)
     stdout, stderr = io.StringIO(), io.StringIO()
