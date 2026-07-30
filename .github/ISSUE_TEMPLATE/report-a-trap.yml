@@ -60,7 +60,8 @@ body:
         - the **model name and revision**, including the exact repo or tag
         - the **quantization format** (NVFP4, Q4_K_M, MXFP4, EXL3 and so on)
         - the **serving stack and its version**, and the **image tag**
-        - the **serve flags and env vars** you launched with
+        - the **non-secret serve flags and env vars** you launched with; keep
+          names and safe values, but replace credentials and private paths
         - **port numbers on a route shape**, once the host is gone: `HOST:8000`
           tells us it was an OpenAI-compatible lane, and `HOST:PORT` does not
 

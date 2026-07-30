@@ -24,7 +24,8 @@ RULES = (
      "suspicious", "The build architecture list may omit newer GPUs."),
     ("101", r"\btransformers\s*(?:==|~=|>=)\s*(?:4\.(?:4[5-9]|[5-9]\d)|[5-9]\.)",
      "requiring-runtime-confirmation", "A Transformers version constraint may cross a removed-kwarg boundary."),
-    ("103", r"\btorch(?:==\S+)?[\s\S]{0,100}\btorchvision(?:==\S+)?",
+    ("103", r"\btorch\s*(?:==|~=|>=|<=)\s*\S+[\s\S]{0,100}"
+     r"\btorchvision\s*(?:==|~=|>=|<=)\s*\S+",
      "configuration-only", "Torch and torchvision are jointly present; ABI compatibility needs an import check."),
     ("104", r"(?:ExecStart|command:|args:)[^\n]*(?:--max-model-len|--ctx-size|--reasoning-parser)",
      "configuration-only", "A launcher persists serving flags; compare it with the intended live configuration."),
@@ -48,12 +49,22 @@ def _safe_file(path: Path, allowed_roots: list[Path] | None) -> Path:
     return resolved
 
 
+def _read_text_file(path: Path, allowed_roots: list[Path] | None) -> tuple[Path, str]:
+    resolved = _safe_file(path, allowed_roots)
+    data = resolved.read_bytes()
+    if b"\x00" in data:
+        raise ValueError(f"binary input is refused: {path}")
+    try:
+        return resolved, data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"input is not valid UTF-8 text: {path}") from exc
+
+
 def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []
     for raw_path in paths:
-        path = _safe_file(Path(raw_path), roots)
-        data = path.read_text(encoding="utf-8", errors="replace")
+        path, data = _read_text_file(Path(raw_path), roots)
         for trap_id, pattern, certainty, explanation in RULES:
             for match in re.finditer(pattern, data, re.I | re.M):
                 line = data.count("\n", 0, match.start()) + 1

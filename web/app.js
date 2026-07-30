@@ -32,7 +32,7 @@
         && (!modality || ["implemented","specified","possible"].includes(byCoverage.get(entry.id)?.[modality]?.state))
         && (!onlyCore || coreIds.has(entry.id));
     });
-    $("count").textContent = `${filtered.length} of ${entries.length} canonical traps shown. A miss is not proof of safety.`;
+    $("count").textContent = `${filtered.length} of ${entries.length} canonical traps shown. A miss means not documented here, never safe.`;
     $("results").replaceChildren(...filtered.map(card));
   }
 
@@ -47,12 +47,16 @@
     const link = fragment.querySelector(".source");
     link.href = `https://github.com/Blackwellboy/model-serving-minefield/blob/main/${entry.source_path}`;
     link.target = "_blank"; link.rel = "noreferrer";
-    fragment.querySelector(".copy").addEventListener("click", event => {
-      navigator.clipboard.writeText(
-        `Compare my exact stack and conditions with Minefield trap ${entry.id}. ` +
-        `Preserve evidence status “${entry.status}”, give confirm/refute checks, and do not suggest mutation until supported.`
-      );
-      event.target.textContent = "Copied";
+    fragment.querySelector(".copy").addEventListener("click", async event => {
+      try {
+        await navigator.clipboard.writeText(
+          `Compare my exact stack and conditions with Minefield trap ${entry.id}. ` +
+          `Preserve evidence status “${entry.status}”, give confirm/refute checks, and do not suggest mutation until supported.`
+        );
+        event.target.textContent = "Copied";
+      } catch (_error) {
+        event.target.textContent = "Copy unavailable";
+      }
     });
     return fragment;
   }

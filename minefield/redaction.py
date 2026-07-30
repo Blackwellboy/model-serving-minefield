@@ -9,11 +9,20 @@ from typing import Any
 PATTERNS = (
     ("authorization", re.compile(r"(?i)(authorization\s*[:=]\s*(?:bearer\s+)?)[^\s,;]+")),
     ("api-key", re.compile(r"(?i)((?:api[_-]?key|token|secret|password)\s*[:=]\s*)[^\s,;]+")),
+    ("cookie", re.compile(r"(?i)((?:cookie|set-cookie)\s*[:=]\s*)[^\r\n]+")),
     ("bearer", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")),
     ("email", re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I)),
-    ("private-ip", re.compile(r"\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})\b")),
-    ("windows-user-path", re.compile(r"(?i)\b[A-Z]:\\Users\\[^\\\s]+")),
-    ("unix-home-path", re.compile(r"(?<![\w/])/(?:home|Users)/[^/\s]+")),
+    ("ipv4", re.compile(r"(?<![\d.])(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])")),
+    ("ipv6", re.compile(r"(?i)(?<![0-9a-f:])(?=[0-9a-f:]*[0-9a-f])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?![0-9a-f:])")),
+    ("windows-path", re.compile(r"(?i)(?<![\w])(?:[A-Z]:\\|\\\\[^\\\s]+\\)[^\r\n\"'<>|]+")),
+    ("unix-path", re.compile(r"(?<![\w])/(?:home|Users|root|var|tmp|opt|srv|etc)/[^\s\"'<>]+")),
+    ("hostname", re.compile(r"(?i)(\bhost(?:name)?\s*[:=]\s*)[a-z0-9][a-z0-9.-]{1,252}")),
+    ("bracketed-hostname", re.compile(r"(?i)\[(?=[a-z0-9.-]*[a-z-])[a-z0-9][a-z0-9.-]{1,252}\]")),
+    ("domain-name", re.compile(
+        r"(?i)\b(?![a-z0-9_.-]+\.(?:json|ya?ml|toml|txt|log|py|md|bin|gguf|safetensors)\b)"
+        r"(?=[a-z0-9.-]*[a-z])(?:[a-z0-9-]+\.)+[a-z]{2,63}\b"
+    )),
+    ("username", re.compile(r"(?i)(\buser(?:name)?\s*[:=]\s*)[a-z0-9._-]{1,64}")),
 )
 
 

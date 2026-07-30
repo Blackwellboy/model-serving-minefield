@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .static_inspector import MAX_FILE_BYTES, _safe_file
+from .static_inspector import MAX_FILE_BYTES, _read_text_file
 
 RULES = (
     ("08", r"(?:CUDA|driver)[^\n]{0,120}(?:error\s*222|unsupported toolchain)",
@@ -35,10 +35,9 @@ def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> di
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []
     for raw_path in paths:
-        path = _safe_file(Path(raw_path), roots)
+        path, data = _read_text_file(Path(raw_path), roots)
         if path.stat().st_size > MAX_FILE_BYTES:
             raise ValueError(f"log exceeds {MAX_FILE_BYTES} bytes: {path}")
-        data = path.read_text(encoding="utf-8", errors="replace")
         for trap_id, pattern, rationale in RULES:
             for match in re.finditer(pattern, data, re.I | re.M):
                 start = data.count("\n", 0, match.start()) + 1

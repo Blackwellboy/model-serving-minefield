@@ -17,4 +17,6 @@ Collection is explicit. Files are bounded, binaries and symlinks are refused,
 and log/config tails are redacted. The ZIP contains a manifest, checksums,
 diagnosis, minimal platform/version summaries, matched-trap and reproduction
 notes, and a privacy report. Review every file before sharing; redaction does
-not prove anonymity.
+not prove anonymity. The preview lists the exact final archive members,
+including `MANIFEST.txt` and `SHA256SUMS`; writing refuses a plan changed after
+preview. Archives use stored entries and fixed metadata for reproducible bytes.

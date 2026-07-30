@@ -257,17 +257,24 @@ def build(root: Path = ROOT) -> dict[str, Any]:
 
 
 def verify(root: Path = ROOT) -> dict[str, Any]:
+    tracked_outputs = [
+        *sorted((root / "dist").glob("*")),
+        root / "registry" / "diagnostic_coverage.json",
+        root / "registry" / "guided_experiments.json",
+        root / "minefield" / "data" / "MINEFIELD_REGISTRY.json",
+        root / "minefield" / "data" / "minefield_doctor.py",
+        root / "skills" / "model-serving-minefield" / "references" / "agent-bundle.md",
+        root / "web" / "registry-data.js",
+    ]
     before = {
         path.relative_to(root).as_posix(): _hash(path.read_bytes())
-        for path in [*sorted((root / "dist").glob("*")), root / "registry" / "diagnostic_coverage.json",
-                     root / "registry" / "guided_experiments.json"]
+        for path in tracked_outputs
         if path.is_file()
     }
     result = build(root)
     after = {
         path.relative_to(root).as_posix(): _hash(path.read_bytes())
-        for path in [*sorted((root / "dist").glob("*")), root / "registry" / "diagnostic_coverage.json",
-                     root / "registry" / "guided_experiments.json"]
+        for path in tracked_outputs
         if path.is_file()
     }
     if before and before != after:

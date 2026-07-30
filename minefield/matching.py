@@ -56,6 +56,22 @@ def search(
                 condition_match.append(f"stack: {stack}")
             elif entry["affected_stacks"]:
                 condition_mismatch.append(f"stack {stack} is not named in published conditions")
+        if model:
+            target = model.lower()
+            if any(target in item.lower() or item.lower() in target
+                   for item in entry["affected_models"]):
+                score += 5
+                condition_match.append(f"model: {model}")
+            elif entry["affected_models"]:
+                condition_mismatch.append(f"model {model} is not named in published conditions")
+        if version:
+            if version.lower() in entry["affected_versions_builds"].lower():
+                score += 3
+                condition_match.append(f"version/build: {version}")
+            elif entry["affected_versions_builds"]:
+                condition_mismatch.append(
+                    f"version/build {version} is not named in published conditions"
+                )
         confidence = "possible"
         if direct >= 3 and not condition_mismatch:
             confidence = "strong possible"

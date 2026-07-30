@@ -33,7 +33,10 @@ def parser() -> argparse.ArgumentParser:
     for name in ("inspect-config", "inspect-logs"):
         cmd = sub.add_parser(name)
         cmd.add_argument("paths", nargs="+")
-        cmd.add_argument("--allowed-root", action="append", default=[])
+        cmd.add_argument(
+            "--allowed-root", action="append", required=True,
+            help="approved filesystem root; repeat for additional roots",
+        )
     guide = sub.add_parser("guide")
     guide.add_argument("symptom")
     guide.add_argument("--stack")
@@ -60,9 +63,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     registry = load_registry()
     if args.command == "inspect-config":
-        _emit(inspect_files(args.paths, args.allowed_root or None))
+        _emit(inspect_files(args.paths, args.allowed_root))
     elif args.command == "inspect-logs":
-        _emit(inspect_logs(args.paths, args.allowed_root or None))
+        _emit(inspect_logs(args.paths, args.allowed_root))
     elif args.command == "guide":
         _emit(search(registry, args.symptom, stack=args.stack, model=args.model, version=args.version))
     elif args.command == "diagnose":

@@ -31,9 +31,28 @@ def _read(path: Path) -> str:
     if size > MAX_INPUT_BYTES:
         raise ValueError(f"input exceeds {MAX_INPUT_BYTES} bytes: {path}")
     data = resolved.read_bytes()
-    if b"\x00" in data[:4096]:
+    if b"\x00" in data:
         raise ValueError(f"binary input refused: {path}")
-    return data[-MAX_TAIL_BYTES:].decode("utf-8", errors="replace")
+    try:
+        return data[-MAX_TAIL_BYTES:].decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"input is not valid UTF-8 text: {path}") from exc
+
+
+def _finalize(files: dict[str, bytes]) -> dict[str, bytes]:
+    finalized = dict(files)
+    manifest = "path\tbytes\tsha256\n" + "\n".join(
+        f"{name}\t{len(data)}\t{hashlib.sha256(data).hexdigest()}"
+        for name, data in sorted(finalized.items())
+    ) + "\n"
+    finalized["MANIFEST.txt"] = manifest.encode()
+    finalized["SHA256SUMS"] = (
+        "\n".join(
+            f"{hashlib.sha256(data).hexdigest()}  {name}"
+            for name, data in sorted(finalized.items())
+        ) + "\n"
+    ).encode()
+    return finalized
 
 
 def plan(
@@ -79,18 +98,25 @@ def plan(
     files["reproduction-notes.md"] = (
         b"# Reproduction notes\n\nAdd bounded confirm/refute results here before sharing.\n"
     )
+    final_names = sorted([*files, "privacy-report.json", "MANIFEST.txt", "SHA256SUMS"])
     privacy = {
         "explicit_inputs_only": True,
         "network_contact": "none",
         "redactions": redactions,
-        "files": sorted(files),
+        "files": final_names,
         "warning": "Review every file before sharing; redaction cannot prove anonymity.",
     }
     files["privacy-report.json"] = (
         json.dumps(privacy, indent=2, sort_keys=True) + "\n"
     ).encode()
+    files = _finalize(files)
+    fingerprint = hashlib.sha256(
+        b"".join(name.encode() + b"\0" + hashlib.sha256(data).digest()
+                 for name, data in sorted(files.items()))
+    ).hexdigest()
     return {
         "files": files,
+        "fingerprint": fingerprint,
         "preview": {
             "files": [{"path": name, "bytes": len(data)} for name, data in sorted(files.items())],
             "redactions": redactions,
@@ -103,22 +129,22 @@ def write_bundle(output: str, bundle_plan: dict[str, Any]) -> dict[str, Any]:
     target = Path(output).resolve()
     target.parent.mkdir(parents=True, exist_ok=True)
     files = dict(bundle_plan["files"])
-    manifest = "path\tbytes\tsha256\n" + "\n".join(
-        f"{name}\t{len(data)}\t{hashlib.sha256(data).hexdigest()}"
-        for name, data in sorted(files.items())
-    ) + "\n"
-    files["MANIFEST.txt"] = manifest.encode()
-    sums = "\n".join(
-        f"{hashlib.sha256(data).hexdigest()}  {name}"
-        for name, data in sorted(files.items())
-    ) + "\n"
-    files["SHA256SUMS"] = sums.encode()
-    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    fingerprint = hashlib.sha256(
+        b"".join(name.encode() + b"\0" + hashlib.sha256(data).digest()
+                 for name, data in sorted(files.items()))
+    ).hexdigest()
+    if fingerprint != bundle_plan.get("fingerprint"):
+        raise ValueError("bundle plan changed after preview")
+    preview_names = [item["path"] for item in bundle_plan["preview"]["files"]]
+    if preview_names != sorted(files):
+        raise ValueError("bundle preview does not match final files")
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_STORED) as archive:
         for name, data in sorted(files.items()):
             if name.startswith("/") or ".." in Path(name).parts:
                 raise ValueError(f"unsafe archive name: {name}")
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.compress_type = zipfile.ZIP_STORED
             info.external_attr = 0o100644 << 16
             archive.writestr(info, data)
     return {

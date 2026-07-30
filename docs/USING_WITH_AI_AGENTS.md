@@ -17,7 +17,7 @@ The lite bundle is a router and requires online fetches for full detail.
 - Hermes: install the repository skill; see `HERMES_SETUP.md`.
 - MCP: run `minefield-mcp`; see `MCP_SETUP.md`.
 - Config/log only: use `minefield inspect-config` and
-  `minefield inspect-logs` with explicit files.
+  `minefield inspect-logs` with explicit files and `--allowed-root`.
 - Support: preview `minefield bundle --no-write` before writing a ZIP.
 
 An agent must retain `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN` from doctor

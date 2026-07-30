@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Model Serving Minefield</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,6 +24,7 @@
     </section>
     <section class="doctor">
       <h2>Interpret doctor JSON locally</h2>
+      <label for="doctor-file">Choose a doctor JSON report</label>
       <input id="doctor-file" type="file" accept=".json,application/json">
       <pre id="doctor-output">No report loaded.</pre>
     </section>
@@ -38,7 +41,7 @@
         <h3>Check</h3><p class="trap-check"></p>
         <h3>Safe conditional mitigation</h3><p class="mitigation"></p>
         <p><a class="source">Open canonical source</a></p>
-        <button class="copy">Copy “ask your agent” prompt</button>
+        <button class="copy" aria-live="polite">Copy “ask your agent” prompt</button>
       </details>
     </article>
   </template>

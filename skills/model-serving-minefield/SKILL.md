@@ -21,11 +21,10 @@ them.
 1. Collect the exact symptom, model and revision, serving stack and build,
    launch command or supplied configuration, context/concurrency, and relevant
    logs. Ask whether a live endpoint exists.
-2. Read `references/agent-bundle.md` first when it exists. Hermes direct-URL
-   installs intentionally copy only this `SKILL.md`; in that mode read the
-   public [lite agent bundle](https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/dist/MINEFIELD_AGENT_BUNDLE_LITE.md)
-   instead. Search the full repository bundle only when the lite routing
-   evidence is insufficient.
+2. Read `references/agent-bundle.md` first. Install this skill from a reviewed,
+   pinned repository checkout so the router and references remain one unit.
+   Do not silently fall back to mutable `main` content. Search the full
+   repository bundle only when the lite routing evidence is insufficient.
 3. Rank exact symptom and condition matches. Preserve each published evidence
    label. Never convert “reported” or “contributor-measured” into
    “reproduced.”
@@ -35,8 +34,7 @@ them.
    match. State exact condition mismatches and what remains unknown.
 6. Run the endpoint doctor only after permission, only against the endpoint
    the user states, and only with bounded read-only probes. Read
-   `references/doctor-interpretation.md` before interpreting its result when
-   the repository skill directory is available. In a direct-URL install, use
+   `references/doctor-interpretation.md` before interpreting its result. Use
    `minefield quick` and preserve its `PROBLEM`, `INCONCLUSIVE`, and
    `COULD NOT CHECK` distinctions exactly.
 7. Inspect only configuration and log files the user explicitly supplies.
@@ -47,9 +45,9 @@ them.
 9. On a miss, read `references/troubleshooting-intake.md` when available and
    prepare a scrubbed report. Do not claim the bundle is anonymous.
 
-Read `references/evidence-status.md` when available whenever two statuses are
-combined or the conditions differ from the user's system. In direct-URL mode,
-preserve the registry's evidence strings verbatim and do not upgrade them.
+Read `references/evidence-status.md` whenever two statuses are combined or the
+conditions differ from the user's system. Preserve the registry's evidence
+strings verbatim and do not upgrade them.
 
 ## Output contract
 

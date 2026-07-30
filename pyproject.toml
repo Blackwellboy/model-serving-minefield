@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,15 +7,16 @@ name = "model-serving-minefield"
 version = "0.1.0"
 description = "Read-only diagnostics for model-serving failures"
 requires-python = ">=3.10"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = []
 
 [project.scripts]
 minefield = "minefield.cli:main"
 minefield-mcp = "minefield.mcp_server:main"
 
-[tool.setuptools]
-packages = ["minefield"]
+[tool.setuptools.packages.find]
+include = ["minefield*"]
 
 [tool.setuptools.package-data]
 minefield = ["data/*.json", "data/*.py"]

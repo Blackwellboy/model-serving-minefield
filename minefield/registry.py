@@ -107,6 +107,8 @@ def _section(text: str, labels: Iterable[str], fallback: str = "") -> str:
 
 def _status_labels(raw: str) -> list[str]:
     lower = raw.lower()
+    if re.search(r"\b(?:universally proven|verified everywhere|guaranteed|conclusive)\b", lower):
+        raise RegistryError(f"evidence status contains a prohibited upgrade: {raw!r}")
     labels = [status for status in STATUS_STEMS if status in lower]
     if not labels:
         raise RegistryError(f"invalid evidence status: {raw!r}")
@@ -156,6 +158,8 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             raise RegistryError(f"{path}: missing or mismatched trap title")
         if not status_match:
             raise RegistryError(f"{path}: missing status")
+        if not finder_match:
+            raise RegistryError(f"{path}: missing contributor attribution")
         status_raw = _clean(status_match.group(1), 800)
         symptom = _section(text, ("Symptom", "What you see"), symptoms.get(trap_id, ""))
         mechanism = _section(
@@ -165,8 +169,14 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
         )
         check = _section(
             text,
-            ("The check", "Check", "Check it", "The check that catches it", "The check for all three"),
-            mechanism,
+            (
+                "The check", "Check", "Check it", "The check that catches it",
+                "The check for all three", "The detection fingerprint",
+                "The check, and one warning about how you check",
+                "The check a stranger can run", "Check it in one request",
+                "Check it in two requests", "What actually detects it",
+            ),
+            "",
         )
         mitigation = _section(text, ("The fix", "Fix", "Mitigation", "Workaround"), check)
         if not symptom or not check:

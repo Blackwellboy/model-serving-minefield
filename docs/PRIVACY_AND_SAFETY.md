@@ -5,8 +5,9 @@ variables, read SSH/browser data, or contact a live model by default.
 
 - `quick` contacts only the endpoint the user supplies, plus Hugging Face only
   when the standalone doctor is explicitly given its public-repository option.
-- Config/log inspection reads only explicit regular files, rejects symlinks,
-  and bounds input to 2 MiB.
+- Config/log inspection reads only explicit regular UTF-8 files inside
+  configured allowed roots, rejects symlinks and binary data, and bounds input
+  to 2 MiB.
 - Support bundles tail explicit evidence, redact common secrets and personal
   identifiers, and support no-write preview.
 - MCP is stdio, read-only, bounded, and has no shell or process tools.

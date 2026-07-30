@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from minefield.coverage import build_coverage
-from minefield.generator import _portable_bytes, build
+from minefield.generator import _portable_bytes, build, verify
 from minefield.mcp_server import TOOLS, call_tool, serve
 from minefield.registry import (
     ROOT, RegistryError, _load_overrides, _status_labels, canonical_paths,
@@ -79,10 +79,20 @@ class RegistryPlatformTests(unittest.TestCase):
         lines = [json.loads(line) for line in output.getvalue().splitlines()]
         self.assertEqual("model-serving-minefield", lines[0]["result"]["serverInfo"]["name"])
         self.assertEqual(10, len(lines[1]["result"]["tools"]))
+        for tool in lines[1]["result"]["tools"]:
+            self.assertFalse(tool["inputSchema"]["additionalProperties"])
         malformed_in = io.StringIO("{not-json}\n")
         malformed_out = io.StringIO()
         serve(malformed_in, malformed_out)
         self.assertIn("error", json.loads(malformed_out.getvalue()))
+        oversized_in = io.StringIO(
+            '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":'
+            '"prepare_issue_report","arguments":{"evidence":"'
+            + ("x" * (1024 * 1024)) + '"}}}\n'
+        )
+        oversized_out = io.StringIO()
+        serve(oversized_in, oversized_out)
+        self.assertIn("size limit", json.loads(oversized_out.getvalue())["error"]["message"])
 
     def test_generated_registry_matches_declared_schema_contract(self):
         schema = json.loads((ROOT / "registry" / "schema.json").read_text(encoding="utf-8"))
@@ -95,6 +105,23 @@ class RegistryPlatformTests(unittest.TestCase):
 
 
 class RegistryMutationTests(unittest.TestCase):
+    def _root_with_entry(self, text: str) -> tempfile.TemporaryDirectory:
+        folder = tempfile.TemporaryDirectory()
+        root = Path(folder.name)
+        (root / "traps" / "test").mkdir(parents=True)
+        (root / "registry").mkdir()
+        (root / "doctor").mkdir()
+        (root / "README.md").write_text(
+            "# Test registry\n",
+            encoding="utf-8",
+        )
+        (root / "doctor" / "minefield_doctor.py").write_text(
+            "TRAP_PATHS = {}\n", encoding="utf-8",
+        )
+        (root / "registry" / "overrides.json").write_text("{}", encoding="utf-8")
+        (root / "traps" / "test" / "01-test.md").write_text(text, encoding="utf-8")
+        return folder
+
     def test_duplicate_id_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -124,6 +151,42 @@ class RegistryMutationTests(unittest.TestCase):
             )
             with self.assertRaises(RegistryError):
                 _load_overrides(root)
+
+    def test_status_upgrade_is_rejected_even_with_a_valid_stem(self):
+        with self.assertRaises(RegistryError):
+            _status_labels("reported by others; universally proven")
+
+    def test_missing_required_markdown_fields_are_rejected(self):
+        valid = (
+            "# Trap 01: title\n\n**Found by Tester.**\n\n"
+            "**Status: reported by others**\n\n**Symptom.** symptom\n\n"
+            "**Mechanism.** mechanism\n\n**The check.** check\n\n**The fix.** fix\n"
+        )
+        mutations = {
+            "title": valid.replace("# Trap 01: title\n", ""),
+            "status": valid.replace("**Status: reported by others**\n\n", ""),
+            "contributor": valid.replace("**Found by Tester.**\n\n", ""),
+            "symptom": valid.replace("**Symptom.** symptom\n\n", ""),
+            "check": valid.replace("**The check.** check\n\n", ""),
+        }
+        for label, text in mutations.items():
+            with self.subTest(label=label):
+                folder = self._root_with_entry(text)
+                try:
+                    with self.assertRaises(RegistryError):
+                        compile_registry(Path(folder.name))
+                finally:
+                    folder.cleanup()
+
+    def test_verify_detects_stale_non_dist_generated_output(self):
+        path = ROOT / "web" / "registry-data.js"
+        original = path.read_bytes()
+        try:
+            path.write_bytes(original + b"// stale\n")
+            with self.assertRaisesRegex(RuntimeError, "stale"):
+                verify()
+        finally:
+            path.write_bytes(original)
 
 
 if __name__ == "__main__":

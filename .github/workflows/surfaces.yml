@@ -32,16 +32,18 @@ jobs:
   surfaces:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: check out the Pages site
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           repository: Blackwellboy/Blackwellboy.github.io
           path: peer-bbio
           fetch-depth: 1
+          persist-credentials: false
 
       - name: move the peer out of the workspace
         id: peer
@@ -50,7 +52,7 @@ jobs:
           mv peer-bbio "$RUNNER_TEMP/peer/bbio"
           echo "bbio=$RUNNER_TEMP/peer/bbio" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 

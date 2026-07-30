@@ -6,11 +6,17 @@ Install the Python package first:
 python -m pip install .
 ```
 
-The server is stdio-only and read-only:
+The server is stdio-only and read-only. Configure one or more filesystem roots
+before starting it if you want the two explicit-file inspection tools:
 
 ```bash
+export MINEFIELD_ALLOWED_ROOTS=/path/to/review
 minefield-mcp
 ```
+
+On Windows, separate multiple roots with `;`; on POSIX systems, use `:`.
+Without this variable, `inspect_config` and `inspect_logs` fail closed. A tool
+caller cannot override or widen the server-configured roots.
 
 ## Hermes
 
@@ -68,5 +74,6 @@ desktop configuration file.
 The server exposes search, trap retrieval, coverage, doctor interpretation,
 reproduction planning, issue drafting, and explicit-file inspection. It has no
 shell, process-management, restart, write, or unrestricted filesystem tool.
-`inspect_config` and `inspect_logs` accept explicit paths and optional allowed
-roots, reject symlinks, bound input size, and redact issue-report text.
+`inspect_config` and `inspect_logs` accept explicit paths only within the
+server-configured roots, reject symlinks and non-UTF-8/binary inputs, and bound
+input size. Requests and issue-report text are also size-bounded.

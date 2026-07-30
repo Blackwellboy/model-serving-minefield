@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
-from typing import Any, Callable
+from pathlib import Path
+from typing import Any
 
 from .coverage import build_coverage
 from .guided_experiments import specifications
@@ -25,13 +27,96 @@ TOOLS = {
     "inspect_config": "Inspect explicit files within configured allowed roots.",
     "inspect_logs": "Inspect explicit logs within configured allowed roots.",
 }
+MAX_REQUEST_BYTES = 1024 * 1024
+MAX_TEXT_ARGUMENT = 256 * 1024
+
+TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
+    "search_symptom": {"properties": {
+        "symptom": {"type": "string"}, "stack": {"type": "string"},
+        "model": {"type": "string"}, "version": {"type": "string"},
+        "evidence_status": {"type": "string"},
+    }},
+    "get_trap": {"required": ["id"], "properties": {"id": {"type": ["string", "integer"]}}},
+    "get_stack_checks": {"required": ["stack"], "properties": {"stack": {"type": "string"}}},
+    "get_model_risks": {"required": ["model"], "properties": {"model": {"type": "string"}}},
+    "get_coverage_summary": {"properties": {}},
+    "interpret_doctor_report": {"required": ["report"], "properties": {"report": {"type": "object"}}},
+    "build_reproduction_plan": {"required": ["trap_ids"], "properties": {
+        "trap_ids": {"type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]}},
+    }},
+    "prepare_issue_report": {"required": ["evidence"], "properties": {
+        "evidence": {"type": "string", "maxLength": MAX_TEXT_ARGUMENT},
+    }},
+    "inspect_config": {"required": ["paths"], "properties": {
+        "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
+    }},
+    "inspect_logs": {"required": ["paths"], "properties": {
+        "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
+    }},
+}
+
+
+def _schema_for(name: str) -> dict[str, Any]:
+    schema = TOOL_SCHEMAS[name]
+    return {"type": "object", "additionalProperties": False, **schema}
+
+
+def _validate_args(name: str, args: Any) -> dict[str, Any]:
+    if name not in TOOL_SCHEMAS:
+        raise ValueError(f"unknown tool: {name}")
+    if not isinstance(args, dict):
+        raise ValueError("tool arguments must be an object")
+    schema = TOOL_SCHEMAS[name]
+    unknown = sorted(set(args) - set(schema["properties"]))
+    if unknown:
+        raise ValueError("unknown arguments: " + ", ".join(unknown))
+    missing = [key for key in schema.get("required", []) if key not in args]
+    if missing:
+        raise ValueError("missing required arguments: " + ", ".join(missing))
+    for key, value in args.items():
+        rule = schema["properties"][key]
+        kinds = rule["type"] if isinstance(rule["type"], list) else [rule["type"]]
+        valid = (
+            ("string" in kinds and isinstance(value, str))
+            or ("integer" in kinds and isinstance(value, int) and not isinstance(value, bool))
+            or ("array" in kinds and isinstance(value, list))
+            or ("object" in kinds and isinstance(value, dict))
+        )
+        if not valid:
+            raise ValueError(f"{key} has the wrong type")
+        if isinstance(value, str) and len(value) > rule.get("maxLength", MAX_TEXT_ARGUMENT):
+            raise ValueError(f"{key} exceeds the size limit")
+        if isinstance(value, list):
+            if len(value) > rule.get("maxItems", 50):
+                raise ValueError(f"{key} has too many items")
+            item_types = rule.get("items", {}).get("type", [])
+            if isinstance(item_types, str):
+                item_types = [item_types]
+            if any(not (
+                ("string" in item_types and isinstance(item, str))
+                or ("integer" in item_types and isinstance(item, int) and not isinstance(item, bool))
+            ) for item in value):
+                raise ValueError(f"{key} contains an item with the wrong type")
+    return args
+
+
+def _configured_roots() -> list[str]:
+    raw = os.environ.get("MINEFIELD_ALLOWED_ROOTS", "")
+    return [str(Path(item).resolve(strict=True)) for item in raw.split(os.pathsep) if item]
 
 
 def _result(value: Any) -> dict[str, Any]:
     return {"content": [{"type": "text", "text": json.dumps(value, indent=2, sort_keys=True)}]}
 
 
-def call_tool(name: str, args: dict[str, Any], registry: dict[str, Any]) -> Any:
+def call_tool(
+    name: str,
+    args: dict[str, Any],
+    registry: dict[str, Any],
+    *,
+    allowed_roots: list[str] | None = None,
+) -> Any:
+    args = _validate_args(name, args)
     if name == "search_symptom":
         return search(registry, args.get("symptom", ""), stack=args.get("stack"),
                       model=args.get("model"), version=args.get("version"),
@@ -67,18 +152,32 @@ def call_tool(name: str, args: dict[str, Any], registry: dict[str, Any]) -> Any:
         clean, redactions = redact_text(text)
         return {"markdown": "# Minefield report\n\n" + clean, "redactions": redactions}
     if name == "inspect_config":
-        return inspect_files(args.get("paths", []), args.get("allowed_roots"))
+        if not allowed_roots:
+            raise ValueError("inspect_config is disabled until MINEFIELD_ALLOWED_ROOTS is configured")
+        return inspect_files(args["paths"], allowed_roots)
     if name == "inspect_logs":
-        return inspect_logs(args.get("paths", []), args.get("allowed_roots"))
+        if not allowed_roots:
+            raise ValueError("inspect_logs is disabled until MINEFIELD_ALLOWED_ROOTS is configured")
+        return inspect_logs(args["paths"], allowed_roots)
     raise ValueError(f"unknown tool: {name}")
 
 
-def serve(stdin: Any = sys.stdin, stdout: Any = sys.stdout) -> int:
+def serve(
+    stdin: Any = sys.stdin,
+    stdout: Any = sys.stdout,
+    *,
+    allowed_roots: list[str] | None = None,
+) -> int:
     registry = load_registry()
+    roots = _configured_roots() if allowed_roots is None else allowed_roots
     for line in stdin:
         request: Any = None
         try:
+            if len(line.encode("utf-8")) > MAX_REQUEST_BYTES:
+                raise ValueError("request exceeds the size limit")
             request = json.loads(line)
+            if not isinstance(request, dict) or request.get("jsonrpc") != "2.0":
+                raise ValueError("request must be a JSON-RPC 2.0 object")
             method = request.get("method")
             if method == "initialize":
                 value = {
@@ -90,11 +189,16 @@ def serve(stdin: Any = sys.stdin, stdout: Any = sys.stdout) -> int:
                 value = {"tools": [{
                     "name": name,
                     "description": description,
-                    "inputSchema": {"type": "object", "additionalProperties": True},
+                    "inputSchema": _schema_for(name),
                 } for name, description in TOOLS.items()]}
             elif method == "tools/call":
                 params = request.get("params", {})
-                value = _result(call_tool(params["name"], params.get("arguments", {}), registry))
+                if not isinstance(params, dict):
+                    raise ValueError("params must be an object")
+                value = _result(call_tool(
+                    params["name"], params.get("arguments", {}), registry,
+                    allowed_roots=roots,
+                ))
             elif method == "notifications/initialized":
                 continue
             else:
