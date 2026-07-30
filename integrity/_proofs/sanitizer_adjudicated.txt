@@ -4,11 +4,6 @@
 # hit remains printed by both scanners; no pattern or leak check is weakened.
 # Generated from and human-reviewed against PR16 finalization tip a7eba47.
 
-FINALIZATION_BASELINE_20260730.md:14: reviewed public integration reference required by this feature; no private deployment data is present.
-FINALIZATION_BASELINE_20260730.md:60: reviewed public integration reference required by this feature; no private deployment data is present.
-FINALIZATION_BASELINE_20260730.md:85: reviewed public integration reference required by this feature; no private deployment data is present.
-FINALIZATION_BASELINE_20260730.md:86: reviewed public integration reference required by this feature; no private deployment data is present.
-PR16_REVIEW_BASELINE.md:8: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:53: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:54: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:55: reviewed public integration reference required by this feature; no private deployment data is present.
@@ -168,8 +163,6 @@ docs/MCP_SETUP.md:26: reviewed public integration reference required by this fea
 docs/PRODUCT_ARCHITECTURE.md:23: reviewed public integration reference required by this feature; no private deployment data is present.
 docs/PRODUCT_BASELINE_20260730.md:1: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 docs/USING_WITH_AI_AGENTS.md:17: reviewed public integration reference required by this feature; no private deployment data is present.
-f-hw-diagnosis.json:32: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
-f-hw-diagnosis.json:35: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 minefield/data/MINEFIELD_REGISTRY.json:6795: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 minefield/data/MINEFIELD_REGISTRY.json:6813: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 minefield/data/MINEFIELD_REGISTRY.json:6814: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
