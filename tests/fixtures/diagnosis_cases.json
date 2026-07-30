@@ -5,6 +5,7 @@
     "candidate": "12",
     "conditions": {"serving_stack": "vllm", "model_family": "qwen", "device_class": "gb10", "topology": "single-node", "quantization": "nvfp4"},
     "direct_probe_trap_ids": ["12"],
+    "direct_probe_results": {"12": "confirmed"},
     "expected_level": "CONFIRMED_BY_DIRECT_PROBE"
   },
   {

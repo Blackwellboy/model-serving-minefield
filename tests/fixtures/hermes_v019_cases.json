@@ -10,6 +10,11 @@
     "prompt": "Sanitized candidate record: trap_id F-HW; evidence_status exactly 'reported by others'; documented device GB10 and architecture Blackwell. The user has an RTX 3090 (Ampere) and reports a similar empty-content symptom. There is no direct probe."
   },
   {
+    "id": "refuting_direct_probe",
+    "expected_level": "NOT_APPLICABLE",
+    "prompt": "Candidate record: trap_id F-REFUTE; evidence_status exactly 'reported by others'. A bounded trap-specific direct probe on the exact user conditions produced the candidate's published refutation control, so this candidate was refuted. Preserve the evidence status and record direct_probe_result as refuted; do not call it confirmed."
+  },
+  {
     "id": "different_topology",
     "expected_level": "CONDITION_MISMATCH",
     "prompt": "Sanitized candidate record: trap_id F-TOPO; evidence_status exactly 'reported by others'; documented topology two-node tensor parallelism. The user runs single-node pipeline parallelism with a similar stall symptom. There is no direct probe."

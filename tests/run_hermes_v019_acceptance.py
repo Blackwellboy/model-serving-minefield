@@ -12,6 +12,7 @@ from pathlib import Path
 REQUIRED = {
     "trap_id", "diagnosis_level", "evidence_status", "matched_conditions",
     "mismatched_conditions", "unknown_conditions", "direct_probe_support",
+    "direct_probe_result",
     "mechanism_status", "confirmation_check", "refutation_check",
     "conditional_mitigation", "remaining_unknowns",
 }
@@ -69,9 +70,17 @@ def _validate_case(value, case):
             raise AssertionError(f"{case['id']}: missing {sorted(missing)}")
         if (
             item["diagnosis_level"] == "CONFIRMED_BY_DIRECT_PROBE"
-            and not item["direct_probe_support"]
+            and (
+                not item["direct_probe_support"]
+                or item["direct_probe_result"] != "confirmed"
+            )
         ):
             raise AssertionError(f"{case['id']}: confirmation lacked probe")
+        if (
+            item["direct_probe_result"] == "refuted"
+            and item["diagnosis_level"] != "NOT_APPLICABLE"
+        ):
+            raise AssertionError(f"{case['id']}: refuting probe was promoted")
         if (
             FORBIDDEN_CAUSAL.search(str(item.get("supported_mechanism", "")))
             and item.get("mechanism_status") != "SUPPORTED_BY_DIRECT_PROBE"

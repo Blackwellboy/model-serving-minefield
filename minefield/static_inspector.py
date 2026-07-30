@@ -78,6 +78,7 @@ def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> d
                     "mismatched_conditions": [],
                     "unknown_conditions": ["runtime behavior was not observed"],
                     "direct_probe_support": False,
+                    "direct_probe_result": "not_supplied",
                     "mechanism_status": "PROPOSED_NOT_PROVEN",
                     "observed_symptom": explanation,
                     "pattern_resemblance": "A static pattern matched; static text is not runtime proof.",

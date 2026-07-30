@@ -50,6 +50,7 @@ HARDWARE_ARCHITECTURES = {
 REQUIRED_MATCH_FIELDS = frozenset({
     "trap_id", "diagnosis_level", "evidence_status", "matched_conditions",
     "mismatched_conditions", "unknown_conditions", "direct_probe_support",
+    "direct_probe_result",
     "mechanism_status", "observed_symptom", "pattern_resemblance",
     "supported_mechanism", "proposed_mechanism", "unresolved_mechanism",
     "confirmation_check", "refutation_check", "conditional_mitigation",
@@ -194,6 +195,7 @@ def compare_conditions(
 def diagnosis_level(
     *,
     direct_probe_support: bool,
+    direct_probe_result: str,
     matched: Iterable[str],
     mismatched: Iterable[str],
     unknown: Iterable[str],
@@ -203,6 +205,8 @@ def diagnosis_level(
     matched = list(matched)
     unknown = list(unknown)
     critical_mismatch = any(item.split(":", 1)[0] in CRITICAL_FIELDS for item in mismatched)
+    if direct_probe_result == "refuted":
+        return "NOT_APPLICABLE"
     if direct_probe_support:
         return "CONFIRMED_BY_DIRECT_PROBE"
     if critical_mismatch:
@@ -221,12 +225,14 @@ def contract_for_match(
     symptom_score: int,
     observed_conditions: dict[str, Any] | None,
     direct_probe_support: bool = False,
+    direct_probe_result: str = "not_supplied",
     mechanism_directly_supported: bool = False,
 ) -> dict[str, Any]:
     documented = entry.get("applicability") or documented_conditions(entry)
     matched, mismatched, unknown = compare_conditions(documented, observed_conditions)
     level = diagnosis_level(
         direct_probe_support=direct_probe_support,
+        direct_probe_result=direct_probe_result,
         matched=matched,
         mismatched=mismatched,
         unknown=unknown,
@@ -247,6 +253,7 @@ def contract_for_match(
         "mismatched_conditions": mismatched,
         "unknown_conditions": unknown,
         "direct_probe_support": bool(direct_probe_support),
+        "direct_probe_result": direct_probe_result,
         "mechanism_status": mechanism_status,
         "observed_symptom": observed_symptom,
         "pattern_resemblance": (
@@ -292,6 +299,14 @@ def validate_match_contract(
         raise ValueError("every candidate requires confirmation and refutation checks")
     if result["diagnosis_level"] == "CONFIRMED_BY_DIRECT_PROBE" and not result["direct_probe_support"]:
         raise ValueError("confirmation requires direct probe support")
+    if result["direct_probe_result"] not in {
+        "not_supplied", "candidate_requested", "confirmed", "refuted", "inconclusive",
+    }:
+        raise ValueError("invalid direct probe result")
+    if result["direct_probe_support"] != (result["direct_probe_result"] == "confirmed"):
+        raise ValueError("direct probe support requires an explicit confirmed result")
+    if result["direct_probe_result"] == "refuted" and result["diagnosis_level"] != "NOT_APPLICABLE":
+        raise ValueError("a refuting direct probe must refute the candidate")
     if result["mechanism_status"] == "SUPPORTED_BY_DIRECT_PROBE":
         if not result["direct_probe_support"]:
             raise ValueError("supported mechanism requires direct probe support")
@@ -316,6 +331,7 @@ def miss_contract(symptom: str, observed_conditions: dict[str, Any] | None = Non
             for field, values in normalize_conditions(observed_conditions).items() if values
         ],
         "direct_probe_support": False,
+        "direct_probe_result": "not_supplied",
         "mechanism_status": "NOT_DOCUMENTED",
         "remaining_unknowns": ["A registry miss means not documented, never safe."],
     }

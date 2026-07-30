@@ -107,6 +107,7 @@ class DiagnosisFixtureTests(unittest.TestCase):
             case["symptom"],
             conditions=case.get("conditions"),
             direct_probe_trap_ids=case.get("direct_probe_trap_ids"),
+            direct_probe_results=case.get("direct_probe_results"),
         )
 
     def test_all_eighteen_sanitized_structural_fixtures(self):
@@ -271,6 +272,7 @@ class OverclaimMutationTests(unittest.TestCase):
         result = diagnose(
             BASE_REGISTRY, case["symptom"], conditions=case["conditions"],
             direct_probe_trap_ids=case.get("direct_probe_trap_ids"),
+            direct_probe_results=case.get("direct_probe_results"),
         )
         return case, next(
             item for item in result["matches"] if item["trap_id"] == case["candidate"]

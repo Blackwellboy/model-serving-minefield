@@ -52,6 +52,10 @@ def parser() -> argparse.ArgumentParser:
     for flag in CONDITION_FLAGS:
         guide.add_argument(f"--{flag}")
     guide.add_argument("--direct-probe-trap", action="append", default=[])
+    guide.add_argument(
+        "--direct-probe-result", action="append", default=[], metavar="TRAP=RESULT",
+        help="record confirmed, refuted, or inconclusive for an explicit trap probe",
+    )
     guide.add_argument("--mechanism-probe-trap", action="append", default=[])
     sub.add_parser("diagnose")
     coverage = sub.add_parser("coverage")
@@ -78,6 +82,14 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "inspect-logs":
         _emit(inspect_logs(args.paths, args.allowed_root))
     elif args.command == "guide":
+        direct_probe_results = {}
+        for item in args.direct_probe_result:
+            trap_id, separator, outcome = item.partition("=")
+            if not separator or outcome not in {"confirmed", "refuted", "inconclusive"}:
+                raise SystemExit(
+                    "--direct-probe-result must be TRAP=confirmed|refuted|inconclusive"
+                )
+            direct_probe_results[trap_id] = outcome
         conditions = {
             flag.replace("-", "_"): getattr(args, flag.replace("-", "_"))
             for flag in CONDITION_FLAGS
@@ -87,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
             registry, args.symptom, stack=args.stack, model=args.model,
             version=args.version, conditions=conditions,
             direct_probe_trap_ids=args.direct_probe_trap,
+            direct_probe_results=direct_probe_results,
             mechanism_probe_trap_ids=args.mechanism_probe_trap,
         ))
     elif args.command == "diagnose":

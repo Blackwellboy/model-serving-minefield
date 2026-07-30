@@ -52,6 +52,7 @@ def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> di
                     "mismatched_conditions": [],
                     "unknown_conditions": ["surrounding runtime conditions and later recovery state"],
                     "direct_probe_support": False,
+                    "direct_probe_result": "not_supplied",
                     "mechanism_status": "PROPOSED_NOT_PROVEN",
                     "observed_symptom": match.group(0)[:500],
                     "pattern_resemblance": "A bounded log signature resembles the trap; it does not prove cause.",

@@ -213,3 +213,109 @@ tests/test_diagnostics_and_security.py:159: reviewed synthetic placeholder used 
 tests/test_diagnostics_and_security.py:165: reviewed synthetic placeholder used by redaction tests; it is not a real local path.
 web/registry-data.js:1: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 web/registry-data.js:2: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+skills/model-serving-minefield/references/agent-bundle.md:443: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+skills/model-serving-minefield/references/agent-bundle.md:446: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+minefield/generator.py:160: reviewed style-only punctuation in public product prose after the diagnosis-contract line shift; no private data is present.
+minefield/generator.py:191: reviewed style-only punctuation in public product prose after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE_LITE.md:439: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE_LITE.md:442: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:204: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:207: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1493: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1494: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1495: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1506: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1509: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1518: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1519: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1532: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1534: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1545: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1557: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1558: reviewed style-only punctuation in a generated public bundle after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:112: reviewed public integration reference inside the generated package inventory; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:7478: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:7519: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:7533: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:10590: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17603: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17622: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17639: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17672: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17675: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17685: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17744: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17756: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17812: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17878: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17961: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17973: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18328: reviewed style-only punctuation in a generated public package header; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18530: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18531: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27927: reviewed public integration reference inside the generated package inventory; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28076: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28079: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28080: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28081: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28093: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28094: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28095: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28117: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28119: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28122: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28217: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28369: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34116: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34117: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34118: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34132: reviewed public integration reference required by the packaged feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:36081: reviewed public integration filename inside the generated package archive; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:42: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:110: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:116: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:126: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:150: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:173: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+tests/run_hermes_v019_acceptance.py:174: reviewed public integration reference after adding the refutation acceptance case; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:18534: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19820: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19821: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19822: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19832: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19833: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19836: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19845: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19846: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19859: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19861: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19872: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19884: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19885: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:19950: reviewed style-only punctuation in a generated public package header; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20387: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20388: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20391: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27193: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27211: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27212: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27229: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27262: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27275: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27334: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27346: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27401: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27402: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27468: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27551: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27563: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27915: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28250: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31433: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31464: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34235: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34672: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34673: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34676: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36053: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36054: reviewed style-only punctuation in a generated public package after the diagnosis-contract line shift; no private data is present.

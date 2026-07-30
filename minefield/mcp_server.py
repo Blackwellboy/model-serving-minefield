@@ -48,6 +48,14 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
         "direct_probe_trap_ids": {
             "type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]},
         },
+        "direct_probe_results": {
+            "type": "object",
+            "maxProperties": 50,
+            "additionalProperties": {
+                "type": "string",
+                "enum": ["confirmed", "refuted", "inconclusive"],
+            },
+        },
         "mechanism_probe_trap_ids": {
             "type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]},
         },
@@ -124,6 +132,15 @@ def _validate_args(name: str, args: Any) -> dict[str, Any]:
                 for item in value.values()
             ):
                 raise ValueError("condition values must be strings or integers")
+        if key == "direct_probe_results":
+            if len(value) > rule["maxProperties"]:
+                raise ValueError("direct_probe_results has too many items")
+            if any(
+                not isinstance(trap_id, str)
+                or outcome not in {"confirmed", "refuted", "inconclusive"}
+                for trap_id, outcome in value.items()
+            ):
+                raise ValueError("direct_probe_results contains an invalid result")
     return args
 
 
@@ -150,6 +167,7 @@ def call_tool(
             model=args.get("model"), version=args.get("version"),
             conditions=args.get("conditions"),
             direct_probe_trap_ids=args.get("direct_probe_trap_ids"),
+            direct_probe_results=args.get("direct_probe_results"),
             mechanism_probe_trap_ids=args.get("mechanism_probe_trap_ids"),
             evidence_status=args.get("evidence_status"),
         )
@@ -188,8 +206,8 @@ def call_tool(
         return [item for item in specifications(registry) if item["trap_id"] in wanted]
     if name == "prepare_issue_report":
         text = str(args.get("evidence", ""))
-        from .redaction import redact_text
-        clean, redactions = redact_text(text)
+        from .redaction import redact_document
+        clean, redactions = redact_document(text)
         return {"markdown": "# Minefield report\n\n" + clean, "redactions": redactions}
     if name == "inspect_config":
         if not allowed_roots:

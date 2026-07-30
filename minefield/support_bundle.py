@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from .redaction import redact_text, redact_value
+from .redaction import redact_document, redact_value
 
 MAX_INPUT_BYTES = 2 * 1024 * 1024
 MAX_TAIL_BYTES = 256 * 1024
@@ -66,18 +66,18 @@ def plan(
     redactions: list[dict[str, Any]] = []
     for index, raw in enumerate(configs or [], 1):
         path = Path(raw)
-        clean, report = redact_text(_read(path))
+        clean, report = redact_document(_read(path))
         name = f"config/{_safe_name(index, path, 'redacted.txt')}"
         files[name] = clean.encode()
         redactions.extend({"file": name, **item} for item in report)
     for index, raw in enumerate(logs or [], 1):
         path = Path(raw)
-        clean, report = redact_text(_read(path))
+        clean, report = redact_document(_read(path))
         name = f"logs/{_safe_name(index, path, 'tail.redacted.txt')}"
         files[name] = clean.encode()
         redactions.extend({"file": name, **item} for item in report)
     if doctor_report:
-        clean, report = redact_text(_read(Path(doctor_report)))
+        clean, report = redact_document(_read(Path(doctor_report)))
         files["doctor.json"] = clean.encode()
         redactions.extend({"file": "doctor.json", **item} for item in report)
     clean_diagnosis, report = redact_value(diagnosis or {"findings": []})
