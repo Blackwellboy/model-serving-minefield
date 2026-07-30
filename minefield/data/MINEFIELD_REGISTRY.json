@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 107,
-  "content_sha256": "9311e22dc427a3e2432099e4826be724a40f749c5a76daf388f6e618262dcca8",
+  "canonical_trap_count": 108,
+  "content_sha256": "be79dd8b582391824684676b55e084833fb95684614c94c60165bcc82ad8fb90",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -6686,6 +6686,86 @@
       "supersession": null,
       "symptom": "A lane is slow. Nothing in the server's output says why. The model gets blamed, or the quantisation, or the card.",
       "title": "partial GPU offload costs 22 to 31 times decode, and neither the server log nor /props names the split"
+    },
+    {
+      "affected_models": [
+        "Laguna-S-2.1-NVFP4 revision b482b5d57fda6e4e562a652869bde24ba2a57c92"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.1, poolside/Laguna-S-2.1-NVFP4 revision b482b5d57fda6e4e562a652869bde24ba2a57c92, DFlash with K=15 speculative tokens, DGX Spark GB10 128 GB UMA. - max-num-seqs=256 (vLLM default): OOM at startup, never reached ready state. - max-num-seqs=32 (card-recommended): started, crashed within minutes of concurrent agent traffic (2+ simultaneous sessions). - max-num-seqs=4: stable across ~4 days of continuous production agent traffic (July 21-25, 2026), no crashes, no OOM events. This is operational observation from a coding fleet, not a controlled soak with formal session/turn counts. GPU memory utilization was 0.82 in all configurations.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 256",
+          "seqs 32",
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "laguna-s-2.1-nvfp4 revision b482b5d57fda6e4e562a652869bde24ba2a57c92",
+          "poolside laguna-s-2.1-nvfp4"
+        ],
+        "failure_stage": [
+          "load",
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "laguna"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.25.1"
+        ],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Before serving with speculative decoding on unified memory: bash",
+      "contributor": "Nemo (@smfworks)",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.1, poolside/Laguna-S-2.1-NVFP4 revision b482b5d57fda6e4e562a652869bde24ba2a57c92, DFlash with K=15 speculative tokens, DGX Spark GB10 128 GB UMA. - max-num-seqs=256 (vLLM default): OOM at startup, never reached ready state. - max-num-seqs=32 (card-recommended): started, crashed within minutes of concurrent agent traffic (2+ simultaneous sessions). - max-num-seqs=4: stable across ~4 days of continuous production agent traffic (July 21-25, 2026), no crashes, no OOM events. This is operational observation from a coding fleet, not a controlled soak with formal session/turn counts. GPU memory utilization was 0.82 in all configurations.",
+      "id": "98",
+      "known_limitations": "",
+      "mechanism": "(operational observation from production serving on DGX Spark GB10, 128 GB UMA; no formal soak with session/turn counts under this config). Symptom. vLLM launches a model with DFlash speculative decoding using the default --max-num-seqs (256) or the card-recommended value (32), loads weights successfully, and either crashes during KV cache allocation or crashes within minutes of real concurrent traffic. Lowering max-num-seqs to 4 under the same reported K=15 configuration coincided with stable operation. Candidate mechanism, not isolated by these observations. Speculative depth and sequence capacity can both contribute to memory pressure, so a max-num-seqs value validated at one K must not be assumed safe at another K on 128 GB unified memory. The observations are consistent with K and sequence capacity contributing jointly, but they do not establish direct K x seqs scaling, a universal product threshold, or the relative contribution of other configuration and workload variables. The contributor observed the failure at K=15 / max-num-seqs=32 and stable operation at K=15 / max-num-seqs=4. Separately, a 12-hour soak by @Blackwellboy on the same hardware class was stable at K=7 / max-num-seqs=32 (primary data). That is a counter-observation under a different K, not a matched control and not evidence for a threshold between the two configurations. Stacks and builds bitten. vLLM 0.25.1, poolside/Laguna-S-2.1-NVFP4 revision b482b5d57fda6e4e562a652869bde24ba2a57c92, DFlash with K=15 speculative tokens, DGX Spark GB10 128 GB UMA. - max-num-seqs=256 (vLLM default): OOM at startup, never reached ready state. - max-num-seqs=32 (card-recommended",
+      "mitigation": "On the reported 128 GB unified-memory configuration with DFlash K=15, lowering max-num-seqs from 32 to 4 was the working mitigation. Treat that as a configuration-specific observation, not a universal ceiling. If K, sequence capacity, model, memory-utilisation setting or workload changes, repeat the staged check above rather than carrying forward a value validated under different conditions.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy",
+        "https://github.com/Blackwellboy/laguna-s21-lab/blob/main/soak/LAGUNA_SOAK_12H_20260725_RESULTS.md",
+        "https://github.com/smfworks"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/98-speculative-decode-default-max-seqs-oom-uma.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "vLLM launches a model with DFlash speculative decoding using the default --max-num-seqs (256) or the card-recommended value (32), loads weights successfully, and either crashes during KV cache allocation or crashes within minutes of real concurrent traffic. Lowering max-num-seqs to 4 under the same reported K=15 configuration coincided with stable operation.",
+      "title": "speculative depth and sequence capacity coincide with OOMs on unified memory"
     },
     {
       "affected_models": [],

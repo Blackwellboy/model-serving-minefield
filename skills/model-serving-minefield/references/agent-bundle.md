@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `9ef0b6af64d9a779da2f845733995d50a81a13a31f502765f47278bce05d8720`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `69e0cd3c107092d67acd0e8c32848754d384f0800d49bb352f96b428da085c5d`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -433,6 +433,7 @@ Allowed diagnosis levels are `CONFIRMED_BY_DIRECT_PROBE`,
 - 95: You are about to attach a co-tenancy caveat to a number, or to stop sharing a host, on the belief that two models on one box interfere. On this configuration they do not, and the caveat would be unearned.
 - 96: A capacity decision, a slot count, or a context size is sized from the serving binary's own device listing, and allocation fails anyway. Or two very different cards report the same free memory.
 - 97: A lane is slow. Nothing in the server's output says why. The model gets blamed, or the quantisation, or the card.
+- 98: vLLM launches a model with DFlash speculative decoding using the default --max-num-seqs (256) or the card-recommended value (32), loads weights successfully, and either crashes during KV cache allocation or crashes within minutes of real concurrent traffic. Lowering max-num-seqs to 4 under the same reported K=15 configuration coincided with stable operation.
 - 99: A model using F.scaleddotproductattention with iscausal=True fails with hipErrorInvalidValue on gfx1151 (Radeon 8060S / Strix Halo). The failure is asynchronous: the error is reported at the next GPU operation (typically torch.cat or torch.stack), not at the SDPA call itself. The traceback points at the wrong line, so you debug the concatenation when the actual failure was in attention. Once any kernel fails, all subsequent GPU operations fail until the process is restarted. Non-causal SDPA also fails for certain shapes: 16+ heads with headdim=128, any shape with headdim=256, and all fp32 inputs. The EFFICIENTATTENTION backend works for small shapes but fails for larger ones. The MATH backend fails for causal but works for non-causal.
 - 100: Every GPU kernel fails with hipErrorInvalidImage (error 209) on gfx1151 (Radeon 8060S / Strix Halo). GPU memory allocation works fine — torch.zeros(10, device='cuda') succeeds — but any kernel execution fails. JIT-compiled kernels also fail. The error message names an internal code object file, so it reads like a broken install or a broken wheel. Reinstalling PyTorch, ROCm, or the model does not help.
 - 101: A model that loaded and ran fine on transformers==5.5.0 fails after a minor version upgrade to 5.6.0+ (or 5.14.1). The model loads without error, then crashes at inference with an unexpected keyword argument error for inputembeds, or a createcausalmask import failure. The error points at the model code, not at the library version — so you debug the model when the library silently changed its API under you.

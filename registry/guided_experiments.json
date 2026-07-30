@@ -2329,6 +2329,30 @@
       "untrusted_published_check_text": "Decode throughput itself, compared against a known-good full-offload figure for the same file and flags. That requires having recorded such a figure, which is the practical recommendation: capture decode tok/s at full offload once, per file per lane, and treat it as the reference. Absent that reference there is no signal on this build, which is the finding. If the launch command is reachable, read -ngl off the process arguments rather than asking the server: it is the only place the value is reliably visible."
     },
     {
+      "confirm_criterion": "The failure signature described by trap 98 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 98 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "98",
+      "untrusted_published_check_text": "Before serving with speculative decoding on unified memory: bash"
+    },
+    {
       "confirm_criterion": "The failure signature described by trap 99 appears under matching conditions.",
       "control": "Repeat with the suspected variable removed or with the known-good condition.",
       "expected_duration": "5-30 minutes unless the entry names a soak",
