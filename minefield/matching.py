@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .diagnosis_contract import contract_for_match, miss_contract
+
 TOKEN_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
 STOPWORDS = {
     "the", "and", "for", "that", "this", "with", "from", "into", "only",
@@ -25,9 +27,21 @@ def search(
     stack: str | None = None,
     model: str | None = None,
     version: str | None = None,
+    conditions: dict[str, Any] | None = None,
+    direct_probe_trap_ids: list[str] | None = None,
+    mechanism_probe_trap_ids: list[str] | None = None,
     evidence_status: str | None = None,
     limit: int = 10,
 ) -> list[dict[str, Any]]:
+    conditions = dict(conditions or {})
+    if stack:
+        conditions.setdefault("serving_stack", stack)
+    if model:
+        conditions.setdefault("exact_checkpoint", model)
+    if version:
+        conditions.setdefault("stack_version", version)
+    direct_ids = {str(item).zfill(2) for item in (direct_probe_trap_ids or [])}
+    mechanism_ids = {str(item).zfill(2) for item in (mechanism_probe_trap_ids or [])}
     query = _tokens(" ".join(filter(None, (symptom, stack, model, version))))
     results: list[dict[str, Any]] = []
     for entry in registry["entries"]:
@@ -47,55 +61,53 @@ def search(
         score = direct * 4 + context
         if symptom.strip().lower() in symptom_text.lower():
             score += 30
-        condition_match = []
-        condition_mismatch = []
         if stack:
             target = stack.lower()
             if any(target in item.lower() or item.lower() in target for item in entry["affected_stacks"]):
                 score += 5
-                condition_match.append(f"stack: {stack}")
-            elif entry["affected_stacks"]:
-                condition_mismatch.append(f"stack {stack} is not named in published conditions")
         if model:
             target = model.lower()
             if any(target in item.lower() or item.lower() in target
                    for item in entry["affected_models"]):
                 score += 5
-                condition_match.append(f"model: {model}")
-            elif entry["affected_models"]:
-                condition_mismatch.append(f"model {model} is not named in published conditions")
         if version:
             if version.lower() in entry["affected_versions_builds"].lower():
                 score += 3
-                condition_match.append(f"version/build: {version}")
-            elif entry["affected_versions_builds"]:
-                condition_mismatch.append(
-                    f"version/build {version} is not named in published conditions"
-                )
-        confidence = "possible"
-        if direct >= 3 and not condition_mismatch:
-            confidence = "strong possible"
+        contract = contract_for_match(
+            entry,
+            observed_symptom=symptom,
+            symptom_score=score,
+            observed_conditions=conditions,
+            direct_probe_support=entry["id"] in direct_ids,
+            mechanism_directly_supported=entry["id"] in mechanism_ids,
+        )
         results.append({
             "trap_ids": [entry["id"]],
             "title": entry["title"],
-            "match_confidence": confidence,
+            "match_confidence": contract["diagnosis_level"],
             "score": score,
-            "evidence_status": entry["status"],
-            "condition_match": condition_match,
-            "condition_mismatch": condition_mismatch,
-            "confirmation_check": entry["check"],
-            "refutation_check": (
-                "Run the published check under the named conditions; a result "
-                "that contradicts its failure signature refutes this match only."
-            ),
-            "safest_mitigation": entry["mitigation"],
-            "mutation_authority_warning": (
-                "Do not change configuration or restart services until the match "
-                "is supported and the user explicitly authorises mutation."
-            ),
-            "what_remains_unknown": entry["known_limitations"]
-                or "Text similarity is not a reproduced diagnosis.",
             "source_path": entry["source_path"],
+            **contract,
         })
     results.sort(key=lambda item: (-item["score"], int(item["trap_ids"][0])))
     return results[: max(1, min(limit, 50))]
+
+
+def diagnose(
+    registry: dict[str, Any],
+    symptom: str,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Return an explicit envelope so a miss can never be mistaken for CLEAN."""
+    matches = search(registry, symptom, **kwargs)
+    if not matches:
+        return miss_contract(symptom, kwargs.get("conditions"))
+    return {
+        "diagnosis_level": matches[0]["diagnosis_level"],
+        "observed_symptom": symptom,
+        "matches": matches,
+        "warning": (
+            "Candidates are ranked, not proven. Apply mitigations only after the "
+            "confirmation check succeeds under the user's exact conditions."
+        ),
+    }

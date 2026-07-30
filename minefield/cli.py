@@ -12,10 +12,17 @@ from .coverage import build_coverage
 from .doctor_adapter import run as run_doctor
 from .generator import build, verify
 from .log_inspector import inspect_logs
-from .matching import search
+from .matching import diagnose
 from .registry import load_registry
 from .static_inspector import inspect_files
 from .support_bundle import plan, write_bundle
+
+CONDITION_FLAGS = (
+    "gpu-architecture", "device-class", "node-count", "parallelism",
+    "topology", "stack-version", "model-family", "exact-checkpoint",
+    "quantization", "context-regime", "concurrency-regime",
+    "failure-stage", "operating-system",
+)
 
 
 def _emit(value: Any, as_json: bool = True) -> None:
@@ -42,6 +49,10 @@ def parser() -> argparse.ArgumentParser:
     guide.add_argument("--stack")
     guide.add_argument("--model")
     guide.add_argument("--version")
+    for flag in CONDITION_FLAGS:
+        guide.add_argument(f"--{flag}")
+    guide.add_argument("--direct-probe-trap", action="append", default=[])
+    guide.add_argument("--mechanism-probe-trap", action="append", default=[])
     sub.add_parser("diagnose")
     coverage = sub.add_parser("coverage")
     coverage.add_argument("--json", action="store_true")
@@ -67,14 +78,24 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "inspect-logs":
         _emit(inspect_logs(args.paths, args.allowed_root))
     elif args.command == "guide":
-        _emit(search(registry, args.symptom, stack=args.stack, model=args.model, version=args.version))
+        conditions = {
+            flag.replace("-", "_"): getattr(args, flag.replace("-", "_"))
+            for flag in CONDITION_FLAGS
+            if getattr(args, flag.replace("-", "_")) is not None
+        }
+        _emit(diagnose(
+            registry, args.symptom, stack=args.stack, model=args.model,
+            version=args.version, conditions=conditions,
+            direct_probe_trap_ids=args.direct_probe_trap,
+            mechanism_probe_trap_ids=args.mechanism_probe_trap,
+        ))
     elif args.command == "diagnose":
         if not sys.stdin.isatty():
             raise SystemExit("diagnose requires an interactive terminal")
         symptom = input("What are you seeing? ").strip()
         stack = input("Serving stack and version? ").strip()
         model = input("Model and revision? ").strip()
-        _emit(search(registry, symptom, stack=stack, model=model))
+        _emit(diagnose(registry, symptom, stack=stack, model=model))
     elif args.command == "coverage":
         value = build_coverage(registry)["summary"]
         _emit(value if args.json else "\n".join(f"{k}: {v}" for k, v in value.items()),

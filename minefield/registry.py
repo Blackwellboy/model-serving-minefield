@@ -9,6 +9,8 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
+from .diagnosis_contract import documented_conditions
+
 ROOT = Path(__file__).resolve().parents[1]
 ENTRY_RE = re.compile(r"^(?P<id>\d{2,})-.+\.md$")
 TITLE_RE = re.compile(r"^#\s+Trap\s+(\d+):\s*(.+?)\s*$", re.M | re.I)
@@ -126,7 +128,7 @@ def _load_overrides(root: Path) -> dict[str, dict[str, Any]]:
     if not isinstance(value, dict) or any(not isinstance(v, dict) for v in value.values()):
         raise RegistryError("overrides must be an object of trap-id objects")
     protected = {"id", "source_path", "category", "status", "evidence_strength",
-                 "doctor_coverage"}
+                 "doctor_coverage", "applicability"}
     for trap_id, override in value.items():
         forbidden = sorted(protected & set(override))
         if forbidden:
@@ -219,12 +221,13 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             "supersession": None,
         }
         entry.update(overrides.get(trap_id, {}))
+        entry["applicability"] = documented_conditions(entry)
         if Path(entry["source_path"]).is_absolute() or not (root / entry["source_path"]).is_file():
             raise RegistryError(f"{path}: generated source_path is not canonical")
         entries.append(entry)
 
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "canonical_enumeration": "traps/<category>/NN-*.md",
         "canonical_trap_count": len(entries),
         "doctor_implemented_trap_count": len(doctor),

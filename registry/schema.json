@@ -12,7 +12,7 @@
     "entries"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "canonical_enumeration": {"const": "traps/<category>/NN-*.md"},
     "canonical_trap_count": {"type": "integer", "minimum": 1},
     "doctor_implemented_trap_count": {"type": "integer", "minimum": 0},
@@ -27,7 +27,7 @@
           "affected_stacks", "affected_models", "affected_versions_builds",
           "exact_conditions", "public_evidence_links", "doctor_coverage",
           "diagnostic_modalities", "known_limitations", "related_traps",
-          "supersession"
+          "supersession", "applicability"
         ],
         "properties": {
           "id": {"type": "string", "pattern": "^\\d{2,}$"},
@@ -47,6 +47,16 @@
                 "under test"
               ]
             }
+          },
+          "applicability": {
+            "type": "object",
+            "required": [
+              "gpu_architecture", "device_class", "node_count", "parallelism",
+              "topology", "serving_stack", "stack_version", "model_family",
+              "exact_checkpoint", "quantization", "context_regime",
+              "concurrency_regime", "failure_stage", "operating_system"
+            ],
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

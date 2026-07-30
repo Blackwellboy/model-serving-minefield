@@ -9,14 +9,15 @@ from pathlib import Path
 from typing import Any
 
 from .coverage import build_coverage
+from .diagnosis_contract import CONDITION_FIELDS
 from .guided_experiments import specifications
 from .log_inspector import inspect_logs
-from .matching import search
+from .matching import diagnose, search
 from .registry import load_registry
 from .static_inspector import inspect_files
 
 TOOLS = {
-    "search_symptom": "Rank possible traps from symptom and optional stack/model/version.",
+    "search_symptom": "Return diagnosis-contract candidates from symptom and explicit conditions.",
     "get_trap": "Return one canonical trap record.",
     "get_stack_checks": "Return likely traps and checks for a serving stack.",
     "get_model_risks": "Return model-family matches without treating absence as safety.",
@@ -29,12 +30,27 @@ TOOLS = {
 }
 MAX_REQUEST_BYTES = 1024 * 1024
 MAX_TEXT_ARGUMENT = 256 * 1024
+CONDITION_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        field: {"type": ["string", "integer"]}
+        for field in CONDITION_FIELDS
+    },
+}
 
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
     "search_symptom": {"properties": {
         "symptom": {"type": "string"}, "stack": {"type": "string"},
         "model": {"type": "string"}, "version": {"type": "string"},
         "evidence_status": {"type": "string"},
+        "conditions": CONDITION_SCHEMA,
+        "direct_probe_trap_ids": {
+            "type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]},
+        },
+        "mechanism_probe_trap_ids": {
+            "type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]},
+        },
     }},
     "get_trap": {"required": ["id"], "properties": {"id": {"type": ["string", "integer"]}}},
     "get_stack_checks": {"required": ["stack"], "properties": {"stack": {"type": "string"}}},
@@ -97,6 +113,17 @@ def _validate_args(name: str, args: Any) -> dict[str, Any]:
                 or ("integer" in item_types and isinstance(item, int) and not isinstance(item, bool))
             ) for item in value):
                 raise ValueError(f"{key} contains an item with the wrong type")
+        if key == "conditions":
+            unknown_conditions = sorted(set(value) - set(CONDITION_FIELDS))
+            if unknown_conditions:
+                raise ValueError(
+                    "unknown condition fields: " + ", ".join(unknown_conditions)
+                )
+            if any(
+                not isinstance(item, (str, int)) or isinstance(item, bool)
+                for item in value.values()
+            ):
+                raise ValueError("condition values must be strings or integers")
     return args
 
 
@@ -118,9 +145,14 @@ def call_tool(
 ) -> Any:
     args = _validate_args(name, args)
     if name == "search_symptom":
-        return search(registry, args.get("symptom", ""), stack=args.get("stack"),
-                      model=args.get("model"), version=args.get("version"),
-                      evidence_status=args.get("evidence_status"))
+        return diagnose(
+            registry, args.get("symptom", ""), stack=args.get("stack"),
+            model=args.get("model"), version=args.get("version"),
+            conditions=args.get("conditions"),
+            direct_probe_trap_ids=args.get("direct_probe_trap_ids"),
+            mechanism_probe_trap_ids=args.get("mechanism_probe_trap_ids"),
+            evidence_status=args.get("evidence_status"),
+        )
     if name == "get_trap":
         return next((entry for entry in registry["entries"] if entry["id"] == str(args["id"]).zfill(2)), None)
     if name == "get_stack_checks":
@@ -141,7 +173,15 @@ def call_tool(
             "inconclusive": [item for item in findings if item.get("level") == "INCONCLUSIVE"],
             "could_not_check": [item for item in findings if item.get("level") == "UNKNOWN"],
             "coverage": report.get("coverage", {}),
-            "warning": "Unimplemented scope remains unknown.",
+            "executed_trap_ids": sorted({
+                str(item.get("trap_id", "")).zfill(2) for item in findings
+                if item.get("trap_id") is not None
+            }),
+            "diagnosis_level": "INCONCLUSIVE",
+            "warning": (
+                "CLEAN applies only to executed checks. Unimplemented, absent, "
+                "or failed interpretation scope remains unknown."
+            ),
         }
     if name == "build_reproduction_plan":
         wanted = {str(item).zfill(2) for item in args.get("trap_ids", [])}
