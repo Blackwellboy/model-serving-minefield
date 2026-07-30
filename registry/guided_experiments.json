@@ -1,0 +1,2573 @@
+{
+  "experiments": [
+    {
+      "confirm_criterion": "The failure signature described by trap 01 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 01 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Read both keys, and fall back to scraping <think> tags out of content: Then confirm positively: send one prompt you are confident makes the model think, and assert the field is non-empty. An empty field means wrong key at least as often as it means did not reason.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "01"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 02 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 02 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Assert that content.lstrip() does not start with </think>, and that open and close tag counts in the response are balanced. In an assembled prompt, expect exactly one dangling open <think> at the end (the generation prompt) and treat any excess of closes as this trap.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "02"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 03 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 03 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Never reason about thinking from a template's default. Render your own prompt through the serving path and confirm which branch you landed in. Record the checkpoint revision hash next to every published number.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "03"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 04 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 04 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Assemble a three-turn conversation whose first assistant message carries a uniquely marked reasoning string, render the actual prompt through your serving path, and grep it for that marker. If it is absent, your multi-turn numbers describe a model that cannot see its own thinking. Then diff the render with and without the preservation kwarg. checks/preflighttemplate.py in this registry does exactly this and refuses to pass the lane if the marker is missing. Corollary worth internalizing: enumerate every kwarg the template reads and diff it against the model card. Anything read-but-undocumented is an untested variable, and if it sits near a thinking branch, assume it changes your results until you have shown it does not.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "04"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 05 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 05 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two parts, and the second is not optional: 1. Normalize before matching. unicodedata.normalize(\"NFKC\", text) plus an explicit fold of typographic punctuation to ASCII, applied to both the pattern and the text. Assume any model can emit smart quotes, because they do. 2. Hand-read a sample of every borderline verdict, especially the UNCLEAR and near-threshold bucket. A classifier's agreement with itself proves nothing. This is the same lesson as Trap 04 from a different direction: the check that cannot fail is not a check. If a scored result is going to be published, the hand-read step is the difference between a number and a claim.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "05"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 06 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 06 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Prepend the template's own default identity sentence as the literal first line of your system message and re-measure firing. If the rate recovers, you were looking at identity eviction, not instruction-dose suppression, and every \"prompt dose\" number you took without controlling the first line is confounded. Position of the check matters by stack: on the tested second stack the recovery lever was the tail, not the first line. Run the check both ways (identity as line one, and any ~30-token matched text appended at the end) before concluding which mechanism you have.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "06"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 07 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 07 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Grep the chat template for the parameter name before trusting any knob you send. If the template never references it, the knob is dead on this build regardless of what the server accepts. The general rule: diff the set of kwargs the template reads against the set the API accepts, in both directions. checks/preflighttemplate.py enumerates the template's kwarg surface for you.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "07"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 08 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 08 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before serving: If the image's default toolchain is newer than the driver's CUDA, any runtime-JIT kernel path is at risk. A load-then-crash-on-first-token pattern on a \"ready\" server is this trap until proven otherwise.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "08"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 09 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 09 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before concluding anything about a model, record the image digest next to the result, and test any model-level conclusion on a second image before publishing it. Treat \"image + weights + hardware\" as the unit under test, never \"the model\".",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "09"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 10 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 10 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before downloading 160 GB, read the config, not the repo name: Then answer: which kernel family does this quantmethod route to in YOUR build on YOUR arch, and is that the fast path or a weight-only fallback? If you cannot answer from the config plus your build, expect the fallback.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "10"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 11 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 11 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Sweep K exhaustively in a window around the drafter's head count, on your real workload mix, one full restart per cell. Do not extrapolate between K values and do not tune speculation on synthetic text.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "11"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 12 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "The 4.50% and every per-family rate are the rates at maxtokens=1024 on this task mix. They do not transfer to another budget, which is trap 12's own standing warning, and this addendum is an instance of it rather than an exception. Single serve, no baseline arm. Status of this addendum: reproduced here. Single serve, no baseline arm. Evidence for this addendum: study, scrubbed raw, verify.py (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), redaction record.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 12 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Bucket every scored zero by \"was content empty at a cap-hit\". If empties cluster at the ceiling, re-run only those at a larger budget before concluding anything about capability.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "12"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 13 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 13 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "After serving, read actual KV pool size from the server logs and MemAvailable from the OS, and ask whether either number was chosen or merely happened.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "13"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 14 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 14 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before treating any re-upload as drop-in: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "14"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 15 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 15 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "One cheap request before any multiple-choice eval: If ok is false, do not run loglikelihood tasks on this server, and do not report their absence as a model score.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "15"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 16 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 16 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Bucket on extractable output first (did you get code that parses, an answer that scores), then split each bucket by finishreason to diagnose truncation versus loop versus verbosity. Never map finishreason directly to pass/fail.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "16"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 17 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 17 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "For every A/B, list every request parameter that differs between arms. If the list is not exactly the variable under test, either fix the parameters or state the comparison as \"shipped-defaults versus shipped-defaults\", which is a different claim than \"X versus Y\".",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "17"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 18 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 18 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Confirm the attention implementation in your server args and logs, then benchmark decode at your REAL working depth (40K+), not at 2K. A depth-dependent slowdown with a healthy shallow number is this trap until proven otherwise.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "18"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 19 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 19 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "One request with one tool defined, before anything else: assert the response contains a structured toolcalls array, not prose describing a call. If prose: check the serve line for the template/parser flags before touching the client.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "19"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 20 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 20 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Probe both field names on your lane, same transcript, before trusting either. Render a conversation whose prior assistant turn carries a uniquely marked reasoning string once under reasoning and once under reasoningcontent, and diff the two renders (llama.cpp's /apply-template makes this deterministic; on other runtimes compare prompttokens and grep the assembled prompt for the marker, as in checks/preflighttemplate.py). The arm whose render contains the marker is your write field. If neither does, you are in trap 04 with no preservation path and need the kwarg route.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "20"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 21 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 21 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two commands: If the second returns \"Entry not found\", read the card's prose recommendation and compare it to the first, parameter by parameter. Also note which mode the recommendation is for; thinking and non-thinking recommendations differ.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "21"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 22 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 22 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before trusting any per-family budget guidance: run your hardest routine task at your production ceiling on THE model you deploy, thinking on, and check for empty content at cap.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "22"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 23 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 23 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "One streamed request against your lane, thinking off, logging the key set of every delta: does the answer text arrive under content, reasoning, or reasoningcontent? Then the same request with stream: false. Confirmed if the streamed answer exists only in reasoning deltas while the non-streamed answer sits in content. Assert streaming and non-streaming parity before trusting any streamed harness number.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "23"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 24 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 24 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render one tool-defined request through your actual serving path and read the assembled prompt, not the request: are the tool names and every argument key present and correctly delimited? Then diff that render against a reference Python Jinja2 render of the same template and messages (checks/preflighttemplate.py does the local reference render). Any divergence means the engine is part of your unit under test.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "24"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 25 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 25 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render a three-turn conversation where the prior assistant turns carry content but no reasoning, and grep the assembled prompt for empty think pairs. Then token-count two equivalent histories that differ only in empty-reasoning turns. Confirmed if empty wrappers appear or the counts differ.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "25"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 26 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 26 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "On forced-tool prompts, log the raw model text before any parser, alongside the structured response. Confirmed on any turn where raw text contains tool markup inside an open think block while structured toolcalls is empty. Never conclude \"cannot tool-call\" from the structured channel alone; that conclusion requires the raw dump.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "26"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 27 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 27 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "A ten-prompt factual probe at temperature 0 immediately after first load, before any speed benching, compared against the unquantized model's known answers. Then diff every module name in the checkpoint against quantizationconfig.ignore and confirm the layers the architecture requires unquantized actually match. Record the engine version next to the accuracy number.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "27"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 28 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 28 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before trusting any MTP lane, a twenty-minute matrix: concurrency {1, 8} crossed with temperature {0, 0.7} on short prompts, plus one run in the exact parallel layout production will use. A lane is not \"up\" until the cell your users will actually hit is green.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "28"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 29 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 29 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send the same hard prompt twice at your production maxtokens: once bare, once with the thinking kwarg enabled. If the kwarg arm hits the ceiling with empty content while the bare arm completes, every caller's kwarg surface is part of your budget model. Grep your callers for chattemplatekwargs.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "29"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 30 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 30 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Do not infer this from behavior; read it: 1. Pull chattemplate.jinja (or the chattemplate field of tokenizerconfig.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "30"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 31 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 31 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Run this in the same process as the eval, every run, and fail the run if it fails: 1. Take one gold item. Retrieve with the engine as-is; record the top ids. 2. Make a copy of the item with the expected-answer fields injected under obvious names (for example \"expecteddocumentid\", and \"expectedpath\" set to a sentinel like \"SHOULDNOTHELP\"). Retrieve again. The top ids must be identical. If injected answer metadata changes the ranking, the engine reads answer fields. 3. Grep the ranking source (everything above the test itself) for boost patterns keyed on expected ids or answer paths, for example: \"if docid in expectedids\", \"score -= 1000\", or candidate lookup by the expected file name stem. Any match fails. 4. Record the pass/fail and the engine source hash next to the metric. A number without an attached engine hash and a passing control is a claim, not a measurement. Also report, per run: candidate-pool hit rate for expected documents (the expected-id boost ceiling), and whether any ranking feature is derived from the answer key rather than the query.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "31"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 32 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 32 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send one request with maxtokens greater than the server flag and read usage.completiontokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "32"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 33 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 33 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Before you change a MoE's active-expert count, measure both settings on the same items, paired, and report the delta. If you are not running a benchmark, the cheap structural check is to confirm what your serving stack does with the extra experts: dump the post-selection gate weights for one token at both k values and compare the weight assigned to the rank-1 expert. If it fell, you bought dilution, not capacity. python",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "33"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 34 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 34 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Write down the configuration of your reference arm and ask one question: would anyone serve this? If the answer is no, it is not a floor, it is a handicap. Then report both numbers. The finder's standing rule, which is the cheapest possible fix: > Every verdict reports against base@k8 and against base@k32. Concretely, before publishing any delta: 1. Name the shipped default for every knob you touched (top-k, quant, template, sampling, budget). 2. If your reference differs from that default on any knob, add a third arm at the default and report against it too. 3. If you cannot run the third arm, say \"measured against <config>, not against the shipped default\" in the same sentence as the number.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "34"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 35 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 35 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Measure your own agreement floor before you trust any small delta. Run the same model twice, on the two machines (or the two sessions) you actually intend to compare across, on the same items, and report per-item agreement, not just the score: If that agreement is 98.7%, then any effect smaller than roughly the resulting score spread is inside your noise and needs a same-machine paired re-run before you publish it. Two independent measurements of this floor now exist, 98.7% and 97.58%, so if you have not measured your own, assume you are somewhere near them rather than at 100%. Run the same check twice on one machine as well. That is the version most people skip, and on our stack it returns the same floor as the cross-machine one.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "35"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 36 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 36 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Report the truncation count per arm, next to every generated number, and refuse to compare arms whose truncation rates differ materially. Two assertions catch both halves: python",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "36"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 37 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 37 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Score the gold answers through your own harness before you score a model. If the reference solution does not come back at or near 100%, your harness is what you are measuring. This one check catches all three cases above, and it is cheap: python",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "37"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 38 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 38 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through applychattemplate with addgenerationprompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "38"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 39 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 39 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two lines, before any generation: python import os os.environ[\"CUDAVISIBLEDEVICES\"] = \"0,1\" set BEFORE importing torch",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "39"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 40 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 40 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Never accept a removal rate without opening the removals. Three concrete steps: 1. Print the top matching grams by frequency. If one gram explains most of your hits, it is boilerplate. This alone caught 95.2% of the finder's false positives. 2. Look at the run-length distribution, not just the hit count. Long contiguous runs are transcription; isolated single-gram hits are format. 3. Run a positive control. Verify the matcher still catches real leakage after you tighten it, or you have replaced a noisy detector with a dead one. The finder checked that verbatim BFCL question transcriptions were still caught: 19/20 retained.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "40"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 41 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 41 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Measure completed items per minute, end to end, before and after any batching change. Do not accept GPU utilization, power draw, or tokens/second as evidence, because all three rise when the batch is padding. python",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "41"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 42 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 42 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "A single-turn harness has exactly two outcomes: the sample scores, or it does not. A model given tool schemas has a third legal exit, finishreason=toolcalls, which is neither a right answer nor a wrong one. It is the model doing what you configured it to do. Fold that third exit into the failure bucket and every agent-configured evaluation you run is biased downward by whatever fraction of samples route, which is a property of your system prompt, not of the model's capability. The same structural fact bites the reasoning-depth measurement, which is why this is one trap and not two. A turn that exits via a tool call carries only the reasoning the model produced before deciding to call, so the reasoning episode is truncated at the tool boundary. Pool that with turns that answered directly and the median reasoning length collapses for mechanical reasons. Measured as score it looks like a capability loss; measured as depth it looks like reasoning suppression. It is neither. It is one exit path being counted as if it were another.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "42"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 43 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 43 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured toolcalls come back rather than prose or an empty call.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "43"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 44 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 44 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Three assertions, all cheap, in this order: 1. Per-row cosine in float64, not a flat cosine over the whole tensor. A flat cosine over a 1.27B-element lmhead overflows in float32 and can return > 1, which is itself the tell that your metric is broken. 2. A decimal-comparison generation probe (is 9.9 or 9.11 larger?) alongside the usual capital-of-France probe. The capital probe passes on a subtly-broken dequant; the decimal probe does not. 3. Compare against the base model's own output on the same prompts, not against your expectation.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "44"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 45 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 45 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "The signature itself, ~20x prefill drop with ~0.5x decode, no error, is diagnostic. Confirm by running the same model on the same binary at f16/f16 and comparing; then check how the build directory was configured. bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "45"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 46 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 46 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two, in order of cheapness: 1. GPU utilization vs power draw. This is the tell, and it is architecture-agnostic: 98% utilization.gpu at ~270W of 575W (47% TDP) means compute units are busy but tensor cores are not saturated, i.e. you are on a fallback path. After the rebuild the same workload ran 95% util at ~460W (80% TDP) and 16 to 40 tok/s. Runnable: 2. Ancestry, before you assume a fix needs porting: Also confirm the feature actually compiled in, the server's startup systeminfo line reports the arch-native flag (BLACKWELLNATIVEFP4 = 1 in this case). A flag you passed is not evidence; a banner the binary printed is.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "46"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 47 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 47 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two lines: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "47"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 48 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 48 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "The diagnostic that cracked it, and the one to run first on any unexplained latency: > Compare the server's own logged total time against the client-reported latency for the same > call. Server said 9.8 s; client said 40.2 s. A large, roughly constant, client-only gap > is not a model or engine problem. Manual equivalents:",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "48"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 49 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 49 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server ntokens, usage.prompttokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "49"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 50 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 50 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Three, cheapest first: 1. Count the dumps. The reference produced 53 entries for 52 layers. That mismatch alone is the tell, and it costs nothing to check. 2. Check norms against theory. RMSNorm maps any input to about ||weight||. Here ||normf.weight|| = 124.99, so every post-norm state lands at ~125 by construction. The reference's dramatic 567 to 124 \"drop\" is just the norm being applied. If a \"collapse\" lands exactly on ||weight||, it is not a collapse. 3. Apply your own final norm before comparing. Ours: raw L51 = 552.1; after applying normf = 120.7, against the reference's 123.7 (on a different prompt). After fixing the offset, the two implementations tracked within ~3% across the whole stack: | backbone layer output | reference | ours | |---|---|---| | 49 | 452.5 | 452.3 | | 50 | 566.8 | 582.3 | | post-final-norm | 123.7 | 120.7 | match, tries both index alignments, and reports which one is consistent.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "50"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 51 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 51 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Run perplexity on every backend you have before drawing a conclusion about a quant format, and bisect by tensor group rather than by guess: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "51"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 52 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 52 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Gate every performance number on a correctness assertion produced by the same binary, same flags, same session. Not a correctness run from last week on a different build. Minimum viable gate, in order of cost: 1. A coherence probe plus a discriminative probe, capital-of-France catches gross breakage, a decimal comparison (9.9 vs 9.11) catches subtle breakage that the first one passes. See 2. Top-1 rank of a known answer, not just readability of the output. Rank 1213 for \"Paris\" reads as fluent text. 3. Perplexity or KL against a high-precision reference on the same build, if the change touches numerics at all. Then record the correctness result in the same row as the throughput number. A perf table with no correctness column is an invitation to this trap.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "52"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 53 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 53 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "After every restart, prove three things about the process that is answering, not about the command you ran: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "53"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 54 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 54 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "1. Counterbalance the order. Run A to B and B to A and compare. If the winner is whichever ran second, you have this trap and no result. 2. Discard warm-up explicitly. Fixed warm-up count (we use at least 8 steps), then an N-run median. Then check that the warmed runs are stable, monotonic degradation across warmed runs is thermal throttling, a different artifact with the same shape. 3. Test the null. Run the \"improved\" configuration on a build that does not contain the improvement. This is the cheapest disproof available and it is the one that settled ours. If the effect survives, it was never your feature. 4. Never compare across sessions. Re-measure the baseline in the same session, on the same binary, with the same clocks locked. Record the build hash and the locked clock with every number. 5. Lock clocks. Demand-governed boards swing widely, one dev board ranged 363 to 597 MHz, and a figure that had been quoted for weeks was simply a high-clock sample about 20% above the locked baseline.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "54"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 55 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 55 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "1. Read all three numbers before quoting a long-context result. config.json maxpositionembeddings and the rope factor; the served file's own contextlength metadata; and the model card's stated training context, which is usually in prose rather than in config. 2. Anchor with a shorter-context control. Run your battery at the model's native length as well as at the long length. A model that scores well at native and collapses at 8x native is telling you about extension, not about capability. 3. Include a model that was genuinely trained long in any long-context comparison. Without one, every result is confounded with extension quality.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "55"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 56 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 56 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Do not read the checkpoint; ask the server what it built. Run it for four cases: user only; system plus user; a system message placed after a user message; and a conversation carrying tools. If the second and third produce the same shape of thing, you have a role marker. If the third silently welds the system text onto the user's, you have this trap. Separately, hash the checkpoint's encoder module and record the hash next to your results, because that file, not a template, is what a re-upload changes.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "56"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 57 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 57 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with returntokenstrs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "57"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 58 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 58 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": ", 2026-07-28, on a live DeepSeek-V4-Flash lane whose serve line sets thinking off by default. Every row below is from the server's own render endpoint and from real completions, not from reading the template. Evidence pointer. The preamble text and the toggle both live in the checkpoint's Python encoder module, a public source file: grep it for the effort parameter and you will find both the branch that turns reasoning on and the literal string it prepends. The render comparison in the check section runs against the reader's own endpoint. Neither needs anything from us. Symptom. You are running a reasoning-off lane and you size every client's maxtokens for non-thinking replies. One client sets reasoningeffort, because it is a standard OpenAI-compatible field and it is supposed to be a budget hint. That client starts getting HTTP 200 responses with empty content, a populated reasoning field, and finishreason: length. Nothing in the request mentioned thinking. Nobody changed the serve line. Mechanism, and it has two halves that most people will get backwards. Half one: the parameter is a thinking switch. On this stack, sending reasoningeffort as a top-level request field turns reasoning on for that request, regardless of the server's thinking-off default. It is not a budget hint and it is not advisory. Measured on the live lane, user message \"hi\", maxtokens 4: | request | prompt tokens | reasoning field populated | content | |---|---|---|---| | baseline | 5 | no | \"Hello! How can\" | | reasoningeffort: \"low\" | 5 | yes | empty | | reasoningeffort: \"max\" | 84 | yes | empty | | chattemplatekwargs: {\"reasoningeffort\": \"max\"} | 5 | no | \"Hello! How can\" | Read the low row carefully, because it is th",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "58"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 59 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 59 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two steps, and do not skip the second, because step one alone is what produces false confidence. 1. Read one real response body and list the message keys. Do not assume either field name, including the one in the vendor's own API documentation. 2. Resend a prior turn's reasoning and then look at the assembled prompt, not the model's answer. Use the server's render endpoint if it has one (/v1/chat/completions/render here) and search it for a distinctive string you planted in the reasoning. If the string is absent, the reasoning is not reaching the model no matter how convincingly the model discusses it. Asking the model whether it remembers is not a test; on this lane it answers yes either way.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "59"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 60 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 60 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send one long prompt with a fact at position zero. Record the answer, the finishreason and the cache-hit delta from the server's metrics. Send the byte-identical prompt again immediately and record the same three. If the cache-hit fraction goes from roughly zero to roughly one and either the answer or the finish reason changes, you have this. Two requests, no configuration change, and it works on any server that exposes prefix-cache counters. To measure a lane honestly afterwards, make every evaluation prompt unique at the front, not just the back. A per-item nonce in the first tokens defeats prefix reuse; varying only the trailing question does not, because the shared head is what gets cached.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "60"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 61 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 61 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Three steps, and the first two cost nothing. 1. Read the checkpoint's config.json rope-scaling block before you trust any context number. If it carries a YaRN or similar factor over an originalmaxpositionembeddings, the advertised window is that base times that factor, and the base is the trained length. Record both numbers. 2. Check whether the serving container sets a long-context override variable. Its presence means the advertised length did not pass the engine's own sanity check. 3. Measure with a fact at position zero, unique non-repeating filler, and a decoy at the tail, laddered across orders of magnitude. Record finishreason alongside accuracy, and compare the server's prompttokens against your own tokenization at every rung. And run every rung cold, or you will measure the cache instead of the model.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "61"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 62 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 62 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "for the fixed configuration and the check below (both re-read from the running container and exercised again on 2026-07-28), and measured here, raw not published for the failure mode itself, which was observed once and recorded in an internal note a stranger cannot open. The confidence is split deliberately, three ways, and the third part is not a status because it is not a claim: - The fix: reproduced here. The fixed configuration is the one this lane has served on continuously since 2026-07-22. It was re-read from the running container on 2026-07-28 and exercised again in that session across roughly eighty generations with no malformed markup in any raw response body. - The failure mode: measured here, raw not published. The garbling was observed once, on this lane, on 2026-07-22, and is recorded in our own operational note from that day with the corrupted frame quoted verbatim. That note is internal, so a stranger cannot check it. It was deliberately not reproduced for this entry: the lane is production and the pre-change container is a rollback anchor, not a test bed. - Causal attribution: NOT established. The fix landed as five simultaneous changes. No single-variable ablation was run, so this entry does not claim to know which one stopped the garbling. Symptom. A speculative-decode lane returns text that is mostly fine and then emits a corrupted special-token frame into visible content. The recorded instance leaked a mangled tool-markup close tag into the user-facing string: a tag whose token sequence had decayed into a fragment that is not any real token of the dialect. The request is HTTP 200, finishreason is normal, and nothing is logged as an error. It reads like a model quality problem and it is not one. Mechanis",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "62"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 63 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 63 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Four renders, one marker, one grep. Build a two-turn history whose assistant message carries a unique marker string as its reasoning. Render it four ways: marker under reasoning and under reasoningcontent, each with the preservation kwarg at default and set. Grep each assembled prompt for the marker. Exactly one arm should contain it. If none does, the switch has another name and you need the kwarg enumeration below. On vLLM: POST /v1/chat/completions/render returns tokenids, and POST /detokenize converts them back to text. POST /tokenize with returntokenstrs: true also works and is available on builds whose route listing does not advertise it. On llama.cpp: /apply-template. Otherwise checks/preflighttemplate.py with --template-file, and doctor/minefielddoctor.py, which now tries four known gate names in both polarities against both field names and names the combination that worked.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "63"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 64 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 64 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two requests. Send your normal prompt, then send it again with /nothink appended somewhere harmless, both with your usual enablethinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with finishreason: \"stop\" as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "64"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 65 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 65 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two steps, both cheap. 1. Read the parser source. It is small; the Super one is 1909 bytes. Grep it for kwarg reads. The kwargs a parser reads are not in the card, not in the template, and not discoverable from the API. 2. Send a request at a tight budget with and without the kwarg and compare content length.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "65"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 66 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 66 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send a prompt containing /think or /nothink as part of an ordinary path, with the opposite enablethinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/nothink\" chattemplate.jinja next to the weights. Any hit means your users' text is being scanned.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "66"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 67 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 67 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render a three-turn history and look at the assembled prompt, not the response. If it contains [{'type': or 'text': you have it. On vLLM, POST /tokenize with returntokenstrs: true is the cheapest route and shows it unambiguously; POST /v1/chat/completions/render plus POST /detokenize also works. Put the system message first in the probe, because a non-first system message renders correctly and will mask the finding.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "67"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 68 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 68 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render [text A, image, text B] and [image, text A, text B] and compare the assembled prompts. If they are identical, order is discarded. Then look for AB with no separator between them, which is the concatenation half. The registry doctor now performs both checks on any lane that accepts an image part.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "68"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 69 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 69 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|imstart|> against <|imend|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "69"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 70 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 70 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "One request, one assertion: If content is empty and reasoning is populated, your parser is wrong or missing. Separately, grep any thinking-on content for a bare </think>; if you find one with no opener, you have no reasoning parser at all. Before downloading a checkpoint from this family, list its files and look for a reasoningparser.py. It is the cheapest possible check and it changes your serve line.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "70"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 71 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 71 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "1. Grep the config for nextn, not mtp. 2. Read the engine's startup log for the resolved draft architecture and for the maxnumscheduledtokens line. 3. Scrape the engine's speculative-decoding counters after a real workload, not after a warm-up. Acceptance is content-dependent, so a synthetic prompt gives you a number that does not transfer. 4. Record the KV cache size in both arms. It is printed at startup and it is the number nobody quotes.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "71"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 72 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 72 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "One request with a media reference to a path that does not exist. If the status is 5xx, you have it. The registry doctor now runs this on any lane that accepts an image part.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "72"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 73 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 73 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send one request with no media and one with your typical media, same text, and look at prompttokensdetails. If it is null on both, you are differencing from now on. The registry doctor now reports this on any lane that accepts an image part.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "73"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 74 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 74 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "This is cheap and everyone with an audio lane should run it. Generate three files with a few lines of code: two seconds of digital silence, a few distinct pure tones, and band-limited noise. Ask the lane to describe and to transcribe each. Any confident, specific answer to the silence file is a failure. The correct behaviours are a refusal, a hedge, or an empty result. Add a real speech clip with a known transcript as the fourth file, and you have a complete audio smoke test that distinguishes \"cannot transcribe\" from \"will not admit it\".",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "74"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 75 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 75 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two lines, and they cost nothing: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "75"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 76 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 76 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Do not read the rejection. Read what came after it, and read what the model actually did: 1. Find the line that reports the selected compute library, and check which libdirs it names. If it names a later runner than the one that was skipped, the skip was a fallback step and not a failure. 2. Confirm layer offload from the load line. Full offload plus resident VRAM is the outcome; a rejection line is a step.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "76"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 77 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 77 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two requests, and the assertion is on the response rather than the status code: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "77"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 78 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 78 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send the same tool-inviting prompt twice, once with toolchoice: \"none\", and look at what came back rather than at the status: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "78"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 79 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 79 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Read the model's declared context before you set one, then assert you are under it: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "79"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 80 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 80 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Detection first, because it is one request: python",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "80"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 81 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 81 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Do not gate lane bring-up on container state, and do not gate it on a sleep. Gate it on measured free memory: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "81"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 82 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "Measured on one Mistral-family Q80 GGUF of unstated provenance, served on llama.cpp. The behaviour is a property of the embedded template, so expect it wherever this template shape travels, and expect it NOT to hold for templates that emit the system block once at the head. We make no claim about Mistral checkpoints generally, about any named model, or about any product.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 82 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "The template does not emit the system message where it was supplied. It hoists the system text and re-attaches it to whichever user message is currently last: So the system block physically migrates forward one turn at a time. Measured, with SYS standing in for the system content: | messages sent | rendered prompt | |---|---| | system, user(U1) | [INST] SYS\\n\\nU1[/INST] | | system, user(U1), assistant(A1), user(U2) | [INST] U1[/INST] A1</s>[INST] SYS\\n\\nU2[/INST] | Turn 1 puts SYS at byte 7. Turn 2 puts SYS after A1, and the turn-1 prefix [INST] SYS\\n\\nU1[/INST] no longer occurs anywhere in the turn-2 prompt. The two prompts share no common prefix beyond [INST] , so the longest-common-prefix cache has nothing to reuse. This is not a caching bug. The cache is working exactly as specified; the template has arranged for there to be no shared prefix.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "82"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 83 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "One Mistral-family Q80 GGUF of unstated provenance. A template is free to do this and some do; the class is \"read the template's else branch before calling any arm a control\".",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 83 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "The template's else branch does not set the system message to empty; it assigns a literal block of prose: Because systemmessage is assigned in both branches, the later guard {%- if loop.last and systemmessage is defined %} is always true, so the injected text is always emitted. Measured on this file: omitting the system message renders 388 characters of template-supplied prose ahead of the user content, and the reply demonstrably follows it. We do not reproduce the injected text here. Its content is a property of one unlabelled checkpoint and is not the finding; the finding is that a template can inject a non-empty default at all, silently, with a 200.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "83"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 84 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "One Mistral-family Q80 GGUF of unstated provenance on llama.cpp. The alternation-plus-exemption shape is the portable part; check your own template for it.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 84 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send the four-message sequence in row four to /apply-template. If it 400s, your agent loop needs the intervening assistant turn.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "84"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 85 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617 serving one Mistral-family Q80 GGUF of unstated provenance. The typed-by-name behaviour is a server property, so it should travel across models on this build; the \"no effect\" half is a property of this template.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 85 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send the string form and the bool form of enablethinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "85"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 86 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "One Mistral-family Q80 GGUF of unstated provenance on llama.cpp b9878. The mechanism is a server-side prefill path, so it should travel across templates on this build; the exact delimiters are a property of this template.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 86 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send the same assistant text in last position and in second-to-last position to /apply-template and diff the two strings around it. If the delimiters differ, your prefill is not the conversation your multi-turn arm produces, and the two will not share a cache prefix.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "86"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 87 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617. Server property, not a model property; the served target only supplied the context numbers.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 87 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Launch with a total context and a parallel count, then read the reported context from /props and confirm it is the total divided by the parallel count.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "87"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 88 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "It says the flag is honoured on this build. It does not refute the prior findings on their stacks; isolation is a per-implementation property and the sensible reading is that the claim needs a build qualifier rather than being true or false in general. Anyone carrying the \"cacheprompt does not isolate\" warning forward should name the stack it was measured on.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 88 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Warm a long prefix, send the same prefix with cacheprompt: false, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "88"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 89 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 89 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two assertions, both runnable before any number is published. 1. Prove the copies are actually separate copies. Compare inode numbers between the edit destination and every copy you will compare against, on each node. A shared inode is the trap, present: Note the negative case explicitly: no output from the find is a pass only if the find actually ran over a populated directory. An empty or wrong path also prints nothing. Assert a non-zero shard count first, or this check is a vacuous PASS in the sense of CONTRIBUTING's shape 2. 2. Fingerprint the reference before you publish against it. Hash a fixed set of layer tensors in the stock copy at the start of a campaign and again at the end. Keys' recommendation is to fingerprint L0, L9, L10, L20, L42 and the MTP heads - chosen to straddle the edit window (an edit to layers 10-42 is invisible at L0/L9 and visible at L10/L20/L42, so the pair tells you both that the fingerprint works and whether stock moved). The two assert lines are the point. A fingerprint over an empty tensor set is a stable hash of nothing, and it will match itself run after run while telling you nothing at all. The dtype detail is not cosmetic. The obvious way to write the hash update is .cpu().numpy().tobytes(), and it works on fp32 and fails on bfloat16 and float8e4m3fn with TypeError: Got unsupported ScalarType. Those are the dtypes an FP8 or quantized checkpoint is actually stored in, so the naive version crashes on precisely the models worth fingerprinting and passes on the toy tensor you test it with. .contiguous().view(torch.uint8) hashes the raw storage and works for every dtype. Verified on torch 2.12.1: fp32 .numpy() OK, bf16 and fp8 .numpy() raise TypeError, .view(torch.uint8) succeeds for all three.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "89"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 90 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 90 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Ask the library what it has compiled for your architecture,",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "90"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 91 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm120 and does not hold on sm86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cacheprompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 91 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cacheprompt: false, then hash the completions: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "91"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 92 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617, one Mistral-family Q80 GGUF of unstated provenance. The retention behaviour is a server property, not a model property. The specific figures are from this build and this file; the methodological point, that a reuse A/B needs process-level isolation and that skipping it can reverse the sign of the answer, is not build-specific and is the reason this is written up. We make no claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 54 is the general run-order and warm-cache class this belongs to. Trap 60 is the same divergence observed on a different stack, as a verdict flip rather than a byte difference. Trap 93 is the study whose result this inverted, re-measured with a restart per arm. Found. 2026-07-28, second coverage pass on this file, as a self-caught error.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 92 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "1. Run any prefix-reuse A/B twice against one long-lived server, in opposite arm orders. If the arms disagree between the two runs, the cache is carrying state. 2. Confirm the isolation is real by asserting cachedtokens == 0 on the first request after each restart. If it is not zero, the arm is contaminated and the number should not be reported.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "92"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 93 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617 serving one Mistral-family Q80 GGUF of unstated provenance. The relocation is a property of the embedded template, so expect this inversion wherever that template shape travels, and expect the original advice to be correct on templates that emit the system block at the head. The measured figures are this build and this file. We make no claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 82 establishes the relocation this entry measures the cost of. Trap 25 is the other way a template can silently cost you a prefix. Trap 92 is why every arm above was run against a fresh process. Found. 2026-07-28, second coverage pass on this file.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 93 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cachedtokens per turn, with a server restart between the arms.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "93"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 94 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "Two consumer GPUs, one host, one build (b9878-2da668617, arch 86;120), one Mistral-family Q80 GGUF of unstated provenance, --jinja. Counts and the 444-token boundary are measured here and should be re-measured, not assumed, on other builds, other cards, and other files. No capability claims, no benchmark of either card's quality, no claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 35 is the harness-level consequence: identical weights not scoring identically. Trap 91 is the effect this splits by architecture. Found. 2026-07-28, first hardware-axis pass in this registry.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 94 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Serve the same file twice from one host, one process pinned per GPU with CUDAVISIBLEDEVICES, same flags. Run the hash sweep from trap 91 against both ports at a prompt length above the floor, at concurrency 2, with cacheprompt: false. Compare the distinct-hash counts per port, not the answers.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "94"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 95 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "Two consumer GPUs of different architectures in one host, two independent llama.cpp processes, one build, one Mistral-family Q80 GGUF of unstated provenance, both lanes with ample free VRAM. This does not test the case people usually mean by eviction: two models on the same GPU competing for one memory pool, or either lane running close to full. Both were deliberately given headroom. A null here is not a null for those configurations. No claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 81 is the sequential case, where a stopped lane has not yet released its device memory, and is the one that does bite. Found. 2026-07-28, first co-tenancy pass in this registry.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 95 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Serve the same model twice, one process pinned per GPU with CUDAVISIBLEDEVICES, confirm both have memory headroom, then run any throughput or determinism probe twice, once with one lane idle and once with both driven in parallel, and compare. Verify readiness with a completed generation on each lane, not with an endpoint answering.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "95"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 96 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617 under WSL2, two consumer GPUs. The mechanism is a platform memory-reporting property and we would expect it wherever the CUDA free query returns host availability; we have not checked native Linux, and it may well be correct there. This is not a property of any model, and no model was loaded for the probe. No capability claims. Related. Trap 13 is the allocation-side version of the same confusion between host and device pools. Found. 2026-07-28, incidentally, while capturing device banners for a cross-architecture comparison.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 96 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "The output contradicts itself, so no external reference is needed: That is a strict inequality violation on this platform, which makes it a clean fail rather than a judgement call. Anything reading free VRAM for capacity decisions should take it from the driver (nvidia-smi --query-gpu=memory.free), not from the serving binary, and should assert the above before trusting either.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "96"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 97 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "llama.cpp b9878-2da668617, one Mistral-family Q80 GGUF of unstated provenance, one consumer GPU, -c 8192 -np 1. The absent logging and the absent /props fields are server-build properties, not model properties; the multipliers are specific to this file, this context size, and this hardware, and are quoted to show the order of magnitude rather than as a portable constant. Other builds may well print the offload report, so the check to run is the grep above, not an assumption either way. No capability claims, no comparison of models. Related. Trap 87 is the other half of what /props will and will not tell you on this build. Trap 52 is the mirror case, where the configuration was fast because it was wrong rather than slow because it was misconfigured. Found. 2026-07-28, second coverage pass on this file.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 97 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": ", 2026-07-28, llama.cpp b9878-2da668617 serving a Mistral-family Q80 GGUF of unstated provenance, -c 8192 -np 1 -fa on --jinja, on one consumer GPU with ample free VRAM at every setting. Evidence pointer. Three lanes differing only in -ngl, plus a grep of each lane's own log. Symptom. A lane is slow. Nothing in the server's output says why. The model gets blamed, or the quantisation, or the card. Measured Median server-reported throughput, n=4 requests each, cacheprompt: false: | -ngl | decode tok/s | prefill tok/s | decode vs full | GPU memory used | |---|---|---|---|---| | 999 (full) | 83.34 | 2447.5 | 1.00x | 20364 MiB | | 16 | 3.81 | 180.1 | 0.046x (21.9x slower) | 16102 MiB | | 8 | 2.71 | 127.6 | 0.033x (30.8x slower) | 14078 MiB | A 22 to 31-fold decode regression, from one flag, with no failure and no warning. The part that makes it a trap No introspection surface on this build names the offload split. - The server log does not. Grepping each lane's own log for offload|layer|CPU|CUDA|buffer|ggml returned zero matching lines, at the default verbosity, which reports itself as 3. A direct foreground run with stderr captured also returned zero. The entire ggml-level load report that upstream llama.cpp has historically printed, meaning layers offloaded, per-device buffer sizes and the device table, is absent from this build's output. The device banner does appear from --version, so the information exists in the binary; it is not reaching the server's log stream. - /props does not. Checked for ngpulayers, gpulayers, ngl, device, offload, nlayer, split: none present. The full top-level key set is bostoken, buildinfo, chattemplate, chattemplatecaps, corsproxy",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "97"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 99 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 99 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Run this on the target GPU — it takes seconds and will tell you whether SDPA works for causal attention:",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "99"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 100 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 100 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "bash uname -r",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "100"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 101 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 101 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "bash python3 -c \"import transformers; print(transformers.version)\"",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "101"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 102 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 102 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Profile before optimizing: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "102"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 103 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 103 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "python try: import torchvision print(\"torchvision:\", torchvision.version) except ImportError as e: print(f\"torchvision unavailable: {e}\") If you are on ROCm with TheRock wheels, this is expected. Your model's AutoProcessor call will fail unless you patch it.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "103"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 104 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 104 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "After hardening a serve, verify that every path that can start it carries the same config: bash",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "104"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 105 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 105 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Compute both estimators on your own lane and report the gap. Two counters plus your own request log; no model knowledge required. Token-weighted. Subtract two snapshots. Do not divide one. vllm:specdecode are cumulative process-lifetime counters. A single scrape divided in place gives you the ratio since the server started, not the ratio over your window, and it silently includes every request anyone else sent. That is the same unscoped error this entry is about, so the check must not commit it: bash snap() { curl -s localhost:8000/metrics | awk ' /^vllm:specdecodenumacceptedtokenstotal/ {a=$2} /^vllm:specdecodenumdrafttokenstotal/ {d=$2} END {print a, d}'; } read A0 D0 < <(snap) before your workload",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "105"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 106 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 106 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Do not alert on occupancy. Decide with two counters plus the shape of the curve: Sample it on a fixed request-count interval, not a time interval, and read it as: | occupancy | preemptions rising | verdict | |---|---|---| | climbing | no | cache filling. Normal. Wait for the plateau. | | plateaued | no | steady state. This is health, at any percentage. | | any | yes | real pressure. Act on this, not on the percentage. | | climbing | no, but never plateaus and requests slow | investigate; you may genuinely be leaking |",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "106"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 107 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "Single serve, no baseline arm, one node, one process, one day. Nothing here is comparative and nothing establishes run-to-run variance. It does not say that serving stacks do not leak, and it is not evidence that this checkpoint has no leak on a longer horizon than 13 hours: the entry's own argument forbids that reading. What is established is that a monotone series over hours resolved to a transient over half a day, on one real process, with the intermediate readings recorded as they were made.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 107 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Two assertions, both cheap, both runnable against your own soak without our data. 1. Never report a trend from a series that has not turned over. Before quoting a rate, assert that the series has at least one local maximum and one local minimum inside the window, or say explicitly that it has not: 2. Extrapolate only across a horizon you have actually observed a turnover in. A rate measured over 5 hours licenses a statement about 5 hours. The 30-day figure was the tell: it was the only claim in that report whose horizon exceeded its evidence by three orders of magnitude. A third, weaker check that would also have caught it: a monotone series with a flat neighbour is suspicious. Host available memory was flat to noise (4,347 to 4,425 MB) across the same window in which container memory was \"leaking\", and 0.32 GiB against a 121 GiB pool is not a quantity that could move the host figure. When one memory series drifts and the one it must be drawn from does not, the drift is more likely to be in the accounting than in the machine.",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "107"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 108 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "25 in-band samples on one prompt, one process, one node, one day. The set size of 2 is a property of this prompt on this lane and does not transfer: a different prompt has a different number of near-ties and may have one output or five. What transfers is the shape of the error, which is the pairwise comparison rule, and that is stack-independent. Related: trap 94 (temperature-0 reproducibility is architecture dependent) and trap 35 (the harness-level consequence). This entry is the monitoring-level consequence: the same nondeterminism, met by a detector rather than by a scorer.",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 108 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "request_or_command": "Score the canary on the series, never on the adjacent pair. python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]",
+      "risk": "low-to-moderate; review the entry before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "108"
+    }
+  ],
+  "schema_version": "1.0"
+}
