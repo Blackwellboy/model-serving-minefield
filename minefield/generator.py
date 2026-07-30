@@ -242,6 +242,7 @@ def build(root: Path = ROOT) -> dict[str, Any]:
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as archive:
         for path in sorted(zip_inputs, key=lambda item: item.relative_to(root).as_posix()):
             info = zipfile.ZipInfo(path.relative_to(root).as_posix(), (1980, 1, 1, 0, 0, 0))
+            info.create_system = 3
             info.compress_type = zipfile.ZIP_STORED
             info.external_attr = 0o100644 << 16
             archive.writestr(info, _portable_bytes(path))
