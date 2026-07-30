@@ -16,6 +16,7 @@ import os
 import platform
 import re
 import socket
+import subprocess
 import sys
 import urllib.request
 from pathlib import Path
@@ -247,6 +248,37 @@ def remote_module_records() -> list[dict[str, Any]]:
     return records
 
 
+def verify_git_checkout(root: Path, expected_revision: str) -> None:
+    """Require the supplied source tree to be the clean immutable revision."""
+    try:
+        revision = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+        status = subprocess.run(
+            [
+                "git", "-C", str(root), "status", "--porcelain",
+                "--untracked-files=no",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ValueError("vLLM root must be a readable Git checkout") from exc
+    if revision != expected_revision:
+        raise ValueError(
+            f"vLLM checkout revision mismatch: expected {expected_revision}, "
+            f"got {revision}"
+        )
+    if status:
+        raise ValueError("vLLM checkout has tracked local modifications")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
@@ -257,6 +289,10 @@ def main() -> int:
     args = parser.parse_args()
     output = Path(args.output).resolve()
     vllm_root = Path(args.vllm_root).resolve(strict=True)
+    try:
+        verify_git_checkout(vllm_root, VLLM_REVISION)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.execute_kimi_k3:
         if args.danger_acknowledgement != DANGER_ACK:
             parser.error(f"--danger-acknowledgement must equal {DANGER_ACK}")

@@ -79,10 +79,8 @@ def _record_text(record: dict[str, Any], name: str) -> tuple[str | None, list[st
             or any(not isinstance(item, str) for item in token_strings)
         ):
             raise EvidenceError(f"{name}.token_strings must be an array of strings")
-        value = _bounded_text(
-            "".join(token_strings), f"{name}.token_strings joined"
-        )
-        candidates.append(("token_strings", value or ""))
+        for index, item in enumerate(token_strings):
+            _bounded_text(item, f"{name}.token_strings[{index}]")
     response = record.get("endpoint_response")
     if response is not None:
         if not isinstance(response, dict):

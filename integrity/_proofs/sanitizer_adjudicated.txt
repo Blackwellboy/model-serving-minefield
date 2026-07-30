@@ -4,8 +4,8 @@
 # hit remains printed by both scanners; no pattern or leak check is weakened.
 # Generated from and human-reviewed against PR16 finalization tip a7eba47.
 
-integrity/check_evidence_json_secrets.py:13: reviewed literal credential-prefix detector in the public evidence scanner; it is not a credential.
-integrity/check_evidence_json_secrets.py:17: reviewed literal private-key-header detector in the public evidence scanner; it is not a key.
+integrity/check_evidence_json_secrets.py:14: reviewed literal credential-prefix detector in the public evidence scanner; it is not a credential.
+integrity/check_evidence_json_secrets.py:18: reviewed literal private-key-header detector in the public evidence scanner; it is not a key.
 tests/test_evidence_secret_scan.py:12: reviewed synthetic concatenated credential canary proving the evidence scanner fires; it is not a credential.
 tests/test_evidence_secret_scan.py:18: reviewed synthetic private-key-header canary proving the evidence scanner fires; it is not a key.
 
@@ -97,6 +97,18 @@ dist/model-serving-minefield-agent-pack.zip:19828: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:19831: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:19840: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:19841: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31743: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31774: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34996: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34997: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34998: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35012: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35124: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35561: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35562: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36943: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36944: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36971: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:19854: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:19856: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:19867: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.

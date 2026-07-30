@@ -157,6 +157,7 @@
           "items": {"type": "integer", "minimum": 0}
         },
         "decoded_from_token_ids": {"type": "string"},
+        "decoded_from_token_strings": {"type": "string"},
         "endpoint_response": {"type": "object"},
         "rejected": {"type": "boolean"},
         "rejection_stage": {
@@ -168,7 +169,7 @@
       "anyOf": [
         {"required": ["rendered_text"]},
         {"required": ["decoded_text"]},
-        {"required": ["token_strings"]},
+        {"required": ["token_strings", "decoded_from_token_strings"]},
         {"required": ["token_ids", "decoded_from_token_ids"]},
         {"required": ["endpoint_response"]},
         {"required": ["rejected"]}

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -18,16 +19,56 @@ PATTERNS = (
     re.compile(r"(?i)\b(?:authorization\s*:\s*bearer|api[_-]?key\s*[=:]|password\s*[=:])"),
 )
 
+SENSITIVE_KEYS = re.compile(
+    r"(?i)^(?:password|passwd|pwd|secret|client_secret|api[_-]?key|"
+    r"access[_-]?token|auth[_-]?token|authorization|credential|"
+    r"private[_-]?key)$"
+)
+HIGH_ENTROPY = re.compile(r"^[A-Za-z0-9_+/=-]{20,}$")
+PUBLIC_DIGEST = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$", re.I)
+SAFE_HIGH_ENTROPY_KEYS = {
+    "revision",
+    "sha256",
+    "content_sha256",
+    "base_main",
+    "vllm_revision",
+    "kimi_k3_support_revision",
+}
 
-def findings(value: Any, path: str = "$") -> list[str]:
+
+def _entropy(value: str) -> float:
+    counts = {character: value.count(character) for character in set(value)}
+    length = len(value)
+    return -sum(
+        (count / length) * math.log2(count / length)
+        for count in counts.values()
+    )
+
+
+def _string_is_suspicious(value: str, key: str | None) -> bool:
+    if any(pattern.search(value) for pattern in PATTERNS):
+        return True
+    if key is not None and SENSITIVE_KEYS.fullmatch(key) and value.strip():
+        return True
+    if (
+        HIGH_ENTROPY.fullmatch(value)
+        and not PUBLIC_DIGEST.fullmatch(value)
+        and key not in SAFE_HIGH_ENTROPY_KEYS
+        and _entropy(value) >= 4.0
+    ):
+        return True
+    return False
+
+
+def findings(value: Any, path: str = "$", key: str | None = None) -> list[str]:
     result: list[str] = []
     if isinstance(value, dict):
-        for key, child in value.items():
-            result.extend(findings(child, f"{path}.{key}"))
+        for child_key, child in value.items():
+            result.extend(findings(child, f"{path}.{child_key}", child_key))
     elif isinstance(value, list):
         for index, child in enumerate(value):
-            result.extend(findings(child, f"{path}[{index}]"))
-    elif isinstance(value, str) and any(pattern.search(value) for pattern in PATTERNS):
+            result.extend(findings(child, f"{path}[{index}]", key))
+    elif isinstance(value, str) and _string_is_suspicious(value, key):
         result.append(path)
     return result
 

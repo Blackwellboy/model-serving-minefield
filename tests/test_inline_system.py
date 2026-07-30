@@ -134,13 +134,25 @@ class InlineSystemClassifierTests(unittest.TestCase):
         result = classify_manifest(manifest)
         self.assertEqual("INCONCLUSIVE", result["classification"])
 
-    def test_rendered_token_strings_are_supported(self):
+    def test_raw_token_strings_are_supplemental_only(self):
+        manifest = fixture("<u>Q</u><s>LATESYS</s><u>Q2</u><a>")
+        manifest["primary"]["token_strings"] = [
+            "▁<u>", "Q", "</u>", "Ġ<s>", "LATESYS", "</s>",
+            "▁<u>", "Q2", "</u>", "<a>",
+        ]
+        result = classify_manifest(manifest)
+        self.assertEqual("ROLE_MARKED", result["classification"])
+
+    def test_decoded_token_strings_can_be_authoritative(self):
         manifest = fixture("<u>Q</u><s>LATESYS</s><u>Q2</u><a>")
         manifest["primary"].pop("rendered_text")
         manifest["primary"]["token_strings"] = [
-            "<u>", "Q", "</u>", "<s>", "LATESYS", "</s>",
-            "<u>", "Q2", "</u>", "<a>",
+            "▁<u>", "Q", "</u>", "Ġ<s>", "LATESYS", "</s>",
+            "▁<u>", "Q2", "</u>", "<a>",
         ]
+        manifest["primary"]["decoded_from_token_strings"] = (
+            "<u>Q</u><s>LATESYS</s><u>Q2</u><a>"
+        )
         result = classify_manifest(manifest)
         self.assertEqual("ROLE_MARKED", result["classification"])
 

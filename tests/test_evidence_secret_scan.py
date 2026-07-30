@@ -20,6 +20,27 @@ class EvidenceSecretScanTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertTrue(findings({"nested": [{"value": value}]}))
 
+    def test_sensitive_key_context_fails(self):
+        for key in ("password", "client_secret", "api_key", "access_token"):
+            with self.subTest(key=key):
+                self.assertTrue(findings({key: "actual-secret"}))
+
+    def test_unlisted_high_entropy_token_fails(self):
+        self.assertTrue(
+            findings({"opaque": "Z9qX7vN3mK8pR2tY" + "6wL4cB1hF5sJ0dG"})
+        )
+
+    def test_token_evidence_and_public_digests_pass(self):
+        self.assertEqual(
+            [],
+            findings({
+                "token_strings": ["▁hello", "Ġworld"],
+                "token_ids": [1, 2],
+                "sha256": "a" * 64,
+                "revision": "b" * 40,
+            }),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
