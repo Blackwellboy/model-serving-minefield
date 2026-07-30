@@ -12,6 +12,12 @@ hermes --skills model-serving-minefield
 build. The URL becomes usable after this branch is merged to `main`; while
 reviewing the PR, substitute the pushed branch name in the raw URL.
 
+Hermes direct-URL installation deliberately copies only `SKILL.md`. The
+installed router therefore falls back to the public lite agent bundle and the
+packaged `minefield` CLI. Clone or download the repository when you also want
+the sibling `references/` and `scripts/` helpers; their absence from a
+direct-URL profile is expected, not a partial installation.
+
 Update and removal:
 
 ```bash
