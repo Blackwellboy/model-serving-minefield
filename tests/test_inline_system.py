@@ -18,6 +18,7 @@ def fixture(
 ) -> dict:
     return {
         "schema_version": "1.0",
+        "model": {"name": "fixture/model", "revision": "0" * 40},
         "evidence_surface": "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
         "target_texts": ["LATESYS"],
         "leading_system_text": "S",
@@ -61,7 +62,7 @@ class InlineSystemClassifierTests(unittest.TestCase):
 
     def test_welded_to_user(self):
         result = classify_manifest(
-            fixture("<u>Q LATESYS</u><u>Q2</u><a>")
+            fixture("<u>QLATESYS</u><u>Q2</u><a>")
         )
         self.assertEqual("WELDED_TO_USER", result["classification"])
         self.assertTrue(result["inside_user_span"])
@@ -70,6 +71,8 @@ class InlineSystemClassifierTests(unittest.TestCase):
         manifest = fixture("")
         manifest["evidence_surface"] = "ENDPOINT_RENDER_REPRODUCED"
         manifest["primary"] = {
+            "rejected": True,
+            "rejection_stage": "request_validation",
             "endpoint_response": {"status": 400, "error": "unsupported role"},
             "messages": [],
         }
@@ -124,7 +127,7 @@ class InlineSystemClassifierTests(unittest.TestCase):
         self.assertEqual("ROLE_MARKED", result["classification"])
 
     def test_token_and_decoded_disagreement_is_inconclusive(self):
-        manifest = fixture("<u>Q LATESYS</u><u>Q2</u><a>")
+        manifest = fixture("<u>QLATESYS</u><u>Q2</u><a>")
         manifest["primary"]["decoded_from_token_ids"] = (
             "<u>Q</u><s>LATESYS</s><u>Q2</u><a>"
         )
@@ -156,7 +159,7 @@ class InlineSystemClassifierTests(unittest.TestCase):
                 self.assertEqual("INCONCLUSIVE", result["classification"])
 
     def test_output_is_deterministic(self):
-        manifest = fixture("<u>Q LATESYS</u><u>Q2</u><a>")
+        manifest = fixture("<u>QLATESYS</u><u>Q2</u><a>")
         self.assertEqual(classify_manifest(manifest), classify_manifest(manifest))
 
     def test_malformed_and_oversized_manifests_are_rejected(self):
@@ -185,7 +188,7 @@ class InlineSystemClassifierTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             manifest_path = Path(folder) / "manifest.json"
             manifest_path.write_text(
-                json.dumps(fixture("<u>Q LATESYS</u><u>Q2</u><a>")),
+                json.dumps(fixture("<u>QLATESYS</u><u>Q2</u><a>")),
                 encoding="utf-8",
             )
             output = io.StringIO()
@@ -196,6 +199,19 @@ class InlineSystemClassifierTests(unittest.TestCase):
             self.assertEqual(
                 "WELDED_TO_USER", json.loads(output.getvalue())["classification"]
             )
+
+    def test_cli_malformed_evidence_uses_exit_two_without_traceback(self):
+        with tempfile.TemporaryDirectory() as folder:
+            manifest_path = Path(folder) / "manifest.json"
+            manifest_path.write_text("[]", encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertEqual(2, cli_main([
+                    "classify-inline-system", "--manifest", str(manifest_path)
+                ]))
+            parsed = json.loads(stderr.getvalue())
+            self.assertEqual("INCONCLUSIVE", parsed["classification"])
+            self.assertNotIn("Traceback", stderr.getvalue())
 
     def test_documented_schema_and_example_are_valid_json(self):
         schema = json.loads(
@@ -214,6 +230,45 @@ class InlineSystemClassifierTests(unittest.TestCase):
             example["classification"],
             classify_manifest(example)["classification"],
         )
+
+    def test_malformed_marker_spans_are_never_definitive(self):
+        manifest = fixture("<u>Q</u><s>LATESYS<u>Q2</u><a>")
+        self.assertEqual("AMBIGUOUS", classify_manifest(manifest)["classification"])
+
+        manifest = fixture("<u>Q</u><s>LATESYS<s><u>Q2</u><a>")
+        manifest["markers"][0]["close"] = "<s>"
+        with self.assertRaises(EvidenceError):
+            classify_manifest(manifest)
+
+    def test_trusted_marker_override_is_not_accepted(self):
+        manifest = fixture("<u>Q <s> LATESYS</u><u>Q2</u><a>")
+        manifest["primary"]["messages"][0]["content"] = "Q <s>"
+        manifest["trusted_structural_markers"] = ["<s>"]
+        self.assertEqual("AMBIGUOUS", classify_manifest(manifest)["classification"])
+
+    def test_definitive_labels_require_successful_controls(self):
+        manifest = fixture("<u>QLATESYS</u><u>Q2</u><a>")
+        manifest["controls"] = {}
+        self.assertEqual("INCONCLUSIVE", classify_manifest(manifest)["classification"])
+
+        manifest = fixture("<u>Q</u><u>Q2</u><a>")
+        manifest["controls"]["no_system"]["status"] = 500
+        self.assertEqual("INCONCLUSIVE", classify_manifest(manifest)["classification"])
+
+    def test_capture_error_is_not_semantic_rejection(self):
+        manifest = fixture("<u>Q</u><s>LATESYS</s><u>Q2</u><a>")
+        manifest["primary"]["error"] = "nonfatal cache warning"
+        self.assertEqual("INCONCLUSIVE", classify_manifest(manifest)["classification"])
+
+    def test_target_must_equal_system_message_payload(self):
+        manifest = fixture("<u>Q LATESYSTEM</u><u>Q2</u><a>")
+        manifest["target_texts"] = ["SYS"]
+        self.assertEqual("AMBIGUOUS", classify_manifest(manifest)["classification"])
+
+    def test_direct_template_execution_is_a_render_surface(self):
+        manifest = fixture("<u>Q</u><s>LATESYS</s><u>Q2</u><a>")
+        manifest["evidence_surface"] = "TEMPLATE_EXECUTED_AT_PINNED_REVISION"
+        self.assertEqual("ROLE_MARKED", classify_manifest(manifest)["classification"])
 
 
 if __name__ == "__main__":

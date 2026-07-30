@@ -11,7 +11,7 @@ from typing import Any
 from .coverage import build_coverage
 from .doctor_adapter import run as run_doctor
 from .generator import build, verify
-from .inline_system import classify_manifest, inspect_template, load_manifest
+from .inline_system import EvidenceError, classify_manifest, inspect_template, load_manifest
 from .log_inspector import inspect_logs
 from .matching import diagnose
 from .registry import load_registry
@@ -132,10 +132,18 @@ def main(argv: list[str] | None = None) -> int:
         else:
             _emit(write_bundle(args.output, bundle_plan))
     elif args.command == "classify-inline-system":
-        value = classify_manifest(load_manifest(args.manifest))
-        if args.template_path:
-            value["template_source"] = inspect_template(args.template_path)
-        _emit(value)
+        try:
+            value = classify_manifest(load_manifest(args.manifest))
+            if args.template_path:
+                value["template_source"] = inspect_template(args.template_path)
+            _emit(value)
+        except (EvidenceError, OSError) as exc:
+            print(json.dumps({
+                "classification": "INCONCLUSIVE",
+                "error": type(exc).__name__,
+                "reason": str(exc),
+            }, sort_keys=True), file=sys.stderr)
+            return 2
     return 0
 
 

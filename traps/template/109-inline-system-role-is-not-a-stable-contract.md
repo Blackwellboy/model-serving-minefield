@@ -2,11 +2,15 @@
 
 **Found by @wqh17101 and Blackwellboy.**
 
-**Status: reproduced here** from immutable public template and tokenizer
-artifacts, with raw executed renders and a runnable classifier in
+**Status: reproduced here** at the rendered-constructor boundary from immutable
+public template and tokenizer artifacts, with raw executed renders and a
+runnable classifier in
 [`mining/2026-07-30-inline-system-evidence/`](../../mining/2026-07-30-inline-system-evidence/).
+The live serving-endpoint reproduction in this entry is DeepSeek only; the
+other rows do not claim endpoint acceptance.
 
-**Symptom.** A serving API accepts the same valid message sequence:
+**Symptom.** A constructor or serving API receives the same inline message
+sequence:
 
 ```text
 user "Q", system "LATESYS", user "Q2"
@@ -33,7 +37,8 @@ therefore part of the request semantics. Model output cannot distinguish these
 cases reliably because it is downstream of the render.
 
 **Stacks and builds bitten.** The 2026-07-30 public-artifact run executed exact
-Jinja revisions for GLM-5.1
+Jinja revisions through the generic Transformers template renderer (not
+checkpoint tokenizer classes or serving endpoints) for GLM-5.1
 `26e1bd6e011feb778d25ae34b09b07074139d92d`, GLM-5.2
 `b4734de4facf877f85769a911abafc5283eab3d9`, Kimi-K2.6
 `7eb5002f6aadc958aed6a9177b7ed26bb94011bb`, MiniMax-M2.5
@@ -70,9 +75,12 @@ boundaries must remain `AMBIGUOUS` or `INCONCLUSIVE`.
 **The fix.** Pin and record the template or encoder hash with the model
 revision. Reject inline system messages at the application boundary unless
 that exact constructor and entrypoint have passed the render probe. Where
-inline messages are not supported, merge policy text into the initial system
-message explicitly; never rely on silent template behavior. Treat `DROPPED`
-as instruction loss, not as a safe non-welding result.
+inline messages are not supported, reject them or deliberately transform them
+without lowering a developer/root instruction into a weaker tier. If the
+runtime has only one system tier, merge only policy that already belongs to
+that tier into its initial message and record the transformation; never rely
+on silent template behavior. Treat `DROPPED` as instruction loss, not as a
+safe non-welding result.
 
 **Found.** 2026-07-30, while turning the source analysis in vLLM issue #46710
 into pinned executable evidence and a bounded classifier.

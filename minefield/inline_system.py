@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,7 @@ CLASSIFICATIONS = (
 
 EVIDENCE_SURFACES = (
     "SOURCE_INSPECTED_AT_PINNED_REVISION",
+    "TEMPLATE_EXECUTED_AT_PINNED_REVISION",
     "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
     "ENDPOINT_RENDER_REPRODUCED",
     "MODEL_OUTPUT_REPRODUCED",
@@ -32,6 +34,7 @@ EVIDENCE_SURFACES = (
 )
 
 RENDER_SURFACES = {
+    "TEMPLATE_EXECUTED_AT_PINNED_REVISION",
     "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
     "ENDPOINT_RENDER_REPRODUCED",
 }
@@ -96,7 +99,15 @@ def _record_text(record: dict[str, Any], name: str) -> tuple[str | None, list[st
 
 
 def _is_rejected(record: dict[str, Any]) -> bool:
-    if record.get("rejected") is True:
+    """Return true only for an explicit semantic constructor rejection."""
+    return (
+        record.get("rejected") is True
+        and record.get("rejection_stage") in {"constructor", "request_validation"}
+    )
+
+
+def _has_capture_failure(record: dict[str, Any]) -> bool:
+    if record.get("capture_failed") is True:
         return True
     for source in (record, record.get("endpoint_response")):
         if not isinstance(source, dict):
@@ -106,7 +117,7 @@ def _is_rejected(record: dict[str, Any]) -> bool:
             return True
         if source.get("error") not in (None, "", False):
             return True
-    return False
+    return record.get("rejected") is True
 
 
 def _normalise_markers(value: Any) -> list[dict[str, str | None]]:
@@ -136,7 +147,18 @@ def _normalise_markers(value: Any) -> list[dict[str, str | None]]:
             raise EvidenceError("marker open must be a non-empty string")
         if closing is not None and (not isinstance(closing, str) or not closing):
             raise EvidenceError("marker close must be a non-empty string")
+        if closing == opening:
+            raise EvidenceError("marker open and close must differ")
         markers.append({"role": role, "open": opening, "close": closing})
+    openings = [str(marker["open"]) for marker in markers]
+    if len(set(openings)) != len(openings):
+        raise EvidenceError("marker open strings must be unique")
+    for index, opening in enumerate(openings):
+        if any(
+            opening.startswith(other) or other.startswith(opening)
+            for other in openings[index + 1 :]
+        ):
+            raise EvidenceError("marker open strings must not overlap by prefix")
     return markers
 
 
@@ -160,15 +182,22 @@ def _marker_events(text: str, markers: list[dict[str, str | None]]) -> list[dict
     return events
 
 
-def _spans(text: str, markers: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+def _spans(
+    text: str, markers: list[dict[str, str | None]]
+) -> tuple[list[dict[str, Any]], list[str]]:
     events = _marker_events(text, markers)
     spans = []
+    invalid = []
     for index, event in enumerate(events):
         next_start = events[index + 1]["marker_start"] if index + 1 < len(events) else len(text)
         end = next_start
         if event["close"]:
             close_at = text.find(str(event["close"]), event["content_start"])
-            if 0 <= close_at <= next_start:
+            if close_at < 0 and event["role"] in {"system", "user"}:
+                invalid.append(f"missing close for marker {event['open']}")
+            elif close_at > next_start and event["role"] in {"system", "user"}:
+                invalid.append(f"another role marker precedes close for {event['open']}")
+            else:
                 end = close_at
         spans.append({
             "role": event["role"],
@@ -176,7 +205,7 @@ def _spans(text: str, markers: list[dict[str, str | None]]) -> list[dict[str, An
             "end": end,
             "open": event["open"],
         })
-    return spans
+    return spans, sorted(set(invalid))
 
 
 def _roles_for(text: str, target: str, spans: list[dict[str, Any]]) -> list[str]:
@@ -251,6 +280,20 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     if len(encoded) > MAX_EVIDENCE_BYTES:
         raise EvidenceError("manifest exceeds the size limit")
     artifact_sha256 = hashlib.sha256(encoded).hexdigest()
+    if manifest.get("schema_version") != "1.0":
+        raise EvidenceError("schema_version must be 1.0")
+    model = manifest.get("model")
+    if (
+        not isinstance(model, dict)
+        or not isinstance(model.get("name"), str)
+        or not model["name"]
+        or not isinstance(model.get("revision"), str)
+        or re.fullmatch(r"[0-9a-f]{40}", model["revision"]) is None
+    ):
+        raise EvidenceError("model requires a name and a 40-hex immutable revision")
+    for required in ("evidence_surface", "target_texts", "primary", "controls"):
+        if required not in manifest:
+            raise EvidenceError(f"required manifest field is missing: {required}")
     surface = manifest.get("evidence_surface", "INCONCLUSIVE")
     if surface not in EVIDENCE_SURFACES:
         raise EvidenceError(f"unsupported evidence_surface: {surface}")
@@ -272,6 +315,11 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             "REJECTED", surface=surface, artifact_sha256=artifact_sha256,
             rejected=True, target_present=False,
             reasons=["the renderer or endpoint explicitly rejected the primary probe"],
+        )
+    if _has_capture_failure(primary):
+        return _result(
+            "INCONCLUSIVE", surface=surface, artifact_sha256=artifact_sha256,
+            reasons=["the primary evidence capture failed or contains ambiguous error metadata"],
         )
     text, disagreement = _record_text(primary, "primary")
     if disagreement:
@@ -298,6 +346,11 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             continue
         if not isinstance(record, dict):
             raise EvidenceError(f"{name} must be an object")
+        if _is_rejected(record) or _has_capture_failure(record):
+            return _result(
+                "INCONCLUSIVE", surface=surface, artifact_sha256=artifact_sha256,
+                reasons=[f"{name} was rejected or its evidence capture failed"],
+            )
         rendered, conflict = _record_text(record, name)
         if conflict:
             return _result(
@@ -308,10 +361,34 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             no_system_text = rendered
         else:
             leading_text = rendered
+    if no_system is None or leading_system is None:
+        return _result(
+            "INCONCLUSIVE", surface=surface, artifact_sha256=artifact_sha256,
+            reasons=["both no-system and leading-system controls are required"],
+        )
+    if no_system_text is None or leading_text is None:
+        return _result(
+            "INCONCLUSIVE", surface=surface, artifact_sha256=artifact_sha256,
+            reasons=["both controls require decoded rendered evidence"],
+        )
     targets = manifest.get("target_texts", ["LATESYS"])
     if (not isinstance(targets, list) or not targets or len(targets) > MAX_TARGETS
             or any(not isinstance(item, str) or not item for item in targets)):
         raise EvidenceError(f"target_texts must contain 1-{MAX_TARGETS} non-empty strings")
+    if len(set(targets)) != len(targets):
+        raise EvidenceError("target_texts must be unique")
+    if any(target != target.strip() for target in targets):
+        raise EvidenceError("target_texts must not have leading or trailing whitespace")
+    system_messages = {
+        message.get("content")
+        for message in primary.get("messages", [])
+        if isinstance(message, dict) and message.get("role") == "system"
+    }
+    if any(target not in system_messages for target in targets):
+        return _result(
+            "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+            reasons=["each target must exactly equal an inline system-message payload"],
+        )
     present = {target: target in text for target in targets}
     matches_control = no_system_text is not None and text == no_system_text
     if not any(present.values()):
@@ -350,6 +427,23 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     trusted = manifest.get("trusted_structural_markers", [])
     if not isinstance(trusted, list) or any(not isinstance(item, str) for item in trusted):
         raise EvidenceError("trusted_structural_markers must be an array of strings")
+    if trusted:
+        return _result(
+            "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+            target_present=True, matches_no_system_control=matches_control,
+            reasons=["caller-asserted trusted structural markers are not accepted"],
+        )
+    if any(
+        str(marker["open"]) in target
+        or (marker["close"] is not None and str(marker["close"]) in target)
+        for marker in markers
+        for target in targets
+    ):
+        return _result(
+            "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+            target_present=True, matches_no_system_control=matches_control,
+            reasons=["an inline-system target contains configured marker text"],
+        )
     contents = _message_contents(primary)
     tainted = sorted({
         str(marker["open"]) for marker in markers
@@ -365,7 +459,13 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
                 "is not token-verified as structural: " + ", ".join(tainted)
             ],
         )
-    spans = _spans(text, markers)
+    spans, invalid_spans = _spans(text, markers)
+    if invalid_spans:
+        return _result(
+            "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+            target_present=True, matches_no_system_control=matches_control,
+            reasons=["role-boundary structure is malformed: " + "; ".join(invalid_spans)],
+        )
     roles_by_target = {target: _roles_for(text, target, spans) for target in targets}
     role_sets = [set(roles) for roles in roles_by_target.values()]
     system_marker_found = any("system" in roles for roles in role_sets)
@@ -380,7 +480,15 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
                 roles_by_target=roles_by_target,
                 reasons=["system marker was not validated against the leading-system control"],
             )
-        leading_spans = _spans(leading_text, system_markers)
+        leading_spans, invalid_leading = _spans(leading_text, system_markers)
+        if invalid_leading:
+            return _result(
+                "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+                target_present=True, system_marker_found=True,
+                inside_user_span=inside_user, matches_no_system_control=matches_control,
+                roles_by_target=roles_by_target,
+                reasons=["leading-system marker structure is malformed"],
+            )
         leading_target = str(manifest.get("leading_system_text", "S"))
         if "system" not in _roles_for(leading_text, leading_target, leading_spans):
             return _result(
@@ -399,6 +507,20 @@ def classify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             reasons=["every inline-system target is inside a validated system-role span"],
         )
     if all(roles == {"user"} for roles in role_sets):
+        without_targets = text
+        for target in targets:
+            without_targets = without_targets.replace(target, "", 1)
+        if without_targets != no_system_text:
+            return _result(
+                "AMBIGUOUS", surface=surface, artifact_sha256=artifact_sha256,
+                target_present=True, system_marker_found=False,
+                inside_user_span=True, matches_no_system_control=matches_control,
+                roles_by_target=roles_by_target,
+                reasons=[
+                    "removing the inline-system targets does not reproduce the "
+                    "no-system control exactly"
+                ],
+            )
         return _result(
             "WELDED_TO_USER", surface=surface, artifact_sha256=artifact_sha256,
             target_present=True, system_marker_found=False,
@@ -435,11 +557,11 @@ def inspect_template(path: str | Path) -> dict[str, Any]:
     target = Path(path).resolve(strict=True)
     if not target.is_file() or target.is_symlink():
         raise EvidenceError("template path must be a regular non-symlink file")
-    data = target.read_bytes()
-    if len(data) > MAX_EVIDENCE_BYTES:
+    if target.stat().st_size > MAX_EVIDENCE_BYTES:
         raise EvidenceError("template exceeds the size limit")
+    data = target.read_bytes()
     return {
-        "path": str(target),
+        "name": target.name,
         "bytes": len(data),
         "sha256": hashlib.sha256(data).hexdigest(),
         "evidence_surface": "SOURCE_INSPECTED_AT_PINNED_REVISION",

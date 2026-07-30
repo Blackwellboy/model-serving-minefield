@@ -33,16 +33,20 @@ class InlineSystemMutationTests(unittest.TestCase):
             '"DROPPED", surface=surface',
         )
         result = mutant.classify_manifest(
-            fixture("<u>Q LATESYS</u><u>Q2</u><a>")
+            fixture("<u>QLATESYS</u><u>Q2</u><a>")
         )
         self.assertNotEqual("WELDED_TO_USER", result["classification"])
 
     def test_kills_untrusted_marker_promotion_mutant(self):
-        mutant = self._load_mutant("if tainted:", "if False and tainted:")
+        mutant = self._load_mutant("if trusted:", "if False and trusted:")
         manifest = fixture("<u>Q <s> LATESYS</u><u>Q2</u><a>")
         manifest["primary"]["messages"][0]["content"] = "Q <s>"
+        manifest["trusted_structural_markers"] = ["<s>"]
         result = mutant.classify_manifest(manifest)
-        self.assertNotEqual("AMBIGUOUS", result["classification"])
+        self.assertNotIn(
+            "caller-asserted trusted structural markers",
+            " ".join(result["reasons"]),
+        )
 
     def test_kills_marker_presence_without_span_position_mutant(self):
         mutant = self._load_mutant(
@@ -50,7 +54,7 @@ class InlineSystemMutationTests(unittest.TestCase):
             "if system_marker_found:",
         )
         manifest = fixture(
-            "<u>Q LATESYS</u><s>LATESYS</s><u>Q2</u><a>"
+            "<u>QLATESYS</u><s>LATESYS</s><u>Q2</u><a>"
         )
         result = mutant.classify_manifest(manifest)
         self.assertNotEqual("AMBIGUOUS", result["classification"])
@@ -63,7 +67,11 @@ class InlineSystemMutationTests(unittest.TestCase):
             "            rejected=True",
         )
         manifest = fixture("")
-        manifest["primary"] = {"status": 422, "messages": []}
+        manifest["primary"] = {
+            "rejected": True,
+            "rejection_stage": "constructor",
+            "messages": [],
+        }
         result = mutant.classify_manifest(manifest)
         self.assertNotEqual("REJECTED", result["classification"])
 
@@ -87,7 +95,7 @@ class InlineSystemMutationTests(unittest.TestCase):
             "        target_present=True, system_marker_found=system_marker_found,",
         )
         manifest = fixture(
-            "<u>Q LATESYS</u><s>LATESYS</s><u>Q2</u><a>"
+            "<u>QLATESYS</u><s>LATESYS</s><u>Q2</u><a>"
         )
         result = mutant.classify_manifest(manifest)
         self.assertNotEqual("AMBIGUOUS", result["classification"])

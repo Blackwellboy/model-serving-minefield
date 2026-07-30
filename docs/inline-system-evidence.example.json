@@ -24,7 +24,7 @@
       {"role": "system", "content": "LATESYS"},
       {"role": "user", "content": "Q2"}
     ],
-    "rendered_text": "<u>Q LATESYS</u><u>Q2</u><a>"
+    "rendered_text": "<u>QLATESYS</u><u>Q2</u><a>"
   },
   "controls": {
     "no_system": {

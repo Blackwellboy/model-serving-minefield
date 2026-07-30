@@ -14,8 +14,9 @@ import importlib.metadata
 import json
 import os
 import platform
+import re
+import socket
 import sys
-import traceback
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,8 @@ from transformers.utils.chat_template_utils import render_jinja_template
 
 VLLM_REVISION = "48a077e4cfaa5425ac5df67ce95f07a99c6d26d5"  # pragma: allowlist secret
 KIMI_SUPPORT_REVISION = "f5a7cce9b6a61f4d995629a7418c7ea822e34a64"  # pragma: allowlist secret
+MAX_SOURCE_BYTES = 16 * 1024 * 1024
+DANGER_ACK = "I_UNDERSTAND_THIS_EXECUTES_PINNED_REMOTE_CODE"
 
 MODELS = {
     "deepseek-ai/DeepSeek-V4-Flash": {
@@ -151,19 +154,32 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def fetch(model: str, revision: str, name: str) -> tuple[bytes, str]:
+def fetch(model: str, revision: str, name: str) -> tuple[bytes, str, str]:
     url = f"https://huggingface.co/{model}/resolve/{revision}/{name}"
     request = urllib.request.Request(url, headers={"User-Agent": "minefield-evidence/1"})
     with urllib.request.urlopen(request, timeout=120) as response:
-        return response.read(), url
+        final_url = response.geturl()
+        if not (
+            final_url.startswith("https://huggingface.co/")
+            or final_url.startswith("https://cdn-lfs.hf.co/")
+            or ".xethub.hf.co/" in final_url
+        ):
+            raise RuntimeError("download redirected to an unapproved host")
+        declared = response.headers.get("Content-Length")
+        if declared is not None and int(declared) > MAX_SOURCE_BYTES:
+            raise RuntimeError("source file exceeds the download limit")
+        data = response.read(MAX_SOURCE_BYTES + 1)
+        if len(data) > MAX_SOURCE_BYTES:
+            raise RuntimeError("source file exceeds the download limit")
+        return data, url, final_url
 
 
 def error_record(exc: BaseException) -> dict[str, Any]:
     return {
-        "status": "REJECTED",
+        "status": "CAPTURE_FAILED",
+        "capture_failed": True,
         "exception_class": type(exc).__name__,
-        "error": str(exc),
-        "traceback_tail": traceback.format_exc().splitlines()[-8:],
+        "error": "capture failed; details intentionally omitted from public evidence",
     }
 
 
@@ -236,9 +252,30 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--vllm-root", required=True)
     parser.add_argument("--execute-kimi-k3", action="store_true")
+    parser.add_argument("--dedicated-cache")
+    parser.add_argument("--danger-acknowledgement")
     args = parser.parse_args()
     output = Path(args.output).resolve()
     vllm_root = Path(args.vllm_root).resolve(strict=True)
+    if args.execute_kimi_k3:
+        if args.danger_acknowledgement != DANGER_ACK:
+            parser.error(f"--danger-acknowledgement must equal {DANGER_ACK}")
+        if not args.dedicated_cache:
+            parser.error("--dedicated-cache is required with --execute-kimi-k3")
+        cache = Path(args.dedicated_cache).resolve(strict=True)
+        if any(cache.iterdir()):
+            parser.error("--dedicated-cache must be empty")
+        if os.environ.get("CUDA_VISIBLE_DEVICES") != "":
+            parser.error("CUDA_VISIBLE_DEVICES must be explicitly empty")
+        inherited = sorted(name for name, value in os.environ.items() if value and (
+            name.upper() in {"HF_TOKEN", "HUGGING_FACE_HUB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"}
+            or re.search(r"(?:API[_-]?KEY|ACCESS[_-]?KEY|TOKEN|SECRET|PASSWORD)", name, re.I)
+        ))
+        if inherited:
+            parser.error("credential-bearing environment variables must be removed")
+        os.environ["HF_HOME"] = str(cache / "hf-home")
+        os.environ["HUGGINGFACE_HUB_CACHE"] = str(cache / "hub")
+        os.environ["TRANSFORMERS_CACHE"] = str(cache / "transformers")
 
     report: dict[str, Any] = {
         "schema_version": "1.0",
@@ -250,7 +287,7 @@ def main() -> int:
         "vllm_revision": VLLM_REVISION,
         "kimi_k3_support_revision": KIMI_SUPPORT_REVISION,
         "evidence_policy": {
-            "jinja": "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
+            "jinja": "TEMPLATE_EXECUTED_AT_PINNED_REVISION",
             "kimi_k3": "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
             "kimi_k3_vllm_endpoint": "UNDER_TEST",
         },
@@ -278,10 +315,11 @@ def main() -> int:
         files = {}
         bodies = {}
         for name in spec["files"]:
-            data, url = fetch(model, spec["revision"], name)
+            data, url, final_url = fetch(model, spec["revision"], name)
             bodies[name] = data
             files[name] = {
                 "url": url,
+                "final_url": final_url,
                 "bytes": len(data),
                 "sha256": sha256(data),
             }
@@ -298,7 +336,7 @@ def main() -> int:
                 name: render_jinja(template, messages)
                 for name, messages in PROBES.items()
             }
-            item["evidence_surface"] = "TOKENIZER_EXECUTED_AT_PINNED_REVISION"
+            item["evidence_surface"] = "TEMPLATE_EXECUTED_AT_PINNED_REVISION"
         report["models"][model] = item
 
     vllm_files = {}
@@ -312,6 +350,8 @@ def main() -> int:
         "vllm/entrypoints/openai/chat_completion/protocol.py",
     ):
         path = vllm_root / name
+        if path.stat().st_size > MAX_SOURCE_BYTES:
+            raise RuntimeError(f"vLLM source exceeds limit: {name}")
         data = path.read_bytes()
         entry = {"sha256": sha256(data), "bytes": len(data)}
         if name.endswith("deepseek_v4_encoding.py"):
@@ -325,10 +365,24 @@ def main() -> int:
     if args.execute_kimi_k3:
         model = "moonshotai/Kimi-K3"
         revision = MODELS[model]["revision"]
+        snapshot = Path(args.dedicated_cache) / "kimi-k3-snapshot"
+        snapshot.mkdir(parents=True, exist_ok=False)
+        for name in MODELS[model]["files"]:
+            data, _, _ = fetch(model, revision, name)
+            target = snapshot / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+        def network_disabled(*_args: Any, **_kwargs: Any) -> Any:
+            raise RuntimeError("network is disabled during remote-code execution")
+
+        socket.socket = network_disabled  # type: ignore[assignment]
         tokenizer = AutoTokenizer.from_pretrained(
-            model,
-            revision=revision,
+            snapshot,
             trust_remote_code=True,
+            local_files_only=True,
         )
         item = report["models"][model]
         item["tokenizer_class"] = (

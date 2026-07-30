@@ -4,6 +4,11 @@
 # hit remains printed by both scanners; no pattern or leak check is weakened.
 # Generated from and human-reviewed against PR16 finalization tip a7eba47.
 
+integrity/check_evidence_json_secrets.py:13: reviewed literal credential-prefix detector in the public evidence scanner; it is not a credential.
+integrity/check_evidence_json_secrets.py:17: reviewed literal private-key-header detector in the public evidence scanner; it is not a key.
+tests/test_evidence_secret_scan.py:12: reviewed synthetic concatenated credential canary proving the evidence scanner fires; it is not a credential.
+tests/test_evidence_secret_scan.py:18: reviewed synthetic private-key-header canary proving the evidence scanner fires; it is not a key.
+
 README.md:53: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:54: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:55: reviewed public integration reference required by this feature; no private deployment data is present.
@@ -501,3 +506,139 @@ dist/model-serving-minefield-agent-pack.zip:34860: reviewed public integration r
 dist/model-serving-minefield-agent-pack.zip:34861: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:34875: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:36832: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6802: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6820: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6821: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6838: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6871: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6874: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6884: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6943: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6955: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7010: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7011: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7077: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7160: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7172: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17540: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17558: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17559: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17609: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17612: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17622: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17681: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17693: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17748: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17749: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17815: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17898: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17910: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17708: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17726: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17727: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17777: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17780: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17790: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17849: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17861: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17916: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17917: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17983: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18066: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18078: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18512: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18715: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18718: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20005: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20006: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20007: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20018: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20021: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20030: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20031: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20044: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20046: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20057: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20069: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20070: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20147: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20585: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20588: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27398: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27416: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27417: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27434: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27470: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27480: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27539: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27606: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27607: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27673: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27756: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27768: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28199: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28536: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31735: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31766: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35118: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35555: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35556: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35559: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36937: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36938: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6802: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6820: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6821: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6838: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6871: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6874: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6884: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6943: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6955: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7010: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7011: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7077: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7160: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7172: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28211: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28360: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28365: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28366: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28367: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28370: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28379: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28380: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28381: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28403: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28405: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28408: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28503: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28655: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34990: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34991: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34992: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35006: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:36965: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28537: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31744: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31775: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35127: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35564: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35565: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35568: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36946: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36947: reviewed style-only punctuation in public source or regenerated artifact; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28212: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28361: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28363: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28382: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28404: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28406: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28409: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28504: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28656: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34999: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35000: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35001: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:35015: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:36975: reviewed public Hermes integration reference in regenerated immutable package; no private deployment data is present.

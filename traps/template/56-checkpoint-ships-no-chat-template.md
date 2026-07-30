@@ -224,7 +224,7 @@ The actual Kimi-K3 vLLM endpoint remains `UNDER_TEST`.
 |---|---|---|
 | DeepSeek inline system text is welded into the user span | `ENDPOINT_RENDER_REPRODUCED` | Original live lane and build above |
 | DeepSeek upstream and vLLM Python encoders share the unmarked system path | `SOURCE_INSPECTED_AT_PINNED_REVISION` | Exact revisions and hashes above |
-| Cross-model Jinja behavior | `TOKENIZER_EXECUTED_AT_PINNED_REVISION` | Local public-artifact execution, not a serving endpoint |
+| Cross-model Jinja behavior | `TEMPLATE_EXECUTED_AT_PINNED_REVISION` | Generic Transformers template execution, not a checkpoint tokenizer or serving endpoint |
 | Kimi-K3 upstream tokenizer load and render | `TOKENIZER_EXECUTED_AT_PINNED_REVISION` | Isolated tokenizer only; cross-representation result `INCONCLUSIVE` |
 | Kimi-K3 vLLM `/tokenize` behavior | `UNDER_TEST` | No endpoint reproduction in this pass |
 | OpenAI versus Anthropic entrypoint behavior | `INCONCLUSIVE` | Source paths inspected; no endpoint pair reproduced |

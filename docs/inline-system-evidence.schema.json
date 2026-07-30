@@ -16,6 +16,7 @@
     "evidence_surface": {
       "enum": [
         "SOURCE_INSPECTED_AT_PINNED_REVISION",
+        "TEMPLATE_EXECUTED_AT_PINNED_REVISION",
         "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
         "ENDPOINT_RENDER_REPRODUCED",
         "MODEL_OUTPUT_REPRODUCED",
@@ -158,6 +159,10 @@
         "decoded_from_token_ids": {"type": "string"},
         "endpoint_response": {"type": "object"},
         "rejected": {"type": "boolean"},
+        "rejection_stage": {
+          "enum": ["constructor", "request_validation"]
+        },
+        "capture_failed": {"type": "boolean"},
         "error": {}
       },
       "anyOf": [

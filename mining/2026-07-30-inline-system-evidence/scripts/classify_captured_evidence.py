@@ -82,7 +82,7 @@ def rendered(item: dict[str, Any], name: str) -> dict[str, Any]:
             result["decoded_from_token_ids"] = record["decoded_from_token_ids"]
         return result
     return {
-        "rejected": True,
+        "capture_failed": True,
         "error": record.get("error"),
     }
 
@@ -101,8 +101,7 @@ def classify(
     manifest = {
         "schema_version": "1.0",
         "evidence_surface": item["evidence_surface"],
-        "model": model,
-        "revision": item["revision"],
+        "model": {"name": model, "revision": item["revision"]},
         "target_texts": ["LATESYS"],
         "leading_system_text": "S",
         "markers": MARKERS.get(model, []),
@@ -120,11 +119,12 @@ def deepseek_runtime_record() -> dict[str, Any]:
     manifest = {
         "schema_version": "1.0",
         "evidence_surface": "ENDPOINT_RENDER_REPRODUCED",
-        "model": "DeepSeek-V4-Flash lane documented by Trap 56",
-        "revision_context": (
-            "Existing public Trap 56 live /tokenize finding. Pinned upstream "
-            "source corroboration is recorded separately."
-        ),
+        "model": {
+            "name": "deepseek-ai/DeepSeek-V4-Flash",
+            "revision": (
+                RAW["models"]["deepseek-ai/DeepSeek-V4-Flash"]["revision"]
+            ),
+        },
         "target_texts": ["LATESYS"],
         "leading_system_text": "S",
         "markers": [
