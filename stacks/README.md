@@ -13,7 +13,7 @@ added to the first column.
 
 | Stack | Page | Entries naming this stack | Upstream-reported |
 |---|---|---|---|
-| vLLM | [vllm.md](vllm.md) | 51 | 3 |
+| vLLM | [vllm.md](vllm.md) | 52 | 3 |
 | llama.cpp and GGUF | [llama-cpp.md](llama-cpp.md) | 34 | 0 |
 | Ollama | [ollama.md](ollama.md) | 9 | 5 |
 | mlx_lm | [mlx.md](mlx.md) | 9 | 1 |
