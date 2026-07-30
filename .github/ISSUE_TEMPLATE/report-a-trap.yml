@@ -60,7 +60,8 @@ body:
         - the **model name and revision**, including the exact repo or tag
         - the **quantization format** (NVFP4, Q4_K_M, MXFP4, EXL3 and so on)
         - the **serving stack and its version**, and the **image tag**
-        - the **serve flags and env vars** you launched with
+        - the **non-secret serve flags and env vars** you launched with; keep
+          names and safe values, but replace credentials and private paths
         - **port numbers on a route shape**, once the host is gone: `HOST:8000`
           tells us it was an OpenAI-compatible lane, and `HOST:PORT` does not
 
@@ -129,3 +130,11 @@ body:
       placeholder: "Qwen 3.6 35B-A3B, NVFP4, vLLM 0.25.1 in docker on a DGX Spark"
     validations:
       required: true
+  - type: textarea
+    id: diagnostic-evidence
+    attributes:
+      label: Optional diagnostic evidence
+      description: Paste a scrubbed support-bundle manifest, diagnosis JSON summary, doctor coverage/result, and confirm/refute outcome. Do not upload a full ZIP publicly unless you reviewed every file.
+      placeholder: "Manifest hash, likely trap IDs, doctor PROBLEM/OK/INCONCLUSIVE/UNKNOWN counts, and the paired-control result."
+    validations:
+      required: false

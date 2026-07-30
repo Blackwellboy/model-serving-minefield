@@ -41,11 +41,14 @@ def copy_tree(dst):
     # inside the fixture. Four tests went red against a green tree. The comment
     # above was already describing this exact failure, which is a fair warning
     # that the list is the fragile part: anything the docs link to has to be
-    # here, and nothing tells you when that stops being true.
+    # here, and nothing tells you when that stops being true. The agent product
+    # added a root front door, generated dist Markdown, and docs/ links; those
+    # are copied for the same reason rather than exempted from link checking.
     for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
                  "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
-                 "doctor", "checks", "integrity", ".github", "LICENSE"):
+                 "AGENT_START_HERE.md", "dist", "docs", "doctor", "checks",
+                 "integrity", ".github", "LICENSE"):
         src = os.path.join(ROOT, name)
         if not os.path.exists(src):
             continue

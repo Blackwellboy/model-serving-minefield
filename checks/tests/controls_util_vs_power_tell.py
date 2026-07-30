@@ -15,6 +15,7 @@ Exit codes: 0 ran, nothing blocking. 1 unreachable. 2 blocking. 3 inspected
 nothing.
 """
 import os
+import shlex
 import subprocess
 import tempfile
 from pathlib import Path
@@ -33,12 +34,36 @@ def _run_with_samples(rows):
     """Run the check with a stub nvidia-smi emitting `rows`. Return exit code."""
     with tempfile.TemporaryDirectory() as d:
         stub = Path(d) / "nvidia-smi"
-        stub.write_text(STUB.format(rows=rows), encoding="utf-8")
+        stub.write_bytes(STUB.format(rows=rows).encode("utf-8"))
         stub.chmod(0o755)
         env = dict(os.environ)
-        env["PATH"] = f"{d}{os.pathsep}" + env.get("PATH", "")
+        command = ["bash", str(CHECK), "3", "0"]
+        if os.name == "nt":
+            # Windows resolves `bash.exe` to WSL. WSL cannot consume native
+            # `C:\...` argv paths, and a Windows semicolon-delimited PATH
+            # prevents the fixture's /usr/bin/env shebang from finding bash.
+            # Pass mount paths and construct the small POSIX PATH explicitly.
+            def wsl_path(path):
+                resolved = Path(path).resolve()
+                drive = resolved.drive.rstrip(":").lower()
+                tail = resolved.as_posix().split(":", 1)[-1]
+                return f"/mnt/{drive}{tail}"
+
+            # autocrlf may materialize the tracked shell script with CRLF.
+            # Run a normalized disposable copy inside WSL.
+            check_copy = Path(d) / CHECK.name
+            check_copy.write_bytes(CHECK.read_bytes().replace(b"\r\n", b"\n"))
+            fixture_dir = shlex.quote(wsl_path(d))
+            check_path = shlex.quote(wsl_path(check_copy))
+            shell = (
+                f"PATH={fixture_dir}:/usr/local/bin:/usr/bin:/bin; "
+                f"export PATH; bash {check_path} 3 0"
+            )
+            command = ["wsl.exe", "--", "bash", "-lc", shell]
+        else:
+            env["PATH"] = f"{d}{os.pathsep}" + env.get("PATH", "")
         return subprocess.run(
-            ["bash", str(CHECK), "3", "0"],
+            command,
             env=env, capture_output=True, text=True, timeout=60,
         ).returncode
 

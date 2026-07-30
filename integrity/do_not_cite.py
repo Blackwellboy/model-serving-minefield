@@ -75,7 +75,7 @@ def gha(level, message, path=None, line=None, title=None):
 
 def git(root, *args):
     return subprocess.run(["git"] + list(args), cwd=root, capture_output=True,
-                          text=True)
+                          text=True, encoding="utf-8", errors="replace")
 
 
 def pick_base(root, explicit):

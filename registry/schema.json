@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/blob/main/registry/schema.json",
+  "title": "Model Serving Minefield canonical registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "canonical_enumeration",
+    "canonical_trap_count",
+    "doctor_implemented_trap_count",
+    "content_sha256",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.1"},
+    "canonical_enumeration": {"const": "traps/<category>/NN-*.md"},
+    "canonical_trap_count": {"type": "integer", "minimum": 1},
+    "doctor_implemented_trap_count": {"type": "integer", "minimum": 0},
+    "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "title", "category", "source_path", "symptom", "mechanism",
+          "check", "mitigation", "status", "evidence_strength", "contributor",
+          "affected_stacks", "affected_models", "affected_versions_builds",
+          "exact_conditions", "public_evidence_links", "doctor_coverage",
+          "diagnostic_modalities", "known_limitations", "related_traps",
+          "supersession", "applicability"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^\\d{2,}$"},
+          "title": {"type": "string", "minLength": 1},
+          "source_path": {"type": "string", "pattern": "^traps/[^/]+/\\d{2,}-"},
+          "symptom": {"type": "string", "minLength": 1},
+          "check": {"type": "string", "minLength": 1},
+          "evidence_strength": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": [
+                "reproduced here",
+                "contributor-measured, conditions as reported",
+                "reported by others",
+                "measured here, raw not published",
+                "under test"
+              ]
+            }
+          },
+          "applicability": {
+            "type": "object",
+            "required": [
+              "gpu_architecture", "device_class", "node_count", "parallelism",
+              "topology", "serving_stack", "stack_version", "model_family",
+              "exact_checkpoint", "quantization", "context_regime",
+              "concurrency_regime", "failure_stage", "operating_system"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

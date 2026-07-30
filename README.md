@@ -29,6 +29,35 @@ protects is your ability to tell them apart at a glance.
 [![integrity](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml)
 [![surfaces](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml)
 
+## Diagnose with an AI agent
+
+**Agent can access GitHub:** give it
+[`AGENT_START_HERE.md`](AGENT_START_HERE.md) plus your redacted logs or
+configuration:
+
+> Read the Model Serving Minefield agent start file, diagnose this serving
+> problem, separate confirmed from possible matches, and give confirmation
+> checks before suggesting changes.
+
+**Agent cannot access GitHub:** download and upload
+[`dist/MINEFIELD_AGENT_BUNDLE.md`](dist/MINEFIELD_AGENT_BUNDLE.md).
+
+**You have a live endpoint:** install the package and run the bounded,
+read-only doctor:
+
+```bash
+python -m pip install .
+minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
+```
+
+**Hermes user:** install the repository-provided skill, then invoke it or
+preload it with `hermes --skills model-serving-minefield`. See
+[verified setup commands](docs/HERMES_SETUP.md).
+
+**MCP user:** run `minefield-mcp` over stdio. It exposes search,
+report-interpretation, reproduction-plan, and explicit-file inspection tools;
+it cannot restart or modify a server. See [MCP setup](docs/MCP_SETUP.md).
+
 The second badge is the one worth explaining. `surfaces` runs hourly and asks
 whether the public pages still agree with this tree, including the Pages site
 in another repo. It does not gate a push, because the site rebuilds after the
