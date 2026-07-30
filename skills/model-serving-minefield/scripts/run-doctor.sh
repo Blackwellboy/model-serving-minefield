@@ -5,4 +5,3 @@ if [ "$#" -lt 1 ]; then
   exit 2
 fi
 exec minefield quick "$@"
-

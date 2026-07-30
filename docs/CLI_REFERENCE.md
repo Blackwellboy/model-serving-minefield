@@ -20,4 +20,3 @@ success and non-zero on validation, bounds, path, or generation failures.
 
 Machine-readable JSON is the default for inspection, guide, coverage
 (`--json`), generation, and bundle operations.
-

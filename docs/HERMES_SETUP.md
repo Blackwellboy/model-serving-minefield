@@ -26,4 +26,3 @@ Hermes v0.18.0 implements `/learn <free text>` inside an active chat. It
 distils a new reusable skill; it is not the installation path for this
 official skill. If you intentionally want a local derivative, use the prompt
 in `HERMES_LEARN_PROMPT.md` and review the resulting skill before approval.
-

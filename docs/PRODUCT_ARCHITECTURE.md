@@ -53,4 +53,3 @@ stdio JSON-RPC and has no network or shell capability. File inspection accepts
 explicit paths only, rejects symlinks by default, bounds input sizes, and may
 be restricted to allowed roots. The browser interface is static and does not
 upload data or include analytics.
-

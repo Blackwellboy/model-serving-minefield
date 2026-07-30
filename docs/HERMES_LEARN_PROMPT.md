@@ -13,4 +13,3 @@ a live service without explicit authority.
 
 Prefer the official repository skill for normal use. `/learn` creates a local
 derivative that may drift.
-

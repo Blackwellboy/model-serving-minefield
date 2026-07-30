@@ -12,4 +12,3 @@
 Compound labels retain every component. An agent may use weaker evidence to
 propose a possible match and a confirmation test. It must not present that
 match as universally proven.
-

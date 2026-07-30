@@ -72,4 +72,3 @@
   controls.forEach(id => $(id).addEventListener("input", render));
   render();
 })();
-

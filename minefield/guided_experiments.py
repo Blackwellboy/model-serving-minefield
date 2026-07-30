@@ -22,4 +22,3 @@ def specifications(registry: dict[str, Any]) -> list[dict[str, Any]]:
         "human_review_still_required": True,
         "limitations": entry["known_limitations"],
     } for entry in registry["entries"]]
-

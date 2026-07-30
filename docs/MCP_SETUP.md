@@ -70,4 +70,3 @@ reproduction planning, issue drafting, and explicit-file inspection. It has no
 shell, process-management, restart, write, or unrestricted filesystem tool.
 `inspect_config` and `inspect_logs` accept explicit paths and optional allowed
 roots, reject symlinks, bound input size, and redact issue-report text.
-

@@ -10,4 +10,3 @@ Keep all four verdicts distinct:
 Report the exact implemented/executed counts from the JSON. Never call an
 endpoint or stack clean based on the absence of `PROBLEM`; the doctor covers
 only a subset of the registry.
-

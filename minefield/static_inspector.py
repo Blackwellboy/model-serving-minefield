@@ -73,4 +73,3 @@ def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> d
                     "matched_signature": match.group(0)[:240],
                 })
     return {"kind": "static_config", "files": len(paths), "findings": findings}
-

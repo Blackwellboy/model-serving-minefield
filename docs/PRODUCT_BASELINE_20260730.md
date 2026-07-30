@@ -76,4 +76,3 @@ canonical total from 107 to 108; it also touches count-bearing human surfaces.
 This product branch does not copy or alter that contributor entry. Generated
 counts are derived from the canonical tree so a future rebase can absorb it
 without restoring stale literals or losing attribution.
-

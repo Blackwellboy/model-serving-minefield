@@ -16,4 +16,3 @@ doctor result says nothing about traps it did not execute.
 
 Per-trap requirements, clean capability, confirmation/refutation criteria, and
 limitations are generated in `registry/diagnostic_coverage.json`.
-

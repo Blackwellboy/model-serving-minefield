@@ -61,4 +61,3 @@ def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> di
                     "matched_signature": match.group(0)[:500],
                 })
     return {"kind": "log_scan", "files": len(paths), "findings": findings}
-

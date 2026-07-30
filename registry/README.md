@@ -7,4 +7,3 @@ unknown keys fail generation.
 
 `schema.json`, `diagnostic_coverage.json`, and the files under `dist/` are
 generated. Do not hand-edit them.
-

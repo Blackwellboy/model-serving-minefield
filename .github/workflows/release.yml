@@ -32,4 +32,3 @@ jobs:
             dist/SHA256SUMS
             dist/*.whl
             dist/*.tar.gz
-

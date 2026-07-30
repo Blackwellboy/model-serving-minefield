@@ -127,4 +127,3 @@ def write_bundle(output: str, bundle_plan: dict[str, Any]) -> dict[str, Any]:
         "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
         "files": sorted(files),
     }
-
