@@ -129,3 +129,11 @@ body:
       placeholder: "Qwen 3.6 35B-A3B, NVFP4, vLLM 0.25.1 in docker on a DGX Spark"
     validations:
       required: true
+  - type: textarea
+    id: diagnostic-evidence
+    attributes:
+      label: Optional diagnostic evidence
+      description: Paste a scrubbed support-bundle manifest, diagnosis JSON summary, doctor coverage/result, and confirm/refute outcome. Do not upload a full ZIP publicly unless you reviewed every file.
+      placeholder: "Manifest hash, likely trap IDs, doctor PROBLEM/OK/INCONCLUSIVE/UNKNOWN counts, and the paired-control result."
+    validations:
+      required: false

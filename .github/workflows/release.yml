@@ -1,0 +1,35 @@
+name: release-artifacts
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m minefield agent-bundle
+          python -m unittest discover -s tests
+          python -m pip install build
+          python -m build
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/MINEFIELD_AGENT_BUNDLE.md
+            dist/MINEFIELD_AGENT_BUNDLE_LITE.md
+            dist/MINEFIELD_AGENT_BUNDLE.json
+            dist/MINEFIELD_REGISTRY.json
+            dist/MINEFIELD_REGISTRY.min.json
+            dist/model-serving-minefield-agent-pack.zip
+            dist/MANIFEST.txt
+            dist/SHA256SUMS
+            dist/*.whl
+            dist/*.tar.gz
+

@@ -1,0 +1,32 @@
+name: agent-platform
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: compile and unit test
+        run: |
+          python -m compileall -q minefield tests
+          python -m unittest discover -s tests
+      - name: verify generated artefacts
+        run: |
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git diff --exit-code -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+      - name: package smoke test
+        run: |
+          python -m pip install .
+          minefield coverage --json
+          printf '{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n' | minefield-mcp
+      - name: secret-shaped generated output guard
+        run: |
+          ! grep -RIE '(authorization: bearer|api[_-]?key[=:][[:space:]]*[^<]|C:\\Users\\|/home/[^/ ]+/)' dist web/registry-data.js
