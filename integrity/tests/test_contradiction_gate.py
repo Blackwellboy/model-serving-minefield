@@ -93,7 +93,10 @@ class ContradictionGate(unittest.TestCase):
         hits = self.run_gate(p)
         self.assertTrue(hits, "the trap-33 shape passed: contradiction one hop away")
         self.assertIn("cannot check our rows", hits[0][1])
-        self.assertIn("mining/fixture-data/README.md", hits[0][0])
+        self.assertIn(
+            "mining/fixture-data/README.md",
+            hits[0][0].replace("\\", "/"),
+        )
 
     def test_entry_reading_only_would_have_missed_it(self):
         """Control for the case above: the entry alone is clean, so a gate that
