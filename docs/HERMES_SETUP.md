@@ -3,7 +3,7 @@
 Validated in a disposable profile against Hermes Agent v0.19:
 
 ```bash
-hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/d0f1e0ec1c8d2bafabd1702047cf504ed547de82/skills/model-serving-minefield/SKILL.md --yes
+hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/8df9b80231821f8135a3f7955406513632894753/skills/model-serving-minefield/SKILL.md --yes
 hermes skills list
 hermes --skills model-serving-minefield
 ```
