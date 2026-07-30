@@ -15,7 +15,7 @@ class EvidenceSecretScanTests(unittest.TestCase):
             "AKIA" + "A" * 16,
             "Authorization: Bearer secret-value",
             "api_key=secret-value",
-            "-----BEGIN PRIVATE KEY-----",
+            "-----BEGIN " + "PRIVATE KEY-----",
         ):
             with self.subTest(value=value):
                 self.assertTrue(findings({"nested": [{"value": value}]}))
