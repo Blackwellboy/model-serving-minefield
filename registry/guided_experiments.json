@@ -2591,6 +2591,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "108",
       "untrusted_published_check_text": "Score the canary on the series, never on the adjacent pair. python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 109 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 109 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "109",
+      "untrusted_published_check_text": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE."
     }
   ],
   "schema_version": "1.0"

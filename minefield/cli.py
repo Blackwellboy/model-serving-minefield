@@ -11,6 +11,7 @@ from typing import Any
 from .coverage import build_coverage
 from .doctor_adapter import run as run_doctor
 from .generator import build, verify
+from .inline_system import classify_manifest, inspect_template, load_manifest
 from .log_inspector import inspect_logs
 from .matching import diagnose
 from .registry import load_registry
@@ -68,6 +69,15 @@ def parser() -> argparse.ArgumentParser:
     bundle.add_argument("--doctor-report")
     bundle.add_argument("--output", default="minefield-support-bundle.zip")
     bundle.add_argument("--no-write", action="store_true")
+    inline = sub.add_parser(
+        "classify-inline-system",
+        help="classify bounded, already-rendered inline-system evidence",
+    )
+    inline.add_argument("--manifest", required=True)
+    inline.add_argument(
+        "--template-path",
+        help="optional local Jinja/source file to hash; it is never executed",
+    )
     return ap
 
 
@@ -121,6 +131,11 @@ def main(argv: list[str] | None = None) -> int:
             _emit(bundle_plan["preview"])
         else:
             _emit(write_bundle(args.output, bundle_plan))
+    elif args.command == "classify-inline-system":
+        value = classify_manifest(load_manifest(args.manifest))
+        if args.template_path:
+            value["template_source"] = inspect_template(args.template_path)
+        _emit(value)
     return 0
 
 

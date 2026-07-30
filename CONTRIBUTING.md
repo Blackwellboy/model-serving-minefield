@@ -89,6 +89,30 @@ raw data is committed to this repo is a calibration entry whose number other
 entries cite, and then only with a runnable verifier beside it; the conditions
 are in [MAINTAINING.md](MAINTAINING.md#shipping-raw-data-in-the-repo).
 
+### Sending inline-system render evidence
+
+For an inline system message, send the exact model and immutable revision;
+runtime name and commit; exact request; raw rendered prompt; token strings and
+token IDs when available; template or encoder SHA-256; the proposed
+classification; and whether a custom template override was used. Include a
+no-system control and a normal leading-system control. Model output is not a
+substitute for the rendered prompt.
+
+Use the machine-ingestible
+[schema](docs/inline-system-evidence.schema.json) and
+[small example](docs/inline-system-evidence.example.json), or run
+`minefield classify-inline-system --manifest evidence.json`. The classifier
+does not fetch models, contact endpoints, or execute remote code. If a remote
+tokenizer is genuinely required, record that execution separately with an
+explicit opt-in, immutable revision, disposable profile, dedicated cache,
+exact package versions, and no host secrets.
+
+This evidence format and its initial cross-model source map were prompted by
+public analysis from
+[@wqh17101](https://github.com/wqh17101) in
+[vLLM issue #46710](https://github.com/vllm-project/vllm/issues/46710#issuecomment-5131158274),
+published with the contributor's explicit permission.
+
 ## Entry format
 
 One trap per file. Use these sections, in this order:

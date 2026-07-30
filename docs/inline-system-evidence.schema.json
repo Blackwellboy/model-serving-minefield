@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/blob/main/docs/inline-system-evidence.schema.json",
+  "title": "Inline-system rendered evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "evidence_surface",
+    "model",
+    "target_texts",
+    "primary",
+    "controls"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "evidence_surface": {
+      "enum": [
+        "SOURCE_INSPECTED_AT_PINNED_REVISION",
+        "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
+        "ENDPOINT_RENDER_REPRODUCED",
+        "MODEL_OUTPUT_REPRODUCED",
+        "UNDER_TEST",
+        "INCONCLUSIVE"
+      ]
+    },
+    "model": {
+      "type": "object",
+      "required": ["name", "revision"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "commit": {"type": "string"},
+        "entrypoint": {"type": "string"},
+        "custom_template_override": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "target_texts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "leading_system_text": {"type": "string"},
+    "markers": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["role", "open"],
+        "properties": {
+          "role": {
+            "enum": [
+              "system", "user", "assistant", "tool", "developer", "root"
+            ]
+          },
+          "open": {"type": "string", "minLength": 1},
+          "close": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "primary": {"$ref": "#/$defs/renderRecord"},
+    "controls": {
+      "type": "object",
+      "required": ["no_system", "leading_system"],
+      "properties": {
+        "no_system": {"$ref": "#/$defs/renderRecord"},
+        "leading_system": {"$ref": "#/$defs/renderRecord"}
+      },
+      "additionalProperties": false
+    },
+    "source_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "sha256"],
+        "properties": {
+          "url": {"type": "string", "format": "uri"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "template_type": {
+            "enum": [
+              "Jinja",
+              "Python encoder",
+              "vLLM-maintained Python encoder",
+              "upstream remote tokenizer"
+            ]
+          },
+          "loading_path": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "classification": {
+      "enum": [
+        "ROLE_MARKED",
+        "DROPPED",
+        "WELDED_TO_USER",
+        "REJECTED",
+        "AMBIGUOUS",
+        "INCONCLUSIVE"
+      ]
+    },
+    "remote_code_execution": {
+      "type": "object",
+      "required": [
+        "explicit_opt_in",
+        "immutable_revision",
+        "isolated_profile",
+        "dedicated_cache",
+        "host_secrets_supplied"
+      ],
+      "properties": {
+        "explicit_opt_in": {"const": true},
+        "immutable_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "isolated_profile": {"const": true},
+        "dedicated_cache": {"const": true},
+        "host_secrets_supplied": {"const": false},
+        "package_versions": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "message": {
+      "type": "object",
+      "required": ["role", "content"],
+      "properties": {
+        "role": {"type": "string"},
+        "content": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "renderRecord": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/message"}
+        },
+        "rendered_text": {"type": "string"},
+        "decoded_text": {"type": "string"},
+        "token_strings": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "token_ids": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "decoded_from_token_ids": {"type": "string"},
+        "endpoint_response": {"type": "object"},
+        "rejected": {"type": "boolean"},
+        "error": {}
+      },
+      "anyOf": [
+        {"required": ["rendered_text"]},
+        {"required": ["decoded_text"]},
+        {"required": ["token_strings"]},
+        {"required": ["token_ids", "decoded_from_token_ids"]},
+        {"required": ["endpoint_response"]},
+        {"required": ["rejected"]}
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -372,3 +372,132 @@ dist/model-serving-minefield-agent-pack.zip:34684: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:36062: reviewed style-only punctuation in the regenerated public package after the immutable documentation pin; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:34131: reviewed public integration reference inside the package after the immutable documentation pin; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:36089: reviewed public integration filename inside the package after the immutable documentation pin; no private deployment data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6800: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6818: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6819: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6836: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6869: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6872: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6882: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6941: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:6953: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7008: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7009: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7075: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7158: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+minefield/data/MINEFIELD_REGISTRY.json:7170: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:10496: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17538: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17556: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17557: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17574: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17607: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17610: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17620: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17679: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17691: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17746: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17747: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17813: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17896: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.json:17908: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1496: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1507: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1510: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1520: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1533: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1535: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1546: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_AGENT_BUNDLE.md:1559: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6800: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6818: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6819: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6836: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6869: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6872: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6882: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6941: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:6953: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7008: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7009: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7075: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7158: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/MINEFIELD_REGISTRY.json:7170: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:10664: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17706: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17724: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17725: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17742: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17775: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17778: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17788: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17847: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17859: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17914: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17915: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:17981: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18064: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18076: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18508: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18710: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18711: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:18714: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20001: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20002: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20003: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20013: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20014: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20017: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20026: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20027: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20040: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20042: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20053: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20065: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20066: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20143: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20580: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20581: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:20584: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27410: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27411: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27428: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27461: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27464: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27474: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27533: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27545: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27600: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27601: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27667: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27750: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:27762: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28191: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28528: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31727: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:31758: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:34987: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35424: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35425: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:35428: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36806: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:36807: reviewed style-only punctuation in generated public evidence after the Trap 109 registry regeneration; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:28203: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28352: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28354: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28357: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28358: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28362: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28371: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28372: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28373: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28395: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28397: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28400: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28495: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:28647: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34859: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34860: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34861: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:34875: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:36832: reviewed public integration reference inside the regenerated immutable package; no private deployment data is present.
