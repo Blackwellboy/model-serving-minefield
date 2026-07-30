@@ -396,6 +396,7 @@ class FixtureLane:
     def __exit__(self, *a):
         self.httpd.shutdown()
         self.httpd.server_close()
+        self.thread.join(timeout=5)
 
 
 # ------------------------------------------------------------ fixture hub
@@ -464,3 +465,4 @@ class FixtureHub:
     def __exit__(self, *a):
         self.httpd.shutdown()
         self.httpd.server_close()
+        self.thread.join(timeout=5)

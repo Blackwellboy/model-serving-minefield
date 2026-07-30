@@ -163,7 +163,10 @@ def _req(url, key=None, data=None, timeout=60):
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, r.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
-        return e.code, e.read().decode("utf-8", "replace")
+        try:
+            return e.code, e.read().decode("utf-8", "replace")
+        finally:
+            e.close()
     except Exception as e:
         return None, str(e)
 
