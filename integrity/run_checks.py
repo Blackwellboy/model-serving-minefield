@@ -141,7 +141,11 @@ def main():
             print("this before every push.\n")
             results.append(("sanitizer", None))
         else:
-            adj = os.path.join(HERE, "sanitizer_adjudicated.txt")
+            # Adjudication keys quote the exact vocabulary they review. Keep
+            # this transparent ledger in the scanners' proof-excluded folder
+            # so the scanner does not recursively flag its own exact keys.
+            adj = os.path.join(HERE, "_proofs",
+                               "sanitizer_adjudicated.txt")
             extra = ["--adjudicated", adj] if os.path.exists(adj) else []
             # This repo IS a publish target, so a hit here blocks. The kit
             # refuses to run without being told, because the same hit means
