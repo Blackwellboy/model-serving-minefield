@@ -57,6 +57,14 @@ SKIP_DIRS = {".git", "__pycache__", "node_modules", "_proofs", "_proof_archive"}
 ENFORCED_STATES = {"retracted", "corrected", "scope-limited"}
 
 
+def console_safe(value, encoding=None):
+    """Render evidence without crashing a legacy Windows console."""
+    encoding = encoding or getattr(sys.stdout, "encoding", None) or "utf-8"
+    return str(value).encode(
+        encoding, errors="backslashreplace"
+    ).decode(encoding)
+
+
 def read(path):
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         return fh.read()
@@ -418,7 +426,7 @@ def main():
         for h in group:
             print("  %-26s %s:%s:%d" % (h.claim, h.repo, h.rel, h.lineno))
             print("      /%s/  %s" % (h.pattern, h.why))
-            print("      %s" % h.line[:150])
+            print("      %s" % console_safe(h.line[:150]))
         print("")
 
     print("MANUAL, remote surfaces (%d) - not fetched, check by hand when a "
