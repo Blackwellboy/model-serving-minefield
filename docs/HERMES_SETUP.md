@@ -3,14 +3,16 @@
 Validated locally against Hermes Agent v0.18.0 (2026.7.1):
 
 ```bash
-hermes skills install ./skills/model-serving-minefield --yes
+hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/085e88d31f56b19fd2e0783d0b5bce849e8fcb51/skills/model-serving-minefield/SKILL.md --yes
 hermes skills list
 hermes --skills model-serving-minefield
 ```
 
-Install from a reviewed checkout so `SKILL.md`, `references/`, and `scripts/`
-remain one pinned unit. A direct raw `main` URL is intentionally not recommended:
-it is mutable and installs only `SKILL.md`.
+The URL is commit-pinned. Hermes direct-URL installation copies only
+`SKILL.md`; that file's direct-install fallback is itself pinned to the
+reviewed lite bundle commit. Clone the same commit when you also want the
+sibling `references/` and `scripts/` helpers. Do not substitute a mutable
+`main` URL.
 
 Update and removal:
 
