@@ -1,6 +1,6 @@
 # Hermes setup
 
-Validated locally against Hermes Agent v0.18.0 (2026.7.1):
+Validated in a disposable profile against Hermes Agent v0.19:
 
 ```bash
 hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/6bcd5e1dc1b9e53606069ea9f400eadf1823d92e/skills/model-serving-minefield/SKILL.md --yes

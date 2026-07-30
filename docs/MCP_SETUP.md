@@ -20,7 +20,7 @@ caller cannot override or widen the server-configured roots.
 
 ## Hermes
 
-Validated command shape for Hermes v0.18.0:
+Validated command shape for Hermes v0.19:
 
 ```bash
 hermes mcp add minefield --command minefield-mcp
