@@ -178,6 +178,7 @@ def check(path, root, read):
                     continue
                 line = body[:m.start()].count("\n") + 1
                 quote = re.sub(r"\s+", " ", body[max(0, m.start() - 40):m.end() + 40]).strip()
-                found.append((f"{os.path.relpath(p, root)}:{line}", why, quote))
+                rel = os.path.relpath(p, root).replace("\\", "/")
+                found.append((f"{rel}:{line}", why, quote))
                 break
     return found

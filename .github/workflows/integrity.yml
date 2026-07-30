@@ -28,27 +28,30 @@ jobs:
   integrity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: check out the peer repo outside the workspace
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           repository: Blackwellboy/laguna-s21-lab
           path: peer-laguna
           fetch-depth: 1
+          persist-credentials: false
         continue-on-error: true
 
       # The Pages site is the third surface. It is a single index.html, not
       # markdown, which is why claim_propagation scans .html: without that it
       # would read the site's README and report a confident CLEAN. It is
       # checked out READ-ONLY and is never written to from here.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           repository: Blackwellboy/Blackwellboy.github.io
           path: peer-bbio
           fetch-depth: 1
+          persist-credentials: false
         continue-on-error: true
 
       - name: move the peer clones out of the workspace
@@ -72,7 +75,7 @@ jobs:
             echo "::warning::Pages site unavailable; the most public surface was NOT scanned this run."
           fi
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 

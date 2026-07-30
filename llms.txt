@@ -1,5 +1,9 @@
 # model-serving-minefield
 
+Agent front door: `AGENT_START_HERE.md`.
+Offline full bundle: `dist/MINEFIELD_AGENT_BUNDLE.md`.
+Structured registry: `dist/MINEFIELD_REGISTRY.json`.
+
 A registry of specific, reproducible failures in serving open-weight models:
 wrong reasoning-field names, chat templates that drop content, quantisation
 paths that silently fall back, harness confounds that invert a result. Each
