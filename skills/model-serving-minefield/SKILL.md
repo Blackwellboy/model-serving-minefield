@@ -23,12 +23,16 @@ them.
    logs. Ask whether a live endpoint exists.
 2. Read `references/agent-bundle.md` first when it exists. A direct-URL Hermes
    install copies only this `SKILL.md`; in that mode, use the immutable
-   [lite agent bundle](https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/f4c472ae54a0a8294332043de049be969df04390/dist/MINEFIELD_AGENT_BUNDLE_LITE.md).
+   [lite agent bundle](https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/f539623b9bc21cdc8d16e2a5656e035505015f76/dist/MINEFIELD_AGENT_BUNDLE_LITE.md).
    Search the full repository bundle only when the lite routing evidence is
    insufficient. Never substitute mutable `main` content.
 3. Rank every plausible candidate; never stop at the first textual match.
    Preserve each published evidence label. Never convert “reported” or
    “contributor-measured” into “reproduced.”
+   An explicitly requested direct-probe trap ID is a candidate-routing input,
+   not proof. Record an actual bounded probe outcome separately as
+   `confirmed`, `refuted`, or `inconclusive`; a refuting result must never be
+   promoted to confirmation.
 4. Use only these diagnosis levels: `CONFIRMED_BY_DIRECT_PROBE`,
    `STRONG_CONDITION_MATCH_REQUIRES_CONFIRMATION`, `POSSIBLE_RELATED_TRAP`,
    `CONDITION_MISMATCH`, `NOT_APPLICABLE`, `NOT_DOCUMENTED`, `INCONCLUSIVE`.
@@ -78,7 +82,7 @@ registry's evidence strings verbatim and do not upgrade them.
 
 For each result provide trap ID, diagnosis level, evidence status, matched,
 mismatched and unknown conditions, direct-probe support, mechanism status,
-confirmation check, refutation check, conditional mitigation, mutation
+direct-probe result, confirmation check, refutation check, conditional mitigation, mutation
 warning, and remaining unknowns. Definitive causal language requires a
 trap-appropriate direct-evidence predicate on this system. A registry miss is
 `NOT_DOCUMENTED`, never safe. A doctor CLEAN applies only to executed checks.
@@ -98,6 +102,7 @@ published evidence status, or replace booleans with explanations:
   "mismatched_conditions": [],
   "unknown_conditions": [],
   "direct_probe_support": false,
+  "direct_probe_result": "not_supplied",
   "mechanism_status": "PROPOSED_NOT_PROVEN",
   "observed_symptom": "",
   "pattern_resemblance": "",
@@ -112,7 +117,11 @@ published evidence status, or replace booleans with explanations:
 }
 ```
 
-A trap-specific direct probe that observes the named assertion uses
+A requested trap ID alone uses `candidate_requested`, never confirmation.
+A trap-specific direct probe that observes the named assertion records
+`direct_probe_result` as `confirmed` and uses
 `CONFIRMED_BY_DIRECT_PROBE` for that assertion. The mechanism remains
 `PROPOSED_NOT_PROVEN` unless the probe also establishes it. Diagnosis level
-and mechanism status are deliberately separate.
+and mechanism status are deliberately separate. A direct probe that produces
+the published refutation control records `refuted` and uses `NOT_APPLICABLE`
+for that candidate; `inconclusive` remains `INCONCLUSIVE`.
