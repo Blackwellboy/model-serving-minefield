@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Minefield community impact record",
+  "type": "object",
+  "required": ["impact_id", "date", "type", "person_or_project", "public_source", "summary", "minefield_role", "blackwellboy_role", "evidence_status", "permission_to_publish", "permission_to_quote", "follow_up_state", "last_verified"],
+  "properties": {
+    "impact_id": {"type": "string"},
+    "date": {"type": "string"},
+    "type": {"enum": ["ADOPTION", "RESOLVED_INCIDENT", "CONTRIBUTOR_DISCOVERY", "INDEPENDENT_CONFIRMATION"]},
+    "person_or_project": {"type": "string"},
+    "public_source": {"type": "string"},
+    "summary": {"type": "string"},
+    "minefield_role": {"type": "string"},
+    "blackwellboy_role": {"type": "string"},
+    "related_issue": {"type": ["string", "null"]},
+    "related_traps": {"type": "array", "items": {"type": "string"}},
+    "evidence_status": {"enum": ["PUBLIC_PRIMARY", "PUBLIC_CORROBORATED", "OWNER_REPORTED", "CONTRIBUTOR_REPORTED", "INCONCLUSIVE"]},
+    "permission_to_publish": {"type": "string"},
+    "permission_to_quote": {"type": "string"},
+    "wording_guardrail": {"type": ["string", "null"]},
+    "follow_up_state": {"type": "string"},
+    "last_verified": {"type": "string"}
+  }
+}

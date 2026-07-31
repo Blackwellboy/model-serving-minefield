@@ -1,0 +1,38 @@
+[
+  {
+    "impact_id": "impact-20260731-issue18-zerollama-adoption",
+    "date": "2026-07-31",
+    "type": "ADOPTION",
+    "person_or_project": "@odilitime / zerollama",
+    "public_source": "https://github.com/Blackwellboy/model-serving-minefield/issues/18",
+    "summary": "zerollama doctor maps Minefield traps; public thanks issue closed as completed adoption signal.",
+    "minefield_role": "Trap catalog used by external doctor/tooling",
+    "blackwellboy_role": "Maintainer; closed issue after verification",
+    "related_issue": "https://github.com/Blackwellboy/model-serving-minefield/issues/18",
+    "related_traps": [],
+    "evidence_status": "PUBLIC_PRIMARY",
+    "permission_to_publish": "public_issue",
+    "permission_to_quote": "public_issue_body_and_title",
+    "wording_guardrail": "Do not invent user counts or saved-hours; cite the closed issue only.",
+    "follow_up_state": "closed_completed",
+    "last_verified": "2026-08-01"
+  },
+  {
+    "impact_id": "impact-20260801-issue19-unvalidated-config-surface",
+    "date": "2026-08-01",
+    "type": "CONTRIBUTOR_DISCOVERY",
+    "person_or_project": "@scottleimroth",
+    "public_source": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
+    "summary": "Contributor measured that VLLM_FLASHINFER_MOE_BACKEND is logged unknown while vLLM 0.26 still starts healthy; real control is --moe-backend.",
+    "minefield_role": "Intake document mining/2026-08-01-issue-19-unvalidated-config-surface.md; trap number not yet assigned",
+    "blackwellboy_role": "Diagnostic help and registry framing (credited per reporter)",
+    "related_issue": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
+    "related_traps": ["77"],
+    "evidence_status": "PUBLIC_PRIMARY",
+    "permission_to_publish": "public_issue",
+    "permission_to_quote": "public_issue_with_scope_guardrails",
+    "wording_guardrail": "MEASURED_ON_THIS_BUILD (vLLM 0.26 / GB10 report). NOT a general CUTLASS all-clear. Do not publish ~70 tok/s without n=1 and reasoning-token caveats.",
+    "follow_up_state": "final_auto_with_variable_removed_control_pending_not_blocking",
+    "last_verified": "2026-08-01"
+  }
+]
