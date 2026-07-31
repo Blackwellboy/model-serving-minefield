@@ -1,4 +1,4 @@
-# Issue #19 intake — unvalidated configuration surface (env accepted, engine ignores)
+# Issue #19 intake - unvalidated configuration surface (env accepted, engine ignores)
 
 **Status:** contributor-measured intake (not yet a numbered trap)  
 **Found by:** @scottleimroth  
