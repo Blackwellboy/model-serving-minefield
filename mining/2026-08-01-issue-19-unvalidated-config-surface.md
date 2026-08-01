@@ -1,9 +1,9 @@
 # Issue #19 intake - unvalidated configuration surface (env accepted, engine ignores)
 
-**Status:** contributor-measured intake (not yet a numbered trap)  
-**Found by:** @scottleimroth  
-**Diagnostic / registry framing:** @Blackwellboy  
-**Primary evidence:** [issue #19](https://github.com/Blackwellboy/model-serving-minefield/issues/19)  
+**Status:** contributor-measured intake (not yet a numbered trap)
+**Found by:** @scottleimroth
+**Diagnostic / registry framing:** @Blackwellboy
+**Primary evidence:** [issue #19](https://github.com/Blackwellboy/model-serving-minefield/issues/19)
 **Mechanism class:** `UNVALIDATED_CONFIGURATION_SURFACE`
 
 ## Scope (measured on this build)
@@ -14,41 +14,90 @@
 - Model example: `unsloth/Qwen3.6-35B-A3B-NVFP4-Fast` @ `1c3f884b…`
 - FlashInfer 0.6.14
 
-**MEASURED_ON_THIS_BUILD.**  
+**MEASURED_ON_THIS_BUILD.**
 **NOT_A_GENERAL_CUTLASS_ALL_CLEAR** for every GB10 system or every vLLM release.
+Do **not** state that all unknown environment variables behave identically across all vLLM versions.
 
 ## Symptom
 
-Operator sets `VLLM_FLASHINFER_MOE_BACKEND=latency` (community guidance for SM121).  
+Operator sets `VLLM_FLASHINFER_MOE_BACKEND=latency` (community guidance for SM121).
 Server starts cleanly, health checks pass, service serves. Configuration appears active. It is not.
 
-## Mechanism
+## Mechanism (`UNVALIDATED_CONFIGURATION_SURFACE`)
+
+**Core trap:** An unsupported `VLLM_`-prefixed environment variable can be accepted by the surrounding launch process while vLLM only logs a warning and continues with its real configured/default value.
+
+On this measured path:
 
 1. Surrounding launch process accepts an invented / unsupported environment variable.
-2. vLLM logs `Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND`.
-3. Startup still succeeds; health checks pass.
+2. vLLM logs `Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND` (e.g. `envs.py:2096`).
+3. Startup still succeeds; health checks pass (default validation is warn-only).
 4. Engine proceeds with the real control: `--moe-backend` (default `auto`), printed later as `moe_backend='auto'`.
 5. Operator confidence diverges from resolved configuration.
 
-## Runnable check
+## Environment-level control - COMPLETE (`ENV_CONTROL_COMPLETED=YES`)
 
-1. Launch with `-e VLLM_FLASHINFER_MOE_BACKEND=latency` and without an explicit `--moe-backend`.
-2. Grep startup log for the unknown-env warning and for the resolved `NvFp4 MoE backend` / `moe_backend=` line.
-3. Confirm the warning appears and the resolved backend is not forced by the env var.
-4. Control: launch with `--moe-backend marlin` and confirm the selection line changes.
-5. Follow-up (pending, **not blocking**): `auto` with the env var removed.
+Contributor @scottleimroth completed a matched absent/present control on the same image
+`vllm/vllm-openai:v0.26.0-aarch64-ubuntu2404` (env validation runs before engine init; no GPU/downtime required):
+
+| Condition | Result |
+|---|---|
+| variable **absent** | no unknown-variable warning |
+| variable **present** | `WARNING [envs.py:2096] Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND` |
+
+**Source confirmation (vLLM 0.26):**
+
+- `VLLM_FLASHINFER_MOE_BACKEND` is **absent** from `vllm.envs.environment_variables` in vLLM 0.26;
+- `validate_environ()` treats it as unknown;
+- the serving path never reads it.
+
+This completes the **environment-level** half of the control. It proves the candidate name is unknown and is not consumed by serving configuration on this build.
+
+## Recommended fail-fast mitigation
+
+vLLM 0.26 exposes **`--fail-on-environ-validation`** (default **false**).
+
+When enabled, an unknown `VLLM_`-prefixed variable causes startup to fail (e.g. `ValueError: Unknown vLLM environment variable detected: …`) rather than a clean-looking start with only a buried warning.
+
+**Primary mitigation for this trap class on builds that support the flag:** enable `--fail-on-environ-validation`.
+
+## Engine-level backend-selection control - PENDING
+
+Still pending (contributor explicitly not claiming this half):
+
+- a real same-checkpoint engine initialisation with the variable **removed**;
+- confirmation that `moe_backend` still resolves to `FLASHINFER_CUTLASS` under that condition.
+
+**Do not mark engine-level control complete.**
+Issue remains open until trap promotion decisions and this engine follow-up are resolved.
+
+## Supporting (non-primary) second checkpoint
+
+Contributor reported that **Qwen3-Next-80B-A3B-NVFP4** on the same image/GPU also selected `FLASHINFER_CUTLASS` with the variable present. The original env warning was **not retained** for that removed container. Preserve as contributor-reported supporting context only - **not** equivalent raw evidence to the matched pair / source check above.
+
+## Primary check (operators)
+
+1. Compare logs with the candidate variable **absent** and **present**.
+2. Inspect the resolved engine configuration (`moe_backend` / `NvFp4 MoE backend` line).
+3. Enable `--fail-on-environ-validation` where supported.
+4. Optional explicit control: launch with `--moe-backend marlin` and confirm the selection line changes.
+5. Engine follow-up (pending): `auto` with the env var removed on a real same-checkpoint restart.
+
+## Original startup log provenance
+
+The original intact issue #19 startup log remains primary provenance for the original symptom report (unknown-env warning while service looks healthy). Env matched-pair + source confirmation above strengthen the environment-level half; they do not replace the original log for the production-looking failure shape.
 
 ## Relationship to Trap 77
 
-Trap [77](../traps/reasoning/77-only-one-request-field-is-validated.md) is the same **unvalidated-control** failure shape at the **request** surface.  
-Issue #19 is the same shape at the **startup/configuration** surface.  
+Trap [77](../traps/reasoning/77-only-one-request-field-is-validated.md) is the same **unvalidated-control** failure shape at the **request** surface.
+Issue #19 is the same shape at the **startup/configuration** surface.
 
 **Proposed cross-reference (not a silent rewrite of Trap 77):** add a “related surfaces” note pointing here when Trap 77 is next edited under evidence rules.
 
 ## Performance claims (separated; fully caveated)
 
-Contributor noted ~70 tok/s single-stream decode with thinking ON. **Do not publish flat.**  
-Caveats from the reporter: n=1, reasoning-token throughput not answer-token, prefix-cache effects.  
+Contributor noted ~70 tok/s single-stream decode with thinking ON. **Do not publish flat.**
+Caveats from the reporter: n=1, reasoning-token throughput not answer-token, prefix-cache effects.
 Core trap intake does **not** depend on that figure.
 
 ## Credits
@@ -58,5 +107,8 @@ Core trap intake does **not** depend on that figure.
 
 ## Disposition
 
-- Issue #19 remains **OPEN** until a numbered trap entry (if any) lands.
-- Final auto-with-variable-removed control is useful follow-up, not a prerequisite for intake or credit.
+- Issue #19 remains **OPEN** (trap promotion and engine-level follow-up unresolved).
+- **No numbered trap assigned.**
+- Environment-level matched control: **complete**.
+- Engine-level backend-selection control: **pending**.
+- Engine follow-up is useful evidence, **not** a prerequisite for retaining contributor credit or the intake record.

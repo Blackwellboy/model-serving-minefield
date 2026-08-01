@@ -30,17 +30,17 @@
     "maintainers": ["@Blackwellboy"],
     "credit_statement": "Contributor measured the unvalidated config surface; maintainer provided diagnostic help and registry framing only.",
     "public_source": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
-    "summary": "Contributor measured that VLLM_FLASHINFER_MOE_BACKEND is logged unknown while vLLM 0.26 still starts healthy; real control is --moe-backend. Same failure family as Trap 77 at a different surface. n=1 GB10 report; measured on this vLLM 0.26 build; not a general CUTLASS all-clear; do not cite ~70 tok/s without reasoning-token and single-sample caveats. Final auto-with-variable-removed control pending but not blocking. Issue remains open; no numbered trap assigned yet.",
+    "summary": "Contributor completed the environment-level matched control: VLLM_FLASHINFER_MOE_BACKEND is unknown on vLLM 0.26 (absent from vllm.envs.environment_variables; validate_environ warns; serving path never reads it). Absent/present log pair on vllm/vllm-openai:v0.26.0-aarch64-ubuntu2404. Primary mitigation: --fail-on-environ-validation (default false) turns unknown VLLM_ vars into fail-fast startup errors. Engine-level backend-selection control (same-checkpoint init with var removed; confirm moe_backend still FLASHINFER_CUTLASS) remains pending. Same failure family as Trap 77 at the startup/configuration surface. Measured on this vLLM 0.26 build; not a general CUTLASS all-clear; no numbered trap assigned. Issue remains open.",
     "minefield_role": "Intake document mining/2026-08-01-issue-19-unvalidated-config-surface.md; trap number not yet assigned",
     "related_issue": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
     "related_traps": ["77"],
     "evidence_status": "PUBLIC_PRIMARY",
     "permission_to_publish": "public_issue",
     "permission_to_quote": "public_issue_with_scope_guardrails",
-    "wording_guardrail": "MEASURED_ON_THIS_BUILD (vLLM 0.26 / GB10 report). NOT a general CUTLASS all-clear. Do not publish ~70 tok/s without n=1 and reasoning-token caveats. Contributor credit required; maintainer diagnostic role must not replace contributor credit.",
-    "follow_up_state": "final_auto_with_variable_removed_control_pending_not_blocking",
+    "wording_guardrail": "MEASURED_ON_THIS_BUILD (vLLM 0.26 / GB10 report). Env validation control COMPLETE; engine-selection control PENDING. --fail-on-environ-validation is the recorded fail-fast mitigation. NOT a general CUTLASS all-clear. Do not publish ~70 tok/s without n=1 and reasoning-token caveats. Contributor credit required; maintainer diagnostic role must not replace contributor credit. No numbered trap assigned.",
+    "follow_up_state": "env_control_complete_engine_control_pending",
     "source_state": "OPEN",
-    "source_state_reason": "GitHub issue #19 remains open; intake only, no numbered trap assigned.",
+    "source_state_reason": "GitHub issue #19 remains open; env-level control complete but engine-level control and trap promotion unresolved; no numbered trap assigned.",
     "last_verified": "2026-08-01"
   }
 ]
