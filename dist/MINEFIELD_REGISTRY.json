@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 108,
-  "content_sha256": "be79dd8b582391824684676b55e084833fb95684614c94c60165bcc82ad8fb90",
+  "canonical_trap_count": 111,
+  "content_sha256": "70015d78d8830495bc91eaf9ddd6e61ced4c4549920a1b14833e3e9a8735216b",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -7510,6 +7510,238 @@
       "supersession": null,
       "symptom": "You add a burn detector to a long soak: one fixed prompt, temperature=0, a fixed seed, a fixed maxtokens, fired on a wall-clock cadence. Identical input, so any change in the output is the serve changing. Partway through the run the output changes. Later it changes back. Then it changes again. If your detector compares each sample to the previous one, it fires every time. Over 13 hours, 25 in-band samples produced exactly 2 distinct outputs: | sha256 prefix | chars | occurrences | |---|---|---| | 7e776e9bd5e2 | 356 | 21 | | 81a6298f36c3 | 346 | 4 | The observed sequence, one character per sample:",
       "title": "a fixed-seed temperature-0 burn canary settles into two outputs and alternates between them, so a consecutive-pair detector reports repeated degradation that is not happening"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731 hybrid FP8 + NVFP4 checkpoint",
+        "DeepSeek-V4-Flash-0731-NVFP4",
+        "deepseek-ai/DeepSeek-V4-Flash-0731 at 7872f01b. Scope the mechanism to stacks"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "A vLLM-derived build with a CUTLASS NVFP4 fused-MoE backend serving a DeepSeek-V4-Flash-0731 hybrid FP8 + NVFP4 checkpoint, tensor parallel 2 on 2x RTX PRO 6000 Blackwell (96 GB, sm120), x86, CUDA 13, PCIe without peer-to-peer. The checkpoint is first-party: Rarri/DeepSeek-V4-Flash-0731-NVFP4, derived from deepseek-ai/DeepSeek-V4-Flash-0731 at 7872f01b. Scope the mechanism to stacks that route draft-model layers through the same quantized-MoE path as target layers; the general lesson (a requant's exclusion list can break a component that only shows up in a counter) is portable.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "deepseek-ai deepseek-v4-flash-0731",
+          "deepseek-ai deepseek-v4-flash-0731 at 7872f01b. scope the mechanism to stacks",
+          "deepseek-v4-flash-0731",
+          "deepseek-v4-flash-0731 hybrid fp8 + nvfp4 checkpoint",
+          "deepseek-v4-flash-0731-nvfp4",
+          "rarri deepseek-v4-flash-0731-nvfp4"
+        ],
+        "failure_stage": [
+          "decode"
+        ],
+        "gpu_architecture": [],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "fp8",
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "quantization",
+      "check": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
+      "contributor": "Blackwellboy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "measured here, raw not published"
+      ],
+      "exact_conditions": "A vLLM-derived build with a CUTLASS NVFP4 fused-MoE backend serving a DeepSeek-V4-Flash-0731 hybrid FP8 + NVFP4 checkpoint, tensor parallel 2 on 2x RTX PRO 6000 Blackwell (96 GB, sm120), x86, CUDA 13, PCIe without peer-to-peer. The checkpoint is first-party: Rarri/DeepSeek-V4-Flash-0731-NVFP4, derived from deepseek-ai/DeepSeek-V4-Flash-0731 at 7872f01b. Scope the mechanism to stacks that route draft-model layers through the same quantized-MoE path as target layers; the general lesson (a requant's exclusion list can break a component that only shows up in a counter) is portable.",
+      "id": "109",
+      "known_limitations": "",
+      "mechanism": "The requant quantized the routed experts of the 43 main MoE layers to NVFP4 and deliberately excluded the MTP layers, leaving their expert weights in the source release's MXFP4 format (E2M1 nibbles with E8M0 block scales). The serving stack's NVFP4 fused-MoE path loads the MTP layers through the same code path as the main layers, and MXFP4 tensors read as NVFP4 do not error: the shapes are compatible enough to load and wrong enough to produce a drafter whose proposals the target almost always rejects. The target model is untouched, so quality probes pass. The only observable is the acceptance counter, and only if you know what it should read. The misdiagnosis wrinkle cost more time than the bug. The first run against a corrected checkpoint used the stack's probabilistic draft sampling method and produced garbled output, so the fix was recorded as broken and rolled back. On this build and lane the greedy draft sampling method is clean at target temperature 0, 0.7 and 1.0 including thinking mode, and the probabilistic method garbles. Note the inversion against trap 62, where the stable configuration on a different lane is the probabilistic method: which drafter sampling method is safe is a property of the build and lane, not of speculative decoding, and the only way to know yours is to test both.",
+      "mitigation": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
+      "public_evidence_links": [
+        "https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4"
+      ],
+      "related_traps": [
+        "10",
+        "28",
+        "62",
+        "111"
+      ],
+      "source_path": "traps/quantization/109-requant-skips-draft-layer-experts.md",
+      "status": "measured here, raw not published",
+      "supersession": null,
+      "symptom": "A quantized MoE checkpoint serves with multi-token-prediction speculative decoding enabled. The server boots green, output is coherent at every temperature, nothing is logged as a warning. But cumulative draft acceptance sits at 14.7% against a vendor-published figure of 50.8% for this model family, and single-stream decode with speculation on runs below the same lane with speculation off (medians 100 to 103 tok/s against a 116.7 tok/s no-speculation baseline on the same harness). Speculation is a pure tax and nothing announces it.",
+      "title": "an NVFP4 requant that leaves the MTP experts in the source format serves cleanly and quietly breaks its own drafter"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. Nothing in the mechanism is specific to that stack: any continuous-batching server with background traffic will do this to an unscreened benchmark.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731-nvfp4 with mtp speculative decoding",
+          "rarri deepseek-v4-flash-0731-nvfp4"
+        ],
+        "failure_stage": [
+          "decode"
+        ],
+        "gpu_architecture": [],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "evaluation",
+      "check": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison.",
+      "contributor": "Blackwellboy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "measured here, raw not published"
+      ],
+      "exact_conditions": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. Nothing in the mechanism is specific to that stack: any continuous-batching server with background traffic will do this to an unscreened benchmark.",
+      "id": "110",
+      "known_limitations": "",
+      "mechanism": "The endpoint is shared. Background clients (in our case, local agents posting work to the same server) land prefills inside the benchmark's timing window. On a speculative-decoding lane the effect is larger than the intuitive \"some contention\": concurrent requests share verify bandwidth, so per-request decode drops well below the true single-stream rate (this lane's 4-stream arm runs roughly 105 tok/s per request against 200 at true single-stream). A benchmark that does not check for co-tenant traffic does not measure the serve configuration at all; it measures the co-tenants, and it does so silently because the endpoint answers normally either way. The null result in trap 95 brackets this one from the other side: two servers on two GPUs of one host did not perturb each other there. Sharing a host is not the hazard. Sharing an endpoint, and therefore a batch scheduler, is.",
+      "mitigation": "Screen every window, publish only screened numbers, and state the screen next to the number. If you cannot screen (no metrics endpoint, no authority to quiesce), say the endpoint was shared and treat the result as a floor, not a measurement.",
+      "public_evidence_links": [
+        "https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4"
+      ],
+      "related_traps": [
+        "54",
+        "95",
+        "111"
+      ],
+      "source_path": "traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
+      "status": "measured here, raw not published.",
+      "supersession": null,
+      "symptom": "A \"single-stream\" decode benchmark returns 41 to 77 tok/s on a lane whose clean single-stream range, measured the same day with the same harness, is 167 to 302 tok/s. Or the same suite run twice returns numbers that disagree by 3x with no configuration change. The numbers are stable enough within a contaminated run to look like a real regression.",
+      "title": "a single-stream benchmark on a shared endpoint measures your neighbours"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5, greedy draft sampling, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. The mechanism applies to any speculative lane benchmarked at temperature 0 across sessions.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731-nvfp4 with mtp speculative decoding at fixed depth 5",
+          "rarri deepseek-v4-flash-0731-nvfp4"
+        ],
+        "failure_stage": [
+          "decode"
+        ],
+        "gpu_architecture": [],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "evaluation",
+      "check": "Run your single-stream suite twice with a server restart between. If the medians differ by more than your claimed effect size, your claimed effect is not measurable that way. Log acceptance length per run from /metrics deltas next to every throughput number; if throughput and acceptance move together across your two runs, you are looking at this trap and not at drift, thermals or contention.",
+      "contributor": "Blackwellboy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "measured here, raw not published"
+      ],
+      "exact_conditions": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5, greedy draft sampling, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. The mechanism applies to any speculative lane benchmarked at temperature 0 across sessions.",
+      "id": "111",
+      "known_limitations": "",
+      "mechanism": "Both suites ran on our lane on 2026-08-03, interference-screened per trap 110, and the raw is not shipped. The mechanism rests on two things a stranger can verify independently: greedy non-reproducibility across sessions (documented with shipped raw in the agreement-floor note) and the acceptance-throughput coupling below, which any speculative lane's own /metrics will reproduce in an afternoon. Symptom. A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published. Mechanism, in two coupled halves. First, temperature-0 decode is not reproducible across sessions. Greedy tie-breaks land differently between server restarts and even between batches, the divergence compounds token by token, and two sessions generate genuinely different text from the same prompts. That much is general (see the agreement-floor note, and trap 94 for how architecture-dependent the guarantee is). Second, on a speculative lane, throughput is a function of the text being generated. Draft acceptance depends on how predictable the content is, and decode speed tracks acceptance nearly linearly: on this lane, a prompt whose generation accepts 2.8 tokens per step decodes at about 168 tok/s and one that accepts 5.6 decodes at about 302, a 1.8x spread inside one cle",
+      "mitigation": "Three rules, all cheap: 1. Publish the range and the acceptance profile next to any speculative median. \"199.9 median, 167 to 302 observed, mean acceptance 3.85 of 6\" is a reproducible claim; \"199.9 tok/s\" alone is a coin flip. 2. A/B configurations inside one session on fixed prompts, never across sessions. Cross-session deltas below about 20% on this lane are noise. 3. Treat suite size as a variance decision: twelve prompts was enough to see the 167 to 302 spread but not enough to pin the median tighter than about 20%.",
+      "public_evidence_links": [
+        "https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4"
+      ],
+      "related_traps": [
+        "54",
+        "94",
+        "105",
+        "109",
+        "110"
+      ],
+      "source_path": "traps/evaluation/111-greedy-spec-decode-medians-are-a-content-lottery.md",
+      "status": "measured here, raw not published.",
+      "supersession": null,
+      "symptom": "A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published.",
+      "title": "two clean suites, same config, same prompts, medians 20% apart: greedy decode resamples your content, and acceptance prices it"
     }
   ],
   "schema_version": "1.1"
