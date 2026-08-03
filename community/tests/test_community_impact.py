@@ -205,7 +205,7 @@ class CommunityImpactTests(unittest.TestCase):
         # generic attribution: name must not appear as special-case string
         self.assertNotIn("scottleimroth", src.lower())
 
-    def test_issue19_env_control_follow_up_state_accepted(self):
+    def test_issue19_controls_follow_up_state_accepted(self):
         data = json.loads((ROOT / "community" / "impact.json").read_text())
         rec = next(
             r
@@ -214,26 +214,32 @@ class CommunityImpactTests(unittest.TestCase):
             == "impact-20260801-issue19-unvalidated-config-surface"
         )
         self.assertEqual(
-            rec["follow_up_state"], "env_control_complete_engine_control_pending"
+            rec["follow_up_state"],
+            "env_and_engine_control_complete_trap_promotion_pending",
         )
         fails = cii.validate_records(data)
         self.assertEqual(fails, [], fails)
 
-    def test_issue19_generated_output_env_complete_engine_pending(self):
+    def test_issue19_generated_output_both_controls_complete(self):
         data = json.loads((ROOT / "community" / "impact.json").read_text())
         text = gen.render(sorted(data, key=lambda r: (r["date"], r["impact_id"])))
-        self.assertIn("env_control_complete_engine_control_pending", text)
-        self.assertIn("--fail-on-environ-validation", text)
-        # env complete language present; engine still pending
-        low = text.lower()
-        self.assertTrue(
-            "environment-level" in low
-            or "env validation control complete" in low
-            or "env_control_complete" in low
+        self.assertIn(
+            "env_and_engine_control_complete_trap_promotion_pending", text
         )
-        self.assertIn("engine-level backend-selection control", low)
-        self.assertIn("remains pending", low)
-        self.assertIn("engine-selection control pending", low)
+        self.assertNotIn("env_control_complete_engine_control_pending", text)
+        self.assertIn("--fail-on-environ-validation", text)
+        low = text.lower()
+        # both halves recorded complete; scope caveats retained
+        self.assertTrue(
+            "environment level" in low
+            or "environment-level" in low
+            or "env validation control complete" in low
+        )
+        self.assertIn("engine level", low)
+        self.assertIn("no-op on this checkpoint/backend combo", low)
+        self.assertIn("--moe-backend", text)
+        self.assertIn("trap promotion", low)
+        self.assertNotIn("engine-selection control pending", low)
         self.assertIn("not a general cutlass all-clear", low)
         self.assertIn("@scottleimroth", text)
         self.assertIn("source_state", low) or self.assertIn("OPEN", text)
@@ -259,7 +265,7 @@ class CommunityImpactTests(unittest.TestCase):
             credit_statement="Maintainer @Blackwellboy discovered and owns this finding",
             related_issue="https://github.com/Blackwellboy/model-serving-minefield/issues/19",
             wording_guardrail="MEASURED_ON_THIS_BUILD",
-            follow_up_state="env_control_complete_engine_control_pending",
+            follow_up_state="env_and_engine_control_complete_trap_promotion_pending",
             source_state="OPEN",
             source_state_reason="open intake",
         )
@@ -282,7 +288,7 @@ class CommunityImpactTests(unittest.TestCase):
             person_or_project="@alice",
             related_issue="https://github.com/Blackwellboy/model-serving-minefield/issues/19",
             wording_guardrail="MEASURED_ON_THIS_BUILD; engine pending",
-            follow_up_state="env_control_complete_engine_control_pending",
+            follow_up_state="env_and_engine_control_complete_trap_promotion_pending",
             source_state="CLOSED_COMPLETED",
             source_state_reason="wrongly closed after env control",
         )
