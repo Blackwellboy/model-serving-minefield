@@ -665,3 +665,17 @@ is a list of the internal names it hunts for, so shipping it to a public runner
 would publish the thing it protects. A green CI badge on your PR therefore says
 nothing at all about these scans. If a push is refused by one, it prints the
 file, the line and the reason.
+
+
+## What happens after you file a report
+
+1. A maintainer **acknowledges** the contribution in the issue thread.
+2. Missing evidence is **classified** (what is proven vs not), not treated as personal rejection.
+3. The contributor is **credited** by handle in the intake note and, when an entry lands, in the entry.
+4. The correct **evidence label** is explained (for example contributor-measured on this build).
+5. Optional follow-up measurements are clearly distinguished from **blockers**.
+6. The issue remains **open** until an entry or explicit disposition lands.
+7. A useful report is **not discarded** merely because it lacks perfect raw rows.
+
+The evidence bar for a finished registry entry is unchanged. Friendly process
+does not lower technical standards.
