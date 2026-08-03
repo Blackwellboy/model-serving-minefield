@@ -61,15 +61,25 @@ When enabled, an unknown `VLLM_`-prefixed variable causes startup to fail (e.g. 
 
 **Primary mitigation for this trap class on builds that support the flag:** enable `--fail-on-environ-validation`.
 
-## Engine-level backend-selection control - PENDING
+## Engine-level backend-selection control - COMPLETE (`ENGINE_CONTROL_COMPLETED=YES`, 2026-08-02)
 
-Still pending (contributor explicitly not claiming this half):
+Contributor @scottleimroth completed the engine-level half
+([issue #19 comment, 2026-08-02](https://github.com/Blackwellboy/model-serving-minefield/issues/19#issuecomment-5160329265)):
 
-- a real same-checkpoint engine initialisation with the variable **removed**;
-- confirmation that `moe_backend` still resolves to `FLASHINFER_CUTLASS` under that condition.
+- `VLLM_FLASHINFER_MOE_BACKEND=latency` was **removed entirely** from the docker invocation;
+- the container was **recreated fresh** (`docker rm -f` + `docker run`, not a container restart), forcing a real same-checkpoint engine initialisation;
+- the startup log selected the **identical** backend: `Using 'FLASHINFER_CUTLASS' NvFp4 MoE backend out of potential backends: [...]`;
+- **zero** `Unknown vLLM environment variable` warnings appeared (contributor confirmed the variable was genuinely absent, not merely unlogged).
 
-**Do not mark engine-level control complete.**
-Issue remains open until trap promotion decisions and this engine follow-up are resolved.
+**Conclusion (this checkpoint/backend combo, this build):** the variable is a **no-op**.
+Backend resolution is identical with the variable present or absent.
+`--moe-backend` is the actual engine-level control.
+
+This closes the engine-level half of the control. It is still
+**NOT_A_GENERAL_CUTLASS_ALL_CLEAR**: the no-op finding is scoped to this vLLM 0.26.0
+image / checkpoint / backend configuration, not to every GB10 system or every vLLM release.
+
+Issue remains open until trap promotion decisions are resolved.
 
 ## Supporting (non-primary) second checkpoint
 
@@ -81,7 +91,7 @@ Contributor reported that **Qwen3-Next-80B-A3B-NVFP4** on the same image/GPU als
 2. Inspect the resolved engine configuration (`moe_backend` / `NvFp4 MoE backend` line).
 3. Enable `--fail-on-environ-validation` where supported.
 4. Optional explicit control: launch with `--moe-backend marlin` and confirm the selection line changes.
-5. Engine follow-up (pending): `auto` with the env var removed on a real same-checkpoint restart.
+5. Engine follow-up (completed 2026-08-02): `auto` with the env var removed on a real same-checkpoint fresh-container init resolved `FLASHINFER_CUTLASS` identically, with no unknown-variable warning.
 
 ## Original startup log provenance
 
@@ -107,8 +117,8 @@ Core trap intake does **not** depend on that figure.
 
 ## Disposition
 
-- Issue #19 remains **OPEN** (trap promotion and engine-level follow-up unresolved).
+- Issue #19 remains **OPEN** (trap promotion unresolved).
 - **No numbered trap assigned.**
 - Environment-level matched control: **complete**.
-- Engine-level backend-selection control: **pending**.
-- Engine follow-up is useful evidence, **not** a prerequisite for retaining contributor credit or the intake record.
+- Engine-level backend-selection control: **complete** (2026-08-02; this checkpoint/backend combo only).
+- Both controls are useful evidence, **not** a prerequisite for retaining contributor credit or the intake record.
