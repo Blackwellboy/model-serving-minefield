@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/community/impact.schema.json",
+  "title": "Minefield community impact ledger",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "impact_id",
+      "date",
+      "type",
+      "person_or_project",
+      "public_source",
+      "summary",
+      "minefield_role",
+      "maintainers",
+      "evidence_status",
+      "permission_to_publish",
+      "permission_to_quote",
+      "follow_up_state",
+      "source_state",
+      "source_state_reason",
+      "last_verified"
+    ],
+    "properties": {
+      "impact_id": {
+        "type": "string",
+        "pattern": "^impact-[0-9]{8}-[a-z0-9-]+$"
+      },
+      "date": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "ADOPTION",
+          "RESOLVED_INCIDENT",
+          "CONTRIBUTOR_DISCOVERY",
+          "INDEPENDENT_CONFIRMATION",
+          "DOWNSTREAM_REFERENCE"
+        ]
+      },
+      "person_or_project": { "type": "string", "minLength": 1 },
+      "contributors": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "uniqueItems": true
+      },
+      "maintainers": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "credit_statement": { "type": "string" },
+      "public_source": {
+        "type": "string",
+        "pattern": "^https://.+"
+      },
+      "summary": { "type": "string", "minLength": 1 },
+      "minefield_role": { "type": "string", "minLength": 1 },
+      "related_issue": {
+        "type": ["string", "null"],
+        "pattern": "^https://.+"
+      },
+      "related_traps": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "evidence_status": {
+        "type": "string",
+        "enum": [
+          "PUBLIC_PRIMARY",
+          "PUBLIC_CORROBORATED",
+          "OWNER_REPORTED",
+          "CONTRIBUTOR_REPORTED",
+          "INCONCLUSIVE"
+        ]
+      },
+      "permission_to_publish": { "type": "string", "minLength": 1 },
+      "permission_to_quote": { "type": "string", "minLength": 1 },
+      "wording_guardrail": { "type": ["string", "null"] },
+      "follow_up_state": { "type": "string", "minLength": 1 },
+      "source_state": {
+        "type": "string",
+        "enum": [
+          "OPEN",
+          "CLOSED_COMPLETED",
+          "CLOSED_NOT_PLANNED",
+          "MERGED",
+          "DRAFT",
+          "EXTERNAL_STATIC",
+          "UNKNOWN"
+        ]
+      },
+      "source_state_reason": { "type": "string", "minLength": 1 },
+      "last_verified": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      }
+    }
+  }
+}

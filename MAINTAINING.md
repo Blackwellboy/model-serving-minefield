@@ -309,3 +309,8 @@ equally cheap.
 
 Reports get a first maintainer response within a few days. Entries land as
 they are verified. The [CHANGELOG.md](CHANGELOG.md) is the liveness record.
+
+## Contributor reports (process)
+
+See CONTRIBUTING.md § “What happens after you file a report”. Acknowledge first,
+classify evidence, credit the reporter, keep the issue open until disposition.

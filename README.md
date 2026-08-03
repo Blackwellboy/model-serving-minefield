@@ -464,3 +464,8 @@ model weights are included.
 
 - GitHub Sponsors: <https://github.com/sponsors/Blackwellboy>
 - Buy Me a Coffee: <https://buymeacoffee.com/blackwellboy>
+
+## Community impact
+
+Adoptions, contributor discoveries and independently verifiable outcomes:
+[community/COMMUNITY_IMPACT.md](community/COMMUNITY_IMPACT.md).
