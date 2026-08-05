@@ -13,6 +13,15 @@ and the fix ships its own conversion report
 (`hf_quant_config.json`) in the repo. The two statuses are stated separately
 so neither borrows the other's strength.
 
+**Credit and roles.** The acceptance collapse was observed and measured on our lane
+(Blackwellboy), and the registry verified the checkpoint-layout facts independently. The
+requant itself, both public revisions of
+[Rarri/DeepSeek-V4-Flash-0731-NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4),
+the fixed layout, and its shipped conversion report and quantized-layer manifest are the work
+of [@Rarriferrari](https://github.com/Rarriferrari), who also filed this entry. Without that
+repository and its fixed revision the mechanism half of this trap would not be independently
+checkable; the artifact evidence is his.
+
 **Symptom.** A quantized MoE checkpoint serves with multi-token-prediction
 speculative decoding enabled. The server boots green, output is coherent at
 every temperature, nothing is logged as a warning. But cumulative draft
