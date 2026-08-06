@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 108
+Four doors, and which one you want depends on why you are here. All 111
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -105,7 +105,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 108 entries, one row each, sorted by number. It is the
+  directly below, all 111 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -116,8 +116,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 108 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 89. It runs
+for **19 of these 111 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 92. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -149,7 +149,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 108 entries. If you know what you are running rather than what you are
+All 111 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -263,6 +263,9 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | KV cache occupancy climbs to a ceiling and pins there, preemptions at zero | Prefix caching retains blocks until eviction, so a cache doing its job fills up; occupancy is cache fill, not memory pressure | [106](traps/memory/106-kv-occupancy-ceiling-is-not-a-leak.md) | reproduced here |
 | Memory rises monotonically for hours and a longer run on the same process shows it fully reverts | The rise is a bounded transient; a short soak samples only its upward leg and reports a leak and a throughput decline that do not exist | [107](traps/memory/107-soak-duration-changes-the-verdict.md) | reproduced here |
 | A fixed-seed temperature-0 burn canary keeps changing output, in both directions | The serve settles into two outputs and alternates; a detector comparing consecutive samples fires on every switch | [108](traps/evaluation/108-burn-canary-is-bistable-not-degrading.md) | reproduced here |
+| Speculative decode enabled, output clean, acceptance far below the vendor's figure, and speculation loses to its own no-spec baseline | The requant's exclusion list left the MTP experts in the source format; they load through the NVFP4 fused-MoE path without error and draft garbage | [109](traps/quantization/109-requant-skips-draft-layer-experts.md) | measured here, raw not published |
+| Single-stream bench returns 41 to 77 tok/s on a lane that cleanly does 167 to 302 | The endpoint is shared; co-tenant prefills inside the timing window share verify bandwidth, so the benchmark measures the neighbours | [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) | measured here, raw not published |
+| Two interference-clean suites, same config and prompts, medians 20% apart | Greedy decode resamples generated content across sessions and draft acceptance prices content, so speculative throughput inherits the lottery | [111](traps/evaluation/111-greedy-spec-decode-medians-are-a-content-lottery.md) | measured here, raw not published |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 
 If you run one check from this registry, make it
@@ -291,7 +294,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 108 entries in under a minute:
+against 19 of this registry's 111 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
