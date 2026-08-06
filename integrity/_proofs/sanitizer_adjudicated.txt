@@ -774,4 +774,4 @@ dist/model-serving-minefield-agent-pack.zip:38009: reviewed public integration r
 integrity/check_evidence_json_secrets.py:14: reviewed synthetic credential pattern string inside the local secret scanner for public evidence JSON; not a real secret.
 integrity/check_evidence_json_secrets.py:18: reviewed synthetic private-key BEGIN marker string inside the local secret scanner for public evidence JSON; not a real secret.
 tests/test_evidence_secret_scan.py:12: reviewed synthetic planted github_pat_ test token for the evidence secret scanner regression suite; not a real secret.
-tests/test_evidence_secret_scan.py:18: reviewed synthetic planted BEGIN PRIVATE KEY marker for the evidence secret scanner regression suite; not a real secret.
+tests/test_evidence_secret_scan.py:18: reviewed synthetic planted BEGIN + PRIVATE KEY (split) marker for the evidence secret scanner regression suite; not a real secret.
