@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `a8849c3705730e6c60296a215f294ac5deb6efaaec69ee0608e5fd90fad86e88`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `7a3d8b25f2d83893cbb4ab80858ee929330ea26ddf5252954750d4766e5ea4f0`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -452,5 +452,6 @@ Allowed diagnosis levels are `CONFIRMED_BY_DIRECT_PROBE`,
 - 110: A "single-stream" decode benchmark returns 41 to 77 tok/s on a lane whose clean single-stream range, measured the same day with the same harness, is 167 to 302 tok/s. Or the same suite run twice returns numbers that disagree by 3x with no configuration change. The numbers are stable enough within a contaminated run to look like a real regression.
 - 111: A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published.
 - 112: Two complementary lies on the same box: 1. False positive. Container status remains Up, wrapper or process still present, and ordinary health surfaces may answer, but EngineCore has died after a CUDA device-side assert and completion requests fail. 2. False negative. Unauthenticated /v1/models returns HTTP 401. curl -f turns that valid response into a non-zero exit, and polling logic concludes the host or server is down while the service is alive.
+- 113: A constructor or serving API receives the same inline message sequence: One checkpoint preserves LATESYS inside a distinct system span. Another returns success but silently removes it. A third returns success after joining it to the preceding user turn. Code that treats HTTP acceptance as proof of system-role preservation gets three materially different prompts from the same request.
 
 When online, fetch the linked canonical source from the registry JSON or use `AGENT_START_HERE.md` before concluding a match.

@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 112,
-  "content_sha256": "d1d74362ecffeee65a0017c79c8d8b7d01409a87aab20a83a6d61f62557edb36",
+  "canonical_trap_count": 113,
+  "content_sha256": "4065296eaaef851ff6ebc2f5e86183335592be184d9cb1d15e9a0efec691c14b",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -3747,7 +3747,8 @@
         "deepseekv4"
       ],
       "affected_stacks": [
-        "vLLM"
+        "vLLM",
+        "transformers"
       ],
       "affected_versions_builds": "vLLM 0.21.1rc1.dev339+g1967a5627bc3 serving a community-abliterated DeepSeek-V4-Flash checkpoint, tokenizer mode deepseekv4, --trust-remote-code, tensor parallel 2 across two DGX Spark GB10 nodes. The no-template-file structure and the Python encoder come from the checkpoint, so they are properties of the model family as packaged; the exact renders above are from this build and this server version.",
       "applicability": {
@@ -3776,6 +3777,7 @@
         ],
         "quantization": [],
         "serving_stack": [
+          "transformers",
           "vllm"
         ],
         "stack_version": [
@@ -3811,14 +3813,19 @@
         "https://github.com/felix0080",
         "https://github.com/lazypool",
         "https://github.com/vllm-project/vllm/issues/46710",
+        "https://github.com/vllm-project/vllm/issues/46710#issuecomment-5131158274",
         "https://github.com/vllm-project/vllm/pull/47681",
-        "https://github.com/wqh17101"
+        "https://github.com/vllm-project/vllm/tree/48a077e4cfaa5425ac5df67ce95f07a99c6d26d5",
+        "https://github.com/wqh17101",
+        "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/tree/60d8d70770c6776ff598c94bb586a859a38244f1",
+        "https://huggingface.co/moonshotai/Kimi-K3/tree/9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
       ],
       "related_traps": [
         "02",
         "24",
         "30",
-        "58"
+        "58",
+        "113"
       ],
       "source_path": "traps/template/56-checkpoint-ships-no-chat-template.md",
       "status": "reproduced here",
@@ -7801,6 +7808,85 @@
       "supersession": null,
       "symptom": "Two complementary lies on the same box: 1. False positive. Container status remains Up, wrapper or process still present, and ordinary health surfaces may answer, but EngineCore has died after a CUDA device-side assert and completion requests fail. 2. False negative. Unauthenticated /v1/models returns HTTP 401. curl -f turns that valid response into a non-zero exit, and polling logic concludes the host or server is down while the service is alive.",
       "title": "process liveness is not authenticated model readiness"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash /tokenize render in trap 56 is WELDEDTOUSER. Kimi-K3 revisio",
+        "MiniMax revisions rendered DROPPED and exactly matched their no-system contro",
+        "MiniMax-M2.5 f710177d938eff80b684d42c5aa84b382612f21f",
+        "MiniMax-M2.7 d494266a4affc0d2995ba1fa35c8481cbd84294b",
+        "MiniMax-M3 f0e1c1e04d40177e4673a22097036854f536e9c0. The first three rendered"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "transformers"
+      ],
+      "affected_versions_builds": "The 2026-07-30 public-artifact run executed exact Jinja revisions through the generic Transformers template renderer (not checkpoint tokenizer classes or serving endpoints) for GLM-5.1 26e1bd6e011feb778d25ae34b09b07074139d92d, GLM-5.2 b4734de4facf877f85769a911abafc5283eab3d9, Kimi-K2.6 7eb5002f6aadc958aed6a9177b7ed26bb94011bb, MiniMax-M2.5 f710177d938eff80b684d42c5aa84b382612f21f, MiniMax-M2.7 d494266a4affc0d2995ba1fa35c8481cbd84294b, and MiniMax-M3 f0e1c1e04d40177e4673a22097036854f536e9c0. The first three rendered ROLEMARKED; all three MiniMax revisions rendered DROPPED and exactly matched their no-system controls. Both results also held after a tool result. The existing live DeepSeek-V4-Flash /tokenize render in trap 56 is WELDEDTOUSER. Kimi-K3 revision 9f62e4e9fffbd0a83ddd60e1c209d828994b3569 was executed through its pinned upstream tokenizer in a CPU-only isolated profile. Its untokenized render is visibly system-marked, but decoding the token IDs inserts spaces around structural tokens. The strict cross-representation result is therefore INCONCLUSIVE, and the actual vLLM endpoint remains UNDERTEST.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "deepseek-v4-flash",
+          "deepseek-v4-flash tokenize render in trap 56 is weldedtouser. kimi-k3 revisio",
+          "minimax revisions rendered dropped and exactly matched their no-system contro",
+          "minimax-m2.5",
+          "minimax-m2.5 f710177d938eff80b684d42c5aa84b382612f21f",
+          "minimax-m2.7",
+          "minimax-m2.7 d494266a4affc0d2995ba1fa35c8481cbd84294b",
+          "minimax-m3",
+          "minimax-m3 f0e1c1e04d40177e4673a22097036854f536e9c0. the first three rendered"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [
+          "deepseek",
+          "minimax"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "transformers",
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "template",
+      "check": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
+      "contributor": "@wqh17101 and Blackwellboy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "reproduced here"
+      ],
+      "exact_conditions": "The 2026-07-30 public-artifact run executed exact Jinja revisions through the generic Transformers template renderer (not checkpoint tokenizer classes or serving endpoints) for GLM-5.1 26e1bd6e011feb778d25ae34b09b07074139d92d, GLM-5.2 b4734de4facf877f85769a911abafc5283eab3d9, Kimi-K2.6 7eb5002f6aadc958aed6a9177b7ed26bb94011bb, MiniMax-M2.5 f710177d938eff80b684d42c5aa84b382612f21f, MiniMax-M2.7 d494266a4affc0d2995ba1fa35c8481cbd84294b, and MiniMax-M3 f0e1c1e04d40177e4673a22097036854f536e9c0. The first three rendered ROLEMARKED; all three MiniMax revisions rendered DROPPED and exactly matched their no-system controls. Both results also held after a tool result. The existing live DeepSeek-V4-Flash /tokenize render in trap 56 is WELDEDTOUSER. Kimi-K3 revision 9f62e4e9fffbd0a83ddd60e1c209d828994b3569 was executed through its pinned upstream tokenizer in a CPU-only isolated profile. Its untokenized render is visibly system-marked, but decoding the token IDs inserts spaces around structural tokens. The strict cross-representation result is therefore INCONCLUSIVE, and the actual vLLM endpoint remains UNDERTEST.",
+      "id": "113",
+      "known_limitations": "",
+      "mechanism": "Message validation and prompt construction are separate contracts. Once an inline system message reaches a checkpoint-specific Jinja template or Python encoder, that constructor may: - emit a distinct system boundary: ROLEMARKED; - omit the message: DROPPED, which is non-welding but lossy; - place the text inside a user span: WELDEDTOUSER; - reject the sequence: REJECTED; or - emit boundaries too weak or conflicting to classify safely. The constructor, its immutable revision, and the serving entrypoint are therefore part of the request semantics. Model output cannot distinguish these cases reliably because it is downstream of the render.",
+      "mitigation": "Pin and record the template or encoder hash with the model revision. Reject inline system messages at the application boundary unless that exact constructor and entrypoint have passed the render probe. Where inline messages are not supported, reject them or deliberately transform them without lowering a developer/root instruction into a weaker tier. If the runtime has only one system tier, merge only policy that already belongs to that tier into its initial message and record the transformation; never rely on silent template behavior. Treat DROPPED as instruction loss, not as a safe non-welding result.",
+      "public_evidence_links": [
+        "https://github.com/vllm-project/vllm/issues/46710#issuecomment-5131158274",
+        "https://github.com/wqh17101"
+      ],
+      "related_traps": [
+        "56"
+      ],
+      "source_path": "traps/template/113-inline-system-role-is-not-a-stable-contract.md",
+      "status": "reproduced here",
+      "supersession": null,
+      "symptom": "A constructor or serving API receives the same inline message sequence: One checkpoint preserves LATESYS inside a distinct system span. Another returns success but silently removes it. A third returns success after joining it to the preceding user turn. Code that treats HTTP acceptance as proof of system-role preservation gets three materially different prompts from the same request.",
+      "title": "inline system role is not a stable render contract"
     }
   ],
   "schema_version": "1.1"

@@ -2,6 +2,13 @@
 
 ## 2026-08-06
 
+- [Trap 113](traps/template/113-inline-system-role-is-not-a-stable-contract.md): inline system role is not a stable render contract (classifier + pinned evidence; credit @wqh17101 for source map).
+- Trap 56 addendum: pinned source/render boundary for DeepSeek and cross-model Jinja classes.
+- CLI: `minefield classify-inline-system`.
+
+
+## 2026-08-06
+
 - [Trap 77](traps/reasoning/77-only-one-request-field-is-validated.md): startup-configuration unvalidated control addendum (issue #19, @scottleimroth).
 - [Trap 112](traps/runtime/112-process-liveness-is-not-model-readiness.md): process liveness is not authenticated model readiness (issue #21, @scottleimroth).
 - Checks: `vllm_environ_registration_probe`, `endpoint_readiness_hierarchy_probe`.
