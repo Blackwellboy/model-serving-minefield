@@ -1,0 +1,38 @@
+name: agent-platform
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: compile and unit test
+        run: |
+          python -m compileall -q minefield tests
+          python -m unittest discover -s tests
+      - name: verify generated artefacts
+        run: |
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git diff --exit-code -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+      - name: package smoke test
+        run: |
+          python -m pip install .
+          minefield coverage --json
+          printf '{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n' | minefield-mcp
+      - name: repository secret scan
+        run: |
+          python -m pip install detect-secrets==1.5.0
+          detect-secrets scan --all-files \
+            --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/' \
+            --exclude-lines 'content_sha256' > "$RUNNER_TEMP/detect-secrets.json"
+          python -c 'import json,sys; d=json.load(open(sys.argv[1])); n=sum(map(len,d.get("results",{}).values())); print(f"secret findings: {n}"); raise SystemExit(bool(n))' "$RUNNER_TEMP/detect-secrets.json"

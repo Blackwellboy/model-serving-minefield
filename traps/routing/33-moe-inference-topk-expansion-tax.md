@@ -1,0 +1,185 @@
+# Trap 33: raising a MoE's inference top-k silently costs accuracy
+
+**Found by [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b)
+([reports/ALPHA_DIAL_20260712.md](https://github.com/hikarioyama/qwen36-a6b/blob/main/reports/ALPHA_DIAL_20260712.md)).**
+
+**Status: reported by others** (measured by the finder across three runs on
+two machines, with the per-item JSON he publishes re-scored here and the dose
+curve confirmed from his raw; **his** raw is published, which is what makes that
+half checkable) **and measured here, raw not published** since 2026-07-28, on
+our own Qwen 3.6 35B-A3B **NVFP4** lane, at n=600 paired, two independent
+passes, in both scoring protocols.
+
+**Why the first-party half is not "reproduced here", having briefly been
+labelled that way.** That label requires a stranger to check the **result**
+without asking us for anything. We ship the runnable scripts, which lets you
+**re-run** the study on your own lane; we do not ship the answer sheets, so you
+cannot check **our** rows. Those are different things, and our own agreement
+floor is the reason the difference matters here: a re-run on this stack carries
+real per-item noise, so your numbers and ours will not be identical even when
+you do everything right. Shipping the sheets would fix it, and MAINTAINING
+reserves in-repo raw for calibration constants that other entries cite as a
+threshold, floor or baseline. Nothing cites this delta that way. Rather than
+widen that rule so our own result could keep the stronger label, the label
+moved. **What converts it:** the answer sheets published at a URL, or this
+delta becoming a figure other entries measure against, at which point the
+in-repo exception applies on its own terms. Method, numbers and the runnable scripts are in
+[the Q1 writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
+
+**This is the second time a first-party run has confirmed an external
+contributor's finding in this registry**, and it is worth naming as a pattern
+rather than as a one-off: the reported-by-others tier is not a holding pen for
+claims we doubt, it is where a credited finding waits for hardware. Trap
+[35](../evaluation/35-identical-weights-do-not-score-identically.md) was the
+first. In both cases the finding survived, and in both cases the **Found by**
+line did not move.
+
+**Symptom.** You raise the number of experts a MoE activates per token,
+because more active parameters should mean more capability, and the model
+gets **worse**. No error, no warning, no log line. The checkpoint is
+untouched, the experts are fine, and the benchmark drops several points. The
+change is one config value, so nothing looks like it could have gone wrong,
+and the obvious reading, "this model does not benefit from more compute", is
+the wrong one.
+
+**Mechanism.** The selected gate scores are renormalized to sum to 1. Adding
+24 more experts to that normalized mixture does not add their contribution on
+top of the original eight, it **dilutes** the weight the original eight
+receive. The expert selection is not damaged and the routing is not
+degraded: the nesting is exact, so the top-8 of a k=32 selection are the same
+8 experts a k=8 selection would have picked. Only the mixing ratio changed.
+The finder's worked example, for one token where the top 8 hold 18% of
+pre-top-k mass and ranks 9 to 32 hold 20%: rank-1 expert A takes 6/18 = 33.3%
+of the mixture at k=8, and 6/38 = 15.8% at k=32. The tail experts are
+untrained at that weight and spend the mixture on nothing.
+
+The phenomenon is not new. Elastic MoE (arXiv:2509.21892) reports the same
+degradation as an "inference-time scaling wall" and fixes it during training.
+What is worth knowing here is that it is silent, it is a serving-side config
+change people make casually, and it has a runtime fix.
+
+**Stacks and builds bitten.** Qwen3.6-35B-A3B (256 experts per layer, native
+top-8), revision `995ad96eacd98c81ed38be0c5b274b04031597b0`, bf16 under HF
+transformers on 2x RTX PRO 6000. MMLU and GSM8K scored by choice-logprob
+(no generation, so no truncation), n=600, shuffle seed 0, batch 16, paired on
+identical items. Three separate runs are in his log and they are **not** one
+measurement; each is stated on its own terms:
+
+- **k dose sweep** (local, per-item JSON published as
+  `esft/reports/eval/base_k{8,16,24,32}_intel_items.json`; recomputed here,
+  same 600 items with identical gold verified across arms). MMLU: k8
+  506/600 (84.33%), k16 497 (82.83%), k24 489 (81.50%), k32 484 (80.67%);
+  k8 to k32 is **-3.67 pt**, discordant 35/13, exact paired p=0.0021.
+  GSM8K: k8 536/600 (89.33%), k16 533 (88.83%), k24 527 (87.83%), k32 519
+  (86.50%); k8 to k32 is **-2.83 pt**, discordant 31/14, exact paired
+  p=0.016. Monotone in k on both benchmarks.
+> **Quoting these deltas.** Every number in this section is a **paired**
+> comparison on identical items, reported with its discordant-pair counts and
+> an exact paired p-value, which is why 3-point effects are resolvable here.
+> Do not compare them against the plus or minus **1.3 pt at n=600** minimum
+> detectable effect from
+> [our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md):
+> that figure bounds **unpaired** run-to-run drift, and a paired test on the
+> same items is strictly more sensitive than it. The MDE is the bar for a
+> delta assembled from two separate runs. If you are quoting one of these
+> numbers, quote the discordant counts and the p-value with it, and if you are
+> quoting an unpaired delta of your own, quote the MDE with that.
+
+- **2026-07-11, gpu-host, four arms serial.** base@k8 85.00% vs base@k32
+  81.83%, **-3.17 pt**, CI95 [-5.53, -0.80], exact paired p=0.013.
+- **2026-07-12 and 2026-07-16, local.** base@k8 84.67% (508/600) vs base@k32
+  81.50% (489/600), **-3.17 pt**; restated 2026-07-16 with exact paired
+  p=0.009.
+
+Note for anyone citing this: the counts `508/600 vs 489/600` and the p-value
+`0.013` come from **different runs** and are paired together in the source
+README. The two runs agree on the effect size to two decimals, which is the
+stronger claim; cite the counts with p=0.009 or the p=0.013 with the 85.00 /
+81.83 pair, not crosswise.
+
+**The check.** Before you change a MoE's active-expert count, measure both
+settings on the same items, paired, and report the delta. If you are not
+running a benchmark, the cheap structural check is to confirm what your
+serving stack does with the extra experts: dump the post-selection gate
+weights for one token at both k values and compare the weight assigned to the
+rank-1 expert. If it fell, you bought dilution, not capacity.
+
+```python
+# after top-k selection, before the expert matmul
+w8  = softmax_selected_weights(scores, k=8)
+w32 = softmax_selected_weights(scores, k=32)
+assert w32[argmax] < w8[argmax]   # the tax, visible in one token
+```
+
+Note also that top-k is a **train-time** property of the checkpoint. A model
+pretrained at top-8 has never seen ranks 9 to 32 carry real weight, so this
+is expected behavior, not a bug in the server.
+
+**The fix.** Either leave top-k at the trained value, or scale the tail back
+down. The finder's runtime operation, which he calls the alpha dial
+(`--router-tail-scale`, implemented as a ~20-line gate forward hook, no
+weight change): rank the selected gate scores per token, multiply ranks 9
+through 32 by alpha, renormalize.
+
+- `alpha = 1` is plain k=32.
+- `alpha = 0` is mathematically identical to k=8, and measures that way:
+  98/100 identical predictions against base@k8, at the bf16 noise level.
+- Sweeping alpha on the base model (MMLU n=600, same items, paired against
+  alpha=1) repays the whole tax with **zero training**: alpha=0 84.67,
+  alpha=0.25 84.33 (+2.83 [+0.97, +4.70]), alpha=0.5 84.50 (+3.00 [+1.35,
+  +4.65]), alpha=0.75 82.83 (+1.33 [+0.12, +2.55]), alpha=1 81.50. Flat on
+  [0, 0.5], then it collapses.
+- alpha=0.5 was checked for harm on two other axes, base against base,
+  paired: JMMLU n=600 80.17% vs 78.83% (-1.33 pt, p=0.31, ns) and GSM8K
+  n=400 generation 84.75% vs 85.75% (+1.00 pt, p=0.63, ns).
+
+Two caveats if you port the hook. It hardcodes the rank boundary at 8, so it
+is correct only for a model whose native top-k is 8; parameterize that against
+the checkpoint's `num_experts_per_tok` before reusing it. And the dial
+recovers the floor, it does not beat it: at best the model returns to its
+k=8 accuracy while paying k=32 compute. Raising top-k is only worth the
+tokens if you are also training the tail.
+
+**Found.** 2026-07-11 (the tax, first measured under choice-logprob scoring)
+and 2026-07-12 (the dial and the sweep), in the finder's public research log.
+
+**Attribution.** [@Hikari_07_jp](https://github.com/hikarioyama/qwen36-a6b),
+who published the mechanism, the sweep, the per-item JSON, and the negative
+results around them. Prior art for the phenomenon: Elastic MoE
+(arXiv:2509.21892). Dose-curve re-scoring from his published per-item JSON
+by Blackwellboy.
+
+## Confirmed here 2026-07-28, on a quantised build
+
+The finder's every number is bf16 under HF transformers. We hold the same base
+model family in an **NVFP4** build, and under this registry's own rule that a
+different quantisation is a different unit under test, whether the effect
+survives quantising the expert weights was genuinely open.
+
+It survives, at roughly the reported magnitude, monotone across four values of
+k, in two independent scoring protocols, on two independent passes each.
+
+| k | pass 1 | pass 2 |
+|---|---|---|
+| **8** (shipped) | 518/600 = 86.33% | 513/600 = 85.50% |
+| 16 | 501/600 = 83.50% | 500/600 = 83.33% |
+| 24 | 494/600 = 82.33% | 495/600 = 82.50% |
+| **32** | 491/600 = 81.83% | 489/600 = 81.50% |
+
+Pre-registered primary contrast, k=8 against k=32, n=600 **paired**, pass 1:
+**-4.50 points**, discordant 37 right-at-k8 against 10 the other way, exact
+McNemar two-sided **p = 9.8e-05**. Pass 2 replicates independently at -4.00
+points, 37/13, p = 0.000936.
+
+**Quoting these deltas.** They are paired, so they carry their discordant
+counts and an exact paired p-value, and the plus-or-minus 1.3 point figure from
+[our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+is **not** the right bar for them: that figure bounds unpaired drift and a
+paired test on identical items is strictly more sensitive. It is quoted here
+only as a scale reference, where the effect is 3.46x it, and because the same
+run re-measured it: all four same-k restart pairs landed inside the band, the
+largest at 0.83 points, while every raised-k contrast landed outside it.
+
+Full method, the choice-logprob arms, the truncation accounting and what this
+does **not** show are in
+[the writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).

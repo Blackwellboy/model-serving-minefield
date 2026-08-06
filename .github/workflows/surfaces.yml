@@ -1,0 +1,63 @@
+name: surfaces
+
+# The peer half of verify-public-surfaces, on a schedule rather than a gate.
+#
+# Why this is not a push-time check. The registry's CI runs ON the push that
+# moves HEAD. The site rebuilds AFTER that push, triggered by it. So at push
+# time the site cannot have caught up, and asserting that it has would be
+# evaluating a post-condition as a pre-condition: the check would fail on every
+# push and teach people to ignore it. The push-time run therefore uses
+# --peer-mode defer and prints a DEFERRED block naming this workflow.
+#
+# This job is where that deferral is honoured. It runs the full set with
+# --peer-mode gate and hard-fails. It is visible and counted, and it does NOT
+# page: it is not a required status check and it blocks nothing.
+#
+# A missing peer fails here exactly as it does at push time. Absent is not
+# stale: "I could not look" reported as green is the defect the whole job
+# exists to catch.
+
+on:
+  schedule:
+    # hourly. The registry dispatches to the site on push, so the site should
+    # catch up within about a minute. An hour of granularity means a red run
+    # here means something is actually broken rather than "pushed recently".
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  surfaces:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: check out the Pages site
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: Blackwellboy/Blackwellboy.github.io
+          path: peer-bbio
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: move the peer out of the workspace
+        id: peer
+        run: |
+          mkdir -p "$RUNNER_TEMP/peer"
+          mv peer-bbio "$RUNNER_TEMP/peer/bbio"
+          echo "bbio=$RUNNER_TEMP/peer/bbio" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: verify public surfaces, peers gated
+        run: |
+          python3 integrity/verify_surfaces.py --github \
+            --peer bbio=${{ steps.peer.outputs.bbio }} \
+            --peer-mode gate

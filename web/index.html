@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Model Serving Minefield</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Local, read-only diagnostics</p>
+    <h1>Model Serving Minefield</h1>
+    <p>Search documented traps without uploading logs, configuration, or doctor reports.</p>
+  </header>
+  <main>
+    <section class="controls" aria-label="Registry filters">
+      <label>Symptom or keyword <input id="query" type="search" autofocus></label>
+      <label>Stack <select id="stack"><option value="">All stacks</option></select></label>
+      <label>Evidence <select id="evidence"><option value="">All evidence</option></select></label>
+      <label>Modality <select id="modality"><option value="">All modalities</option></select></label>
+      <label class="check"><input id="core" type="checkbox"> Core only</label>
+    </section>
+    <section class="doctor">
+      <h2>Interpret doctor JSON locally</h2>
+      <label for="doctor-file">Choose a doctor JSON report</label>
+      <input id="doctor-file" type="file" accept=".json,application/json">
+      <pre id="doctor-output">No report loaded.</pre>
+    </section>
+    <p id="count" role="status"></p>
+    <section id="results" class="results" aria-label="Trap results"></section>
+  </main>
+  <template id="card">
+    <article>
+      <h2></h2>
+      <p class="status"></p>
+      <h3>Symptom</h3><p class="symptom"></p>
+      <details><summary>Mechanism, check, and mitigation</summary>
+        <h3>Mechanism</h3><p class="mechanism"></p>
+        <h3>Check</h3><p class="trap-check"></p>
+        <h3>Safe conditional mitigation</h3><p class="mitigation"></p>
+        <p><a class="source">Open canonical source</a></p>
+        <button class="copy" aria-live="polite">Copy “ask your agent” prompt</button>
+      </details>
+    </article>
+  </template>
+  <script src="registry-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
