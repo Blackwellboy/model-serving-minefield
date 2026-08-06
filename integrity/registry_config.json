@@ -5,9 +5,9 @@
     "exemption is only allowed with a reason someone had to type: a silent",
     "pass is what this whole layer exists to stop."
   ],
-
-  "own_finder_names": ["blackwellboy"],
-
+  "own_finder_names": [
+    "blackwellboy"
+  ],
   "_status_note": [
     "The status vocabulary is a CLOSED SET defined once in",
     "CONTRIBUTING.md#status-vocabulary. status_labels mirrors that set and the",
@@ -22,7 +22,6 @@
     "conditions as reported' was added. This config is seeded from the tree at",
     "that commit."
   ],
-
   "status_labels": [
     "reproduced here",
     "contributor-measured, conditions as reported",
@@ -30,7 +29,6 @@
     "measured here, raw not published",
     "under test"
   ],
-
   "status_stems": [
     "reproduced here",
     "contributor-measured",
@@ -39,7 +37,6 @@
     "under test",
     "reproduced by "
   ],
-
   "_upstream_tier_note": [
     "The fourth tier, upstream-reported, lives in upstream/ and is enforced by",
     "integrity/upstream_integrity.py. It is NOT part of status_labels above:",
@@ -56,7 +53,6 @@
     "prevented, and doing it by editing this file is at least a decision",
     "somebody had to type."
   ],
-
   "upstream_tier": {
     "engagement_values": [
       "maintainer confirmed",
@@ -99,17 +95,16 @@
       "traps/versioning/14-finetune-reupload-not-drop-in.md"
     ]
   },
-
   "changelog_batches": {
     "01-07": "2026-07-27 launch line: 'Launched with seven traps (reasoning fields, templates, thinking control, scorer normalization)'. Prose only, no ids in the line, so it cannot be parsed. Traps 01 to 07 are the launch set."
   },
-
   "index_exempt": {
     "05": "scorer normalization is a property of the scorer, not of any model or serving stack; it is listed under the eval-harness stack row, which the checker does see, and this key covers the case where that row is rewritten",
     "11": "listed on the Laguna family row; kept here as a note that speculative depth is a drafter property, not a model-family one",
     "14": "listed on the ~600B-class MoE row by description rather than by a model name, because the re-upload is a community artifact with no stable family label",
     "31": "leftover oracle re-ranker lives entirely in the harness; it appears on the eval-harness stack row and belongs to no model",
     "32": "mlx_lm server flag; appears on the mlx_lm stack row and on the Bonsai model row",
-    "40": "n-gram decontamination is a corpus-screening step upstream of any model; eval-harness stack row only"
+    "40": "n-gram decontamination is a corpus-screening step upstream of any model; eval-harness stack row only",
+    "112": "readiness hierarchy is stack-generic (container/health/auth/generation); not a model-family property"
   }
 }

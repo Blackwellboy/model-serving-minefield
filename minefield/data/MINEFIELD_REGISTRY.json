@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 111,
-  "content_sha256": "70015d78d8830495bc91eaf9ddd6e61ced4c4549920a1b14833e3e9a8735216b",
+  "canonical_trap_count": 112,
+  "content_sha256": "d1d74362ecffeee65a0017c79c8d8b7d01409a87aab20a83a6d61f62557edb36",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -5280,6 +5280,7 @@
         "qwen3"
       ],
       "affected_stacks": [
+        "vLLM",
         "Ollama",
         "SGLang"
       ],
@@ -5306,7 +5307,8 @@
         "quantization": [],
         "serving_stack": [
           "ollama",
-          "sglang"
+          "sglang",
+          "vllm"
         ],
         "stack_version": [
           "0.32.5"
@@ -5336,7 +5338,8 @@
       "mechanism": "Request-body validation is not uniform. On this server exactly one field is validated: think rejects a bad value with a helpful HTTP 400. Everything else is ignored silently. Measured, at temperature 0, against a control that sent no extra fields at all: | Sent | Result | |---|---| | think: \"banana\" | HTTP 400 with a useful message | | enablethinking: false | HTTP 200, output byte-identical to sending nothing | | chattemplatekwargs: {...} | HTTP 200, output byte-identical to sending nothing | | an invented key nobody implements | HTTP 200, output byte-identical to sending nothing | Placement makes no difference: top level and inside options behave the same. The reason this bites harder than an ordinary unsupported-parameter case is the",
       "mitigation": "The real control here is think: true|false|\"high\"|\"medium\"| \"low\"|\"max\" on the native API, and reasoningeffort: \"none\" on the OpenAI-compatible /v1 route. More usefully than either: before you trust any new server with an arm of an experiment, send one deliberately misspelled parameter and see whether you get a 400. If you get a 200, the request surface is unvalidated, your own typos are silent too, and every parameter you send is a hypothesis rather than a setting.",
       "public_evidence_links": [
-        "https://github.com/newageinvestments25-byte"
+        "https://github.com/newageinvestments25-byte",
+        "https://github.com/scottleimroth"
       ],
       "related_traps": [
         "03",
@@ -7579,6 +7582,7 @@
       "mechanism": "The requant quantized the routed experts of the 43 main MoE layers to NVFP4 and deliberately excluded the MTP layers, leaving their expert weights in the source release's MXFP4 format (E2M1 nibbles with E8M0 block scales). The serving stack's NVFP4 fused-MoE path loads the MTP layers through the same code path as the main layers, and MXFP4 tensors read as NVFP4 do not error: the shapes are compatible enough to load and wrong enough to produce a drafter whose proposals the target almost always rejects. The target model is untouched, so quality probes pass. The only observable is the acceptance counter, and only if you know what it should read. The misdiagnosis wrinkle cost more time than the bug. The first run against a corrected checkpoint used the stack's probabilistic draft sampling method and produced garbled output, so the fix was recorded as broken and rolled back. On this build and lane the greedy draft sampling method is clean at target temperature 0, 0.7 and 1.0 including thinking mode, and the probabilistic method garbles. Note the inversion against trap 62, where the stable configuration on a different lane is the probabilistic method: which drafter sampling method is safe is a property of the build and lane, not of speculative decoding, and the only way to know yours is to test both.",
       "mitigation": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
       "public_evidence_links": [
+        "https://github.com/Rarriferrari",
         "https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4"
       ],
       "related_traps": [
@@ -7742,6 +7746,61 @@
       "supersession": null,
       "symptom": "A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published.",
       "title": "two clean suites, same config, same prompts, medians 20% apart: greedy decode resamples your content, and acceptance prices it"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "Docker"
+      ],
+      "affected_versions_builds": "OpenAI-compatible serving behind a container health surface, as reported. The class is general to any stack that equates process presence or unauthenticated HTTP with model readiness.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpointreadinesshierarchyprobe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE.",
+      "contributor": "scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "OpenAI-compatible serving behind a container health surface, as reported. The class is general to any stack that equates process presence or unauthenticated HTTP with model readiness.",
+      "id": "112",
+      "known_limitations": "",
+      "mechanism": "Operators collapse several independent surfaces into one ready boolean. Process presence, transport response, authentication interpretation, model-list success, model identity, and actual generation are different claims. HTTP 401 proves an HTTP server answered; it does not prove the host is down. HTTP 200 on /health proves only that handler answered. Docker Up proves only container state. This is adjacent to trap 53 (stale process after a restart that reported success) but is not the same owner: trap 53 is about restart or bind collision with a retained old process. Trap 112 is about readiness hierarchy and authentication misinterpretation under a live or partially live stack.",
+      "mitigation": "Separate polling outcomes: 401 is auth-required or alive, not down. Require generation or capability before declaring ready.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "53"
+      ],
+      "source_path": "traps/runtime/112-process-liveness-is-not-model-readiness.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "Two complementary lies on the same box: 1. False positive. Container status remains Up, wrapper or process still present, and ordinary health surfaces may answer, but EngineCore has died after a CUDA device-side assert and completion requests fail. 2. False negative. Unauthenticated /v1/models returns HTTP 401. curl -f turns that valid response into a non-zero exit, and polling logic concludes the host or server is down while the service is alive.",
+      "title": "process liveness is not authenticated model readiness"
     }
   ],
   "schema_version": "1.1"

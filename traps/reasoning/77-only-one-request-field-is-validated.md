@@ -89,3 +89,44 @@ arm.
 [@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
 conditions and the paired doctor assertions are in the
 [SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+
+
+## Dated addendum (2026-08-06) - startup configuration surface (scottleimroth-issue-19)
+
+**Measurement and report:** [@scottleimroth](https://github.com/scottleimroth) (issue #19).
+**Diagnostic and registry framing:** @Blackwellboy.
+
+The original entry covers **request-surface** unvalidated control: the server
+accepts invented or wrong request fields with HTTP 200. The same class has a
+**startup-configuration** surface.
+
+On a tested vLLM **0.26.0** image/checkpoint/backend combination on GB10/SM121,
+`VLLM_FLASHINFER_MOE_BACKEND` was **unknown to the runtime**, never consumed by
+the serving path, and had **no effect** on the resolved MoE backend. With the
+variable removed and a fresh container, the engine still selected
+`FLASHINFER_CUTLASS`. The config looked active; the engine silently ignored it.
+
+### Distinguish
+
+| Surface | Name | Shape |
+|---|---|---|
+| Request body | REQUEST_SURFACE_UNVALIDATED_CONTROL | invented JSON fields accepted |
+| Startup env / launch | STARTUP_CONFIGURATION_UNVALIDATED_CONTROL | unknown `VLLM_*` env names ignored |
+
+### Non-claims
+
+- Not: all environment variables are ignored.
+- Not: all vLLM versions behave this way.
+- Not: CUTLASS is universally safe on GB10.
+- Not: the observation applies to every checkpoint.
+
+### The check (operator)
+
+1. Enumerate configured `VLLM_*` environment names.
+2. Compare with the actual runtime build's registered environment names.
+3. Inspect unknown-variable warnings.
+4. Inspect the resolved engine configuration.
+5. Distinguish declared value from effective value.
+6. Prefer `--fail-on-environ-validation` where the build supports it.
+
+**Mitigation:** fail fast on unknown environment variables where supported.
