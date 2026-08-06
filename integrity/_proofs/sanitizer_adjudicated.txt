@@ -372,3 +372,145 @@ dist/model-serving-minefield-agent-pack.zip:34684: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:36062: reviewed style-only punctuation in the regenerated public package after the immutable documentation pin; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:34131: reviewed public integration reference inside the package after the immutable documentation pin; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:36089: reviewed public integration filename inside the package after the immutable documentation pin; no private deployment data is present.
+
+# 2026-08-06 PR22 merge preparation: regenerated dist bundles shifted line-keyed entries; refreshed below.
+dist/MINEFIELD_AGENT_BUNDLE.json:10644: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17729: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17747: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17748: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17765: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17798: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17801: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17811: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17870: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17882: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17937: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:17938: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18004: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18087: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18099: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:10811: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17896: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17914: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17915: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17932: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17965: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17968: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:17978: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18037: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18049: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28728: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28876: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28878: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28881: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28882: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28883: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28886: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28895: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28896: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28897: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28919: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28921: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28924: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:29019: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:29171: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34918: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34919: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34920: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34934: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36894: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1496: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1497: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1498: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1508: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1512: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1521: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1522: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1535: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1537: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1548: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1560: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1561: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18104: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18105: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18171: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18254: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18266: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18852: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:19054: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:19055: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:19058: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20347: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20348: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20349: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20359: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20360: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20363: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20372: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20373: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20399: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20411: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20412: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20515: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20952: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20953: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:20956: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27760: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27778: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27779: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27796: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27829: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27832: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27842: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27901: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27913: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27968: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27969: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28035: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28130: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:28714: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:29048: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:32228: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:32259: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35032: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35469: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35470: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35473: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36843: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36844: reviewed regenerated deterministic bundle carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:18853: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19056: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19059: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20350: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20361: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20364: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20374: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20389: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20400: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20413: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20516: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20954: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:20957: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27762: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27780: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27781: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27798: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27831: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27834: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27844: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27903: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27970: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:27971: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28037: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28120: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28132: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28716: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29052: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:32235: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:32266: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:35046: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:35483: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:35484: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:35487: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36867: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36868: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.

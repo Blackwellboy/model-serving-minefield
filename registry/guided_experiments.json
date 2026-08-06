@@ -2591,6 +2591,78 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "108",
       "untrusted_published_check_text": "Score the canary on the series, never on the adjacent pair. python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 109 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 109 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "109",
+      "untrusted_published_check_text": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 110 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 110 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "110",
+      "untrusted_published_check_text": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 111 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 111 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "111",
+      "untrusted_published_check_text": "Run your single-stream suite twice with a server restart between. If the medians differ by more than your claimed effect size, your claimed effect is not measurable that way. Log acceptance length per run from /metrics deltas next to every throughput number; if throughput and acceptance move together across your two runs, you are looking at this trap and not at drift, thermals or contention."
     }
   ],
   "schema_version": "1.0"

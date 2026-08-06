@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 108,
-    "human_review_possible": 108,
+    "guided_experiments_specified": 111,
+    "human_review_possible": 111,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 108
+    "total_canonical_traps": 111
   },
   "traps": [
     {
@@ -8027,6 +8027,228 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Score the canary on the series, never on the adjacent pair. python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "109",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 109 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "110",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 110 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "111",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Run your single-stream suite twice with a server restart between. If the medians differ by more than your claimed effect size, your claimed effect is not measurable that way. Log acceptance length per run from /metrics deltas next to every throughput number; if throughput and acceptance move together across your two runs, you are looking at this trap and not at drift, thermals or contention.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 111 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Run your single-stream suite twice with a server restart between. If the medians differ by more than your claimed effect size, your claimed effect is not measurable that way. Log acceptance length per run from /metrics deltas next to every throughput number; if throughput and acceptance move together across your two runs, you are looking at this trap and not at drift, thermals or contention.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Run your single-stream suite twice with a server restart between. If the medians differ by more than your claimed effect size, your claimed effect is not measurable that way. Log acceptance length per run from /metrics deltas next to every throughput number; if throughput and acceptance move together across your two runs, you are looking at this trap and not at drift, thermals or contention.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
