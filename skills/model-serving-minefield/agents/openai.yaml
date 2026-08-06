@@ -1,4 +1,0 @@
-interface:
-  display_name: "Model Serving Minefield"
-  short_description: "Diagnose serving failures without overclaiming"
-  default_prompt: "Use $model-serving-minefield to diagnose this model-serving problem and preserve evidence status."
