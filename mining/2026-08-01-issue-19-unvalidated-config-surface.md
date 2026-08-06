@@ -122,3 +122,8 @@ Core trap intake does **not** depend on that figure.
 - Environment-level matched control: **complete**.
 - Engine-level backend-selection control: **complete** (2026-08-02; this checkpoint/backend combo only).
 - Both controls are useful evidence, **not** a prerequisite for retaining contributor credit or the intake record.
+
+
+## Status 2026-08-06
+ISSUE_19_DISPOSITION=EXTEND_TRAP_77_WITH_STARTUP_CONFIGURATION_SURFACE
+Landed: traps/reasoning/77-only-one-request-field-is-validated.md addendum + checks/vllm_environ_registration_probe.py

@@ -58,6 +58,7 @@ the place that blurs it.
 | **@shuaills** | Harmony `commentary`-channel messages crashing the chat endpoint. **Reproduced in-thread by @byjiang1996**, who tied it to the published Harmony specification | [U08](upstream/U08-sglang-harmony-commentary-channel-valueerror.md) |
 | **@jordan-taylor-aisi** | `--chat-template` silently ignored for Mistral checkpoints, warning only. The cost of the silent warning is **@sdtblckgov**'s; code analysis by **@yyzxw**; maintainer confirmation by **@DarkLight1337**; vendor guidance by **@patrickvonplaten** and **@juliendenize** | [U09](upstream/U09-vllm-mistral-chat-template-ignored.md) |
 | **@xl2014** | A VL reranker returning near-reversed relevance scores, and the two-stage resolution: no chat template, then a hand-copied template that still misbehaved. Diagnosis by **@haosdent**; family tracking by **@noooop** | [U10](upstream/U10-vllm-vl-reranker-without-chat-template.md) |
+| **@scottleimroth** | Startup env unvalidated control (issue #19) and process-liveness-vs-model-readiness false positive/negative (issue #21) | [77](traps/reasoning/77-only-one-request-field-is-validated.md), [112](traps/runtime/112-process-liveness-is-not-model-readiness.md) |
 | **Z.ai model team (@ZHANGYUXUAN-zR)** | Tool message content normalised to an array of content parts rendering empty against a string-only template, so the model re-calls the tool forever, with the fixed template shipped | [U11](upstream/U11-glm-tool-content-array-renders-empty.md) |
 
 Being listed here is not an endorsement of the registry by the reporter, and
