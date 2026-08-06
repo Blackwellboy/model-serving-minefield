@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# pre-push: the whole consistency layer, including the one check CI cannot run.
+#
+# Install (from the repo root):
+#     ln -sf ../../integrity/hooks/pre-push .git/hooks/pre-push
+# In the lab repo, where integrity/ is not checked in:
+#     ln -sf /path/to/model-serving-minefield/integrity/hooks/pre-push \
+#            .git/hooks/pre-push
+#
+# Why a hook AND a workflow, rather than one of them. The sanitizer's pattern
+# file is the list of internal hostnames, usernames, path fragments and
+# codenames it hunts for. Publishing it to a public CI runner publishes the
+# thing it protects, so that check can only run on a machine that already has
+# the private kit. Everything else runs in both places: the hook catches it
+# before it leaves the machine, CI catches it when someone pushes from
+# somewhere else or edits through the web UI.
+#
+# Refusing is the point. To override for a genuine emergency:
+#     MINEFIELD_SKIP_INTEGRITY=1 git push
+# which prints a loud line so the skip is visible in the terminal scrollback.
+
+set -uo pipefail
+
+if [ "${MINEFIELD_SKIP_INTEGRITY:-0}" = "1" ]; then
+  echo "pre-push: INTEGRITY CHECKS SKIPPED by MINEFIELD_SKIP_INTEGRITY=1."
+  echo "pre-push: nothing below ran. Say so in the return."
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+# Resolve the symlink before taking a dirname. The install instructions above
+# tell you to symlink this file into .git/hooks/, and BASH_SOURCE is then the
+# symlink's own path, so a bare dirname gives .git/hooks and INTEGRITY becomes
+# .git/. The hook then refused every push with "can't open .git/run_checks.py",
+# which is a fail-closed outcome and therefore not dangerous, but it does mean
+# that anyone who installed it the documented way had a hook that could never
+# pass. Found 2026-07-28 on the first push that used it.
+SELF="${BASH_SOURCE[0]}"
+if command -v readlink >/dev/null 2>&1; then
+  RESOLVED="$(readlink -f "$SELF" 2>/dev/null || true)"
+  [ -n "$RESOLVED" ] && SELF="$RESOLVED"
+fi
+HOOK_DIR="$(cd "$(dirname "$SELF")" && pwd)"
+INTEGRITY="$(dirname "$HOOK_DIR")"
+
+if [ ! -f "$INTEGRITY/run_checks.py" ]; then
+  echo "pre-push: cannot find run_checks.py from $INTEGRITY."
+  echo "pre-push: REFUSING rather than skipping. Point the hook at the repo's"
+  echo "pre-push: integrity/hooks/pre-push, or set MINEFIELD_SKIP_INTEGRITY=1"
+  echo "pre-push: and record the skip."
+  exit 1
+fi
+
+# The peer repo, so claim propagation sees both public surfaces.
+PEER="${MINEFIELD_PEER_REPO:-}"
+
+# The Pages site clone, for the public-surfaces check. A peer that is ABSENT
+# is a hard failure by design: "I could not look" reported as green is the
+# defect that check exists to catch. That rule has a cost here, and it is
+# worth stating plainly rather than discovering at 2am. Without this set, the
+# surfaces check finds no site clone, fails, and refuses every push.
+#
+# If it is not set explicitly, try the conventional sibling locations before
+# giving up, so a normal layout works without configuration.
+BBIO="${MINEFIELD_BBIO_REPO:-}"
+if [ -z "$BBIO" ]; then
+  for cand in "$ROOT/../Blackwellboy.github.io" \
+              "$ROOT/../bbio-site" \
+              "$HOME/staging/bbio-site" \
+              "$HOME/publish/Blackwellboy.github.io"; do
+    if [ -f "$cand/index.html" ]; then BBIO="$cand"; break; fi
+  done
+fi
+if [ -z "$BBIO" ]; then
+  echo "pre-push: no Pages site clone found, so the public-surfaces check"
+  echo "pre-push: cannot inspect the site and will refuse this push."
+  echo "pre-push: set MINEFIELD_BBIO_REPO=/path/to/Blackwellboy.github.io"
+  echo "pre-push: This is deliberate: an uninspected surface reported green is"
+  echo "pre-push: the defect that check exists to catch."
+fi
+if [ -z "$PEER" ]; then
+  for guess in "$(dirname "$ROOT")/laguna-s21-lab" \
+               "$(dirname "$ROOT")/model-serving-minefield"; do
+    if [ -d "$guess" ] && [ "$guess" != "$ROOT" ]; then PEER="$guess"; break; fi
+  done
+fi
+
+ARGS=(--root "$ROOT")
+[ -n "$PEER" ] && ARGS+=(--peer "$PEER")
+[ -n "$BBIO" ] && ARGS+=(--bbio "$BBIO")
+
+echo "pre-push: running the integrity layer on $ROOT"
+[ -z "$PEER" ] && echo "pre-push: peer repo not found; claim propagation will \
+name the repo it did not scan."
+
+python3 "$INTEGRITY/run_checks.py" "${ARGS[@]}"
+rc=$?
+
+if [ $rc -ne 0 ]; then
+  echo ""
+  echo "pre-push: REFUSED. Fix the findings above, or push with"
+  echo "pre-push: MINEFIELD_SKIP_INTEGRITY=1 and record the skip."
+fi
+exit $rc

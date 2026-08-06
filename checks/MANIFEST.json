@@ -1,0 +1,29 @@
+{
+  "_comment": [
+    "Every check the contract harness is expected to discover, by file name.",
+    "This exists because the harness asserted 'all discovered checks can",
+    "fail' and nothing asserted what SHOULD be discovered. Discovery",
+    "globbed *.py and *.sh; a check renamed to an unmatched extension, or",
+    "moved, or never added, would silently shrink the set and the harness",
+    "would keep printing ALL PASS over whatever remained.",
+    "",
+    "The assertion is two-way on purpose. A manifested check that is not",
+    "discovered fails (it went missing). A discovered check that is not",
+    "manifested also fails (it arrived without anyone deciding it should",
+    "be covered). Adding a check therefore requires one deliberate line",
+    "here, which is the point."
+  ],
+  "checks": [
+    "cache_hit_probe.py",
+    "dequant_fidelity.py",
+    "hidden_state_align.py",
+    "latency_reconciliation.py",
+    "preflight_template.py",
+    "reasoning_budget_probe.py",
+    "tokenized_length_assert.py",
+    "tool_args_dialect_probe.py",
+    "util_vs_power_tell.sh",
+    "vllm_environ_registration_probe.py",
+    "endpoint_readiness_hierarchy_probe.py"
+  ]
+}

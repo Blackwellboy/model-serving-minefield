@@ -1,0 +1,23 @@
+# Blank issues are OFF, and the reason is the scrub warning.
+#
+# The trap form asks a stranger what they saw, which is an invitation to paste
+# a log. The form now carries a prominent redaction warning, a required scrub
+# checkbox, and a worked sanitised-versus-unsanitised example. A blank issue
+# routes around all three, so leaving blank issues on would mean the warning
+# only reaches the people who happened not to skip it. A warning that the
+# reporter can bypass in one click is decoration.
+#
+# Turning them off is only defensible if nothing loses its door, so nothing
+# does. There are two forms, not one: "I hit a trap" and "Something else",
+# and the second exists precisely so that questions, corrections, doc bugs and
+# "I need to report something privately" still have somewhere to go. Both
+# carry the scrub warning. The contact links below cover the two cases that
+# should never start as a public issue at all.
+blank_issues_enabled: false
+contact_links:
+  - name: Report a leaked credential, or anything else, privately
+    url: https://github.com/Blackwellboy/model-serving-minefield/blob/main/SECURITY.md
+    about: A key, token, hostname or personal detail published here, including one you posted yourself by mistake. Rotate it first, then read this. Do not open a public issue about it.
+  - name: Contributing a complete entry by PR
+    url: https://github.com/Blackwellboy/model-serving-minefield/blob/main/CONTRIBUTING.md
+    about: The format, the evidence bar and the status vocabulary. You do not need this to file a report; the trap form is the easy door.

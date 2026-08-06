@@ -1,0 +1,97 @@
+# Traps by model
+
+You are about to serve a specific model and want to know what has bitten
+people on it. This is that page, and it is the page you add a row to when a
+model bites you.
+
+Two honest caveats. Absence from this table means nobody has reported on
+that model here, not that it is safe. And many traps live in the stack, not
+the model: everything in the stack-level table applies to whatever model you
+serve on that stack.
+
+**If you know your serving stack, start one level up.** The
+[per-stack pages](../stacks/) carry the five entries most likely to bite on
+[vLLM](../stacks/vllm.md), [llama.cpp and GGUF](../stacks/llama-cpp.md),
+[Ollama](../stacks/ollama.md) and [mlx_lm](../stacks/mlx.md), plus the three
+checks to run before anything else. This page is the full map; those are the
+shortlists.
+
+## Model families
+
+| Model family | Traps observed on it |
+|---|---|
+| Laguna S 2.1 (NVFP4, FP8, Q4_K_M, EXL3-tail builds) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [02](../traps/template/02-orphaned-think-close-tag.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [04](../traps/template/04-history-reasoning-stripping.md), [06](../traps/reasoning/06-identity-sentence-eviction.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [11](../traps/runtime/11-speculative-depth-peak-and-collapse.md), [19](../traps/tools/19-missing-jinja-breaks-tool-parsing.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [30](../traps/template/30-default-system-message-silently-replaced.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [98](../traps/runtime/98-speculative-decode-default-max-seqs-oom-uma.md), [77](../traps/reasoning/77-only-one-request-field-is-validated.md) *(SGLang 0.5.16, contributor-measured, conditions as reported)* |
+| Qwen 3.6 35B-A3B (NVFP4) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [23](../traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md), [26](../traps/tools/26-tool-call-inside-unclosed-think.md) |
+| Qwen 3.6 35B-A3B (bf16, HF transformers, rev `995ad96e`) | [33](../traps/routing/33-moe-inference-topk-expansion-tax.md), [34](../traps/evaluation/34-baseline-you-degraded-yourself.md), [35](../traps/evaluation/35-identical-weights-do-not-score-identically.md), [36](../traps/evaluation/36-token-cap-is-an-arm-level-handicap.md), [37](../traps/evaluation/37-uniform-zero-is-a-harness-verdict.md), [38](../traps/template/38-template-owns-the-opening-think-tag.md), [39](../traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md), [41](../traps/runtime/41-static-batching-buys-power-not-throughput.md) |
+| Qwen 3.5 9B (Q4_K_M, llama.cpp) | [21](../traps/versioning/21-no-generation-config-server-defaults-win.md), [22](../traps/evaluation/22-family-card-budget-floors-differ-by-size.md) |
+| Qwen 3.6 27B (Q4_K_M, llama.cpp) | [22](../traps/evaluation/22-family-card-budget-floors-differ-by-size.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md); control case in [21](../traps/versioning/21-no-generation-config-server-defaults-win.md) |
+| Qwen 3.5 / 3.6 family broadly (dense, A3B MoE, Next hybrids; upstream reports) | [23](../traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md), [24](../traps/template/24-official-template-breaks-cpp-jinja.md), [25](../traps/template/25-empty-think-blocks-poison-prefix-cache.md), [26](../traps/tools/26-tool-call-inside-unclosed-think.md), [27](../traps/quantization/27-nvfp4-accuracy-cliff-config-misses.md) |
+| DeepSeek V4-Flash (MTP builds; upstream reports) | [28](../traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md) |
+| DeepSeek V4-Flash, community-abliterated FP8 + NVFP4 MLA KV, vLLM, 2x DGX Spark ([full page](deepseek-v4-flash.md)) | [56](../traps/template/56-checkpoint-ships-no-chat-template.md), [57](../traps/reasoning/57-thinking-kwarg-truthiness-coercion.md), [58](../traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md), [59](../traps/reasoning/59-reasoning-roundtrip-confabulation.md), [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md), [62](../traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md); also [14](../traps/versioning/14-finetune-reupload-not-drop-in.md) (it is an abliterated re-upload) |
+| DeepSeek V4-Flash 0731, first-party NVFP4 routed-experts requant ([Rarri/DeepSeek-V4-Flash-0731-NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4)), vLLM-derived NVFP4 fused-MoE build, 2x RTX PRO 6000 Blackwell | [109](../traps/quantization/109-requant-skips-draft-layer-experts.md), [110](../traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md), [111](../traps/evaluation/111-greedy-spec-decode-medians-are-a-content-lottery.md) |
+| Hy3-class ~295B MoE (community MXFP4 / NVFP4 compressed-tensors checkpoints) | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) |
+| MiniMax-M3 | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md) |
+| ~600B-class MoE with MTP drafter (community abliterated re-upload) | [14](../traps/versioning/14-finetune-reupload-not-drop-in.md), [105](../traps/evaluation/105-acceptance-estimator-unnamed.md), [106](../traps/memory/106-kv-occupancy-ceiling-is-not-a-leak.md) |
+| Qwen 3.6 27B (NVFP4 modelopt checkpoint, offline dequant) | [44](../traps/quantization/44-fp4-dequant-scale-swizzle-layout.md) |
+| Nemotron-H 8B Base 8K (Mamba-2 hybrid, squared-ReLU FFN) | [51](../traps/quantization/51-single-backend-nan-fused-path.md) |
+| Ternary-Bonsai-27B (MLX 2bit, stock mlx_lm server, Apple silicon) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
+| NVIDIA Nemotron 3 Nano 30B A3B NVFP4 (vLLM 0.25.1; also SGLang 0.5.16) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [65](../traps/reasoning/65-parser-only-rescue-kwarg.md), [70](../traps/runtime/70-in-repo-parser-not-bundled.md), [71](../traps/runtime/71-mtp-config-key-and-draft-count.md); addenda in [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [13](../traps/memory/13-utilization-fraction-on-unified-memory.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [21](../traps/versioning/21-no-generation-config-server-defaults-win.md), [77](../traps/reasoning/77-only-one-request-field-is-validated.md) *(SGLang 0.5.16, contributor-measured, conditions as reported)* |
+| NVIDIA Nemotron 3 Super 120B A12B, MIXED_PRECISION (vLLM 0.20.0) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [69](../traps/template/69-minor-template-defects.md), [70](../traps/runtime/70-in-repo-parser-not-bundled.md); addenda in [02](../traps/template/02-orphaned-think-close-tag.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [107](../traps/memory/107-soak-duration-changes-the-verdict.md), [108](../traps/evaluation/108-burn-canary-is-bistable-not-degrading.md) |
+| NVIDIA Nemotron 3 Nano Omni 30B A3B NVFP4, multimodal (vLLM 0.20.0) | [63](../traps/reasoning/63-reasoning-round-trip-one-correct-shape.md), [64](../traps/reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md), [66](../traps/template/66-in-text-thinking-toggle-mutates-user-text.md), [67](../traps/template/67-history-rendered-as-object-repr.md), [68](../traps/template/68-multimodal-part-order-discarded.md), [72](../traps/runtime/72-media-fetch-errors-are-5xx.md), [73](../traps/evaluation/73-multimodal-token-cost-not-attributable.md), [74](../traps/evaluation/74-non-speech-audio-fabricated-captions.md) |
+| Qwen 3 8B on Ollama (`qwen3:8b`, Ollama 0.32.5, GB10) | [75](../traps/versioning/75-release-asset-renamed-pinned-url-404.md), [76](../traps/runtime/76-device-rejection-log-line-is-not-fatal.md), [77](../traps/reasoning/77-only-one-request-field-is-validated.md), [78](../traps/tools/78-tool-choice-accepted-and-ignored.md), [79](../traps/memory/79-out-of-range-context-request-accepted.md); addenda in [01](../traps/reasoning/01-reasoning-field-two-names.md) and [66](../traps/template/66-in-text-thinking-toggle-mutates-user-text.md); also confirmed on this stack: [12](../traps/evaluation/12-empty-content-at-token-ceiling.md) and [04](../traps/template/04-history-reasoning-stripping.md) |
+| Mistral-family Q8_0 GGUF, unstated provenance (llama.cpp `b9878`, `--jinja`) | [82](../traps/template/82-system-prompt-relocates-to-last-user-turn.md), [83](../traps/template/83-template-carries-a-baked-default-system-prompt.md), [84](../traps/template/84-tool-roundtrip-then-user-turn-is-unrenderable.md), [85](../traps/reasoning/85-enable-thinking-typechecked-though-never-read.md), [86](../traps/template/86-final-assistant-turn-bypasses-the-template-branch.md), [93](../traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md) |
+
+## Stack-level traps (apply to any model on that stack)
+
+| Stack or layer | Traps |
+|---|---|
+| SGLang (request validation, reasoning field, thinking toggle) | [02](../traps/template/02-orphaned-think-close-tag.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [77](../traps/reasoning/77-only-one-request-field-is-validated.md) *(all contributor-measured, conditions as reported; see the [stack page](../stacks/sglang.md))* |
+| Eval harnesses and scorers | [05](../traps/evaluation/05-scorer-normalization-verdict-flip.md), [15](../traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md), [16](../traps/evaluation/16-finish-reason-is-not-a-failure-signal.md), [17](../traps/evaluation/17-per-arm-recommended-sampling-confound.md), [31](../traps/evaluation/31-leftover-oracle-reranker.md), [34](../traps/evaluation/34-baseline-you-degraded-yourself.md), [35](../traps/evaluation/35-identical-weights-do-not-score-identically.md), [36](../traps/evaluation/36-token-cap-is-an-arm-level-handicap.md), [37](../traps/evaluation/37-uniform-zero-is-a-harness-verdict.md), [40](../traps/evaluation/40-ngram-decontamination-false-positives.md), [42](../traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md), [49](../traps/evaluation/49-prompt-not-tokenized-to-target.md), [52](../traps/evaluation/52-speed-measured-on-a-broken-config.md), [54](../traps/evaluation/54-run-order-and-warm-cache-artifacts.md), [55](../traps/evaluation/55-supported-context-is-not-trained-context.md) |
+| MoE serving config (any sparse-MoE checkpoint) | [33](../traps/routing/33-moe-inference-topk-expansion-tax.md) |
+| HF transformers `generate()` and accelerate placement | [39](../traps/runtime/39-device-map-auto-offloads-and-returns-garbage.md), [41](../traps/runtime/41-static-batching-buys-power-not-throughput.md) |
+| Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md) |
+| Container images over mismatched drivers | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [09](../traps/runtime/09-image-choice-changes-outcome.md) |
+| llama.cpp attention and serve flags | [18](../traps/runtime/18-flash-attention-off-halves-deep-decode.md), [19](../traps/tools/19-missing-jinja-breaks-tool-parsing.md) |
+| mlx_lm server (fields, launch-flag defaults, unvalidated request body) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [03](../traps/reasoning/03-enable-thinking-default-drift.md), [07](../traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md), [29](../traps/reasoning/29-server-reasoning-off-is-not-an-off-switch.md), [32](../traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md) |
+| Reasoning-model serving generally (fields, templates, budgets) | [01](../traps/reasoning/01-reasoning-field-two-names.md), [04](../traps/template/04-history-reasoning-stripping.md), [12](../traps/evaluation/12-empty-content-at-token-ceiling.md), [20](../traps/reasoning/20-reasoning-write-field-name-diverges.md) |
+| Chat templates rendering tool calls (engine-independent) | [43](../traps/template/43-tool-args-string-not-mapping.md) |
+| llama.cpp CUDA and HIP builds (KV-quant kernel coverage) | [45](../traps/quantization/45-fa-all-quants-cpu-fallback.md), [46](../traps/versioning/46-stale-build-missing-arch-kernel.md) |
+| vLLM serving hybrid mamba or DeltaNet architectures | [47](../traps/runtime/47-prefix-caching-autodisabled-hybrid.md) |
+| Agent clients and gateways (the client-side half) | [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) |
+| HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
+| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md) |
+| Checkpoints whose chat template is Python code behind `trust_remote_code` | [56](../traps/template/56-checkpoint-ships-no-chat-template.md) |
+| Prefix caching on long prompts (any engine that reuses KV across requests) | [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
+| Rope-extended context windows (YaRN and similar) | [55](../traps/evaluation/55-supported-context-is-not-trained-context.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
+| Multimodal serving (content parts, media fetch, usage accounting) | [68](../traps/template/68-multimodal-part-order-discarded.md), [72](../traps/runtime/72-media-fetch-errors-are-5xx.md), [73](../traps/evaluation/73-multimodal-token-cost-not-attributable.md), [74](../traps/evaluation/74-non-speech-audio-fabricated-captions.md) |
+| Checkpoints shipping their own reasoning parser | [70](../traps/runtime/70-in-repo-parser-not-bundled.md) |
+| Ollama (request validation, field naming, tool gating, install) | [75](../traps/versioning/75-release-asset-renamed-pinned-url-404.md), [76](../traps/runtime/76-device-rejection-log-line-is-not-fatal.md), [77](../traps/reasoning/77-only-one-request-field-is-validated.md), [78](../traps/tools/78-tool-choice-accepted-and-ignored.md), [79](../traps/memory/79-out-of-range-context-request-accepted.md) |
+| Any lane served through a reasoning parser (stream timing) | [80](../traps/runtime/80-reasoning-parser-batches-sse-deltas.md) |
+| Shared nodes where lanes are stopped and started in sequence | [81](../traps/memory/81-stopped-container-has-not-released-memory.md) |
+| llama.cpp server introspection and slot accounting | [87](../traps/runtime/87-llamacpp-props-reports-per-slot-context.md), [88](../traps/runtime/88-cache-prompt-false-does-isolate-here.md), [97](../traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md), [46](../traps/versioning/46-stale-build-missing-arch-kernel.md) |
+| Continuous batching and prompt cache (temperature-0 determinism on any multi-slot server) | [91](../traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md), [92](../traps/runtime/92-prompt-cache-is-a-second-divergence-source.md) |
+| GPU architecture as an axis (same binary, same weights, different card) | [94](../traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md), [95](../traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) |
+| Device memory reporting from the serving binary (WSL2, `--list-devices`) | [96](../traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) |
+| Weight-editing and quantisation ladders (shared inodes, in-place edits) | [89](../traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md) |
+| Kernel libraries and arch-specific cubins | [90](../traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md) |
+| ROCm on gfx1151 (Strix Halo class): kernel image, library ABI, attention path | [99](../traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md), [100](../traps/runtime/100-oem-kernel-kfd-rejects-gfx1151-code-objects.md), [103](../traps/template/103-torchvision-abi-mismatch-blocks-autoprocessor.md) |
+| `transformers` minor-version upgrades (kwargs and internals removed without a major bump) | [101](../traps/template/101-transformers-minor-version-removes-kwarg.md) |
+| NVFP4 MoE serving on SM120 (profiling before flag-tuning) | [102](../traps/quantization/102-nvfp4-bottleneck-is-bf16-gemm-not-moe.md) |
+
+## Clean preflights
+
+Models that passed the registry preflight on a named stack with no trap
+observed. A clean bill is information too; absence from the trap tables
+above plus presence here means "checked, nothing found", not "untested".
+
+| Model and stack | Date | What was checked |
+|---|---|---|
+| Ternary-Bonsai-27B MLX 2bit on mlx server (Apple silicon) | 2026-07-27 | Sane completions, no stray or unbalanced think tags, structured tool_calls work (correct name and arguments). A deeper same-day pass then found real trap coverage on this lane (see the model row above); the clean verdicts here remain true for what this preflight checked |
+
+## Adding a model
+
+One row, linking the traps observed on it, in the PR that adds or extends
+the entry. If you hit a trap on a model not listed here, that fact alone is
+worth an ["I hit a trap" issue](../../../issues/new?template=report-a-trap.yml):
+"known trap, new model family" extends an entry's "Stacks and builds bitten"
+section and gets you credited.
