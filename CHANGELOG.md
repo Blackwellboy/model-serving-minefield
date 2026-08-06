@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-06
+
+- [Trap 77](traps/reasoning/77-only-one-request-field-is-validated.md): startup-configuration unvalidated control addendum (issue #19, @scottleimroth).
+- [Trap 112](traps/runtime/112-process-liveness-is-not-model-readiness.md): process liveness is not authenticated model readiness (issue #21, @scottleimroth).
+- Checks: `vllm_environ_registration_probe`, `endpoint_readiness_hierarchy_probe`.
+
+
 New entries and structural changes, newest first. Cadence: entries land as
 they are verified; issue reports get a first maintainer response within a
 few days.
