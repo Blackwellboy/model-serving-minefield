@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 112,
-    "human_review_possible": 112,
+    "guided_experiments_specified": 113,
+    "human_review_possible": 113,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 112
+    "total_canonical_traps": 113
   },
   "traps": [
     {
@@ -8323,6 +8323,80 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpointreadinesshierarchyprobe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "113",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 113 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

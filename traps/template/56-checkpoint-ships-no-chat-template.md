@@ -176,3 +176,55 @@ lineage that predates those defaults, so we have not observed preserve-in-place
 ourselves. We established the template property directly from `/tokenize`; the
 upstream thread supplies the evidence that a current default makes it bite.
 Neither half is derived from the other.
+
+## Pinned source and render boundary, 2026-07-30
+
+[@wqh17101](https://github.com/wqh17101) supplied a cross-model source map,
+immutable pins, and explicit permission to publish it with credit in
+[this issue comment](https://github.com/vllm-project/vllm/issues/46710#issuecomment-5131158274).
+That contribution is source-level corroboration. It does not replace or take
+credit for Blackwellboy's original live `/tokenize` finding above.
+
+The source check is pinned to vLLM
+[`48a077e4cfaa5425ac5df67ce95f07a99c6d26d5`](https://github.com/vllm-project/vllm/tree/48a077e4cfaa5425ac5df67ce95f07a99c6d26d5)
+and DeepSeek-V4-Flash
+[`60d8d70770c6776ff598c94bb586a859a38244f1`](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/tree/60d8d70770c6776ff598c94bb586a859a38244f1).
+The loading distinction matters:
+
+- The upstream `encoding/encoding_dsv4.py` is 27,908 bytes with SHA-256
+  `bdbd57c132a1b3725042323d02b98b9d1df28e5f388f134399555d041f5055e0`.
+  Its tokenizer config has no `auto_map` and no ordinary chat template.
+- vLLM therefore routes `DeepseekV4Tokenizer.apply_chat_template` through its
+  maintained `vllm/tokenizers/deepseek_v4_encoding.py` copy. At the pinned
+  vLLM revision that file has SHA-256
+  `20eb61abe97be7607fd12e2b929faef91743cd2699ad9a4e032b54237d137694`.
+  Its canonical LF Git content has MD5
+  `70a8bab597ddab53ab8d0bf60b4230ec`; the contributor-supplied
+  `4e671e9adc64ca315db284545e72a6db` is the same bytes checked out with CRLF
+  line endings.
+
+This gives the three-way comparison without broadening this trap's subject.
+The existing DeepSeek endpoint render is `WELDED_TO_USER`. Pinned Jinja
+execution for GLM-5.1, GLM-5.2, and Kimi-K2.6 is `ROLE_MARKED`. Pinned Jinja
+execution for MiniMax-M2.5, M2.7, and M3 is `DROPPED`, meaning non-welding but
+lossy, not safe. The broader failure class and runnable generic check now live
+in [trap 113](113-inline-system-role-is-not-a-stable-contract.md).
+
+Kimi-K3 is a useful loading-path contrast, not evidence for this trap.
+Revision
+[`9f62e4e9fffbd0a83ddd60e1c209d828994b3569`](https://huggingface.co/moonshotai/Kimi-K3/tree/9f62e4e9fffbd0a83ddd60e1c209d828994b3569)
+exposes `tokenization_kimi.TikTokenTokenizer` through `auto_map`; vLLM's
+Kimi-K3 renderer at the pinned source revision delegates to that upstream
+tokenizer rather than maintaining an encoder copy. The isolated CPU tokenizer
+execution is preserved, but its rendered string and token-ID decode differ in
+spacing around structural tokens, so the strict result is `INCONCLUSIVE`.
+The actual Kimi-K3 vLLM endpoint remains `UNDER_TEST`.
+
+| Claim | Evidence surface | Boundary |
+|---|---|---|
+| DeepSeek inline system text is welded into the user span | `ENDPOINT_RENDER_REPRODUCED` | Original live lane and build above |
+| DeepSeek upstream and vLLM Python encoders share the unmarked system path | `SOURCE_INSPECTED_AT_PINNED_REVISION` | Exact revisions and hashes above |
+| Cross-model Jinja behavior | `TEMPLATE_EXECUTED_AT_PINNED_REVISION` | Generic Transformers template execution, not a checkpoint tokenizer or serving endpoint |
+| Kimi-K3 upstream tokenizer load and render | `TOKENIZER_EXECUTED_AT_PINNED_REVISION` | Isolated tokenizer only; cross-representation result `INCONCLUSIVE` |
+| Kimi-K3 vLLM `/tokenize` behavior | `UNDER_TEST` | No endpoint reproduction in this pass |
+| OpenAI versus Anthropic entrypoint behavior | `INCONCLUSIVE` | Source paths inspected; no endpoint pair reproduced |
