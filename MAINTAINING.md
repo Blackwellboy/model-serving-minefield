@@ -7,6 +7,11 @@ know what happens to their issue.
 ## The two doors
 
 - **Easy door:** the ["I hit a trap" issue form](../../issues/new?template=report-a-trap.yml).
+- **Research-stack door:** [research-stack failure](../../issues/new?template=research-stack-failure.yml)
+  for harness/agent-evidence/measurement integrity (see
+  [playbooks/agentic-research-integrity.md](playbooks/agentic-research-integrity.md)).
+  Disposition may be corroboration, extension, check, mining, draft, or reject
+  - not a guaranteed new number.
   Four plain questions. No evidence bar is applied to the report itself; the
   bar applies to the entry a maintainer later writes from it.
 - **Full door:** a PR with a complete entry per
