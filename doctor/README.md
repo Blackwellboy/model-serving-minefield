@@ -1,5 +1,21 @@
 # minefield-doctor
 
+## Offline research-integrity companions
+
+Endpoint doctor remains a **thinking-stack preflight** (below). Separate
+offline tools validate research evidence without probing a lane:
+
+| Command | Purpose |
+|---------|---------|
+| `python3 -m minefield evidence-preflight --packet FILE` | Evidence Packet integrity (PASS/HOLD/FAIL/UNKNOWN) |
+| `python3 -m minefield blind-review --packet FILE` | Strip proposer verdict/confidence for falsification |
+| `python3 -m minefield upstream-triage` | Map changed paths to risk surfaces (not new traps) |
+| `python3 -m minefield promotion-receipt --receipt FILE` | Validate a promotion provenance receipt |
+
+See [`playbooks/agentic-research-integrity.md`](../playbooks/agentic-research-integrity.md).
+These tools report observation counts and never treat HTTP health alone as
+model capability proof.
+
 ## What this tool actually is: a thinking-stack preflight
 
 The name says doctor, and the name is bigger than the tool. Read it as a

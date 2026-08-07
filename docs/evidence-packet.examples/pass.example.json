@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "ep-example-pass-001",
+  "experiment_id": "exp-template-history-strip-001",
+  "target": {
+    "target_class": "SERVING_STACK",
+    "repository_or_project": "example/public-serving-stack",
+    "exact_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "identity_verification_status": "VERIFIED",
+    "sanitized_target_alias": "stack-A"
+  },
+  "hypothesis": {
+    "claim_under_test": "Prior assistant reasoning marker is stripped from assembled multi-turn history.",
+    "expected_confirming_observation": "Marker absent from rendered prompt at turn 3.",
+    "expected_disproof_observation": "Marker present in rendered prompt at turn 3."
+  },
+  "environment": {
+    "runtime_or_build_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "model_identity": "example-model@cccccccccccccccccccccccccccccccccccccccc",
+    "engine_identity": "example-engine/0.1.0",
+    "tool_versions": {
+      "python": "3.12.3",
+      "minefield": "local"
+    },
+    "configuration_identity": "cfg-hash-dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "isolation_workspace_identity": "wt-repro-001"
+  },
+  "execution": {
+    "started_at": "2026-08-07T12:00:00Z",
+    "ended_at": "2026-08-07T12:00:05Z",
+    "request_or_command_id": "cmd-render-history-1",
+    "exit_code": 2,
+    "http_status": null,
+    "authentication_interpretation": "NOT_APPLICABLE",
+    "completion_stop_status": "COMPLETED",
+    "failure_cause": "NONE",
+    "observed_count": 3,
+    "summary_only": false
+  },
+  "artifacts": [
+    {
+      "ref": "artifacts/render-turn3.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "type": "raw_response",
+      "redacted": true,
+      "original_or_derived": "original",
+      "bytes_available_locally": false
+    }
+  ],
+  "controls": {
+    "positive_control": "Single-turn render retains marker when no history assembly runs.",
+    "negative_control": "Alternate field name path still drops marker under same template.",
+    "control_independence_status": "INDEPENDENT",
+    "shares_same_harness": false
+  },
+  "review": {
+    "proposer": "human:researcher-a",
+    "reproducer": "human:researcher-a",
+    "falsifier": "human:researcher-b",
+    "adjudicator": "human:maintainer",
+    "independence_status": "INDEPENDENT_REVIEW_PASS"
+  },
+  "claim": {
+    "evidence_status": "contributor-measured, conditions as reported",
+    "claim_boundary": "Claim is limited to history assembly on stack-A at pinned revision; not a model quality negative; not a universal serving failure.",
+    "disposition": "CORROBORATE_EXISTING",
+    "unresolved_conditions": [],
+    "capability_claim_kind": "HARNESS_OR_SCORER"
+  },
+  "sanitization": {
+    "safe_public": true,
+    "contains_private_identifiers": false,
+    "contains_secrets": false,
+    "redaction_performed": true,
+    "allowed_for_public_intake": true
+  }
+}

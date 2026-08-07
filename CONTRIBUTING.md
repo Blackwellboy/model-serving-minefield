@@ -12,7 +12,18 @@ the format and the evidence bar below and your entry will fit.
    your issue; the workflow is documented in
    [MAINTAINING.md](MAINTAINING.md). The evidence bar below applies to the
    finished entry, not to your report.
-2. **Full door: PR with a complete entry.** Add one file under the right category
+2. **Research-stack / measurement integrity door.** If the failure is in the
+   **harness, scorer, agent evidence path, or serving measurement process**
+   (not only the served model), use
+   [Research-stack or measurement failure](../../issues/new?template=research-stack-failure.yml).
+   Sanitized only: no secrets, no private bounty targets, no embargoed exploit
+   detail. A report may become corroboration, extension, check, mining note,
+   unnumbered draft, or rejection - **not** a promised trap number. Lifecycle:
+   [playbooks/agentic-research-integrity.md](playbooks/agentic-research-integrity.md).
+   Optional machine-readable package:
+   [docs/evidence-packet.schema.json](docs/evidence-packet.schema.json) validated
+   with `python3 checks/evidence_packet_preflight.py --packet …`.
+3. **Full door: PR with a complete entry.** Add one file under the right category
    directory, `traps/<category>/NN-short-slug.md` (next free global number;
    categories are listed in the README), add a row to the symptom table in
    `README.md`, and open a PR. The PR template walks the checklist.

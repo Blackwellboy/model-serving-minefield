@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "ep-example-unknown-001",
+  "experiment_id": "exp-unknown-artifact-path",
+  "target": {
+    "target_class": "BENCHMARK_HARNESS",
+    "repository_or_project": "example/harness",
+    "exact_revision": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "identity_verification_status": "UNAVAILABLE",
+    "sanitized_target_alias": "harness-X"
+  },
+  "hypothesis": {
+    "claim_under_test": "Harness normalizes answers in a way that flips a verdict.",
+    "expected_confirming_observation": "Normalized form differs from raw and changes score.",
+    "expected_disproof_observation": "Normalized form equals raw or score unchanged."
+  },
+  "environment": {
+    "runtime_or_build_revision": "unknown",
+    "tool_versions": {
+      "harness": "unobserved"
+    },
+    "isolation_workspace_identity": "wt-unknown-001"
+  },
+  "execution": {
+    "started_at": "2026-08-07T13:00:00Z",
+    "ended_at": "2026-08-07T13:00:02Z",
+    "exit_code": null,
+    "http_status": null,
+    "authentication_interpretation": "NOT_APPLICABLE",
+    "completion_stop_status": "UNKNOWN",
+    "failure_cause": "UNKNOWN_UNADJUDICATED",
+    "observed_count": 1,
+    "summary_only": false
+  },
+  "artifacts": [
+    {
+      "ref": "artifacts/missing-raw.jsonl",
+      "sha256": "UNAVAILABLE",
+      "type": "raw_log",
+      "redacted": true,
+      "original_or_derived": "original",
+      "bytes_available_locally": false
+    }
+  ],
+  "controls": {
+    "positive_control": "Control planned but not run.",
+    "negative_control": "Control planned but not run.",
+    "control_independence_status": "NOT_RUN",
+    "shares_same_harness": false
+  },
+  "review": {
+    "proposer": "human:researcher-c",
+    "reproducer": "unassigned",
+    "falsifier": "unassigned",
+    "adjudicator": "unassigned",
+    "independence_status": "INDEPENDENT_REVIEW_NOT_REQUIRED_FOR_THIS_DISPOSITION"
+  },
+  "claim": {
+    "evidence_status": "research-incomplete",
+    "claim_boundary": "Incomplete packet; no promotion; UNKNOWN_UNADJUDICATED is not a negative finding.",
+    "disposition": "INCOMPLETE",
+    "unresolved_conditions": [
+      "raw artifact bytes not available",
+      "model identity not observed"
+    ],
+    "capability_claim_kind": "NONE"
+  },
+  "sanitization": {
+    "safe_public": true,
+    "contains_private_identifiers": false,
+    "contains_secrets": false,
+    "redaction_performed": true,
+    "allowed_for_public_intake": false
+  }
+}

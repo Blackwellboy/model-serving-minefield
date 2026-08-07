@@ -1,12 +1,16 @@
 # Playbooks
 
-Five ordered checklists, for the five jobs people are actually doing when
-they arrive here. Each step names the entry it guards against and the check
-to run, so you can work top to bottom and stop when the lane is clean.
+Ordered checklists for jobs people are actually doing when they arrive here.
+Symptom playbooks name the entry each step guards and the check to run.
 
-Nothing in a playbook is new. Every step is a published entry in this
-registry, sequenced. If a step surprises you, follow its link: the entry
-carries the mechanism, the status label, and what was and was not measured.
+Nothing in a **symptom** playbook invents a new trap. Every step is a published
+entry in this registry, sequenced. If a step surprises you, follow its link:
+the entry carries the mechanism, the status label, and what was and was not
+measured.
+
+Research-integrity playbooks document how to keep **target bugs** distinct from
+**research-stack bugs** (harness, scorer, agent evidence). They do not allocate
+trap numbers.
 
 | Playbook | Use it when |
 |---|---|
@@ -15,6 +19,8 @@ carries the mechanism, the status label, and what was and was not measured.
 | [Porting a harness to a new server](porting-a-harness.md) | Code that measured correctly on one stack is now pointed at another |
 | [Long context looks broken](long-context-looks-broken.md) | A long window accepts your prompt and answers from nowhere near the start |
 | [Reading a soak](reading-a-soak.md) | One configuration ran for hours and you are about to call a moving aggregate "drift" |
+| [Agentic research integrity](agentic-research-integrity.md) | Agent/harness evidence must not self-certify; lifecycle and Evidence Packet |
+| [Minefield repro loop](minefield-repro-loop.md) | Pin → hypothesise → control → attribute → promote (doctrine only) |
 
 **One caveat on the newest of the five.** [Reading a soak](reading-a-soak.md) is
 the only playbook whose steps are not all previously published entries: its
@@ -23,7 +29,7 @@ weighted-aggregate reasoning is adapted from
 (MIT), and the measured Simpson's-paradox example in it is ours and new. It is
 credited in the playbook text.
 
-## One rule that belongs to all five
+## One rule that belongs to all seven
 
 **Readiness is a completed generation, not an endpoint answering.** Wherever a
 playbook says "wait for the lane", that means one small request with a real
