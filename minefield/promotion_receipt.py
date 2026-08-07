@@ -77,6 +77,39 @@ def validate_receipt(doc: dict[str, Any]) -> dict[str, Any]:
             "message": "selected_evidence_status required",
         })
 
+    # Receipt records decisions; it must not pretend to allocate numbers or
+    # replace raw evidence / normal publication governance.
+    if doc.get("allocates_trap_number") is True or doc.get("grants_trap_number") is True:
+        findings.append({
+            "level": "FAIL",
+            "code": "RECEIPT_MUST_NOT_ALLOCATE_NUMBERS",
+            "message": "promotion receipt cannot grant or allocate trap numbers",
+        })
+    if doc.get("bypasses_publication_governance") is True:
+        findings.append({
+            "level": "FAIL",
+            "code": "RECEIPT_MUST_NOT_BYPASS_GOVERNANCE",
+            "message": "promotion receipt cannot bypass publication governance",
+        })
+    if doc.get("upgrades_evidence_status") is True:
+        findings.append({
+            "level": "FAIL",
+            "code": "RECEIPT_MUST_NOT_UPGRADE_EVIDENCE",
+            "message": "promotion receipt cannot silently upgrade evidence status",
+        })
+    if doc.get("substitutes_for_raw_evidence") is True:
+        findings.append({
+            "level": "FAIL",
+            "code": "RECEIPT_NOT_RAW_EVIDENCE",
+            "message": "promotion receipt cannot substitute for raw evidence",
+        })
+    if not doc.get("raw_artifact_refs") and not doc.get("evidence_packet_sha256"):
+        findings.append({
+            "level": "FAIL",
+            "code": "RECEIPT_NO_EVIDENCE_POINTER",
+            "message": "receipt needs evidence_packet_sha256 or raw_artifact_refs",
+        })
+
     if isinstance(doc.get("validators_run"), list):
         observed += len(doc["validators_run"])
     else:

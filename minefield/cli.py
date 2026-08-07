@@ -81,19 +81,26 @@ def parser() -> argparse.ArgumentParser:
     # Offline research-integrity tools (no endpoint mutation).
     ep = sub.add_parser(
         "evidence-preflight",
-        help="validate an Evidence Packet v1 (offline)",
+        help="validate an Evidence Packet v1 (offline; no endpoint calls)",
     )
-    ep.add_argument("--packet", required=True)
-    ep.add_argument("--artifact-root")
+    ep.add_argument(
+        "--packet",
+        required=True,
+        help="path to Evidence Packet JSON (schema docs/evidence-packet.schema.json)",
+    )
+    ep.add_argument(
+        "--artifact-root",
+        help="directory used to resolve relative artifact paths for SHA256 checks",
+    )
     br = sub.add_parser(
         "blind-review",
-        help="derive a blind-review packet from a full Evidence Packet",
+        help="derive a blind-review packet (strips proposer verdict/confidence)",
     )
-    br.add_argument("--packet", required=True)
-    br.add_argument("--out", help="write blind wrapper JSON")
+    br.add_argument("--packet", required=True, help="path to full Evidence Packet JSON")
+    br.add_argument("--out", help="write blind wrapper JSON to this path")
     ut = sub.add_parser(
         "upstream-triage",
-        help="offline map of changed paths to Minefield risk surfaces",
+        help="offline map of changed paths to risk surfaces (never NEW_TRAP_FOUND)",
     )
     ut.add_argument(
         "--changes",
@@ -101,9 +108,9 @@ def parser() -> argparse.ArgumentParser:
     )
     pr = sub.add_parser(
         "promotion-receipt",
-        help="validate a Promotion Receipt document (offline)",
+        help="validate a Promotion Receipt (records provenance; does not allocate traps)",
     )
-    pr.add_argument("--receipt", required=True)
+    pr.add_argument("--receipt", required=True, help="path to promotion receipt JSON")
     return ap
 
 
@@ -186,7 +193,23 @@ def main(argv: list[str] | None = None) -> int:
         from .blind_review import assert_no_leak, derive_blind_packet
         from .evidence_packet import load_packet
 
-        full = load_packet(args.packet)
+        path = Path(args.packet)
+        if not path.is_file():
+            _emit({
+                "status": "FAIL",
+                "error": "packet_not_found",
+                "message": f"not a readable file: {path}",
+            })
+            return 2
+        try:
+            full = load_packet(path)
+        except (OSError, json.JSONDecodeError) as exc:
+            _emit({
+                "status": "FAIL",
+                "error": "packet_json_invalid",
+                "message": str(exc),
+            })
+            return 2
         wrapper = derive_blind_packet(full)
         leaks = assert_no_leak(wrapper)
         if leaks:
@@ -204,7 +227,17 @@ def main(argv: list[str] | None = None) -> int:
         from .upstream_change_triage import triage_file, triage_from_text
 
         if args.changes:
-            report = triage_file(args.changes)
+            cpath = Path(args.changes)
+            if not cpath.is_file():
+                _emit({
+                    "status": "UNKNOWN",
+                    "error": "changes_not_found",
+                    "message": f"not a readable file: {cpath}",
+                    "observed_count": 0,
+                    "new_trap_found": False,
+                })
+                return 3
+            report = triage_file(cpath)
         else:
             report = triage_from_text(sys.stdin.read())
         _emit(report)
@@ -212,7 +245,23 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "promotion-receipt":
         from .promotion_receipt import validate_receipt
 
-        doc = json.loads(Path(args.receipt).read_text(encoding="utf-8"))
+        path = Path(args.receipt)
+        if not path.is_file():
+            _emit({
+                "status": "FAIL",
+                "error": "receipt_not_found",
+                "message": f"not a readable file: {path}",
+            })
+            return 2
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            _emit({
+                "status": "FAIL",
+                "error": "receipt_json_invalid",
+                "message": str(exc),
+            })
+            return 2
         report = validate_receipt(doc)
         _emit(report)
         status = report.get("status")

@@ -72,6 +72,65 @@ class EvidencePacketTests(unittest.TestCase):
         self.assertEqual(report["status"], "FAIL")
         self.assertTrue(any(f["code"] == "ZERO_OBSERVATION_PASS" for f in report["findings"]))
 
+    def test_claimed_unverified_blocks_promotion_pass(self):
+        doc = load_packet(EXAMPLES / "pass.example.json")
+        doc["target"]["identity_verification_status"] = "CLAIMED_UNVERIFIED"
+        report = preflight(doc)
+        self.assertNotEqual(report["status"], "PASS")
+        self.assertTrue(any(f["code"] == "IDENTITY_NOT_VERIFIED" for f in report["findings"]))
+
+    def test_bytes_available_missing_path_not_pass(self):
+        doc = load_packet(EXAMPLES / "pass.example.json")
+        doc["artifacts"][0]["bytes_available_locally"] = True
+        doc["artifacts"][0]["ref"] = "does-not-exist-artifact.bin"
+        report = preflight(doc, artifact_root=EXAMPLES)
+        self.assertNotEqual(report["status"], "PASS")
+        self.assertTrue(
+            any(f["code"] == "ARTIFACT_HASH_UNVERIFIED" for f in report["findings"])
+            or any(
+                r.get("result") == "ARTIFACT_HASH_UNVERIFIED"
+                for r in report["artifact_hash_results"]
+            )
+        )
+
+    def test_hash_mismatch_fails(self):
+        import tempfile
+        from pathlib import Path as P
+        with tempfile.TemporaryDirectory() as td:
+            p = P(td) / "raw.txt"
+            p.write_text("hello\n", encoding="utf-8")
+            doc = load_packet(EXAMPLES / "pass.example.json")
+            doc["artifacts"][0]["ref"] = "raw.txt"
+            doc["artifacts"][0]["bytes_available_locally"] = True
+            doc["artifacts"][0]["sha256"] = "0" * 64
+            report = preflight(doc, artifact_root=P(td))
+            self.assertEqual(report["status"], "FAIL")
+            self.assertTrue(any(f["code"] == "ARTIFACT_HASH_MISMATCH" for f in report["findings"]))
+
+    def test_self_review_marked_independent_fails(self):
+        doc = load_packet(EXAMPLES / "pass.example.json")
+        for k in ("proposer", "reproducer", "falsifier", "adjudicator"):
+            doc["review"][k] = "agent:solo"
+        doc["review"]["independence_status"] = "INDEPENDENT_REVIEW_PASS"
+        report = preflight(doc)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertTrue(any(f["code"] == "SELF_REVIEW_MARKED_INDEPENDENT" for f in report["findings"]))
+
+    def test_shared_harness_independent_promotion_fails(self):
+        doc = load_packet(EXAMPLES / "pass.example.json")
+        doc["controls"]["shares_same_harness"] = True
+        doc["controls"]["control_independence_status"] = "INDEPENDENT"
+        report = preflight(doc)
+        self.assertEqual(report["status"], "FAIL")
+
+    def test_unknown_as_negative_fails(self):
+        doc = load_packet(EXAMPLES / "pass.example.json")
+        doc["execution"]["failure_cause"] = "UNKNOWN_UNADJUDICATED"
+        doc["claim"]["claim_boundary"] = "this is a negative finding on the model"
+        report = preflight(doc)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertTrue(any(f["code"] == "UNKNOWN_AS_NEGATIVE" for f in report["findings"]))
+
 
 class BlindReviewTests(unittest.TestCase):
     def test_strips_and_keeps(self):
@@ -100,6 +159,35 @@ class BlindReviewTests(unittest.TestCase):
         self.assertEqual(w1["blind_packet_sha256"], w2["blind_packet_sha256"])
         self.assertEqual(w1["full_packet_sha256"], sha256_obj(full))
 
+    def test_persuasive_payload_does_not_leak(self):
+        full = load_packet(EXAMPLES / "pass.example.json")
+        full["recommended_trap_number"] = 114
+        full["adjudicator_conclusion"] = "definitely ship as trap"
+        full["persuasive_summary"] = "this is obviously a critical model bug"
+        full["final_disposition"] = "EXTEND_EXISTING"
+        full["review"]["proposer_confidence"] = "certain"
+        full["review"]["proposer_verdict"] = "confirmed target defect"
+        full["claim"]["disposition"] = "EXTEND_EXISTING"
+        wrapper = derive_blind_packet(full)
+        self.assertEqual(assert_no_leak(wrapper), [])
+        blob = json.dumps(wrapper)
+        for forbidden in (
+            "proposer_confidence",
+            "proposer_verdict",
+            "recommended_trap_number",
+            "adjudicator_conclusion",
+            "persuasive_summary",
+            "final_disposition",
+        ):
+            self.assertNotIn(f'"{forbidden}"', blob)
+        packet = wrapper["packet"]
+        self.assertIn("hypothesis", packet)
+        self.assertIn("artifacts", packet)
+        self.assertIn("execution", packet)
+        self.assertIn("controls", packet)
+        self.assertIn("expected_disproof_observation", packet["hypothesis"])
+        self.assertNotIn("disposition", packet.get("claim", {}))
+
 
 class PromotionReceiptTests(unittest.TestCase):
     def test_example_pass(self):
@@ -126,6 +214,17 @@ class PromotionReceiptTests(unittest.TestCase):
         del doc["adjudicator"]
         report = validate_receipt(doc)
         self.assertEqual(report["status"], "FAIL")
+
+    def test_receipt_cannot_allocate_trap_numbers(self):
+        doc = json.loads(
+            (ROOT / "docs/promotion-receipt.example.json").read_text(encoding="utf-8")
+        )
+        doc["allocates_trap_number"] = True
+        report = validate_receipt(doc)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertTrue(
+            any(f["code"] == "RECEIPT_MUST_NOT_ALLOCATE_NUMBERS" for f in report["findings"])
+        )
 
 
 class UpstreamTriageTests(unittest.TestCase):

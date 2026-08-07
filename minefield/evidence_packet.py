@@ -141,8 +141,13 @@ def preflight(
                     f"exact_revision {token!r} may be moving; prefer immutable digest/SHA",
                 )
 
-    if not target.get("identity_verification_status"):
+    id_status = target.get("identity_verification_status")
+    if not id_status:
         note("FAIL", "IDENTITY_STATUS_MISSING", "target.identity_verification_status required")
+
+    promotion_dispositions = (
+        "CORROBORATE_EXISTING", "EXTEND_EXISTING", "NEW_CHECK", "UNNUMBERED_DRAFT",
+    )
 
     # Hypothesis
     for field in (
@@ -162,9 +167,6 @@ def preflight(
                 "MODEL_IDENTITY_UNOBSERVABLE",
                 "MODEL_OR_RUNTIME claim without model_identity or engine_identity",
             )
-        if cap == "MODEL_OR_RUNTIME" and execution.get("http_status") == 200:
-            # health-only path check below
-            pass
 
     if cap in ("MODEL_OR_RUNTIME",) and claim.get("disposition") not in (
         "HOLD", "INCOMPLETE", "MINING_QUESTION", "REJECT_DUPLICATE",
@@ -180,6 +182,22 @@ def preflight(
                 "HEALTH_ONLY_CAPABILITY_CLAIM",
                 "HTTP 200 with zero observations cannot support a model/runtime claim",
             )
+        # HTTP 200 with no generation-like completion is not capability proof
+        if (
+            execution.get("http_status") == 200
+            and execution.get("completion_stop_status") in (
+                "CLIENT_TIMEOUT", "SERVER_ERROR", "ABORTED", "UNAVAILABLE", "UNKNOWN",
+            )
+            and execution.get("failure_cause") in (
+                "CLIENT_TIMEOUT", "TRANSPORT_ERROR", "SERVER_ERROR", "AUTH_REQUIRED",
+                "AUTH_FAILED", "UNKNOWN_UNADJUDICATED",
+            )
+        ):
+            note(
+                "HOLD",
+                "HTTP_OK_WITHOUT_SUCCESSFUL_GENERATION",
+                "HTTP 200 with non-completed generation cannot support a model/runtime claim",
+            )
         if auth in ("AUTH_REQUIRED", "AUTH_FAILED") and claim.get("disposition") not in (
             "HOLD", "INCOMPLETE",
         ):
@@ -188,6 +206,17 @@ def preflight(
                 "AUTH_BLOCKS_CAPABILITY",
                 "authentication blocked or required; capability claim not established",
             )
+
+    # Identity claimed but not verified cannot back promotion-grade dispositions
+    if id_status in ("CLAIMED_UNVERIFIED", "UNAVAILABLE") and claim.get(
+        "disposition"
+    ) in promotion_dispositions:
+        note(
+            "HOLD",
+            "IDENTITY_NOT_VERIFIED",
+            "target identity is not VERIFIED; promotion dispositions require verification "
+            "or a non-promotion disposition (HOLD/INCOMPLETE/mining/reject)",
+        )
 
     if not environment.get("isolation_workspace_identity"):
         note("FAIL", "ISOLATION_IDENTITY_MISSING", "environment.isolation_workspace_identity required")
@@ -261,6 +290,36 @@ def preflight(
             "UNADJUDICATED_PROMOTION",
             "UNKNOWN_UNADJUDICATED is not a genuine negative finding; do not promote as such",
         )
+    boundary_l = (claim.get("claim_boundary") or "").lower()
+    # Require an affirmative "is/as/was a negative" style claim, not mere
+    # discussion that UNKNOWN is *not* a negative finding.
+    if cause == "UNKNOWN_UNADJUDICATED":
+        affirms_negative = any(
+            phrase in boundary_l
+            for phrase in (
+                "is a negative",
+                "as a negative",
+                "confirmed negative",
+                "target negative",
+                "model quality negative",
+                "genuine negative finding",
+            )
+        )
+        denies_negative = any(
+            phrase in boundary_l
+            for phrase in (
+                "not a negative",
+                "not a genuine negative",
+                "is not a negative",
+                "not negative",
+            )
+        )
+        if affirms_negative and not denies_negative:
+            note(
+                "FAIL",
+                "UNKNOWN_AS_NEGATIVE",
+                "UNKNOWN_UNADJUDICATED must remain distinct from a genuine negative finding",
+            )
 
     # Artifacts
     artifact_hash_results: list[dict[str, Any]] = []
@@ -303,19 +362,18 @@ def preflight(
             )
             artifact_hash_results.append({"ref": ref, "result": "MALFORMED"})
         else:
-            # Verify if bytes available
-            verified = False
-            if art.get("bytes_available_locally") and artifact_root and ref:
+            # Verify when caller claims bytes are available; otherwise format-only.
+            if art.get("bytes_available_locally") and ref:
                 candidate = Path(ref)
                 if not candidate.is_absolute():
-                    candidate = artifact_root / ref
+                    root = artifact_root or Path(".")
+                    candidate = root / ref
                 if candidate.is_file():
                     dig = _sha256_file(candidate)
                     if dig == sha:
                         artifact_hash_results.append({
                             "ref": ref, "result": "HASH_OK",
                         })
-                        verified = True
                         observations += 1
                     else:
                         note(
@@ -331,7 +389,7 @@ def preflight(
                     note(
                         "UNKNOWN",
                         "ARTIFACT_HASH_UNVERIFIED",
-                        f"artifacts[{i}] bytes flagged available but path not readable",
+                        f"artifacts[{i}] bytes_available_locally=true but path not readable",
                         ref=ref,
                     )
                     artifact_hash_results.append({
@@ -352,10 +410,28 @@ def preflight(
     elif controls.get("shares_same_harness") is True and controls.get(
         "control_independence_status"
     ) == "INDEPENDENT":
+        # Shared harness claiming independence is a control integrity defect.
+        if claim.get("disposition") in promotion_dispositions:
+            note(
+                "FAIL",
+                "CONTROL_INDEPENDENCE_CONFLICT",
+                "shares_same_harness=true conflicts with INDEPENDENT; cannot promote",
+            )
+        else:
+            note(
+                "HOLD",
+                "CONTROL_INDEPENDENCE_CONFLICT",
+                "shares_same_harness=true conflicts with independence status INDEPENDENT",
+            )
+    elif (
+        controls.get("shares_same_harness") is True
+        and claim.get("disposition") in promotion_dispositions
+        and controls.get("control_independence_status") == "SHARED_HARNESS"
+    ):
         note(
             "HOLD",
-            "CONTROL_INDEPENDENCE_CONFLICT",
-            "shares_same_harness=true conflicts with independence status INDEPENDENT",
+            "SHARED_HARNESS_CONTROL",
+            "positive and negative controls share a harness; treat independence as limited",
         )
 
     # Review
@@ -363,8 +439,36 @@ def preflight(
         if not review.get(field):
             note("FAIL", "REVIEW_INCOMPLETE", f"review.{field} required")
     indep = review.get("independence_status")
-    if indep == "INDEPENDENT_REVIEW_WAIVED_WITH_REASON" and not review.get("waiver_reason"):
+    if indep == "INDEPENDENT_REVIEW_WAIVED_WITH_REASON" and not (
+        review.get("waiver_reason") or ""
+    ).strip():
         note("FAIL", "WAIVER_REASON_MISSING", "waiver_reason required when review is waived")
+    roles = [
+        (review.get("proposer") or "").strip(),
+        (review.get("reproducer") or "").strip(),
+        (review.get("falsifier") or "").strip(),
+        (review.get("adjudicator") or "").strip(),
+    ]
+    roles_nonempty = [r for r in roles if r]
+    same_actor = len(set(roles_nonempty)) == 1 and len(roles_nonempty) >= 3
+    if same_actor and claim.get("disposition") in promotion_dispositions:
+        if indep == "INDEPENDENT_REVIEW_PASS":
+            note(
+                "FAIL",
+                "SELF_REVIEW_MARKED_INDEPENDENT",
+                "proposer/falsifier/adjudicator are the same actor but independence_status "
+                "claims INDEPENDENT_REVIEW_PASS",
+            )
+        elif indep not in (
+            "INDEPENDENT_REVIEW_WAIVED_WITH_REASON",
+            "INDEPENDENT_REVIEW_NOT_REQUIRED_FOR_THIS_DISPOSITION",
+        ):
+            note(
+                "HOLD",
+                "SELF_REVIEW_UNDISCLOSED",
+                "same actor holds multiple review roles; record waiver or "
+                "INDEPENDENT_REVIEW_NOT_REQUIRED_FOR_THIS_DISPOSITION",
+            )
     if indep == "INDEPENDENT_REVIEW_NOT_AVAILABLE" and claim.get("disposition") in (
         "CORROBORATE_EXISTING", "EXTEND_EXISTING",
     ):
