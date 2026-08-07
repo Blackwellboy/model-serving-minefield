@@ -24,6 +24,8 @@
     "tool_args_dialect_probe.py",
     "util_vs_power_tell.sh",
     "vllm_environ_registration_probe.py",
-    "endpoint_readiness_hierarchy_probe.py"
+    "endpoint_readiness_hierarchy_probe.py",
+    "evidence_packet_preflight.py",
+    "upstream_change_triage.py"
   ]
 }
