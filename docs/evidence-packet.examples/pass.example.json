@@ -18,7 +18,10 @@
     "runtime_or_build_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "model_identity": "example-model@cccccccccccccccccccccccccccccccccccccccc",
     "engine_identity": "example-engine/0.1.0",
-    "tool_versions": {"python": "3.12.3", "minefield": "local"},
+    "tool_versions": {
+      "python": "3.12.3",
+      "minefield": "local"
+    },
     "configuration_identity": "cfg-hash-dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
     "isolation_workspace_identity": "wt-repro-001"
   },
@@ -37,7 +40,7 @@
   "artifacts": [
     {
       "ref": "artifacts/render-turn3.txt",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "type": "raw_response",
       "redacted": true,
       "original_or_derived": "original",

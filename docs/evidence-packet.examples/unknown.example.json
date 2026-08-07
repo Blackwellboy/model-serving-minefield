@@ -5,7 +5,7 @@
   "target": {
     "target_class": "BENCHMARK_HARNESS",
     "repository_or_project": "example/harness",
-    "exact_revision": "1234567890abcdef1234567890abcdef12345678",
+    "exact_revision": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     "identity_verification_status": "UNAVAILABLE",
     "sanitized_target_alias": "harness-X"
   },
@@ -16,7 +16,9 @@
   },
   "environment": {
     "runtime_or_build_revision": "unknown",
-    "tool_versions": {"harness": "unobserved"},
+    "tool_versions": {
+      "harness": "unobserved"
+    },
     "isolation_workspace_identity": "wt-unknown-001"
   },
   "execution": {
