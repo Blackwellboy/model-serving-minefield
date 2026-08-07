@@ -78,6 +78,32 @@ def parser() -> argparse.ArgumentParser:
         "--template-path",
         help="optional local Jinja/source file to hash; it is never executed",
     )
+    # Offline research-integrity tools (no endpoint mutation).
+    ep = sub.add_parser(
+        "evidence-preflight",
+        help="validate an Evidence Packet v1 (offline)",
+    )
+    ep.add_argument("--packet", required=True)
+    ep.add_argument("--artifact-root")
+    br = sub.add_parser(
+        "blind-review",
+        help="derive a blind-review packet from a full Evidence Packet",
+    )
+    br.add_argument("--packet", required=True)
+    br.add_argument("--out", help="write blind wrapper JSON")
+    ut = sub.add_parser(
+        "upstream-triage",
+        help="offline map of changed paths to Minefield risk surfaces",
+    )
+    ut.add_argument(
+        "--changes",
+        help="file of paths (git diff --name-only); stdin if omitted",
+    )
+    pr = sub.add_parser(
+        "promotion-receipt",
+        help="validate a Promotion Receipt document (offline)",
+    )
+    pr.add_argument("--receipt", required=True)
     return ap
 
 
@@ -144,6 +170,57 @@ def main(argv: list[str] | None = None) -> int:
                 "reason": str(exc),
             }, sort_keys=True), file=sys.stderr)
             return 2
+    elif args.command == "evidence-preflight":
+        from .evidence_packet import preflight_path
+
+        root = Path(args.artifact_root) if args.artifact_root else None
+        report = preflight_path(args.packet, artifact_root=root)
+        _emit(report)
+        status = report.get("status")
+        if status == "PASS":
+            return 0
+        if status == "FAIL":
+            return 2
+        return 3
+    elif args.command == "blind-review":
+        from .blind_review import assert_no_leak, derive_blind_packet
+        from .evidence_packet import load_packet
+
+        full = load_packet(args.packet)
+        wrapper = derive_blind_packet(full)
+        leaks = assert_no_leak(wrapper)
+        if leaks:
+            wrapper["leak_check"] = {"status": "FAIL", "leaks": leaks}
+        else:
+            wrapper["leak_check"] = {"status": "PASS", "leaks": []}
+        _emit(wrapper)
+        if args.out:
+            Path(args.out).write_text(
+                json.dumps(wrapper, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        return 0 if not leaks else 2
+    elif args.command == "upstream-triage":
+        from .upstream_change_triage import triage_file, triage_from_text
+
+        if args.changes:
+            report = triage_file(args.changes)
+        else:
+            report = triage_from_text(sys.stdin.read())
+        _emit(report)
+        return 0 if report.get("observed_count", 0) > 0 else 3
+    elif args.command == "promotion-receipt":
+        from .promotion_receipt import validate_receipt
+
+        doc = json.loads(Path(args.receipt).read_text(encoding="utf-8"))
+        report = validate_receipt(doc)
+        _emit(report)
+        status = report.get("status")
+        if status == "PASS":
+            return 0
+        if status == "FAIL":
+            return 2
+        return 3
     return 0
 
 
