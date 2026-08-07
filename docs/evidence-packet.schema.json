@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/blob/main/docs/evidence-packet.schema.json",
+  "title": "Minefield Evidence Packet",
+  "description": "Machine-readable experiment evidence for research and measurement integrity. Sanitized aliases allowed; private bounty targets not required.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "packet_id",
+    "experiment_id",
+    "target",
+    "hypothesis",
+    "environment",
+    "execution",
+    "artifacts",
+    "controls",
+    "review",
+    "claim",
+    "sanitization"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "packet_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "target_class",
+        "exact_revision",
+        "identity_verification_status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target_class": {
+          "type": "string",
+          "enum": [
+            "MODEL_SERVING_ENDPOINT",
+            "MODEL_CHECKPOINT",
+            "SERVING_STACK",
+            "BENCHMARK_HARNESS",
+            "RESEARCH_TOOL",
+            "UPSTREAM_SOURCE",
+            "OTHER"
+          ]
+        },
+        "repository_or_project": {
+          "type": "string",
+          "description": "Public-safe project identifier when available."
+        },
+        "exact_revision": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pinned revision (prefer full git SHA). Moving names alone are not sufficient for promotion."
+        },
+        "identity_verification_status": {
+          "type": "string",
+          "enum": [
+            "VERIFIED",
+            "CLAIMED_UNVERIFIED",
+            "UNAVAILABLE",
+            "SANITIZED_ALIAS_ONLY"
+          ]
+        },
+        "sanitized_target_alias": {
+          "type": "string"
+        }
+      }
+    },
+    "hypothesis": {
+      "type": "object",
+      "required": [
+        "claim_under_test",
+        "expected_confirming_observation",
+        "expected_disproof_observation"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_under_test": {"type": "string", "minLength": 1},
+        "expected_confirming_observation": {"type": "string", "minLength": 1},
+        "expected_disproof_observation": {"type": "string", "minLength": 1}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["isolation_workspace_identity"],
+      "additionalProperties": false,
+      "properties": {
+        "runtime_or_build_revision": {"type": "string"},
+        "model_identity": {"type": "string"},
+        "engine_identity": {"type": "string"},
+        "tool_versions": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "configuration_identity": {"type": "string"},
+        "isolation_workspace_identity": {"type": "string", "minLength": 1}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "started_at",
+        "ended_at",
+        "completion_stop_status",
+        "failure_cause",
+        "observed_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "started_at": {"type": "string", "minLength": 1},
+        "ended_at": {"type": "string", "minLength": 1},
+        "request_or_command_id": {"type": "string"},
+        "exit_code": {"type": ["integer", "null"]},
+        "http_status": {"type": ["integer", "null"]},
+        "authentication_interpretation": {
+          "type": "string",
+          "enum": [
+            "NOT_APPLICABLE",
+            "NONE_REQUIRED",
+            "AUTH_REQUIRED",
+            "AUTH_FAILED",
+            "AUTH_OK",
+            "UNKNOWN"
+          ]
+        },
+        "completion_stop_status": {
+          "type": "string",
+          "enum": [
+            "COMPLETED",
+            "CLIENT_TIMEOUT",
+            "SERVER_ERROR",
+            "ABORTED",
+            "UNAVAILABLE",
+            "UNKNOWN"
+          ]
+        },
+        "failure_cause": {
+          "type": "string",
+          "description": "See docs/failure-cause-taxonomy.md"
+        },
+        "observed_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of relevant observations. Zero cannot silently PASS a substantive claim."
+        },
+        "summary_only": {
+          "type": "boolean",
+          "description": "If true, packet lacks raw artifacts and cannot promote high-confidence claims."
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "sha256", "type", "redacted", "original_or_derived"],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {"type": "string", "minLength": 1},
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$|^UNAVAILABLE$|^NOT_COMPUTED$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "raw_log",
+              "raw_response",
+              "request",
+              "stdout",
+              "stderr",
+              "manifest",
+              "screenshot",
+              "metric",
+              "other"
+            ]
+          },
+          "redacted": {"type": "boolean"},
+          "original_or_derived": {
+            "type": "string",
+            "enum": ["original", "derived"]
+          },
+          "bytes_available_locally": {"type": "boolean"}
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "required": [
+        "positive_control",
+        "negative_control",
+        "control_independence_status",
+        "shares_same_harness"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "positive_control": {"type": "string", "minLength": 1},
+        "negative_control": {"type": "string", "minLength": 1},
+        "control_independence_status": {
+          "type": "string",
+          "enum": [
+            "INDEPENDENT",
+            "SHARED_HARNESS",
+            "SHARED_WORKSPACE",
+            "UNKNOWN",
+            "NOT_RUN"
+          ]
+        },
+        "shares_same_harness": {"type": "boolean"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "proposer",
+        "reproducer",
+        "falsifier",
+        "adjudicator",
+        "independence_status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "proposer": {"type": "string", "minLength": 1},
+        "reproducer": {"type": "string", "minLength": 1},
+        "falsifier": {"type": "string", "minLength": 1},
+        "adjudicator": {"type": "string", "minLength": 1},
+        "independence_status": {
+          "type": "string",
+          "enum": [
+            "INDEPENDENT_REVIEW_PASS",
+            "INDEPENDENT_REVIEW_NOT_AVAILABLE",
+            "INDEPENDENT_REVIEW_WAIVED_WITH_REASON",
+            "INDEPENDENT_REVIEW_NOT_REQUIRED_FOR_THIS_DISPOSITION"
+          ]
+        },
+        "waiver_reason": {"type": "string"},
+        "proposer_confidence": {
+          "type": "string",
+          "description": "Stripped from blind-review packets; optional on full packets."
+        },
+        "proposer_verdict": {
+          "type": "string",
+          "description": "Stripped from blind-review packets; optional on full packets."
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "evidence_status",
+        "claim_boundary",
+        "disposition",
+        "unresolved_conditions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_status": {
+          "type": "string",
+          "description": "Must use Minefield evidence-status vocabulary when referring to published traps."
+        },
+        "claim_boundary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the packet does and does not claim."
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "CORROBORATE_EXISTING",
+            "EXTEND_EXISTING",
+            "NEW_CHECK",
+            "MINING_QUESTION",
+            "UNNUMBERED_DRAFT",
+            "UPSTREAM_TIER",
+            "GOOD_PRACTICE_NOTE",
+            "REJECT_DUPLICATE",
+            "HOLD",
+            "INCOMPLETE"
+          ]
+        },
+        "unresolved_conditions": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "capability_claim_kind": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "TRANSPORT_ONLY",
+            "HEALTH_ONLY",
+            "MODEL_OR_RUNTIME",
+            "HARNESS_OR_SCORER"
+          ]
+        }
+      }
+    },
+    "sanitization": {
+      "type": "object",
+      "required": [
+        "safe_public",
+        "contains_private_identifiers",
+        "contains_secrets",
+        "redaction_performed",
+        "allowed_for_public_intake"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "safe_public": {"type": "boolean"},
+        "contains_private_identifiers": {"type": "boolean"},
+        "contains_secrets": {"type": "boolean"},
+        "redaction_performed": {"type": "boolean"},
+        "allowed_for_public_intake": {"type": "boolean"}
+      }
+    }
+  }
+}

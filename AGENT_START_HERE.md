@@ -29,3 +29,9 @@ conditions, direct-probe support, mechanism status, confirmation/refutation
 checks, conditional mitigation, mutation warning, and remaining unknowns.
 Separate observed symptom, resemblance, supported/proposed/unresolved
 mechanisms. Never use definitive causal language without direct evidence.
+
+When the failure may be in the **research stack** (harness, scorer, agent
+summary vs raw artifacts) rather than the served model, keep TARGET BUG and
+RESEARCH-STACK BUG distinct. See
+`playbooks/agentic-research-integrity.md`. Offline packet gate:
+`python3 -m minefield evidence-preflight --packet <path>`.
