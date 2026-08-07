@@ -1,6 +1,6 @@
 # Existing owner dedup matrix - Agentic Research Integrity 2026-08-07
 
-Base: `origin/main` @ `600b74728ce03732f6bd1983c0aa820175d9f7e7`  
+Base: `origin/main` @ `600b74728ce03732f6bd1983c0aa820175d9f7e7`
 Trap range: **1-113** (count 113). No numbers allocated in this campaign.
 
 | # | Idea | Existing owner | Classification |

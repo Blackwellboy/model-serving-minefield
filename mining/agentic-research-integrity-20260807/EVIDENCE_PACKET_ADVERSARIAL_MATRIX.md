@@ -20,4 +20,3 @@
 
 INVALID_PACKET_SILENT_PASS_COUNT=0
 Silent PASS when expected non-PASS: 0
-

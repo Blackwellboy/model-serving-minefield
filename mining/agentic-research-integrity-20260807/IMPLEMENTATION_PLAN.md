@@ -3,7 +3,7 @@
 ## Scope
 
 Local implementation only on branch
-`grok/agentic-research-integrity-20260807`.  
+`grok/agentic-research-integrity-20260807`.
 `TRAP_COUNT_DELTA=0`. No public GitHub mutation.
 
 ## Deliverables

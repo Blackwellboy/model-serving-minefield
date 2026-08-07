@@ -69,6 +69,6 @@ python3 -m minefield promotion-receipt --receipt receipt.json
 python3 -m minefield upstream-triage --changes changed-paths.txt
 ```
 
-Schema: `docs/evidence-packet.schema.json`.  
+Schema: `docs/evidence-packet.schema.json`.
 No trap number is promised for a contribution; dispositions include
 corroboration, extension, check, mining, draft, upstream-tier, reject.
