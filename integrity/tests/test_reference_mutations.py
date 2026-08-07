@@ -48,7 +48,7 @@ def copy_tree(dst):
                  "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
                  "AGENT_START_HERE.md", "dist", "docs", "doctor", "checks",
-                 "community", "integrity", ".github", "LICENSE"):
+                 "community", "integrity", "skills", ".github", "LICENSE"):
         src = os.path.join(ROOT, name)
         if not os.path.exists(src):
             continue
