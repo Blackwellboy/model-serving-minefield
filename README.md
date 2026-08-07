@@ -76,14 +76,16 @@ Four doors, and which one you want depends on why you are here. All 113
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
-  for the five jobs people actually arrive with:
+  for the seven playbook jobs people actually arrive with:
   [before you publish an A/B](playbooks/before-you-publish-an-ab.md),
   [thinking died when I made it multi-turn](playbooks/thinking-died-multi-turn.md),
   [porting a harness to a new server](playbooks/porting-a-harness.md),
-  [long context looks broken](playbooks/long-context-looks-broken.md), and
-  [reading a soak](playbooks/reading-a-soak.md). Each step
-  names the entry it guards against and the check to run. Nothing in them is
-  new; they are the existing entries, sequenced.
+  [long context looks broken](playbooks/long-context-looks-broken.md),
+  [reading a soak](playbooks/reading-a-soak.md),
+  [agentic research integrity](playbooks/agentic-research-integrity.md), and
+  [minefield repro loop](playbooks/minefield-repro-loop.md). Symptom
+  playbooks sequence existing entries; research-integrity playbooks keep
+  target bugs distinct from research-stack bugs.
 - **"What am I running?"** The **[per-stack pages](stacks/)** give you the five
   entries most likely to bite on
   [vLLM](stacks/vllm.md), [llama.cpp and GGUF](stacks/llama-cpp.md),
@@ -361,9 +363,21 @@ Two doors. Take the easy one; it counts just as much.
   plain questions, no formatting, no writeup. A maintainer verifies what can
   be verified, writes the entry, credits you by name, and links your issue.
   Most entries should start this way.
+- **Research-stack door:** harness, scorer, agent-evidence, or measurement
+  process failed (keep this distinct from a model bug). Use
+  [research-stack failure](../../issues/new?template=research-stack-failure.yml)
+  and the
+  [agentic research integrity](playbooks/agentic-research-integrity.md)
+  playbook. No trap number is promised.
 - **Full door: write the entry yourself.** One file under the right
   `traps/<category>/`, format and evidence bar in
   [CONTRIBUTING.md](CONTRIBUTING.md), PR template walks the checklist.
+
+Minefield can validate the **research system** as well as the served model:
+a TARGET BUG and a RESEARCH-STACK BUG must stay distinct. Evidence Packet
+preflight and related offline tools are documented in the playbook above; they
+help detect known evidence-integrity failure classes, not certify bounty
+findings as valid.
 
 Not sure whether what you hit is a trap or your own mistake? Open the issue
 anyway. "I could not tell whether this was me or the stack" is exactly the

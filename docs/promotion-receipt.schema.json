@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/blob/main/docs/promotion-receipt.schema.json",
+  "title": "Minefield Promotion Receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "source_candidate",
+    "evidence_packet_sha256",
+    "reproducer",
+    "falsifier",
+    "adjudicator",
+    "selected_evidence_status",
+    "selected_owner",
+    "validators_run",
+    "waivers",
+    "unresolved_limitations",
+    "raw_artifact_refs"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "source_candidate": {"type": "string", "minLength": 1},
+    "evidence_packet_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "blind_review_packet_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reproducer": {"type": "string"},
+    "falsifier": {"type": "string"},
+    "adjudicator": {"type": "string"},
+    "selected_evidence_status": {"type": "string"},
+    "selected_owner": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "EXISTING_TRAP",
+            "TRAP_ADDENDUM",
+            "CHECK",
+            "MINING",
+            "UNNUMBERED_DRAFT",
+            "UPSTREAM",
+            "PLAYBOOK",
+            "REJECTED"
+          ]
+        },
+        "id": {"type": "string"}
+      }
+    },
+    "validators_run": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "registry_state_before": {"type": "string"},
+    "registry_state_after": {"type": "string"},
+    "publishing_commit": {"type": "string"},
+    "raw_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "waivers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "unresolved_limitations": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

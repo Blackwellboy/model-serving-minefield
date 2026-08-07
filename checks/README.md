@@ -157,6 +157,28 @@ collapse simply lands on `||norm_f.weight||`, which is what RMSNorm does to any 
 construction. Layers are compared in **index** order, and the excluded pair is the highest index,
 the one that is supposed to disagree. Needs `numpy`.
 
+## evidence_packet_preflight.py
+
+Offline Evidence Packet v1 gate (research / measurement integrity). No network.
+
+```bash
+python3 checks/evidence_packet_preflight.py --packet docs/evidence-packet.examples/pass.example.json
+python3 -m minefield evidence-preflight --packet path/to/packet.json
+```
+
+Exit 0 PASS, 2 FAIL, 3 HOLD/UNKNOWN (not a pass). Schema:
+[`docs/evidence-packet.schema.json`](../docs/evidence-packet.schema.json).
+Playbook: [`playbooks/agentic-research-integrity.md`](../playbooks/agentic-research-integrity.md).
+
+## upstream_change_triage.py
+
+Offline path→risk-surface prioritisation for mining. Never emits
+`NEW_TRAP_FOUND` from diffs alone. Empty change list exits 3.
+
+```bash
+git diff --name-only BASE...HEAD | python3 checks/upstream_change_triage.py
+```
+
 ## Tests
 
 ```bash
