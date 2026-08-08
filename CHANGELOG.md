@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-08
+
+- [Trap 114](traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md): a hard-coded RDMA/RoCE GID index is not portable across hosts (forced index can fail while automatic selection succeeds; measured on multi-host Spark-class fabric; sanitized).
+- [Trap 115](traps/evaluation/115-exit-137-is-not-oom-killer-proof.md): exit status 137 is SIGKILL-class termination, not OOM-killer proof by itself (keep allocation failure, exit 137, and kernel OOM-killer evidence separate).
+- Trap 112 addendum: distributed lifecycle ladder (protocol green ≠ resident ≠ first forward ≠ generation complete ≠ clean teardown), including LoadReady-class and finish-ack classes under the same readiness owner.
+- Registry count 113 to 115; doctor coverage remains 19, leaving 96 entries unimplemented.
+
 ## 2026-08-06
 
 - [Trap 113](traps/template/113-inline-system-role-is-not-a-stable-contract.md): inline system role is not a stable render contract (classifier + pinned evidence; credit @wqh17101 for source map).

@@ -214,6 +214,8 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - 111: A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published.
 - 112: Two complementary lies on the same box: 1. False positive. Container status remains Up, wrapper or process still present, and ordinary health surfaces may answer, but EngineCore has died after a CUDA device-side assert and completion requests fail. 2. False negative. Unauthenticated /v1/models returns HTTP 401. curl -f turns that valid response into a non-zero exit, and polling logic concludes the host or server is down while the service is alive.
 - 113: A constructor or serving API receives the same inline message sequence: One checkpoint preserves LATESYS inside a distinct system span. Another returns success but silently removes it. A third returns success after joining it to the preceding user turn. Code that treats HTTP acceptance as proof of system-role preservation gets three materially different prompts from the same request.
+- 114: NCCL / RDMA bring-up fails with QP or GID-related errors when every host is given the same forced NCCLIBGIDINDEX (or equivalent hard-coded index). The same multi-host path succeeds when GID selection is left automatic (or each host is given the index that actually matches its own GID table). Operators conclude "the fabric is broken" or "NCCL is bad" and start swapping cables/switch configs that were never the defect.
+- 115: A process exits with status 137. Logs or chat summaries say "OOM killed" or "the kernel OOM killer took it." Follow-up work chases cgroup limits and memory pressure while the only hard facts may be: 1. an allocation API returned failure (for example CUDA cudaMalloc), and/or 2. the process exited with 137. No dmesg / journal OOM killer line, no cgroup OOM event, no killer attribution for that PID/time window is present.
 
 ## Canonical trap records
 
@@ -1670,7 +1672,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: OpenAI-compatible serving behind a container health surface, as reported. The class is general to any stack that equates process presence or unauthenticated HTTP with model readiness.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["docker"], "stack_version": [], "topology": []}`
 - Source: `traps/runtime/112-process-liveness-is-not-model-readiness.md`
-- Related traps: 53
+- Related traps: 16, 53, 114, 115
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 113: inline system role is not a stable render contract
@@ -1684,6 +1686,32 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["deepseek-v4-flash", "deepseek-v4-flash tokenize render in trap 56 is weldedtouser. kimi-k3 revisio", "minimax revisions rendered dropped and exactly matched their no-system contro", "minimax-m2.5", "minimax-m2.5 f710177d938eff80b684d42c5aa84b382612f21f", "minimax-m2.7", "minimax-m2.7 d494266a4affc0d2995ba1fa35c8481cbd84294b", "minimax-m3", "minimax-m3 f0e1c1e04d40177e4673a22097036854f536e9c0. the first three rendered"], "failure_stage": [], "gpu_architecture": [], "model_family": ["deepseek", "minimax"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["transformers", "vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/template/113-inline-system-role-is-not-a-stable-contract.md`
 - Related traps: 56
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 114: a hard-coded RDMA GID index is not portable across hosts
+
+- Evidence: contributor-measured, conditions as reported.
+- Symptom: NCCL / RDMA bring-up fails with QP or GID-related errors when every host is given the same forced NCCLIBGIDINDEX (or equivalent hard-coded index). The same multi-host path succeeds when GID selection is left automatic (or each host is given the index that actually matches its own GID table). Operators conclude "the fabric is broken" or "NCCL is bad" and start swapping cables/switch configs that were never the defect.
+- Mechanism: GID tables are per-host. The IPv4-mapped (or other) entry you need for RoCE is not guaranteed to sit at the same numeric index on every node. A constant that worked on host A can select a wrong/unusable entry on host B even when: - link is up, - the right HCA is selected, - MTU/fabric path is healthy, - automatic selection would have succeeded. The failure is configuration identity portability, not proof of dead RDMA.
+- Check: 1. On each rank host, dump the GID table for the HCA you intend to use and record which index holds the address family you need. 2. If indices differ, do not force one global number without per-host mapping. 3. Prefer automatic GID selection for bring-up unless you have a pinned, per-host, verified index map checked into the recipe. 4. Confirm success with the same collective on the same hosts after switching from forced-fail to auto (or to the correct per-host indices). Offline triage of changed transport/env paths can use checks/upstreamchangetriage.py as a prioritisation hint only; it does not replace live GID inspection.
+- Safe conditional mitigation: Stop shipping one global NCCLIBGIDINDEX as if it were a fabric constant. Document per-host tables in the recipe when a pin is required; default to auto for first bring-up.
+- Named conditions: Multi-host NCCL over RoCE / InfiniBand-style GIDs when env forces a single index. Observed across independent Spark-class qualification campaigns (including distributed model transport bring-up). General to any multi-node path that hard-codes GID index.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md`
+- Related traps: 112
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 115: exit status 137 is not OOM-killer proof
+
+- Evidence: contributor-measured, conditions as reported.
+- Symptom: A process exits with status 137. Logs or chat summaries say "OOM killed" or "the kernel OOM killer took it." Follow-up work chases cgroup limits and memory pressure while the only hard facts may be: 1. an allocation API returned failure (for example CUDA cudaMalloc), and/or 2. the process exited with 137. No dmesg / journal OOM killer line, no cgroup OOM event, no killer attribution for that PID/time window is present.
+- Mechanism: On Linux, exit status 137 = 128 + 9 means the process received SIGKILL. That is a signal-delivery fact, not a cause fact. SIGKILL can come from: - the kernel OOM killer, - an operator or orchestrator kill -9, - a watchdog, job scheduler, or container runtime, - other policy agents, and exit 137 alone does not name which. Separately, an allocator failure (for example device allocation failure) can be true and measured while OOM-killer attribution remains
+- Check: Before writing "OOM killed": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENTTIMEOUT / HARNESSERROR / UNKNOWNUNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN.
+- Safe conditional mitigation: Adjudication language: - "process exited 137 (SIGKILL)" when only the status is known, - "allocation failed: ..." when the allocator said so, - "OOM killer attributed: ..." only with kernel/cgroup evidence.
+- Named conditions: Any Linux-hosted load/serve path where exit codes are read from shells, orchestrators, or CI wrappers. Especially common when CUDA/host allocation fails and a wrapper then dies with 137.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": ["load"], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": ["linux"], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/evaluation/115-exit-137-is-not-oom-killer-proof.md`
+- Related traps: 13, 16, 98
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ## Reporting a miss

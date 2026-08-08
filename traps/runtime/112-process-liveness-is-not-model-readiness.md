@@ -50,3 +50,41 @@ Require generation or capability before declaring ready.
 **Found.** Issue #21, reported by scottleimroth.
 
 **Attribution.** Found and reported by @scottleimroth.
+
+## Addendum 2026-08-08: readiness is a ladder, not a single green light
+
+**Status: contributor-measured, conditions as reported** (distributed
+multi-rank serving bring-up; sanitized). Extends the same owner: do not
+collapse independent surfaces into one "ready" boolean.
+
+The original entry separates process/wrapper health from model generation.
+The same discipline applies **up and down the distributed lifecycle**:
+
+| Green surface | Does **not** prove |
+|---------------|--------------------|
+| Protocol / CPU suite / synthetic rank checks | Real weights resident on device |
+| Rank load / "loaded ok" / LoadReady-style control signals | First forward works on the loaded representation |
+| First forward step | Multi-token generation completes |
+| Generation output and throughput metrics printed | Clean multi-rank teardown and process exit 0 |
+
+Concrete class observations (sanitized multi-rank campaign):
+
+1. **Ready before resource.** A control-plane ready signal can fire (or
+   re-fire) before the load it claims has completed; a suite that does not
+   dwell in production phase duration can miss that re-entrancy.
+2. **Metrics before lifecycle completion.** A run can emit accepted token
+   counts and decode metrics, then hang in coordinator `finish` while workers
+   return to an idle wait — so "generation succeeded" and "process exited
+   cleanly" are different claims.
+3. **Fix shape.** Sequencing load-before-ready / one-shot ready, and explicit
+   finish acknowledgement between ranks, clear those classes without making
+   HTTP health sufficient.
+
+**Mutation warning.** Do not promote NCCL green, load green, or token metrics
+alone into "serving ready" or "qualification complete" without the next
+ladder rung you actually need (forward, generate, clean exit).
+
+**Related.** [114](114-hardcoded-rdma-gid-index-is-not-portable.md) (lower
+transport gate), [115](../evaluation/115-exit-137-is-not-oom-killer-proof.md)
+(do not invent causes), [16](../evaluation/16-finish-reason-is-not-a-failure-signal.md)
+(field misread).

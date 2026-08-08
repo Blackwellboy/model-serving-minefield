@@ -60,7 +60,9 @@ shortlists.
 | vLLM serving hybrid mamba or DeltaNet architectures | [47](../traps/runtime/47-prefix-caching-autodisabled-hybrid.md) |
 | Agent clients and gateways (the client-side half) | [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) |
 | HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
-| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md) |
+| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md), [112](../traps/runtime/112-process-liveness-is-not-model-readiness.md) |
+| Multi-host NCCL / RoCE / RDMA bring-up (GID tables, fabric env) | [114](../traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md) |
+| Failure-cause adjudication (exit codes, OOM language, UNKNOWN discipline) | [115](../traps/evaluation/115-exit-137-is-not-oom-killer-proof.md) |
 | Checkpoints whose chat template is Python code behind `trust_remote_code` | [56](../traps/template/56-checkpoint-ships-no-chat-template.md) |
 | Prefix caching on long prompts (any engine that reuses KV across requests) | [60](../traps/runtime/60-cold-prefill-and-cache-hit-disagree.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
 | Rope-extended context windows (YaRN and similar) | [55](../traps/evaluation/55-supported-context-is-not-trained-context.md), [61](../traps/evaluation/61-advertised-window-fails-silently.md) |
