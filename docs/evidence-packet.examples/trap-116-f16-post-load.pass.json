@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "ep-trap-116-f16-post-load",
+  "experiment_id": "public-scrub-ep-trap-116-f16",
+  "target": {
+    "target_class": "SERVING_STACK",
+    "repository_or_project": "multi-rank serving dtype path",
+    "exact_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "identity_verification_status": "VERIFIED",
+    "sanitized_target_alias": "multi-rank-qual-set"
+  },
+  "hypothesis": {
+    "claim_under_test": "Successful multi-rank model load does not prove the first-forward F16 embedding/helper path works.",
+    "expected_confirming_observation": "load succeeds on all ranks; first forward fails in embed_token/F16 path; after author fix, instrumented embed+decode completes",
+    "expected_disproof_observation": "first forward always succeeds whenever load succeeds for this representation"
+  },
+  "environment": {
+    "runtime_or_build_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "model_identity": "n/a-or-scrubbed",
+    "engine_identity": "example-engine/0.1.0",
+    "tool_versions": {
+      "python": "3.12.3",
+      "minefield": "local"
+    },
+    "configuration_identity": "cfg-hash-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "isolation_workspace_identity": "public-scrub-pack"
+  },
+  "execution": {
+    "started_at": "2026-08-08T00:00:00Z",
+    "ended_at": "2026-08-08T00:30:00Z",
+    "request_or_command_id": "seq-0008-0010-scrubbed",
+    "exit_code": 0,
+    "http_status": null,
+    "authentication_interpretation": "NOT_APPLICABLE",
+    "completion_stop_status": "COMPLETED",
+    "failure_cause": "NONE",
+    "observed_count": 3,
+    "summary_only": false
+  },
+  "artifacts": [
+    {
+      "ref": "sanitized-receipt-pointer",
+      "type": "manifest",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes_available_locally": false,
+      "redacted": true,
+      "original_or_derived": "derived"
+    }
+  ],
+  "controls": {
+    "positive_control": "instrumented embed enter/ok + short generation complete after author F16 patch",
+    "negative_control": "pre-patch first forward fails after successful load",
+    "control_independence_status": "INDEPENDENT",
+    "shares_same_harness": false
+  },
+  "claim": {
+    "capability_claim_kind": "NONE",
+    "claim_boundary": "Post-load first-forward dtype/helper path only; observation B is not a generate PASS; no private hosts; Victor is patch author; Blackwellboy is hardware qualifier.",
+    "evidence_status": "contributor-measured, conditions as reported",
+    "unresolved_conditions": [],
+    "disposition": "PROMOTE_NEW_TRAP"
+  },
+  "review": {
+    "proposer": "human:blackwellboy",
+    "reproducer": "human:blackwellboy",
+    "falsifier": "human:campaign-review",
+    "adjudicator": "human:blackwellboy",
+    "independence_status": "INDEPENDENT_REVIEW_WAIVED_WITH_REASON",
+    "waiver_reason": "solo maintainer publication; 0008/0009/0010 chronology sealed with author instrumentation proof on 0010"
+  },
+  "sanitization": {
+    "allowed_for_public_intake": true,
+    "contains_private_identifiers": false,
+    "contains_secrets": false,
+    "redaction_performed": true,
+    "safe_public": true
+  }
+}

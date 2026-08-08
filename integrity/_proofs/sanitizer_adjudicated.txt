@@ -904,3 +904,105 @@ dist/model-serving-minefield-agent-pack.zip:30011: reviewed public integration r
 dist/model-serving-minefield-agent-pack.zip:30163: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:38051: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:38065: reviewed public integration reference required by this feature; no private deployment data is present.
+
+# Adjudication refresh 2026-08-08 PR B trap 116 F16 post-load
+dist/MINEFIELD_AGENT_BUNDLE.json:11014: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18229: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18247: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18248: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18265: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18298: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18301: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18311: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18370: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18382: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18437: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18438: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18504: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18587: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:18599: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:11198: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18413: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18431: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18432: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18449: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18482: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18485: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18495: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18554: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18566: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18621: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18622: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18688: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18771: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:18783: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19672: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19874: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19875: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:19878: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21172: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21173: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21174: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21184: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21185: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21188: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21197: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21198: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21211: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21213: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21224: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21236: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21405: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21842: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21843: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21846: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28666: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28684: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28685: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28702: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28735: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28738: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28748: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28807: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28819: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28874: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28875: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:28941: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29024: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29036: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29922: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:30269: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:34478: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:34509: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38403: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38840: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38841: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38844: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:40227: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:40228: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1503: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1517: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1527: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1540: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1542: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1566: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29936: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30093: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30095: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30098: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30099: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30100: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30103: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30112: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30113: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30114: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30136: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30138: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30141: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30236: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30388: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38275: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38276: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38277: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38291: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:40260: reviewed public integration reference required by this feature; no private deployment data is present.

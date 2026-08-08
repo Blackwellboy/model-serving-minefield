@@ -107,6 +107,7 @@
     "40": "n-gram decontamination is a corpus-screening step upstream of any model; eval-harness stack row only",
     "112": "readiness hierarchy is stack-generic (container/health/auth/generation); not a model-family property",
     "114": "hard-coded RDMA GID index portability is multi-host fabric/runtime config, not a model-family property; stack-generic under multi-node NCCL/RoCE bring-up",
-    "115": "exit-137-vs-OOM-killer adjudication is process-status evaluation discipline, not a model-family property"
+    "115": "exit-137-vs-OOM-killer adjudication is process-status evaluation discipline, not a model-family property",
+    "116": "post-load first-forward dtype/helper path is stack-generic; not a model-family property"
   }
 }

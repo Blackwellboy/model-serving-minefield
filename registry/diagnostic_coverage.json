@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 115,
-    "human_review_possible": 115,
+    "guided_experiments_specified": 116,
+    "human_review_possible": 116,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 115
+    "total_canonical_traps": 116
   },
   "traps": [
     {
@@ -8545,6 +8545,80 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Before writing \"OOM killed\": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENTTIMEOUT / HARNESSERROR / UNKNOWNUNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "116",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 116 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
