@@ -882,3 +882,25 @@ dist/model-serving-minefield-agent-pack.zip:38049: reviewed public integration r
 dist/model-serving-minefield-agent-pack.zip:38050: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:38064: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:40035: reviewed public integration reference required by this feature; no private deployment data is present.
+
+# Adjudication refresh 2026-08-08 PR A dist regener after models/README
+dist/model-serving-minefield-agent-pack.zip:30044: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:34253: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:34284: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38177: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38615: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:38618: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:40003: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:29711: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29868: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29870: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29873: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29878: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29887: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29911: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29913: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:29916: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30011: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:30163: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38051: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:38065: reviewed public integration reference required by this feature; no private deployment data is present.
