@@ -2,6 +2,9 @@
 
 ## 2026-08-08
 
+- [Trap 116](traps/runtime/116-successful-load-does-not-prove-first-forward-dtype-path.md): successful multi-rank model load does not prove the first-forward F16 embedding/dtype helper path (0008 fail after load; 0009 old error absent without proven completion; 0010 instrumented embed+generation proof). Patch author: Victor Cruz / vcruz305. Hardware qualification: Blackwellboy.
+- Registry count 115 to 116; doctor coverage remains 19, leaving 97 entries unimplemented.
+
 - [Trap 114](traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md): a hard-coded RDMA/RoCE GID index is not portable across hosts (forced index can fail while automatic selection succeeds; measured on multi-host Spark-class fabric; sanitized).
 - [Trap 115](traps/evaluation/115-exit-137-is-not-oom-killer-proof.md): exit status 137 is SIGKILL-class termination, not OOM-killer proof by itself (keep allocation failure, exit 137, and kernel OOM-killer evidence separate).
 - Trap 112 addendum: distributed lifecycle ladder (protocol green ≠ resident ≠ first forward ≠ generation complete ≠ clean teardown), including LoadReady-class and finish-ack classes under the same readiness owner.
