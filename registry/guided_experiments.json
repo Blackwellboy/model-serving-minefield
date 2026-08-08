@@ -2759,6 +2759,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "115",
       "untrusted_published_check_text": "Before writing \"OOM killed\": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENTTIMEOUT / HARNESSERROR / UNKNOWNUNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 116 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 116 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "116",
+      "untrusted_published_check_text": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete)."
     }
   ],
   "schema_version": "1.0"
