@@ -105,6 +105,8 @@
     "31": "leftover oracle re-ranker lives entirely in the harness; it appears on the eval-harness stack row and belongs to no model",
     "32": "mlx_lm server flag; appears on the mlx_lm stack row and on the Bonsai model row",
     "40": "n-gram decontamination is a corpus-screening step upstream of any model; eval-harness stack row only",
-    "112": "readiness hierarchy is stack-generic (container/health/auth/generation); not a model-family property"
+    "112": "readiness hierarchy is stack-generic (container/health/auth/generation); not a model-family property",
+    "114": "hard-coded RDMA GID index portability is multi-host fabric/runtime config, not a model-family property; stack-generic under multi-node NCCL/RoCE bring-up",
+    "115": "exit-137-vs-OOM-killer adjudication is process-status evaluation discipline, not a model-family property"
   }
 }
