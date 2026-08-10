@@ -59,6 +59,13 @@ Then confirm positively: send one prompt you are confident makes the model
 think and assert the field is non-empty. An empty field means **wrong key** at
 least as often as it means "did not reason".
 
+For coding and answer extractors: **score only `content`**, never
+`reasoning_content`. A harness that concatenates or executes reasoning text
+as code is measuring the wrong channel. When comparing reasoning-control
+arms, store the full request body and a hash of the server-rendered prompt
+per row so a later audit can prove which directive actually landed
+([Muse campaign note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md)).
+
 One published server carries **three** names and splits them by route
 (`message.thinking` on one, a top-level field on another, `message.reasoning`
 on the OpenAI-compatible route) and `reasoning_content` exists on none of

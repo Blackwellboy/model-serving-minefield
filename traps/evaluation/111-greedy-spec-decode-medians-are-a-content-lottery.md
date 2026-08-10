@@ -80,3 +80,12 @@ a confound class),
 you are even quoting),
 [trap 109](../quantization/109-requant-skips-draft-layer-experts.md) (the
 lane whose recovery these suites were measuring).
+
+## Added 2026-08-11: llama.cpp DFlash on Muse Glimmer 30B - quality parity is not text identity; acceptance still prices speed
+
+**Muse Glimmer 30B UD-Q4_K_XL, llama.cpp DFlash draft, greedy, single-GPU.** Same two coupled halves on a different stack:
+
+1. **Content is not lossless under speculative decoding.** DFlash OFF vs ON on a 40-task deterministic battery: quality **39/40 both**, pass/fail agreement **40/40**, exact content match **36/40**. Do not advertise "identical output" from task-score parity.
+2. **Acceptance still prices throughput.** On a 48-prompt workload matrix, draft acceptance tracked decode tok/s nearly linearly (Pearson ≈ 0.998 on the measured set): narrative/conversational ~10% accept / ~60 tok/s class, code ~35% / ~150, repetitive structured ~74% / ~280. A single DFlash headline tok/s is not portable across workloads.
+
+*Status of this addendum: measured here, raw not published.* Phrase as claim boundary + performance reporting, **not** as "DFlash quality defect." See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

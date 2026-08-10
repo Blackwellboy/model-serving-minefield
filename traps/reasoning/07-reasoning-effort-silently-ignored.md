@@ -85,3 +85,11 @@ history gate is [trap 63](63-reasoning-round-trip-one-correct-shape.md).
 
 *Status of this addendum: reproduced here. The kwarg enumeration runs offline
 against the public chat template.*
+
+## Added 2026-08-11: Muse Glimmer 30B on llama.cpp - low/high dead; only `"none"` special-cased
+
+**Muse Glimmer 30B UD-Q4_K_XL, llama.cpp `62bf73d25`, Unsloth pin `9889697...`, single-GPU.** Template text has **zero** references to `reasoning_effort`. Historical clean renders with `reasoning_effort=low` matched the bare default (template default `reasoning_strength=high`). Bounded runtime did not show the intended low/high depth control. Server source on this path special-cases `reasoning_effort="none"` and does not implement the other values as strength controls.
+
+This is the same accepted-and-unread class as the original entry, on a new model family and a documented server-side narrow exception: **do not infer that `"low"`/`"high"` work because `"none"` exists.**
+
+*Status of this addendum: measured here, raw not published.* Full bounded campaign writeup: [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

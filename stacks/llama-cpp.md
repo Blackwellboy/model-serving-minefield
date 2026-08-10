@@ -32,6 +32,13 @@ and on one measured build its context number is the **per-slot** context
 rather than what you launched with
 ([trap 87](../traps/runtime/87-llamacpp-props-reports-per-slot-context.md)).
 
+**4. For reasoning-strength / card-prose controls, render before you trust.**
+On Muse Glimmer 30B (2026-08-11), card-style system text `Reasoning strength: low`
+did not bind the template kwarg and produced a dual LOW+HIGH render while
+`chat_template_kwargs.reasoning_strength=low` produced a clean LOW. Full
+writeup: [mining note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+Use `/apply-template` (or equivalent) and hash the render next to every arm.
+
 ## The five that bite hardest here
 
 | Entry | What it does to you |
