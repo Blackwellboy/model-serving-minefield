@@ -11425,7 +11425,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 116,
-    "content_sha256": "11ebd1e77ed88188e9e94f7dd18783794577e5a31e922f45337bd124c49de3cd",
+    "content_sha256": "987692432c1e8b1dffcc60f1bc69365174c9d04f193f8f1a6cf4637c91059bf7",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -12247,6 +12247,7 @@
         ],
         "affected_stacks": [
           "vLLM",
+          "llama.cpp",
           "Ollama",
           "mlx_lm",
           "SGLang"
@@ -12279,6 +12280,7 @@
             "nvfp4"
           ],
           "serving_stack": [
+            "llama.cpp",
             "mlx_lm",
             "ollama",
             "sglang",
@@ -12324,6 +12326,7 @@
           "16",
           "22",
           "65",
+          "77",
           "79"
         ],
         "source_path": "traps/evaluation/12-empty-content-at-token-ceiling.md",
@@ -16712,6 +16715,7 @@
         ],
         "affected_stacks": [
           "vLLM",
+          "llama.cpp",
           "Ollama",
           "SGLang"
         ],
@@ -16737,6 +16741,7 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
+            "llama.cpp",
             "ollama",
             "sglang",
             "vllm"
@@ -16788,6 +16793,7 @@
           "qwen3"
         ],
         "affected_stacks": [
+          "llama.cpp",
           "Ollama"
         ],
         "affected_versions_builds": "Ollama 0.32.5, /api/chat and /v1/chat/completions, qwen3:8b, GB10 aarch64 CUDA 13.",
@@ -16812,6 +16818,7 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
+            "llama.cpp",
             "ollama"
           ],
           "stack_version": [
@@ -19107,7 +19114,8 @@
           "DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5"
         ],
         "affected_stacks": [
-          "vLLM"
+          "vLLM",
+          "llama.cpp"
         ],
         "affected_versions_builds": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5, greedy draft sampling, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. The mechanism applies to any speculative lane benchmarked at temperature 0 across sessions.",
         "applicability": {
@@ -19134,6 +19142,7 @@
             "nvfp4"
           ],
           "serving_stack": [
+            "llama.cpp",
             "vllm"
           ],
           "stack_version": [],

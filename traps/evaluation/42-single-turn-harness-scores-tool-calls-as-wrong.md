@@ -229,3 +229,11 @@ raw published 2026-07-27.
 raw, and the self-correction of his own earlier 15-problem 2x2 that had
 overstated the effect at small n). Blackwellboy (the depth-side exit-path
 measurement on a second stack).
+
+## Added 2026-08-11: sequential multi-tool chains need a feedback loop, not a single-turn "all tools at once" score
+
+**Muse Glimmer 30B, llama.cpp, tool-enabled serve.** A single-turn sequential-tool harness scored **1/4** (model typically stopped after the first tool). The same model on an actual multi-turn assistant→tool-result→assistant loop scored **29/30** across 2/3/5-tool chains (LOW 15/15, HIGH 14/15). The failure mode is harness protocol: requiring all sequential tool decisions in one assistant turn scores the harness, not sequential agent capability.
+
+This is the same structural class as the original entry (single-turn exit path vs real tool-return continuation), measured on a sequential chain rather than a HumanEval routing apparatus. The fix arm described in the original entry - feed tool results back and let the turn finish - is exactly what flipped the Muse result.
+
+*Status of this addendum: measured here, raw not published.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

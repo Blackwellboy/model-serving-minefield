@@ -30,6 +30,7 @@ closed. Start there if you want to know what is open rather than what is done.
 
 | Date | Candidate | Result |
 |---|---|---|
+| 2026-08-11 | [Muse Glimmer 30B reasoning-control and stack](2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md) | **Not a new trap.** Card system-low dual LOW+HIGH render proven; clean kwargs-low ops benefit without full-suite coding delta (EvalPlus McNemar ns); extensions on traps 07/12/21/42/77/78/111. Trap 113 is not the owner. |
 | 2026-07-27 | [R2-39 thinking plus tools yields empty output](2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md) | Did not reproduce on vLLM; scoped to Ollama pending an Ollama-side test |
 | 2026-07-27 | [R2-31 DeepSeek V4 system-message quality cliff](2026-07-27-r2-31-deepseek-v4-system-message-no-cliff-small-n.md) | Did not reproduce at small n; system-independent behavior measured; stays open pending an upstream recipe |
 | 2026-07-27 | [R2-27 / R2-23 / R2-10 / R2-29 blocked](2026-07-27-r2-blocked-not-testable.md) | Not testable on current lanes; each note says what a test needs |

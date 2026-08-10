@@ -130,3 +130,18 @@ variable removed and a fresh container, the engine still selected
 6. Prefer `--fail-on-environ-validation` where the build supports it.
 
 **Mitigation:** fail fast on unknown environment variables where supported.
+
+## Added 2026-08-11: Muse Glimmer 30B - accepted template kwargs and OpenAI fields that do nothing
+
+**Muse Glimmer 30B UD-Q4_K_XL, llama.cpp `62bf73d25`.** Same acceptance≠effect class on a new model:
+
+| Control | Acceptance | Effect on this path |
+|---|---|---|
+| `enable_thinking=false` (template kwarg / request) | HTTP 200 | **Inert:** 0 template references; 8/8 paired renders byte-identical to default; reasoning continued |
+| Invented top-level request field | HTTP 200 | No behavioral proof of consumption |
+| Card system text `Reasoning strength: low` | "accepted" as system content | Does **not** bind `reasoning_strength`; template default **high** still renders (LOW+HIGH) |
+| `chat_template_kwargs.reasoning_strength=low` | HTTP 200 | **Effective** clean LOW (the control that actually binds) |
+
+Operator rule unchanged: assert on the rendered prompt and on response fields (`reasoning_content` empty when you believe thinking is off), never on status code alone.
+
+*Status of this addendum: measured here, raw not published.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

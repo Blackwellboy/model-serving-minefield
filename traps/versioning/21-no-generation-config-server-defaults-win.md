@@ -79,3 +79,9 @@ cheap signal that the two are worth diffing.
 
 *Status of this addendum: reproduced here. Both files are public and the
 disagreement is visible in a two-line diff.*
+
+## Added 2026-08-11: Muse Glimmer 30B Unsloth GGUF pin - no generation_config.json
+
+**Pinned local tree for `unsloth/Muse-Glimmer-30B-GGUF` rev `9889697...` ships no `generation_config.json`.** Sampling on llama.cpp is therefore explicit request values and/or server built-ins, not a machine-readable card default. Card prose listed temperature / top_p / top_k recommendations; the measured server default surface still included parameters (e.g. min_p) that must be stated in the run manifest rather than assumed from the card. Same trap class as Qwen3.5-9B: **missing file, not a different mechanism.**
+
+*Status of this addendum: measured here, raw not published.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

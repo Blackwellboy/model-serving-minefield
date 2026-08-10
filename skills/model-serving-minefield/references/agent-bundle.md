@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `6b202eab28eb16cba4dd56681b4c15255da6b0a99a713bf12911d0e22f44ea84`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `2d5be168faedcf1cead13b08422bf6b39c58af614c11ea1c1f1536dfdd091bbe`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -164,9 +164,9 @@ Allowed diagnosis levels are `CONFIRMED_BY_DIRECT_PROBE`,
 - Check: Bucket every scored zero by "was content empty at a cap-hit". If empties cluster at the ceiling, re-run only those at a larger budget before concluding anything about capability.
 - Safe conditional mitigation: Bucket every scored zero by "was content empty at a cap-hit". If empties cluster at the ceiling, re-run only those at a larger budget before concluding anything about capability.
 - Named conditions: Qwen 3.6 35B-A3B NVFP4 on vLLM (GB10), first seen as 28/30 empties in a cross-model grid at 4096, replicated 8/10 in the budget map, converted at 8192. Reproduced on mlxlm (2026-07-27, stock server, prism-ml Ternary-Bonsai-27B-mlx-2bit, Apple silicon): a hard task with thinking on at maxtokens=512 returned HTTP 200, finishreason=length, no content, and 1,484 chars of reasoning; a degeneration screen read the tail as honest truncation (unique-line ratio 1.00, zlib ratio 0.53). The MLX flavor of the signature differs: where vLLM returns content as an empty string, mlxlm OMITS the content key entirely, so msg["content"] raises KeyError on every cap-hit. A KeyError storm that correlates with finishreason=length is this stack's version of the symptom, and it is easy to misread as a client bug instead of a budget artifact (see trap 01 for the absent-key shape). Budget note: the same 27B-class model converted a short arithmetic answer in 225 completion tokens with thinking on and burned all 512 on the hard task without converting, so the thinking-on conversion floor sits somewhere above 512 on that lane; per trap 22, find it for THIS model rather than borrowing a family number. The upstream guide ecosystem adopted the lesson as "an empty response at a token cap is a failure, not a truncation" (offlabel patterns.md).
-- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["apple silicon", "gb10"], "exact_checkpoint": ["qwen 3.6 35b-a3b nvfp4 on vllm", "ternary-bonsai-27b-mlx-2bit"], "failure_stage": [], "gpu_architecture": ["apple silicon", "blackwell"], "model_family": ["qwen 3.6", "ternary-bonsai"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["mlx_lm", "ollama", "sglang", "vllm"], "stack_version": [], "topology": []}`
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["apple silicon", "gb10"], "exact_checkpoint": ["qwen 3.6 35b-a3b nvfp4 on vllm", "ternary-bonsai-27b-mlx-2bit"], "failure_stage": [], "gpu_architecture": ["apple silicon", "blackwell"], "model_family": ["qwen 3.6", "ternary-bonsai"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["llama.cpp", "mlx_lm", "ollama", "sglang", "vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/evaluation/12-empty-content-at-token-ceiling.md`
-- Related traps: 01, 16, 22, 65, 79
+- Related traps: 01, 16, 22, 65, 77, 79
 - Unknown/limits: The 4.50% and every per-family rate are the rates at maxtokens=1024 on this task mix. They do not transfer to another budget, which is trap 12's own standing warning, and this addendum is an instance of it rather than an exception. Single serve, no baseline arm. Status of this addendum: reproduced here. Single serve, no baseline arm. Evidence for this addendum: study, scrubbed raw, verify.py (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), redaction record.
 
 ### Trap 16: finishreason=length is not a failure signal, and stop is not a success signal
@@ -320,7 +320,7 @@ Allowed diagnosis levels are `CONFIRMED_BY_DIRECT_PROBE`,
 - Check: Two requests, and the assertion is on the response rather than the status code: bash
 - Safe conditional mitigation: The real control here is think: true|false|"high"|"medium"| "low"|"max" on the native API, and reasoningeffort: "none" on the OpenAI-compatible /v1 route. More usefully than either: before you trust any new server with an arm of an experiment, send one deliberately misspelled parameter and see whether you get a 400. If you get a 200, the request surface is unvalidated, your own typos are silent too, and every parameter you send is a hypothesis rather than a setting.
 - Named conditions: Ollama 0.32.5, /api/chat and /api/generate, qwen3:8b, GB10 aarch64 CUDA 13. The class is general: this registry's methodology preamble already says accepted-but-unread is a dead knob, and this is the strongest instance of it measured here, because the server validates enough to look like it validates.
-- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen3"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["ollama", "sglang", "vllm"], "stack_version": ["0.32.5"], "topology": []}`
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen3"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["llama.cpp", "ollama", "sglang", "vllm"], "stack_version": ["0.32.5"], "topology": []}`
 - Source: `traps/reasoning/77-only-one-request-field-is-validated.md`
 - Related traps: 03, 07, 29
 - Unknown/limits: No additional limitation is stated; absence is not safety.
@@ -333,7 +333,7 @@ Allowed diagnosis levels are `CONFIRMED_BY_DIRECT_PROBE`,
 - Check: Send the same tool-inviting prompt twice, once with toolchoice: "none", and look at what came back rather than at the status: bash
 - Safe conditional mitigation: To suppress calls on this stack, do not send tools on that turn. That is the only control that works here, it works everywhere, and it does not depend on the server implementing anything. Keep toolchoice for servers where you have proven it binds.
 - Named conditions: Ollama 0.32.5, /api/chat and /v1/chat/completions, qwen3:8b, GB10 aarch64 CUDA 13.
-- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen3"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["ollama"], "stack_version": ["0.32.5"], "topology": []}`
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen3"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["llama.cpp", "ollama"], "stack_version": ["0.32.5"], "topology": []}`
 - Source: `traps/tools/78-tool-choice-accepted-and-ignored.md`
 - Related traps: 19
 - Unknown/limits: No additional limitation is stated; absence is not safety.
