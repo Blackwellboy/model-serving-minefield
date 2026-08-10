@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-11
+
+- Muse Glimmer 30B campaign (llama.cpp + DFlash): **no new trap IDs.** Existing-owner extensions and one mining note only.
+  - Mining: [2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md](mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md) - card system-low dual LOW+HIGH render vs clean kwargs-low; full EvalPlus coding cost **not demonstrated**; ops latency/reasoning-length reduction bounded; claim boundaries for Qwen practical lane and DFlash.
+  - Addenda: [07](traps/reasoning/07-reasoning-effort-silently-ignored.md), [12](traps/evaluation/12-empty-content-at-token-ceiling.md), [21](traps/versioning/21-no-generation-config-server-defaults-win.md), [42](traps/evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md), [77](traps/reasoning/77-only-one-request-field-is-validated.md), [78](traps/tools/78-tool-choice-accepted-and-ignored.md), [111](traps/evaluation/111-greedy-spec-decode-medians-are-a-content-lottery.md).
+  - Index: [models/README.md](models/README.md) Muse row; [stacks/llama-cpp.md](stacks/llama-cpp.md) render check; playbooks `before-you-publish-an-ab` and `porting-a-harness` (render SHA + content-only extract).
+  - Explicit non-owner: trap [113](traps/template/113-inline-system-role-is-not-a-stable-contract.md) is **not** the dual-directive mechanism.
+
 ## 2026-08-08
 
 - [Trap 116](traps/runtime/116-successful-load-does-not-prove-first-forward-dtype-path.md): successful multi-rank model load does not prove the first-forward F16 embedding/dtype helper path (0008 fail after load; 0009 old error absent without proven completion; 0010 instrumented embed+generation proof). Patch author: Victor Cruz / vcruz305. Hardware qualification: Blackwellboy.

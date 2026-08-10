@@ -77,3 +77,9 @@ servers where you have proven it binds.
 **Attribution.** Blackwellboy. Related:
 [trap 19](19-missing-jinja-breaks-tool-parsing.md) for the other end of the
 same pipeline, where a call is made and not parsed.
+
+## Added 2026-08-11: Muse / llama.cpp - forced **named** tool choice ignored; required/auto effective
+
+**Muse Glimmer 30B, llama.cpp OpenAI-compatible tools path (bounded API matrix).** On the tested pin: `tool_choice=auto` and `tool_choice=required` behaved as effective; a **forced named** tool choice was **silently ignored** in the tested case; `tool_choice=none` was a weak/rejected path rather than a clean off switch. This is not a full reproduction of the Ollama both-directions failure above, but it is the same operator class: **do not treat request acceptance of `tool_choice` as semantic parity** - assert the tool actually selected.
+
+*Status of this addendum: measured here, raw not published; single-path matrix.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).

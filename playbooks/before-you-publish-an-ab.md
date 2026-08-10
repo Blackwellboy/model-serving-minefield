@@ -81,6 +81,16 @@ Two adjacent checks belong here:
 - Send the thinking kwarg **explicitly** on every arm and pin the revision.
   The default drifts between revisions and uploads
   ([trap 03](../traps/reasoning/03-enable-thinking-default-drift.md), **Core**).
+- **Hash the rendered prompt per arm** when the variable under test is a
+  reasoning or system-text control. Card-style prose such as
+  `Reasoning strength: low` can leave the template default high in place and
+  produce a dual directive while only `chat_template_kwargs` binds the Jinja
+  variable ([Muse Glimmer 30B note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md)).
+  Preserve the full request body and render SHA next to every scored row.
+- **Extract only final `content` for code/answer scoring.** Never execute or
+  score `reasoning_content` as the answer. Content-only consumers can also
+  look blank while reasoning streams
+  ([trap 23](../traps/reasoning/23-streaming-answer-lands-in-reasoning-channel.md)).
 
 ## 4. Ask whether anyone would serve your baseline
 

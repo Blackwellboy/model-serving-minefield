@@ -290,3 +290,11 @@ rather than an exception. Single serve, no baseline arm.
 *Status of this addendum: reproduced here. Single serve, no baseline arm.*
 
 *Evidence for this addendum: [study](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/README.md), [scrubbed raw](https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/), [verify.py](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/verify.py) (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), [redaction record](https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/REDACTIONS.md).*
+
+## Added 2026-08-11: Muse Glimmer 30B - tight ceiling + reasoning mode still empty-final territory
+
+**Muse Glimmer 30B UD-Q4_K_XL + DFlash, llama.cpp `62bf73d25`, greedy EvalPlus slices.** Reasoning can still consume the generation budget and leave empty final `content` (doctor and forensic arms; full-suite empty rates were low at max_tokens=4096). On a **secondary** n=30 budget slice at max_tokens=**512**, card-style double-directive low showed 3/30 empty finals and 70% Plus, while clean kwargs-low showed 1/30 empty and 86.7% Plus; at **1024** that direction did not hold. Treat as trap-12 corroboration under a tight ceiling, not as a general coding-quality ranking.
+
+Also: request/server "reasoning budget" knobs present on the build were **not** shown to prevent empty finals on a hard high-reasoning task when exercised naively - presence of a budget field is not proof it bounds this path ([trap 77](../reasoning/77-only-one-request-field-is-validated.md) class).
+
+*Status of this addendum: measured here, raw not published; n=30 budget cells are secondary evidence only.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
