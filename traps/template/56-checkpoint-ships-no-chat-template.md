@@ -165,11 +165,15 @@ auto-detection that treats "the template rendered without raising" as "the
 model handles this". For a checkpoint with no system role marker, rendering
 without raising is exactly what it will do.
 
-[PR #47681](https://github.com/vllm-project/vllm/pull/47681) proposes flipping
-the default back to merge, with an opt-in allowlist that starts empty. **As of
-2026-07-28 it is open, unmerged, and its changes land in the Anthropic
-entrypoint**, so it is not a fix you can assume is in your build, and it is
-scoped narrower than the general chat path.
+[PR #47681](https://github.com/vllm-project/vllm/pull/47681) originally began
+as an Anthropic-side policy change. **As of 2026-08-14 it is still open and
+unmerged, but its current revision is broader:** it normalizes inline system
+messages at the shared OpenAI rendering boundary, applies the policy to both
+OpenAI and Anthropic paths, exposes `--inline-system-messages {merge,preserve}`,
+and defaults to `merge`. `preserve` remains an explicit opt-in for deployments
+that have independently validated their constructor behavior. This is a
+mitigation you still cannot assume is present until the PR lands in the build
+you run.
 
 **Scope, stated because our own lane cannot show this half.** We serve a
 lineage that predates those defaults, so we have not observed preserve-in-place
@@ -228,3 +232,36 @@ The actual Kimi-K3 vLLM endpoint remains `UNDER_TEST`.
 | Kimi-K3 upstream tokenizer load and render | `TOKENIZER_EXECUTED_AT_PINNED_REVISION` | Isolated tokenizer only; cross-representation result `INCONCLUSIVE` |
 | Kimi-K3 vLLM `/tokenize` behavior | `UNDER_TEST` | No endpoint reproduction in this pass |
 | OpenAI versus Anthropic entrypoint behavior | `INCONCLUSIVE` | Source paths inspected; no endpoint pair reproduced |
+
+## Added 2026-08-14: malformed assistant transition after non-user roles
+
+A new render-level report in
+[vLLM issue #46710](https://github.com/vllm-project/vllm/issues/46710#issuecomment-5289436964)
+by [@flexwang](https://github.com/flexwang) sharpens the same Python-encoder
+boundary. With tools declared so prior reasoning is retained, preserving an
+inline system message produced a prompt where the system text was welded onto
+the preceding user content **and the following assistant turn had no
+`<｜Assistant｜>` marker**. The retained reasoning appeared as `r1</think>` with
+no opening `<think>`. He reports the same missing-marker shape from adjacent
+assistant messages and from the checkpoint's reference encoder.
+
+We independently inspected current vLLM `main` at
+[`8e6d8e4f6a0c84db0d79129ab648492edf640fe2`](https://github.com/vllm-project/vllm/tree/8e6d8e4f6a0c84db0d79129ab648492edf640fe2).
+The encoder still emits system messages as bare `"{content}"`, while its normal
+Assistant transition is appended only when the current role is `user` or
+`developer`. That source shape is consistent with the reported render.
+
+**This changes the boundary of the mitigation, not the original finding.** PR
+#47681's merge default avoids the late-system path for default callers, but it
+does not repair a general transition gap reachable through two consecutive
+assistant turns. Qualification should therefore render at least both
+`[user, system, assistant(reasoning), user]` and
+`[user, assistant, assistant(reasoning), user]` rather than treating the
+inline-system policy as a complete encoder test.
+
+**Status of this update:** exact renders and adjacent-assistant reproduction are
+reported by others; current source was independently inspected here. No
+end-to-end quality A/B has isolated this marker gap, so it is a malformed-render
+finding, not a claim that it alone explains every degraded response in #46710.
+See the full bounded note:
+[`mining/2026-08-14-deepseek-v4-transition-marker-gap.md`](../../mining/2026-08-14-deepseek-v4-transition-marker-gap.md).
