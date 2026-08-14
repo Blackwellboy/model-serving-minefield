@@ -42,7 +42,19 @@ A first-party hybrid-KV/speculative-serving campaign found a bounded request-siz
 
 **Publication gate:** sanitize the exact block arithmetic, pass/fail boundary and affected serving build before canonical promotion.
 
-### 4. Bulk-copy bandwidth can hide production transfer-geometry skew
+### 4. The UI-selected benchmark endpoint can differ from the data-plane endpoint actually measured
+
+**Current class:** `STRONG_FIRST_PARTY_MEASUREMENT_CANDIDATE`
+
+A first-party benchmark-HUD bug made endpoint selection look successful while local requests still traversed the development proxy's default `/v1` target. Pasting or scanning another local port changed the visible endpoint, but the benchmark traffic could continue hitting the same default backend. The correction made the local proxy route by the selected port/path and recorded the actual live API base in result output.
+
+The general Minefield lesson is important: **control-plane selection is not evidence of data-plane identity.** A benchmark can display model/endpoint B while the HTTP path still measures endpoint A, producing perfectly plausible but mislabeled numbers.
+
+Current public ownership search found no exact canonical owner for endpoint-selector/proxy divergence in a benchmark client.
+
+**Publication gate:** create a small two-mock-endpoint regression showing different model IDs/response markers and prove that selector A and B really reach different backends. Preserve the actual resolved request base in the benchmark receipt.
+
+### 5. Bulk-copy bandwidth can hide production transfer-geometry skew
 
 **Current class:** `PROMISING_FIRST_PARTY_CANDIDATE / NEEDS_GENERALIZATION`
 
@@ -106,4 +118,4 @@ The wider private audit also confirmed that several earlier candidates were alre
 
 `NEW_CANONICAL_TRAP_IDS_IN_THIS_PR=0`
 
-The recovered first-party queue is no longer lost, but canonical publication remains a separate promotion step. The strongest next promotion targets are persisted tool-history metadata loss, cold-JIT host OOM with resident weights, and the practical admission cliff below the displayed context/KV capacity.
+The recovered first-party queue is no longer lost, but canonical publication remains a separate promotion step. The strongest next promotion targets are persisted tool-history metadata loss, cold-JIT host OOM with resident weights, the practical admission cliff below the displayed context/KV capacity, and benchmark endpoint-selector/data-plane divergence.
