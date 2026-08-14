@@ -1,6 +1,6 @@
 # Inline-system pinned evidence, 2026-07-30
 
-This folder preserves the executable evidence behind trap 109 and the narrow
+This folder preserves the executable evidence behind Trap 113 and the narrow
 Trap 56 addendum.
 
 - `raw-executed-render-manifest.json` contains immutable source URLs, SHA-256
