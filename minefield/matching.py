@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from .diagnosis_contract import contract_for_match, miss_contract
+from .leads import search_leads
 
 TOKEN_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
 STOPWORDS = {
@@ -125,16 +126,42 @@ def diagnose(
     symptom: str,
     **kwargs: Any,
 ) -> dict[str, Any]:
-    """Return an explicit envelope so a miss can never be mistaken for CLEAN."""
+    """Return canonical candidates plus a clearly separate weaker lead layer.
+
+    Canonical traps are always searched first.  L-series leads remain
+    non-canonical and are never allowed to turn resemblance into confirmation.
+    """
     matches = search(registry, symptom, **kwargs)
+    lead_matches = search_leads(
+        symptom,
+        stack=kwargs.get("stack"),
+        model=kwargs.get("model"),
+        version=kwargs.get("version"),
+        limit=5,
+    )
     if not matches:
-        return miss_contract(symptom, kwargs.get("conditions"))
+        result = miss_contract(symptom, kwargs.get("conditions"))
+        result["possible_unverified_leads"] = lead_matches
+        if lead_matches:
+            result["warning"] = (
+                "No canonical Minefield trap matched. The L-series items below are "
+                "possible unverified troubleshooting leads only. Run their confirm/refute "
+                "checks before treating any mechanism as applicable."
+            )
+        else:
+            result["warning"] = (
+                "No canonical trap or public-safe unverified lead matched. A registry miss "
+                "means not documented, never safe."
+            )
+        return result
     return {
         "diagnosis_level": matches[0]["diagnosis_level"],
         "observed_symptom": symptom,
         "matches": matches,
+        "possible_unverified_leads": lead_matches,
         "warning": (
-            "Candidates are ranked, not proven. Apply mitigations only after the "
+            "Canonical candidates are ranked, not proven. L-series suggestions are a "
+            "strictly weaker non-canonical tier. Apply mitigations only after the relevant "
             "confirmation check succeeds under the user's exact conditions."
         ),
     }
