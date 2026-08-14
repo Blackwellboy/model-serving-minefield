@@ -1,0 +1,42 @@
+name: temporary-lead-router-regeneration
+
+on:
+  push:
+    branches:
+      - feature/unverified-lead-layer-20260814
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: regenerate committed agent surfaces
+        run: python -m minefield agent-bundle
+      - name: commit generated surfaces when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- \
+            dist \
+            minefield/data/MINEFIELD_REGISTRY.json \
+            minefield/data/UNVERIFIED_LEADS.json \
+            minefield/data/minefield_doctor.py \
+            doctor/minefield_doctor.py \
+            skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo "Generated surfaces already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: normalize L-series packaged data"
+          git push origin HEAD:feature/unverified-lead-layer-20260814
