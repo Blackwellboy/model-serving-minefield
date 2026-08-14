@@ -1,8 +1,8 @@
 # Upstream candidate refresh — 2026-08-14
 
-**Disposition: public-source mining queue, not first-party reproduction. No canonical trap IDs allocated here.**
+**Disposition: public-source audit backing U12-U16. Not first-party reproduction. No canonical trap IDs allocated here.**
 
-A wider audit recovered an earlier private promotion queue containing five public upstream serving issues that were not present in current Minefield. Each item was re-checked against its current primary GitHub issue/PR state before being recorded here.
+A wider audit recovered an earlier private promotion queue containing five public upstream serving issues that were not present in current Minefield. Each item was re-checked against its current primary GitHub issue/PR state. The resulting public-source records are promoted in this PR as U12-U16 under the separate `upstream-reported` tier, which does not count toward the canonical trap total, Core or doctor coverage.
 
 ## 1. SGLang: streaming validation error can be HTTP 200
 
@@ -16,7 +16,7 @@ The merged fix explains the mechanism cleanly: the server returned `StreamingRes
 
 **Minefield value:** HTTP 200 is not proof that a streaming generation request was accepted successfully; client/harness code must inspect the SSE/error contract as well as transport status on affected builds.
 
-**Current routing:** strong historical `upstream/` candidate. Fixed upstream, so scope must be version/build bounded.
+**Promotion:** [U12](../upstream/U12-sglang-streaming-validation-http200.md), historical/fixed-upstream scope.
 
 ## 2. llama.cpp: `--cache-reuse` does not imply reusable full-prefix state on iSWA
 
@@ -26,7 +26,7 @@ The reporter saw repeated prompt reprocessing even though `--cache-reuse 1` was 
 
 **Minefield value:** a cache-reuse flag can be syntactically enabled while the model's attention/KV policy makes the required reusable state unavailable. Measure actual reused tokens/prefill work; do not infer reuse from the launch flag alone. The workaround has a memory cost because it retains the full SWA KV state.
 
-**Current routing:** strong stack-semantics `upstream/` candidate, not necessarily a software defect in current semantics.
+**Promotion:** [U13](../upstream/U13-llamacpp-iswa-cache-reuse-needs-swa-full.md), recorded as resolved usage/configuration semantics rather than a generic current bug.
 
 ## 3. TGI: separate `chat_template.jinja` can be invisible to the server
 
@@ -36,7 +36,7 @@ Primary issue: [huggingface/text-generation-inference#3247](https://github.com/h
 
 **Minefield value:** checkpoint template location is part of runtime compatibility. "The model loaded" does not prove the chat endpoint found the template artifact the checkpoint actually ships.
 
-**Current routing:** historical `upstream/` candidate. Explicitly note that TGI is archived; this is compatibility evidence, not an expectation of a future upstream fix.
+**Promotion:** [U14](../upstream/U14-tgi-separate-chat-template-jinja-not-loaded.md), explicitly historical because TGI is archived and the issue remains open.
 
 ## 4. MLX-LM: MTP-labelled checkpoint behavior did not imply MTP execution
 
@@ -52,7 +52,7 @@ Later source inspection in the issue materially narrows the initial speculation 
 
 **Minefield value:** a checkpoint/filename capability label is not runtime evidence. Verify that the serving stack actually consumes the feature weights/path being benchmarked, and distinguish loader sanitation from speculative execution.
 
-**Current routing:** strong `upstream/` candidate with mechanism status still partly unresolved; preserve issue/PR state and exact affected versions if promoted.
+**Promotion:** [U15](../upstream/U15-mlx-mtp-label-does-not-prove-mtp-runtime.md), with the unresolved causal boundary retained.
 
 ## 5. vLLM: MTP correctness can collapse at a concurrency/mixed-batch boundary
 
@@ -66,12 +66,16 @@ There are plausible source-level hypotheses in the thread involving MTP state/in
 
 **Minefield value:** speculative decoding can be throughput-positive at c1 and still be correctness-unsafe at a higher concurrency or mixed-batch shape. A performance qualification therefore needs a correctness check at the concurrency/context regime actually deployed.
 
-**Current routing:** strong reported-by-others `upstream/` candidate; do not publish a definitive root cause yet.
+**Promotion:** [U16](../upstream/U16-vllm-mtp-corrupts-at-concurrency-boundary.md), explicitly keeping the mechanism unresolved.
 
-## Dedup result
+## Dedup / promotion result
 
-Exact searches of current public Minefield did not find these issue numbers or an exact owner for the five mechanisms above. Some are adjacent to existing template, cache, speculation and measurement traps, but the upstream records add distinct stack/version-specific checks.
+Exact searches of current public Minefield did not find these issue numbers or an exact owner for the five stack/version-specific records above. Some are adjacent to existing template, cache, speculation and measurement traps, but the separate upstream tier is the correct place to publish them because nobody here reproduced those public reports.
 
-Recommended later promotion shape: dedicated `upstream/Uxx` records first, preserving `reported by others` status and current upstream resolution state. Do not relabel them as Blackwellboy first-party measurements.
+- U12-U16 are `upstream-reported`, not first-party measurements.
+- They do not change the canonical trap count.
+- They do not enter Core or doctor coverage.
+- Each record names the reporter, maintainer-engagement level, issue state, primary source, and runnable CONFIRM/REFUTE check.
 
+`UPSTREAM_ENTRIES_ADDED=5`
 `NEW_CANONICAL_TRAP_IDS_IN_THIS_PR=0`
