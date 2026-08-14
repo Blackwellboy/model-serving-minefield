@@ -16,7 +16,9 @@
     "not a skip, because 'could not look' reported as green is the same defect",
     "one level up.",
     "",
-    "Patterns are whitespace-tolerant on purpose. Markdown wraps prose, and a total split across a line break is still that total. A literal space here made this job silently skip the wrapped occurrence of the registry count and report CLEAN over a mutation that had applied."
+    "Patterns are whitespace-tolerant on purpose. Markdown wraps prose, and a total split across a line break is still that total. A literal space here made this job silently skip the wrapped occurrence of the registry count and report CLEAN over a mutation that had applied.",
+    "",
+    "The Pages site stopped publishing the doctor-check count in its 2026-08-14 portfolio redesign. That peer interface was retired here rather than forcing a removed UI statistic back onto the site just to satisfy an obsolete verifier. The registry pin and trap count remain live cross-repo contracts."
   ],
   "surfaces": [
     {
@@ -31,7 +33,7 @@
       "derive": "trap_paths",
       "artifact": "doctor/README.md",
       "pattern": "Its\\s+(\\d+)\\s+checks",
-      "why": "the site generator parses this exact sentence, so it is an interface"
+      "why": "the doctor README publishes this count directly"
     },
     {
       "id": "playbook-count",
@@ -57,14 +59,6 @@
       "artifact": "index.html",
       "pattern": "<b>(\\d+)</b><span>serving traps documented",
       "why": "published count, generated in another repo from this tree"
-    },
-    {
-      "id": "site-doctor-count",
-      "peer": "bbio",
-      "derive": "trap_paths",
-      "artifact": "index.html",
-      "pattern": "<span class=\"m\">(\\d+)</span> read-only checks",
-      "why": "the figure that published 18 while the tool held 19"
     }
   ]
 }
