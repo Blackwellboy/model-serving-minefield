@@ -1,0 +1,32 @@
+name: audit-regenerate
+
+on:
+  push:
+    branches:
+      - audit/2026-08-14-upstream-offlabel-refresh
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.event.head_commit.message != 'build: regenerate agent bundle'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Regenerate deterministic agent surfaces
+        run: python -m minefield agent-bundle
+      - name: Commit generated artefacts if changed
+        run: |
+          if git diff --quiet -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md; then
+            echo "Generated artefacts already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          git commit -m "build: regenerate agent bundle"
+          git push
