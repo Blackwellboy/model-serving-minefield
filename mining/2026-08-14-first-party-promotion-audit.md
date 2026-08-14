@@ -98,7 +98,7 @@ A historical five-node/200G fabric campaign had a private candidate list that wa
 - compatibility/out-of-band traffic escaping over the wrong default route;
 - directional host-memory-to-NIC/DMA impairment that a simpler bulk check did not expose.
 
-The per-host GID-index item from the same campaign is already public as [Trap 114](../traps/runtime/114-hard-coded-rdma-gid-index-not-portable.md), so it is excluded from this recovered queue rather than duplicated.
+The per-host GID-index item from the same campaign is already public as [Trap 114](../traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md), so it is excluded from this recovered queue rather than duplicated.
 
 **Current class for the seven remaining items:** `HISTORICAL_FIRST_PARTY_MEASURED / PROMOTION_PACKET_REQUIRED`.
 
