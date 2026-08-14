@@ -92,3 +92,45 @@ publish and credit it in
 Blackwellboy supplied the prior live DeepSeek render. The registry run
 independently fetched, hashed, and executed the public artifacts; source
 inspection is not described as contributor measurement.
+
+## Added 2026-08-14: DeepSeek's next-role transition can lose the assistant marker
+
+[@flexwang](https://github.com/flexwang) reported a second structural defect on
+[vLLM issue #46710](https://github.com/vllm-project/vllm/issues/46710#issuecomment-5289436964)
+while testing the current `deepseek_v4` encoder with prior reasoning retained.
+After an inline system message, the following assistant turn was rendered
+without `<｜Assistant｜>` and its reasoning appeared as `r1</think>` with no
+opening `<think>`. He also reproduced the missing-marker shape using two
+consecutive assistant messages, so this is not limited to the inline-system
+policy.
+
+The registry independently inspected vLLM `main` at
+[`8e6d8e4f6a0c84db0d79129ab648492edf640fe2`](https://github.com/vllm-project/vllm/tree/8e6d8e4f6a0c84db0d79129ab648492edf640fe2).
+At that revision the DeepSeek encoder still emits system messages as bare
+`"{content}"`, and its ordinary Assistant transition is appended only from a
+current role in `user` or `developer`. That source shape is consistent with the
+reported render.
+
+**Status of this addendum:** the exact renders and adjacent-assistant endpoint
+behavior are **reported by others**; the current-source mechanism was
+independently inspected here. We have not run an end-to-end quality A/B that
+isolates this marker gap, so this is not claimed as the sole cause of issue
+#46710's degraded output.
+
+[PR #47681](https://github.com/vllm-project/vllm/pull/47681) now uses a shared
+merge-by-default policy for inline system messages across OpenAI and Anthropic,
+with explicit `preserve` opt-in. That removes the default late-system route but
+cannot by itself close an adjacent-assistant path that contains no system
+message. Add two render regressions when qualifying this encoder:
+
+```text
+[user, system, assistant(reasoning), user]
+[user, assistant, assistant(reasoning), user]
+```
+
+For both, assert the expected assistant boundary and balanced reasoning
+delimiters before using output quality as the diagnostic. Full source/render
+notes and claim boundaries are preserved in
+[`mining/2026-08-14-deepseek-v4-transition-marker-gap.md`](../../mining/2026-08-14-deepseek-v4-transition-marker-gap.md).
+
+**Attribution for this extension:** [@flexwang](https://github.com/flexwang).
