@@ -52,18 +52,31 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U09, the chat template you passed was ignored, with a warning you did not see](U09-vllm-mistral-chat-template-ignored.md) | vLLM | maintainer confirmed | closed, fixed |
 | [U10, a reranker with no template returns confident, near-reversed scores](U10-vllm-vl-reranker-without-chat-template.md) | vLLM | maintainer responded | closed, resolved as usage |
 | [U11, tool output renders empty and the model calls the tool forever](U11-glm-tool-content-array-renders-empty.md) | vLLM, SGLang | maintainer confirmed | closed, fixed |
+| [U12, streaming validation commits HTTP 200 before rejection](U12-sglang-streaming-validation-http200.md) | SGLang | maintainer confirmed | closed, fixed |
+| [U13, iSWA cache reuse needs full SWA KV retention](U13-llamacpp-iswa-cache-reuse-needs-swa-full.md) | llama.cpp | maintainer confirmed | closed, resolved as usage |
+| [U14, separate chat_template.jinja is not loaded](U14-tgi-separate-chat-template-jinja-not-loaded.md) | TGI | none | open |
+| [U15, an MTP-labelled checkpoint does not prove MTP is executed](U15-mlx-mtp-label-does-not-prove-mtp-runtime.md) | mlx_lm | none | open |
+| [U16, MTP corrupts output at a concurrency/batch boundary](U16-vllm-mtp-corrupts-at-concurrency-boundary.md) | vLLM | none | open |
 
 ## Where these came from, and what did not survive
 
-All eleven come from a fifty-candidate desk-mining round, worked in full on
+U01-U11 came from a fifty-candidate desk-mining round worked in full on
 2026-07-28. The classification table, including the twenty-two candidates
 closed as too weak and the corrections to candidates whose mining summary
 misstated the thread, is in
 [the classification note](../mining/2026-07-28-r2-queue-classified-upstream-tier.md).
 
-The single most useful thing that pass established is procedural: **the mining
-summary was wrong often enough that reading it instead of the thread would have
-published false claims.** Two candidates described as live engine bugs were
-closed upstream as usage, one cited an issue for a claim that issue does not
-make, and one had been retracted by its own reporter. None of that is visible
-without opening the tab.
+U12-U16 came from a second recovery pass on 2026-08-14 over Blackwellboy's
+historical private Minefield promotion queue. Every original lead was reopened
+against its current public issue/PR before publication. That changed important
+parts of the record: SGLang #19996 is now fixed by a merged regression PR; the
+llama.cpp cache-reuse report resolved to an iSWA state-retention requirement;
+TGI is archived; MLX's original speculative-EOS hypothesis was narrowed by
+loader source inspection; and vLLM's MTP corruption report accumulated
+additional cross-hardware evidence while the root cause remained unresolved.
+The audit trail is in
+[`mining/2026-08-14-upstream-candidate-refresh.md`](../mining/2026-08-14-upstream-candidate-refresh.md).
+
+The procedural rule from the first pass still holds: **the mining summary is a
+lead, not the source.** Read the current tracker thread, preserve corrections
+and retractions, and record resolution state before promoting anything here.
