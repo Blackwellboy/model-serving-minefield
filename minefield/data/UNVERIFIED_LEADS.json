@@ -1,0 +1,1120 @@
+{
+  "schema_version": "1.0",
+  "catalogue_kind": "possible_unverified_leads",
+  "canonical_trap_count_impact": 0,
+  "policy": {
+    "canonical_first": true,
+    "lead_match_never_confirms_root_cause": true,
+    "required_phrase": "No canonical Minefield trap matches exactly. Possible unverified lead: <ID>.",
+    "mutation_requires_user_authority": true,
+    "private_permission_limited_sources_excluded": true
+  },
+  "allowed_statuses": [
+    "BLOCKED_PENDING_CONTROL",
+    "EXISTING_TRAP_EXTENSION",
+    "FIRST_PARTY_OBSERVED_UNPROMOTED",
+    "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+    "HYPOTHESIS_ONLY",
+    "PUBLIC_SOURCE_UNREPRODUCED",
+    "PUBLIC_SOURCE_VERIFIED_RUNTIME_UNTESTED",
+    "REPLAY_DID_NOT_REPRODUCE"
+  ],
+  "leads": [
+    {
+      "id": "L001",
+      "title": "Persisted tool history can lose API-facing tool-result metadata",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "tools_harness",
+      "symptom": "Fresh structured tool calls work, but a resumed/persisted session later fails or behaves differently around prior tool results.",
+      "possible_mechanism": "Session persistence/replay may reconstruct role=tool history without required API-facing metadata even when internal tool identity survived.",
+      "confirmation_check": "Capture the fresh and resumed request histories; compare tool-result name, tool_call_id, assistant tool_calls object and ordering. Validate the repaired history with the same targeted validator.",
+      "refutation_check": "Show byte/field-equivalent tool history before and after persistence, or reproduce the failure with metadata intact.",
+      "conditional_mitigation": "Repair only the missing persisted-history metadata after the mismatch is observed; do not treat a one-turn tool smoke as persistence proof.",
+      "related_traps": [
+        "84"
+      ],
+      "affected_stacks": [
+        "OpenAI-compatible agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L002",
+      "title": "Cold SM120 JIT can exhaust host memory after model load",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "runtime_memory",
+      "symptom": "Startup dies during cold CUDA/FlashInfer compilation after large weights are already resident; it can look like an engine or GPU OOM.",
+      "possible_mechanism": "The host compiler process may compete with resident model weights for RAM and be OOM-killed.",
+      "confirmation_check": "Identify the killed PID/process and host OOM evidence; compare cold compile-after-load with prewarm-before-load on the same pinned build.",
+      "refutation_check": "Show the same cold compile succeeds with weights resident and no host pressure, or that the killed owner is the GPU engine rather than compiler.",
+      "conditional_mitigation": "Prewarm/version the JIT cache before model load and serialize heavy compile work, but only after host-compiler OOM is supported.",
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "FlashInfer",
+        "CUDA",
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L003",
+      "title": "Usable request admission can be lower than the advertised context/KV headline",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "memory_scheduling",
+      "symptom": "A request below configured/displayed context remains waiting before prefill without a normal OOM or immediate validation error.",
+      "possible_mechanism": "Whole-sequence block admission, reserved blocks and the live free-block pool may make a below-headline sequence unadmittable.",
+      "confirmation_check": "Record configured context, block size/count, reserved/free blocks and a pass/fail request-length boundary; confirm the request waits before prefill.",
+      "refutation_check": "Demonstrate admission up to the advertised boundary under the same block pool and scheduling state.",
+      "conditional_mitigation": "Reduce admitted request length/concurrency or change the qualified memory profile only after block arithmetic supports the diagnosis.",
+      "related_traps": [
+        "13",
+        "61",
+        "98"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "speculative decoding",
+        "hybrid KV"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L004",
+      "title": "Benchmark selector can disagree with the backend actually measured",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "evaluation",
+      "symptom": "The UI shows endpoint/model B selected but benchmark results still look like endpoint/model A.",
+      "possible_mechanism": "Control-plane selection may update display state while a proxy or request path continues routing to a default backend.",
+      "confirmation_check": "Use two mock backends with distinct model IDs/response markers and record the resolved request base in the benchmark receipt.",
+      "refutation_check": "Prove each selector choice reaches a distinct backend and receipt identity matches the selected target.",
+      "conditional_mitigation": "Route by the selected port/path and persist the resolved data-plane endpoint in every result.",
+      "related_traps": [
+        "54",
+        "91"
+      ],
+      "affected_stacks": [
+        "benchmark clients",
+        "HTTP proxies"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L005",
+      "title": "Stale injected skill/profile truth can override correct live configuration",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "agent_harness",
+      "symptom": "An agent answers with an old deployment/configuration even though the live provider config is correct.",
+      "possible_mechanism": "Retrieved/bootstrap/skill context shown to the model can be stale and contradict the control-plane configuration the harness actually uses.",
+      "confirmation_check": "Capture live provider config, exact model-facing injected context, and a bare-model control; show the stale fact exists in injected context and not the bare model.",
+      "refutation_check": "Show model-facing context contains the current truth or the stale answer occurs without stale injected material.",
+      "conditional_mitigation": "Fix the stale retrieval/bootstrap source and add a runtime truth receipt; do not blame the model before inspecting injected context.",
+      "related_traps": [
+        "112"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "retrieval/bootstrap layers"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L006",
+      "title": "Accepted json_schema request may not mean the schema was enforced",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "api_compatibility",
+      "symptom": "A response_format=json_schema request returns HTTP success and valid-looking JSON, but schema-specific constraints may not affect generation.",
+      "possible_mechanism": "The API path may accept the field while treating it as inert or applying only generic JSON-object constraints.",
+      "confirmation_check": "Use a deliberately restrictive schema that an unconstrained response predictably violates; compare accepted request and returned object against the exact schema.",
+      "refutation_check": "Show a schema-sensitive A/B where output changes to satisfy the supplied constraint and violations are rejected/prevented.",
+      "conditional_mitigation": "Validate output against the requested schema client-side until enforcement is demonstrated on the pinned server path.",
+      "related_traps": [
+        "77"
+      ],
+      "affected_stacks": [
+        "llama.cpp",
+        "OpenAI-compatible APIs"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L007",
+      "title": "Bulk-copy bandwidth can hide many-small-copy loader bottlenecks",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_private_evidence",
+      "scope": "measurement",
+      "symptom": "Bulk H2D/D2D bandwidth looks healthy, but real model loading remains slow or rank-skewed.",
+      "possible_mechanism": "The production loader may issue many smaller transfers whose call-count/size geometry exposes overhead hidden by a bulk-copy microbenchmark.",
+      "confirmation_check": "Trace production copy sizes/counts per rank and compare with a microbenchmark reproducing that geometry.",
+      "refutation_check": "Show production copy geometry is bulk-like and throughput/skew matches the bulk benchmark.",
+      "conditional_mitigation": "Benchmark the transfer geometry the loader actually uses before changing storage/network assumptions.",
+      "related_traps": [
+        "52",
+        "91"
+      ],
+      "affected_stacks": [
+        "distributed loaders"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L008",
+      "title": "Cable/seating state can masquerade as cable-identity/EEPROM failure",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "Cable/seating state may masquerade as cable-identity/EEPROM failure",
+      "possible_mechanism": "A physical seating/link-state problem may be misdiagnosed from identity/EEPROM symptoms.",
+      "confirmation_check": "Re-seat/change one physical path at a time and compare link/FEC/EEPROM state before replacing or reprogramming anything.",
+      "refutation_check": "Reproduce the fault with seating proven stable and show identity/EEPROM data itself changes or is invalid.",
+      "conditional_mitigation": "Treat reseat/link-state proof as the first reversible check.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L009",
+      "title": "L2 MTU / PMTU mismatch can black-hole the high-speed path",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "L2 MTU / PMTU mismatch may black-hole the high-speed path",
+      "possible_mechanism": "A host/switch MTU mismatch can pass small traffic while dropping larger packets or causing path-specific stalls.",
+      "confirmation_check": "Run size-stepped ping/PMTU and end-to-end jumbo tests across every relevant hop; inspect host MTU and switch L2 MTU together.",
+      "refutation_check": "Show the same large payloads pass end-to-end with the suspected MTU values unchanged.",
+      "conditional_mitigation": "Correct the smallest proven MTU/L2MTU mismatch; do not infer from link-up alone.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L010",
+      "title": "TCP jumbo/MSS can fail while small or RDMA traffic still looks healthy",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "TCP jumbo/MSS may fail while small or RDMA traffic still looks healthy",
+      "possible_mechanism": "Different transports/packet sizes can exercise different segmentation/path behavior, so a healthy small/RDMA probe does not prove jumbo TCP.",
+      "confirmation_check": "Run paired small TCP, jumbo TCP and RDMA tests on the same endpoints and inspect MSS/PMTU.",
+      "refutation_check": "Show jumbo TCP passes consistently under the same path state that was suspected.",
+      "conditional_mitigation": "Qualify each transport/size class separately before blaming the switch or NIC.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L011",
+      "title": "Mixed distributed runtime/container images across ranks can mimic fabric failure",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "Mixed distributed runtime/container images across ranks may mimic fabric failure",
+      "possible_mechanism": "Ranks using different images/builds may fail collectives or startup in ways that resemble networking faults.",
+      "confirmation_check": "Record immutable image digests/runtime versions on every rank and rerun with exact digest parity.",
+      "refutation_check": "Reproduce the failure with identical image digests and runtime libraries across all ranks.",
+      "conditional_mitigation": "Pin the same image digest and critical libraries across ranks before deeper network changes.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L012",
+      "title": "Wrong HCA/interface selection can break an otherwise healthy distributed run",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "Wrong HCA/interface selection may break an otherwise healthy distributed run",
+      "possible_mechanism": "A rank may bind to the wrong secondary NIC/HCA even though the intended high-speed interface is healthy.",
+      "confirmation_check": "Log selected HCA/interface/address per rank and compare to topology; force the known-good device only as a diagnostic A/B.",
+      "refutation_check": "Show the same failure with every rank bound to the intended HCA/interface.",
+      "conditional_mitigation": "Pin per-host HCA/interface selection after observing a mismatch.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L013",
+      "title": "Out-of-band/default-route traffic can escape over the wrong network",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "Out-of-band/default-route traffic may escape over the wrong network",
+      "possible_mechanism": "Control or compatibility traffic may follow Wi-Fi/default routing while data traffic uses the intended fabric, causing asymmetric or confusing failures.",
+      "confirmation_check": "Capture route lookup/source address for control and data destinations on each host; compare with socket/collective logs.",
+      "refutation_check": "Prove all relevant traffic uses the intended path while the failure persists.",
+      "conditional_mitigation": "Set explicit route/source-interface policy only after the escaped path is observed.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L014",
+      "title": "Directional host-to-NIC/DMA impairment can be hidden by symmetric-looking tests",
+      "canonical": false,
+      "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
+      "source_class": "historical_first_party",
+      "scope": "network_fabric",
+      "symptom": "Directional host-to-NIC/DMA impairment may be hidden by symmetric-looking tests",
+      "possible_mechanism": "One host is much slower when it is the writer/sender, while the same links and peers are fast in the opposite direction.",
+      "confirmation_check": "Run a directed all-pairs matrix and correlate speed with writer identity; add host-memory/NIC/DMA-local probes on the slow writer.",
+      "refutation_check": "Show direction-independent performance or move the bottleneck with the link/port rather than the writer host.",
+      "conditional_mitigation": "Investigate writer-side host memory, DMA, PCIe/IOMMU and NIC path before changing healthy switch topology.",
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
+    },
+    {
+      "id": "L015",
+      "title": "GPU tenancy/process ownership collision can mimic engine instability",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "runtime_lifecycle",
+      "symptom": "A second GPU process appears or reappears outside the expected service manager and the target serve becomes unstable or loses memory.",
+      "possible_mechanism": "Unexpected process ownership/tenancy may consume GPU or host resources independently of the target service.",
+      "confirmation_check": "Snapshot GPU/process ownership before and during failure; map every PID to service/session owner.",
+      "refutation_check": "Show no unexpected tenant exists while the same instability reproduces.",
+      "conditional_mitigation": "Remove/reconcile the unexpected tenant only after ownership is proven.",
+      "related_traps": [
+        "112",
+        "13"
+      ],
+      "affected_stacks": [
+        "CUDA",
+        "service managers"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L016",
+      "title": "GPU FP4 capability does not prove the runtime selected an FP4 backend",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "quantization",
+      "symptom": "Hardware advertises FP4/NVFP4 capability and checkpoint is labelled FP4, but performance/accuracy suggest a fallback or different kernel path.",
+      "possible_mechanism": "Hardware capability, checkpoint label and actual runtime quant/backend are separate facts.",
+      "confirmation_check": "Inspect loaded quant config, runtime logs/kernel/backend identity, and a path-specific probe.",
+      "refutation_check": "Show the intended backend/kernel actually executes for the relevant layers.",
+      "conditional_mitigation": "Report the effective backend and fix selection/config only after observing the mismatch.",
+      "related_traps": [
+        "44",
+        "18",
+        "10"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "SGLang",
+        "SM120"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L017",
+      "title": "Native MTP can change memory/KV readiness even at K=1",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "memory_speculation",
+      "symptom": "Baseline reaches READY but enabling native MTP K=1 changes the footprint enough that KV allocation fails at the same memory-utilization setting.",
+      "possible_mechanism": "Speculative configuration changes loaded/runtime memory and therefore invalidates the baseline memory qualification.",
+      "confirmation_check": "Compare READY footprint/KV allocation baseline vs MTP K=1 with identical non-spec settings; record actual free memory and KV blocks.",
+      "refutation_check": "Show equal footprint/readiness and KV allocation with and without MTP under the same settings.",
+      "conditional_mitigation": "Re-qualify memory utilization/KV settings for the speculative configuration; never publish a universal threshold.",
+      "related_traps": [
+        "98",
+        "13"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "MTP"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L018",
+      "title": "Session or automation lifetime can kill a healthy serve",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "runtime_lifecycle",
+      "symptom": "A server starts and works, then disappears when the launching shell/session/automation ends, looking like an engine crash.",
+      "possible_mechanism": "Process lifetime may be coupled to the control session rather than a durable service owner.",
+      "confirmation_check": "Track parent/cgroup/service ownership and timestamps around session exit; relaunch under a durable owner as a control.",
+      "refutation_check": "Show the process dies independently of session/control lifetime.",
+      "conditional_mitigation": "Use a durable process/service owner only after lifecycle coupling is proven.",
+      "related_traps": [
+        "112"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "systemd",
+        "automation"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L019",
+      "title": "Forced capacity/block-count overrides do not create physical headroom",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "memory",
+      "symptom": "A forced block/capacity value lets configuration pass but the runtime later stalls/OOMs or cannot admit work.",
+      "possible_mechanism": "Overriding a calculator can bypass a guard without changing physical memory available to weights, KV, graphs and runtime baseline.",
+      "confirmation_check": "Measure physical free memory and actual allocated blocks before/after the override and test admission/readiness.",
+      "refutation_check": "Show the forced value corresponds to physically allocatable memory with stable operation.",
+      "conditional_mitigation": "Remove the override or lower workload/capacity to the physically demonstrated envelope.",
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L020",
+      "title": "Residual memory buckets need lifecycle attribution before blaming a subsystem",
+      "canonical": false,
+      "status": "HYPOTHESIS_ONLY",
+      "source_class": "first_party_private_evidence",
+      "scope": "measurement",
+      "symptom": "Memory accounting leaves a large unexplained residual and one loader/runtime component is blamed by subtraction.",
+      "possible_mechanism": "Baseline runtime allocations before model load may own much of the residual; a numerical remainder is not causal attribution.",
+      "confirmation_check": "Take a lifecycle timeline: process baseline, post-runtime-init, post-model, post-KV/graphs, post-first-forward.",
+      "refutation_check": "Show the residual appears only when the suspected component is introduced and disappears when it is removed.",
+      "conditional_mitigation": "Do not tune/remove the suspected subsystem until the timeline localizes the allocation.",
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "CUDA",
+        "model loaders"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L021",
+      "title": "Eager/debug launch flags can define the throughput regime",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "performance",
+      "symptom": "Throughput is unexpectedly low while correctness looks fine, or two supposedly identical runs differ sharply.",
+      "possible_mechanism": "A correctness/debug flag can disable CUDA graphs or select eager execution, changing the benchmark regime.",
+      "confirmation_check": "Record graph/eager mode in runtime logs and run a matched A/B with only the launch flag changed.",
+      "refutation_check": "Show both arms use the same execution mode and performance difference persists.",
+      "conditional_mitigation": "Publish/compare results only with execution mode recorded; change the flag only after validating correctness.",
+      "related_traps": [
+        "91",
+        "54"
+      ],
+      "affected_stacks": [
+        "CUDA graphs",
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L022",
+      "title": "Operator-facing reasoning settings may differ from provider-bound settings",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "reasoning_harness",
+      "symptom": "A UI/profile says reasoning is on/off but the provider request does not reflect that setting or a different nested precedence wins.",
+      "possible_mechanism": "Profile nesting/precedence can make operator-facing configuration diverge from the actual request sent to the serving endpoint.",
+      "confirmation_check": "Capture the provider-bound request and relevant template/rendered fields for each arm.",
+      "refutation_check": "Show the intended setting is present and effective in the exact provider-bound request.",
+      "conditional_mitigation": "Base A/B labels on the provider-bound request, not UI/profile intent.",
+      "related_traps": [
+        "07",
+        "77"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "OpenAI-compatible APIs"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L023",
+      "title": "Fail-closed tool containment is not successful tool-call reliability",
+      "canonical": false,
+      "status": "EXISTING_TRAP_EXTENSION",
+      "source_class": "first_party_private_evidence",
+      "scope": "tools_evaluation",
+      "symptom": "A guard safely refuses malformed native tool markup, but aggregate reporting treats the contained turn as a tool success.",
+      "possible_mechanism": "Safety containment and successful structured tool execution are different metrics.",
+      "confirmation_check": "Count malformed/refused turns separately from successfully parsed/executed tool calls.",
+      "refutation_check": "Show every contained turn also produced a valid structured call and successful execution.",
+      "conditional_mitigation": "Report containment rate and successful-call rate separately.",
+      "related_traps": [
+        "42",
+        "78"
+      ],
+      "affected_stacks": [
+        "agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "L024",
+      "title": "Post-tool native-markup event was observed once but exact replay later stayed clean",
+      "canonical": false,
+      "status": "REPLAY_DID_NOT_REPRODUCE",
+      "source_class": "first_party_private_evidence",
+      "scope": "tools_harness",
+      "symptom": "A historical post-tool turn emitted unexpected native markup, but a reconstructed exact replay later passed repeatedly.",
+      "possible_mechanism": "The original owner is unresolved; the event could depend on state not captured by the reconstruction.",
+      "confirmation_check": "Recover the exact original provider request/response and replay it on the pinned stack with surrounding session state.",
+      "refutation_check": "Repeated exact original replay stays clean and no missing state variable can be identified.",
+      "conditional_mitigation": "Do not apply a speculative fix; use the lead to avoid prematurely blaming the model or parser.",
+      "related_traps": [
+        "42",
+        "78",
+        "84"
+      ],
+      "affected_stacks": [
+        "agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "low",
+      "notes": ""
+    },
+    {
+      "id": "L025",
+      "title": "Long-session garbling can persist after tool-history repair",
+      "canonical": false,
+      "status": "BLOCKED_PENDING_CONTROL",
+      "source_class": "first_party_private_evidence",
+      "scope": "agent_harness",
+      "symptom": "A long continuous session still produces occasional garbled turns after the known tool-history issue is repaired.",
+      "possible_mechanism": "Owner could be model, server, harness, desktop/session layer, or state accumulation; current evidence does not isolate it.",
+      "confirmation_check": "Reconstruct exact bad-turn provider requests/responses and replay them outside the long session, then with controlled accumulated state.",
+      "refutation_check": "Bad turns do not reproduce and all model-facing requests are shown equivalent to clean controls.",
+      "conditional_mitigation": "Preserve the bad-turn artifacts and avoid changing unrelated layers until replay localizes the owner.",
+      "related_traps": [
+        "84",
+        "112"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "serving endpoints"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "low",
+      "notes": ""
+    },
+    {
+      "id": "L026",
+      "title": "Client timeout can masquerade as benchmark/model failure",
+      "canonical": false,
+      "status": "BLOCKED_PENDING_CONTROL",
+      "source_class": "first_party_private_evidence",
+      "scope": "evaluation",
+      "symptom": "Long-context or multi-turn benchmark items fail at the client timeout while the endpoint remains alive.",
+      "possible_mechanism": "The benchmark client may terminate before the server completes, turning a harness timeout into a model score failure.",
+      "confirmation_check": "Rerun only timed-out IDs with a deliberately generous explicit timeout and record server completion/status.",
+      "refutation_check": "Items still fail for the same semantic reason well before the generous timeout, or server itself fails.",
+      "conditional_mitigation": "Separate timeout from model-score failure and set a workload-appropriate explicit timeout.",
+      "related_traps": [
+        "42",
+        "54",
+        "61"
+      ],
+      "affected_stacks": [
+        "benchmark clients"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L027",
+      "title": "SM121 NVFP4 MoE can select the wrong CUTLASS path",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "quantization",
+      "symptom": "SM121 NVFP4 MoE runs but is wrong/unstable or performs unlike the expected path.",
+      "possible_mechanism": "A backend/kernel selection can choose an incompatible CUTLASS route where a Marlin path is required for the observed recipe.",
+      "confirmation_check": "Pin the historical source revision and inspect effective kernel/backend; run a small output-fidelity + performance A/B between candidate paths.",
+      "refutation_check": "Show the expected CUTLASS path is correct on the same build/model and output checks pass.",
+      "conditional_mitigation": "Force the known-good backend only after effective-path verification.",
+      "related_traps": [
+        "10",
+        "44"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L028",
+      "title": "`nvfp4` and `fp4_mx_block16` naming can identify different runtime expectations",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "quantization",
+      "symptom": "A supposedly NVFP4 path is rejected, misrouted, or silently uses a different implementation.",
+      "possible_mechanism": "Runtime dtype/quant identifiers may use a backend-specific name such as fp4_mx_block16 rather than a generic nvfp4 label.",
+      "confirmation_check": "Inspect accepted config enums and effective runtime path on the pinned build; compare both names in a no-model/static or tiny-path control.",
+      "refutation_check": "Both names resolve identically to the intended implementation.",
+      "conditional_mitigation": "Use the runtime's exact accepted/effective identifier and record it.",
+      "related_traps": [
+        "44",
+        "77"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L029",
+      "title": "Multiple KV writers can make one quantization hook incomplete",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "memory_quantization",
+      "symptom": "KV looks correctly quantized on one path but other requests/steps show different memory or correctness behavior.",
+      "possible_mechanism": "More than one code path may write KV, including hidden-state/draft injection; patching only one writer leaves mixed representation.",
+      "confirmation_check": "Trace every writer into the target KV pool and assert representation/scale on each path.",
+      "refutation_check": "Prove all requests go through the one patched writer.",
+      "conditional_mitigation": "Quantize at the common pool/write boundary only after writer inventory is complete.",
+      "related_traps": [
+        "18",
+        "44"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L030",
+      "title": "Cap-accept can still pay full-width verification cost",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "speculation_performance",
+      "symptom": "A speculative accept cap improves/controls acceptance statistics but throughput does not improve and may fall.",
+      "possible_mechanism": "Capping accepted tokens need not shrink the verifier's full-width work, so compute cost can remain while useful accepted output is truncated.",
+      "confirmation_check": "Profile verifier width/work and accepted-token count with cap on/off at matched prompts.",
+      "refutation_check": "Show verifier work shrinks in proportion to the cap and throughput responds accordingly.",
+      "conditional_mitigation": "Do not infer speedup from acceptance alone; tune only with matched throughput measurements.",
+      "related_traps": [
+        "11",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L031",
+      "title": "`/generate` prompt echo can corrupt a benchmark corpus",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "evaluation",
+      "symptom": "Generated-output files include the prompt again, inflating token/text counts or breaking graders.",
+      "possible_mechanism": "An endpoint/client may return echoed prompt text that the benchmark treats as model completion.",
+      "confirmation_check": "Use a sentinel prompt and inspect raw response fields; compare completion-only extraction against stored corpus rows.",
+      "refutation_check": "Show stored outputs exclude the prompt byte-for-byte.",
+      "conditional_mitigation": "Strip only the documented echo field/prefix and retain raw response for audit.",
+      "related_traps": [
+        "42",
+        "54"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L032",
+      "title": "Stop-word ratio heuristics can falsely reject valid reasoning",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "evaluation",
+      "symptom": "Reasoning outputs are marked bad or truncated by a stop-word ratio despite being semantically valid.",
+      "possible_mechanism": "A lexical stop-word heuristic can measure style/token distribution rather than reasoning validity.",
+      "confirmation_check": "Replay accepted/rejected rows with a semantic or task-grounded grader and inspect the exact stop-word calculation.",
+      "refutation_check": "Rejected rows are independently invalid and the heuristic has low false-positive rate on controls.",
+      "conditional_mitigation": "Treat the heuristic as an advisory feature, not a hard correctness gate, until calibrated.",
+      "related_traps": [
+        "42",
+        "52"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L033",
+      "title": "Speculative acceptance can be strongly temperature-dependent",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "speculation_measurement",
+      "symptom": "Acceptance changes sharply across runs that differ in sampling temperature, making a speculative speed comparison look like a kernel/runtime change.",
+      "possible_mechanism": "Sampling temperature changes target-token distribution and therefore draft/target agreement.",
+      "confirmation_check": "Run a temperature sweep with all runtime settings fixed and record acceptance + throughput distributions.",
+      "refutation_check": "Acceptance remains stable across the tested temperature range.",
+      "conditional_mitigation": "Match temperature before comparing speculative configurations.",
+      "related_traps": [
+        "17",
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L034",
+      "title": "Temperature zero can still be nondeterministic; single-run peaks are weak evidence",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "measurement",
+      "symptom": "Repeated temp=0 runs produce different tokens/acceptance/speed, while a single peak is reported as representative.",
+      "possible_mechanism": "Runtime scheduling, kernels or tie-breaking can make nominal greedy runs non-bit-identical.",
+      "confirmation_check": "Repeat the exact request many times and report distribution/identity hashes, not only the maximum.",
+      "refutation_check": "Demonstrate byte-identical output and stable timings under repeated runs.",
+      "conditional_mitigation": "Use medians/distributions and preserve run count even at temp=0.",
+      "related_traps": [
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L035",
+      "title": "Zero-shard calibration can be folded away under CUDA-graph/static execution",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "measurement",
+      "symptom": "A calibration/probe appears to pass while one shard/path effectively contributes zero work.",
+      "possible_mechanism": "Static graph/greedy folding can make a zero-shard path disappear from the measured execution.",
+      "confirmation_check": "Inject a nonzero sentinel per shard and verify each contributes to the captured graph/output.",
+      "refutation_check": "Show every shard is executed and contributes under the same captured graph.",
+      "conditional_mitigation": "Use per-shard sentinels and inspect the captured/static path before trusting aggregate calibration.",
+      "related_traps": [
+        "52",
+        "91"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L036",
+      "title": "Cap-accept can raise acceptance yet reduce throughput",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "speculation_performance",
+      "symptom": "Acceptance metric improves after a cap/calibration change but end-to-end throughput drops.",
+      "possible_mechanism": "Acceptance percentage can improve while verification overhead, truncation or scheduling cost worsens useful throughput.",
+      "confirmation_check": "Matched A/B: acceptance, useful accepted tokens, verifier work, TTFT and tok/s across repeated prompts.",
+      "refutation_check": "Throughput improves consistently after controlling prompt/sampling/run order.",
+      "conditional_mitigation": "Optimize for end-to-end useful throughput, not acceptance percentage alone.",
+      "related_traps": [
+        "11",
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L037",
+      "title": "Ragged verify `compact` default can be recipe/version-sensitive and crash the path",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "public_repository_static_mining",
+      "scope": "runtime_speculation",
+      "symptom": "A speculative serve crashes in the ragged/verification path when a launcher default is enabled.",
+      "possible_mechanism": "A launcher may default SGLANG_RAGGED_VERIFY_MODE=compact even where the documented recipe expects it unset and the compact path is not safe for the build.",
+      "confirmation_check": "Record effective env/default and run matched unset vs compact on the exact source revision with a minimal verification workload.",
+      "refutation_check": "Compact passes the same workload repeatedly on the pinned build.",
+      "conditional_mitigation": "Leave the mode unset/use the proven recipe only for the affected version; do not generalize across releases.",
+      "related_traps": [
+        "77",
+        "98"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
+      "confidence": "medium",
+      "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
+    },
+    {
+      "id": "L038",
+      "title": "Configured all-reduce fusion can be reported enabled after topology disables the effective path",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_VERIFIED_RUNTIME_UNTESTED",
+      "source_class": "public_source_inspection",
+      "scope": "runtime_reporting",
+      "symptom": "Logs/configuration say an all-reduce fusion is enabled, but the world-size/topology selects a different path or disables that optimization.",
+      "possible_mechanism": "Different allow-lists govern custom-allreduce and FlashInfer paths, while a later enabled-pass summary can reflect configuration fields rather than topology-effective state.",
+      "confirmation_check": "On the pinned build, choose a world size that differs across allow-lists; capture both disable/warning path and the later enabled summary; then inspect actual kernel path.",
+      "refutation_check": "Show the summary is topology-aware/effective-state-derived or both paths are actually enabled as reported.",
+      "conditional_mitigation": "Trust effective runtime-path evidence over an intent/config summary; record both when benchmarking.",
+      "related_traps": [
+        "77",
+        "91"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "FlashInfer"
+      ],
+      "source_refs": [
+        "https://github.com/vllm-project/vllm",
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "high",
+      "notes": "Earlier 'silent odd-world-size fallback' framing was refuted/narrowed: warnings exist; the useful lead is configured-versus-effective reporting drift."
+    },
+    {
+      "id": "L039",
+      "title": "Quiet-compliance classifiers can miss a degraded answer that still looks syntactically normal",
+      "canonical": false,
+      "status": "HYPOTHESIS_ONLY",
+      "source_class": "historical_external_candidate",
+      "scope": "evaluation",
+      "symptom": "A model/harness produces plausible compliant-looking output while task capability has degraded, and a superficial classifier still passes it.",
+      "possible_mechanism": "A binary compliance classifier may not measure whether the substantive task was completed correctly.",
+      "confirmation_check": "Use task-grounded execution/reference grading on rows that the compliance classifier passes; measure false-pass rate.",
+      "refutation_check": "Classifier-passed rows independently meet task correctness at the required rate.",
+      "conditional_mitigation": "Do not use quiet-compliance as the sole capability metric.",
+      "related_traps": [
+        "42"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "low",
+      "notes": ""
+    },
+    {
+      "id": "L040",
+      "title": "Judge capability floor can make an evaluator the bottleneck",
+      "canonical": false,
+      "status": "HYPOTHESIS_ONLY",
+      "source_class": "historical_external_candidate",
+      "scope": "evaluation",
+      "symptom": "Scores plateau, invert or become noisy on difficult outputs even though stronger independent grading disagrees.",
+      "possible_mechanism": "The judge model may lack enough capability for the domain/task, so its preferences become the measurement ceiling.",
+      "confirmation_check": "Cross-grade the same frozen outputs with stronger/orthogonal judges and execution/verifiable checks where possible.",
+      "refutation_check": "Independent verifiable grading agrees with the original judge across hard cases.",
+      "conditional_mitigation": "Use a stronger or task-grounded grader when judge-floor evidence appears.",
+      "related_traps": [
+        "42",
+        "52"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "low",
+      "notes": ""
+    },
+    {
+      "id": "L041",
+      "title": "Probe/control rows can contaminate the task denominator",
+      "canonical": false,
+      "status": "HYPOTHESIS_ONLY",
+      "source_class": "historical_external_candidate",
+      "scope": "evaluation",
+      "symptom": "Benchmark accuracy changes because diagnostic/probe rows are counted as normal task rows.",
+      "possible_mechanism": "Mixed row types can be aggregated into one denominator even though probes are not scored tasks.",
+      "confirmation_check": "Enumerate row types and recompute metrics with task-only denominator; compare to published score.",
+      "refutation_check": "All denominator rows are documented scored tasks.",
+      "conditional_mitigation": "Separate probes/controls from scored task rows in schema and reporting.",
+      "related_traps": [
+        "42",
+        "54"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    },
+    {
+      "id": "L042",
+      "title": "Kimi-K3 inline-system safety is source-inspected but still needs served-runtime verification",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "community_public_source",
+      "scope": "template",
+      "symptom": "A user needs to know whether a non-first system message remains a distinct role in a served Kimi-K3 prompt.",
+      "possible_mechanism": "Checkpoint Python encoder source has an explicit system-role branch, but trust_remote_code means the executed tokenizer comes from the pinned checkpoint and runtime behavior can drift with revision/loading path.",
+      "confirmation_check": "Serve the pinned Kimi-K3 revision with --trust-remote-code and inspect /tokenize for [user Q, system LATESYS, user Q2]; require a distinct system role segment.",
+      "refutation_check": "Rendered served prompt drops/welds the inline system message or executes different source than inspected.",
+      "conditional_mitigation": "Pin model revision/tokenizer class and verify served render before relying on inline-system semantics.",
+      "related_traps": [
+        "56",
+        "113"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "Kimi-K3"
+      ],
+      "source_refs": [
+        "https://github.com/vllm-project/vllm/issues/46710"
+      ],
+      "confidence": "medium",
+      "notes": ""
+    }
+  ]
+}
