@@ -93,3 +93,22 @@ Record all of these together:
 A failure before the endpoint is reached is not a model failure. A failure in
 one runtime does not automatically generalize to another. And one bad canary
 is evidence of a bad response, not automatically evidence of a broken quant.
+
+## Reasoning-template configuration traps (2026-08-15)
+
+Independently reproduced by Blackwellboy on
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc` (template SHA `c3cf9e34…`). Prior
+public lead: TheTom/offlabel.
+
+| if you see this | first check | entry |
+|---|---|---|
+| “default thinking” numbers look like max effort | dump rendered prompt; unset effort may be **xhigh** | [trap 03](../traps/reasoning/03-enable-thinking-default-drift.md) |
+| `reasoning_effort=medium` “works” but depth looks wrong | medium has **no** instruction branch on this pin | [trap 07](../traps/reasoning/07-reasoning-effort-silently-ignored.md) |
+| multi-turn prompt tokens explode when replaying assistant history | `preserve_thinking` defaults **true** and replays `reasoning_content` | [trap 04](../traps/template/04-history-reasoning-stripping.md) |
+| empty `<think></think>` pairs in history | content-only priors still wrap empty think blocks under default preserve | [trap 25](../traps/template/25-empty-think-blocks-poison-prefix-cache.md) |
+
+Offline check:
+[`checks/reproduce_qwen38_reasoning_config_traps.py`](../checks/reproduce_qwen38_reasoning_config_traps.py).
+
+Mining note:
+[2026-08-15 Qwen3.8 reasoning-config traps](../mining/2026-08-15-qwen38-reasoning-config-traps.md).
