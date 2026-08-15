@@ -19,6 +19,15 @@ class Qwen38LeadRoutingTests(unittest.TestCase):
             self._ids("DGX Spark aarch64 benchmark image exec format error amd64"),
         )
 
+    def test_image_identity_lead_requires_complete_config(self):
+        match = next(
+            item for item in search_leads("Docker save load local image ID repo digest", limit=20)
+            if item["lead_id"] == "L045"
+        )
+        self.assertIn("complete image configuration", match["confirmation_check"])
+        self.assertIn("Entrypoint", match["confirmation_check"])
+        self.assertIn("ordered RootFS", match["confirmation_check"])
+
     def test_container_model_subcommand_routes_to_entrypoint_lead(self):
         self.assertIn(
             "L046",

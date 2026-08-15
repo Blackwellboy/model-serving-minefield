@@ -12600,13 +12600,13 @@
           "aeon-vllm"
         ],
         "canonical": false,
-        "conditional_mitigation": "Keep the source registry digest as provenance but verify post-transfer content identity with immutable layers/config rather than requiring local .Id equality alone.",
+        "conditional_mitigation": "Do not require Docker .Id to equal a registry RepoDigest. Instead compare like-for-like identities: registry manifest provenance separately, and complete source-vs-loaded image configuration plus ordered filesystem identity for execution equivalence.",
         "confidence": "high",
-        "confirmation_check": "Compare architecture, ordered RootFS layer digests or a stable layer fingerprint, pinned runtime/version environment and load-bearing image labels against the source pin.",
+        "confirmation_check": "Preserve the source registry RepoDigest and, before transfer when possible, the source image .Id/config digest. After load, compare the complete image configuration JSON or config digest (including Entrypoint, Cmd, User, WorkingDir and environment) plus ordered RootFS/layer identity and architecture. Do not accept a subset of labels/environment fields as full image equivalence.",
         "id": "L045",
-        "notes": "Campaign verifier was repaired to use a 46-layer fingerprint, architecture, aeon version environment and GB10/SM121 labels instead of LOCAL_ID == source digest.",
-        "possible_mechanism": "Docker local config identity and registry RepoDigest are not interchangeable identity predicates after image transport; equivalent RootFS layers and runtime configuration can survive while the local ID representation differs.",
-        "refutation_check": "Show a load-bearing layer/config fingerprint differs, the expected runtime/version label is absent, or the transferred image executes different code.",
+        "notes": "The campaign correctly rejected LOCAL_ID == source RepoDigest as an identity predicate and initially used a 46-layer fingerprint plus selected config labels. This public Minefield lead strengthens the reusable check: selected config fields are insufficient; compare the complete executable image configuration (or its config digest/pre-transfer image ID) as well as ordered filesystem identity.",
+        "possible_mechanism": "A registry RepoDigest identifies a registry manifest while Docker .Id identifies the image configuration; comparing those different digest classes is not a valid equality test. After transfer, experiment provenance still requires the complete executable image configuration and ordered filesystem identity to match the intended source.",
+        "refutation_check": "Show the source and loaded complete image configuration or config digest differs, any ordered RootFS/layer identity differs, architecture differs, or the transferred image executes a different entrypoint/command path.",
         "related_traps": [
           "09"
         ],

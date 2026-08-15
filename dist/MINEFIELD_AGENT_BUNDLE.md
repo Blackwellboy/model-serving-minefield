@@ -2478,14 +2478,14 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
 - Confidence: high
 - Symptom: A transferred serving image is rejected as the wrong build because its local Docker .Id does not equal the registry digest pinned before docker save/load.
-- Possible mechanism: Docker local config identity and registry RepoDigest are not interchangeable identity predicates after image transport; equivalent RootFS layers and runtime configuration can survive while the local ID representation differs.
-- Confirmation check: Compare architecture, ordered RootFS layer digests or a stable layer fingerprint, pinned runtime/version environment and load-bearing image labels against the source pin.
-- Refutation check: Show a load-bearing layer/config fingerprint differs, the expected runtime/version label is absent, or the transferred image executes different code.
-- Conditional mitigation: Keep the source registry digest as provenance but verify post-transfer content identity with immutable layers/config rather than requiring local .Id equality alone.
+- Possible mechanism: A registry RepoDigest identifies a registry manifest while Docker .Id identifies the image configuration; comparing those different digest classes is not a valid equality test. After transfer, experiment provenance still requires the complete executable image configuration and ordered filesystem identity to match the intended source.
+- Confirmation check: Preserve the source registry RepoDigest and, before transfer when possible, the source image .Id/config digest. After load, compare the complete image configuration JSON or config digest (including Entrypoint, Cmd, User, WorkingDir and environment) plus ordered RootFS/layer identity and architecture. Do not accept a subset of labels/environment fields as full image equivalence.
+- Refutation check: Show the source and loaded complete image configuration or config digest differs, any ordered RootFS/layer identity differs, architecture differs, or the transferred image executes a different entrypoint/command path.
+- Conditional mitigation: Do not require Docker .Id to equal a registry RepoDigest. Instead compare like-for-like identities: registry manifest provenance separately, and complete source-vs-loaded image configuration plus ordered filesystem identity for execution equivalence.
 - Affected stacks: Docker, container image transfer, DGX Spark, aeon-vllm
 - Related canonical traps: 09
 - Source class: first_party_campaign
-- Notes: Campaign verifier was repaired to use a 46-layer fingerprint, architecture, aeon version environment and GB10/SM121 labels instead of LOCAL_ID == source digest.
+- Notes: The campaign correctly rejected LOCAL_ID == source RepoDigest as an identity predicate and initially used a 46-layer fingerprint plus selected config labels. This public Minefield lead strengthens the reusable check: selected config fields are insufficient; compare the complete executable image configuration (or its config digest/pre-transfer image ID) as well as ordered filesystem identity.
 
 ### L046: Container ENTRYPOINT can reinterpret a model path as a CLI subcommand
 
