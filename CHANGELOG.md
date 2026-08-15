@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-08-15
+
+### Qwen3.8 reasoning/template configuration traps (first-party extension)
+
+Independently reproduced by **Blackwellboy** on
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc` (template SHA `c3cf9e34…`). Prior
+public lead: **TheTom/offlabel**.
+
+Extends existing entries rather than allocating four new numbers:
+
+- [trap 03](traps/reasoning/03-enable-thinking-default-drift.md) — unset effort defaults to **xhigh**
+- [trap 07](traps/reasoning/07-reasoning-effort-silently-ignored.md) — **medium** accepted without instruction
+- [trap 04](traps/template/04-history-reasoning-stripping.md) — preserve defaults **true** (replay polarity)
+- [trap 25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) — empty think wrappers on content-only priors
+
+Public offline check + Apache-2.0 template fixture:
+`checks/reproduce_qwen38_reasoning_config_traps.py`,
+`checks/fixtures/qwen38_nvfp4_52d1adc/`.
+
+Mining note:
+[mining/2026-08-15-qwen38-reasoning-config-traps.md](mining/2026-08-15-qwen38-reasoning-config-traps.md).
+
+
 ## 2026-08-11
 
 - Muse Glimmer 30B campaign (llama.cpp + DFlash): **no new trap IDs.** Existing-owner extensions and one mining note only.

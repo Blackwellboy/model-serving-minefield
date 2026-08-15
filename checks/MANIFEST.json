@@ -26,6 +26,7 @@
     "vllm_environ_registration_probe.py",
     "endpoint_readiness_hierarchy_probe.py",
     "evidence_packet_preflight.py",
-    "upstream_change_triage.py"
+    "upstream_change_triage.py",
+    "reproduce_qwen38_reasoning_config_traps.py"
   ]
 }

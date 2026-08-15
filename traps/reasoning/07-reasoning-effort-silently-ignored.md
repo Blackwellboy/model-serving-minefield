@@ -93,3 +93,29 @@ against the public chat template.*
 This is the same accepted-and-unread class as the original entry, on a new model family and a documented server-side narrow exception: **do not infer that `"low"`/`"high"` work because `"none"` exists.**
 
 *Status of this addendum: measured here, raw not published.* Full bounded campaign writeup: [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+
+## Added 2026-08-15: Qwen3.8 NVFP4 — `medium` is accepted but has no instruction branch
+
+**Independently reproduced here by Blackwellboy** on
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc`, template SHA
+`c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041`.
+
+This is the **accepted-but-partially-implemented** shape of the same class:
+the template *does* read `reasoning_effort`, validates the set
+`{xhigh, medium, low}`, and injects instructions for **xhigh** and **low**
+only. There is **no** `elif` for `medium`, so medium renders without any
+effort system instruction (and without the xhigh/low strings).
+
+- `medium` render SHA: `575d9cb4b43894c0dcd0184639dbb765f8073a9263ca25385e3cfb34d6a81751`
+- `high` raises: `Unexpected reasoning effort high. Supported types are xhigh (default), medium, and low.`
+
+Do not publish “medium reasoning” results on this pin without dumping the
+rendered prompt. A 200 from the server is not proof of medium semantics.
+
+Public check:
+[`checks/reproduce_qwen38_reasoning_config_traps.py`](../../checks/reproduce_qwen38_reasoning_config_traps.py).
+
+Prior public lead / report: TheTom/offlabel. Independent first-party
+reproduction: Blackwellboy.
+
+*Status of this addendum: reproduced here (runnable public template check).*

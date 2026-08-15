@@ -54,3 +54,36 @@ report and minimal fix). Related entries:
 [trap 04](04-history-reasoning-stripping.md),
 [trap 03](../reasoning/03-enable-thinking-default-drift.md) (template
 revision drift decides which behavior you get).
+
+## Added 2026-08-15: Qwen3.8 NVFP4 content-only priors inject empty `<think>` wrappers under default preserve
+
+**Independently reproduced here by Blackwellboy** on
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc`, template SHA
+`c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041`.
+
+A five-message conversation with two content-only prior assistant turns
+(no `reasoning_content`) renders:
+
+| preserve_thinking | empty `<think>\n\n</think>` count |
+|---|---|
+| unset (default) | 2 |
+| true | 2 |
+| false | 0 |
+
+With thinking off and preserve default, the generation-prompt empty
+`</think>` path can add further empty blocks (3 in the same five-message
+render).
+
+This is the empty-wrapper side of the preserve/history surface already
+linked above to [trap 04](04-history-reasoning-stripping.md). Cache timing
+is not re-claimed in this addendum; the structural render is what the public
+check proves.
+
+Public check:
+[`checks/reproduce_qwen38_reasoning_config_traps.py`](../../checks/reproduce_qwen38_reasoning_config_traps.py)
+claims 8–9.
+
+Prior public lead / report: TheTom/offlabel. Independent first-party
+reproduction: Blackwellboy.
+
+*Status of this addendum: reproduced here (runnable public template check).*
