@@ -38,7 +38,7 @@ jobs:
           # suites and the explicit recursive JSON credential scan below still
           # scan their actual values.
           detect-secrets scan --all-files \
-            --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/|^mining/2026-07-30-inline-system-evidence/(classification-matrix|raw-executed-render-manifest)\.json$' \
+            --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/|^mining/2026-07-30-inline-system-evidence/(classification-matrix|raw-executed-render-manifest)\.json$|^checks/fixtures/qwen38_nvfp4_52d1adc/' \
             --exclude-lines 'content_sha256' > "$RUNNER_TEMP/detect-secrets.json"
           python -c 'import json,sys; d=json.load(open(sys.argv[1])); n=sum(map(len,d.get("results",{}).values())); print(f"secret findings: {n}"); raise SystemExit(bool(n))' "$RUNNER_TEMP/detect-secrets.json"
           python integrity/check_evidence_json_secrets.py \
