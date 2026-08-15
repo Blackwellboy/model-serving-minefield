@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 116,
-  "content_sha256": "987692432c1e8b1dffcc60f1bc69365174c9d04f193f8f1a6cf4637c91059bf7",
+  "content_sha256": "b39d367c92261666216ff3a4e356f44689a75115bf8e004e1fdff40d3f38d706",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -164,7 +164,8 @@
       "affected_stacks": [
         "vLLM",
         "llama.cpp",
-        "mlx_lm"
+        "mlx_lm",
+        "SGLang"
       ],
       "affected_versions_builds": "Laguna S 2.1 across three independently run stacks (vLLM/NVFP4, llama.cpp/Q4KM, and an EXL3-tail container). Revision 0761412 (NVFP4 upload) defaults enablethinking to true; another pinned fork documented false. Reconciling the three stacks took days and produced the corrected kwarg model now documented upstream: explicit false is the one structural off-switch, explicit true fires, and which arm \"absent\" lands in is revision-dependent and server-dependent. The landing map for an absent thinking kwarg, measured across lanes (2026-07-27 sweep): Laguna rev 0761412 templates default it ON (both vLLM lanes); Qwen3.6-27B and Qwen3.5-9B on llama.cpp landed OFF (absent produced no reasoning while explicit true fired, b9193/b9066); and on a llama.cpp Laguna path the server supplies the kwarg so absent renders identical to true (per the upstream 5 correction). Same request, three different arms, depending on family, revision, and server. Send it explicitly, always.",
       "applicability": {
@@ -197,6 +198,7 @@
         "serving_stack": [
           "llama.cpp",
           "mlx_lm",
+          "sglang",
           "vllm"
         ],
         "stack_version": [],

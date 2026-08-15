@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `50f17ec88b7ee50f87cfd4dceab9a2c5c9f03cf8b7502d8e84da8bcff3d5418a`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `2c255195603531dacb8c6f68b639e0f5085b7f822ee32041f252856d5b9a454c`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -143,7 +143,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - Check: Never reason about thinking from a template's default. Render your own prompt through the serving path and confirm which branch you landed in. Record the checkpoint revision hash next to every published number.
 - Safe conditional mitigation: Send the kwarg explicitly on every request, both in production and in every measurement arm. Pin the revision and state it.
 - Named conditions: Laguna S 2.1 across three independently run stacks (vLLM/NVFP4, llama.cpp/Q4KM, and an EXL3-tail container). Revision 0761412 (NVFP4 upload) defaults enablethinking to true; another pinned fork documented false. Reconciling the three stacks took days and produced the corrected kwarg model now documented upstream: explicit false is the one structural off-switch, explicit true fires, and which arm "absent" lands in is revision-dependent and server-dependent. The landing map for an absent thinking kwarg, measured across lanes (2026-07-27 sweep): Laguna rev 0761412 templates default it ON (both vLLM lanes); Qwen3.6-27B and Qwen3.5-9B on llama.cpp landed OFF (absent produced no reasoning while explicit true fired, b9193/b9066); and on a llama.cpp Laguna path the server supplies the kwarg so absent renders identical to true (per the upstream 5 correction). Same request, three different arms, depending on family, revision, and server. Send it explicitly, always.
-- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["laguna path the server supplies the kwarg so absent renders identical to tru", "laguna rev 0761412 templates default it on", "laguna s 2.1 across three independently run stacks", "qwen3.5-9b", "qwen3.6-27b", "qwen3.6-27b and qwen3.5-9b on llama.cpp landed off"], "failure_stage": ["load"], "gpu_architecture": [], "model_family": ["laguna", "qwen3.5", "qwen3.6"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["llama.cpp", "mlx_lm", "vllm"], "stack_version": [], "topology": []}`
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["laguna path the server supplies the kwarg so absent renders identical to tru", "laguna rev 0761412 templates default it on", "laguna s 2.1 across three independently run stacks", "qwen3.5-9b", "qwen3.6-27b", "qwen3.6-27b and qwen3.5-9b on llama.cpp landed off"], "failure_stage": ["load"], "gpu_architecture": [], "model_family": ["laguna", "qwen3.5", "qwen3.6"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["llama.cpp", "mlx_lm", "sglang", "vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/reasoning/03-enable-thinking-default-drift.md`
 - Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.

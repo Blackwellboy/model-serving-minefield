@@ -196,3 +196,7 @@ test file rather than vendored, so it carries no third-party template text.
 Set `MINEFIELD_TEMPLATE_DIR` to a directory of `*.jinja` files to also run it
 over real templates on your own disk; that arm skips when the variable is
 unset.
+
+## Qwen3.8 reasoning-config traps
+
+`python3 checks/reproduce_qwen38_reasoning_config_traps.py` — offline template claims for Qwen3.8 NVFP4@52d1adc.

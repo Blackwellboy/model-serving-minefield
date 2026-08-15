@@ -61,3 +61,42 @@ production and in every measurement arm. Pin the revision and state it.
 **Attribution.** Blackwellboy, TheTom, and the offlabel issue threads where
 the kwarg model was corrected. Context:
 [laguna-s21-lab README](https://github.com/Blackwellboy/laguna-s21-lab#cross-validation--related-work).
+
+## Added 2026-08-15: Qwen3.8 NVFP4 — unset effort defaults to explicit **xhigh** (independent first-party)
+
+**Independently reproduced here by Blackwellboy** on
+`RadixArk/Qwen3.8-27B-NVFP4` revision
+`52d1adc5f38aa5ebf099c29ed7025ba34cfbb854`, template SHA256
+`c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041`,
+served under SGLang `lmsysorg/sglang:qwen38-27b` with a proven 262144-context
+profile.
+
+When `enable_thinking` is undefined **or** true, this template executes:
+
+```jinja
+{%- set resolved_reasoning_effort = reasoning_effort|default('xhigh') %}
+```
+
+and injects the **xhigh** system instruction. Leaving `reasoning_effort`
+unset is therefore **not** a neutral “model default” arm: it is byte-identical
+to explicitly requesting `xhigh`.
+
+Measured render hashes for the same user message
+(`Return only the number 42.`):
+
+| arm | SHA256 of rendered prompt |
+|---|---|
+| thinking unset / effort unset | `d5c052a8fbbe2495645582fca6230bd3e33ec41e161252d2cc61eefd0db31603` |
+| thinking true / effort unset | same |
+| thinking true / effort xhigh | same |
+
+Public offline check (no GPU):
+[`checks/reproduce_qwen38_reasoning_config_traps.py`](../../checks/reproduce_qwen38_reasoning_config_traps.py)
+with fixture
+[`checks/fixtures/qwen38_nvfp4_52d1adc/`](../../checks/fixtures/qwen38_nvfp4_52d1adc/).
+
+Prior public lead / report: TheTom/offlabel. This addendum is an independent
+Blackwellboy reproduction on a pinned local artifact, not a first-discovery
+claim.
+
+*Status of this addendum: reproduced here (runnable public template check).*

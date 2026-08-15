@@ -181,3 +181,43 @@ identical to the stripping this entry describes.
 
 *Status of this addendum: reproduced here. The template ships with the model and
 the two-arm probe runs against a freely obtainable stack.*
+
+## Added 2026-08-15: Qwen3.8 NVFP4 polarity — default **replays** reasoning (`preserve_thinking` defaults true)
+
+**Independently reproduced here by Blackwellboy** on
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc`, template SHA
+`c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041`.
+
+This pin’s history gate is:
+
+```jinja
+{%- if preserve_thinking is undefined or preserve_thinking is true or loop.index0 > ns.last_query_index %}
+    {{- '<|im_start|>' + message.role + '\n<think>\n' + reasoning_content + '\n</think>\n\n' + content }}
+{%- else %}
+    {{- '<|im_start|>' + message.role + '\n' + content }}
+{%- endif %}
+```
+
+So **undefined == true**: prior `reasoning_content` is replayed by default.
+That is the opposite default polarity from Qwen3.6 lanes documented above
+where stripping is the default and `preserve_thinking=true` is required to
+restore history.
+
+Measured token inflation for synthetic prior reasoning payloads
+(default/true vs `preserve_thinking=false`):
+
+| payload | approx token inflation (default − false) |
+|---|---|
+| ~4K chars | +1918 |
+| ~16K chars | +7561 |
+| ~50K chars | +23599 |
+
+Public offline check:
+[`checks/reproduce_qwen38_reasoning_config_traps.py`](../../checks/reproduce_qwen38_reasoning_config_traps.py)
+claims 5–7.
+
+Prior public lead / report: TheTom/offlabel. Independent first-party
+reproduction and 262K serving context: Blackwellboy.
+
+*Status of this addendum: reproduced here (runnable public template check;
+token inflation figures first-party measured).*
