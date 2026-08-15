@@ -1,0 +1,126 @@
+name: temporary-qwen38-image-identity-fix
+
+on:
+  push:
+    branches:
+      - feature/qwen38-27b-minefield-20260815
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: strengthen L045 identity predicate and evidence note
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          leads_path = Path('leads/LEADS.json')
+          payload = json.loads(leads_path.read_text(encoding='utf-8'))
+          lead = next(x for x in payload['leads'] if x['id'] == 'L045')
+          lead['possible_mechanism'] = (
+              'A registry RepoDigest identifies a registry manifest while Docker .Id identifies the image configuration; comparing those different digest classes is not a valid equality test. After transfer, experiment provenance still requires the complete executable image configuration and ordered filesystem identity to match the intended source.'
+          )
+          lead['confirmation_check'] = (
+              'Preserve the source registry RepoDigest and, before transfer when possible, the source image .Id/config digest. After load, compare the complete image configuration JSON or config digest (including Entrypoint, Cmd, User, WorkingDir and environment) plus ordered RootFS/layer identity and architecture. Do not accept a subset of labels/environment fields as full image equivalence.'
+          )
+          lead['refutation_check'] = (
+              'Show the source and loaded complete image configuration or config digest differs, any ordered RootFS/layer identity differs, architecture differs, or the transferred image executes a different entrypoint/command path.'
+          )
+          lead['conditional_mitigation'] = (
+              'Do not require Docker .Id to equal a registry RepoDigest. Instead compare like-for-like identities: registry manifest provenance separately, and complete source-vs-loaded image configuration plus ordered filesystem identity for execution equivalence.'
+          )
+          lead['notes'] = (
+              'The campaign correctly rejected LOCAL_ID == source RepoDigest as an identity predicate and initially used a 46-layer fingerprint plus selected config labels. This public Minefield lead strengthens the reusable check: selected config fields are insufficient; compare the complete executable image configuration (or its config digest/pre-transfer image ID) as well as ordered filesystem identity.'
+          )
+          leads_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+          note = Path('mining/2026-08-15-qwen38-27b-5090-spark.md')
+          text = note.read_text(encoding='utf-8')
+          old = '''**Observed.** The Spark recovery work found that requiring local Docker image
+`.Id` to equal the pinned repository digest after `docker save | load` was too
+strong. The verifier was changed to inspect content identity: architecture,
+46 RootFS layers and their combined fingerprint, the pinned aeon version
+environment value, and GB10/SM121 image labels. The local image ID was allowed
+to differ when those content checks matched.
+
+**What this rules out.** `LOCAL_ID != source repo digest` after image transfer
+is not by itself proof that the runtime image changed or was corrupted.
+
+**Check.** Preserve the original registry digest, but verify loaded content
+using immutable layer/config fingerprints and the runtime/version labels that
+matter to the experiment. If the content fingerprint differs, stop; if only
+the local ID representation differs, do not manufacture a runtime mismatch.
+'''
+          new = '''**Observed.** The Spark recovery work found that requiring local Docker image
+`.Id` to equal the pinned repository digest after `docker save | load` was too
+strong. Those are different digest classes: the registry RepoDigest identifies
+a registry manifest, while Docker `.Id` identifies image configuration. The
+campaign verifier moved to architecture, 46 RootFS layers plus a layer
+fingerprint, a pinned aeon version environment value, and GB10/SM121 labels.
+That was enough to repair the campaign's immediate false mismatch, but it is
+not a complete reusable image-equivalence predicate by itself.
+
+**What this rules out.** `LOCAL_ID != source repo digest` after image transfer
+is not by itself proof that the runtime image changed or was corrupted. It also
+does **not** mean any image with matching layers and a few selected labels is
+safe to treat as identical.
+
+**Check.** Preserve the original registry RepoDigest as provenance and, before
+transfer when possible, the source image `.Id`/config digest. After load,
+compare like with like: the complete image configuration JSON or config digest
+(including `Entrypoint`, `Cmd`, `User`, `WorkingDir`, environment and other
+execution-affecting config), plus ordered RootFS/layer identity and
+architecture. A difference in executable config or filesystem identity is a
+real mismatch; equality between a registry RepoDigest and Docker `.Id` was
+never the correct test.
+'''
+          if old not in text:
+              raise SystemExit('expected Finding 4 block not found')
+          note.write_text(text.replace(old, new), encoding='utf-8')
+
+          test = Path('tests/test_qwen38_leads.py')
+          t = test.read_text(encoding='utf-8')
+          marker = '    def test_container_model_subcommand_routes_to_entrypoint_lead(self):\n'
+          addition = '''    def test_image_identity_lead_requires_complete_config(self):
+        match = next(
+            item for item in search_leads("Docker save load local image ID repo digest", limit=20)
+            if item["lead_id"] == "L045"
+        )
+        self.assertIn("complete image configuration", match["confirmation_check"])
+        self.assertIn("Entrypoint", match["confirmation_check"])
+        self.assertIn("ordered RootFS", match["confirmation_check"])
+
+'''
+          if 'test_image_identity_lead_requires_complete_config' not in t:
+              if marker not in t:
+                  raise SystemExit('test insertion marker missing')
+              t = t.replace(marker, addition + marker)
+              test.write_text(t, encoding='utf-8')
+          PY
+      - name: regenerate deterministic public agent surfaces
+        run: python -m minefield agent-bundle
+      - name: run Qwen and lead tests
+        run: |
+          python -m unittest tests.test_qwen38_leads tests.test_leads_catalog tests.test_leads_integration
+          python -m unittest integrity.tests.test_reference_mutations.ReferenceMutations.test_00_clean_tree_passes
+      - name: commit fix and generated artefacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- leads/LEADS.json mining/2026-08-15-qwen38-27b-5090-spark.md tests/test_qwen38_leads.py minefield/data/UNVERIFIED_LEADS.json dist skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: verify complete container config for L045'
+          git push origin HEAD:feature/qwen38-27b-minefield-20260815
