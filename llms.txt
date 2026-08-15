@@ -3,16 +3,22 @@
 Agent front door: `AGENT_START_HERE.md`.
 Offline full bundle: `dist/MINEFIELD_AGENT_BUNDLE.md`.
 Structured registry: `dist/MINEFIELD_REGISTRY.json`.
+Public-safe possible/unverified leads: `leads/LEADS.json`.
 
 A registry of specific, reproducible failures in serving open-weight models:
 wrong reasoning-field names, chat templates that drop content, quantisation
 paths that silently fall back, harness confounds that invert a result. Each
-entry states what broke, on what stack and build, how it was found, and what
-evidence stands behind it.
+canonical entry states what broke, on what stack and build, how it was found,
+and what evidence stands behind it.
+
+Minefield also keeps a deliberately weaker **L-series lead layer**. Those are
+useful observations, public reports, historical mechanisms, blocked controls
+and negative/replay-clean findings that do not meet the canonical trap bar but
+may still tell an operator what bounded check to try next.
 
 This file is a routing guide for an agent. It contains no counts, deliberately.
 
-## The three doors, and the order to try them
+## The three canonical doors, and the order to try them
 
 1. **You have an error string, a symptom, or a weird number.**
    Start at the symptom table in `README.md`. It maps observable symptoms to
@@ -31,7 +37,7 @@ This file is a routing guide for an agent. It contains no counts, deliberately.
 If you arrived with a job rather than a symptom, `playbooks/` sequences
 existing entries into ordered checklists.
 
-## How to read an entry
+## How to read a canonical entry
 
 Every entry carries a `**Status:**` line from a closed vocabulary. Treat these
 as different strengths of claim, because they are:
@@ -46,20 +52,32 @@ Entries under `upstream/` are a separate tier: published reports that **nobody
 here has reproduced**. They carry a primary source, a reporter and an issue
 state. Do not cite them as measured.
 
-## On a miss, which matters more than the hits
+## On a canonical miss
 
 This registry does not cover everything. It is a record of what specific people
 hit on specific hardware, not a survey.
 
-**An absence here is not a clean bill of health.** If a model, stack or symptom
-is not present, the correct answer is "not documented in this registry", and
-that is the whole answer. Do not infer that the model is unaffected, that the
-stack is safe, or that the failure does not exist. The registry is silent, and
-silence is not evidence.
+**An absence from the canonical trap registry is not a clean bill of health.**
+Say "no canonical Minefield trap matches exactly" and then search the separate
+L-series possible/unverified lead layer. If a lead resembles the symptom, it is
+useful to say so — but keep the evidence boundary explicit:
 
-Do not synthesise an entry, do not generalise a nearby entry to a model it does
-not name, and do not present a stack page marked `Measured here: no` as though
-it reported a result.
+> No canonical Minefield trap matches exactly. Possible unverified lead: Lxxx.
+> It resembles the symptom because <reason>. Try <confirmation check>. If that
+> check fails, treat the lead as refuted or unresolved, not confirmed.
+
+L-series matches are never trap IDs, never Core/doctor coverage, and never
+proof. Do not convert an L-series status into `reproduced here`. Their value is
+recall: when strict evidence has no exact owner, the next person can still try a
+bounded test instead of starting from nothing.
+
+If neither canonical traps nor possible leads fit, say that Minefield has no
+matching documented lead. Do not infer safety. Then prepare a scrubbed support
+bundle or issue so the observation can enter the evidence pipeline.
+
+Do not synthesise a canonical entry, do not generalise a nearby entry to a
+model it does not name, and do not present a stack page marked
+`Measured here: no` as though it reported a result.
 
 If you have hit something real that is not here, the useful action is to open
 an issue using the trap report form in `.github/ISSUE_TEMPLATE/`. Scrub
@@ -69,11 +87,13 @@ part the failure depends on.
 
 ## Where the authoritative files are
 
-- `README.md` - symptom table, the front door
+- `README.md` - canonical symptom table, the front door
 - `models/README.md` - by model family, and by stack layer
 - `stacks/` - one page per serving stack
 - `playbooks/` - ordered checklists by job
-- `upstream/` - reports not reproduced here
-- `CORE.md` - the entries worth reading first
-- `CONTRIBUTING.md` - status vocabulary and evidence bar
+- `upstream/` - public reports not reproduced here
+- `leads/LEADS.json` - public-safe non-canonical troubleshooting leads
+- `leads/README.md` - L-series status/use policy
+- `CORE.md` - the canonical entries worth reading first
+- `CONTRIBUTING.md` - canonical status vocabulary and evidence bar
 - `doctor/` - a read-only preflight tool you can run against an endpoint
