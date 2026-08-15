@@ -21,11 +21,15 @@ import json
 import sys
 from pathlib import Path
 
+# Soft import: integrity CI loads this module for contract controls without
+# installing package deps. Contract callables are stdlib-only; main() requires
+# jinja2 and fails loudly if it is missing.
 try:
     from jinja2 import Environment, BaseLoader, StrictUndefined
 except ImportError:  # pragma: no cover
-    print("FAIL: jinja2 is required (pip install jinja2)")
-    sys.exit(2)
+    Environment = None  # type: ignore[misc, assignment]
+    BaseLoader = None  # type: ignore[misc, assignment]
+    StrictUndefined = None  # type: ignore[misc, assignment]
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "checks" / "fixtures" / "qwen38_nvfp4_52d1adc" / "chat_template.jinja"
@@ -87,7 +91,9 @@ def sha256_file(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def make_env(template_text: str) -> Environment:
+def make_env(template_text: str):
+    if Environment is None:
+        raise RuntimeError("jinja2 is required (pip install jinja2)")
     env = Environment(
         loader=BaseLoader(),
         undefined=StrictUndefined,
@@ -132,7 +138,7 @@ def _norm_messages(messages: list) -> list:
 
 
 def render(
-    env: Environment,
+    env,
     template_text: str,
     messages: list,
     *,
@@ -166,6 +172,10 @@ def main() -> int:
     def claim(name: str, ok: bool, detail: str = "") -> None:
         results.append((name, ok, detail))
         print(("PASS" if ok else "FAIL") + f"  {name}" + (f"  ({detail})" if detail else ""))
+
+    if Environment is None:
+        print("FAIL: jinja2 is required (pip install jinja2)")
+        return 2
 
     if not FIXTURE.exists():
         print(f"FAIL: missing fixture {FIXTURE}")
