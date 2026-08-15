@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "UNVERIFIED_LEADS.json"
-TOKEN_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
+COMPOUND_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
+COMPONENT_RE = re.compile(r"[a-z0-9_+]{2,}", re.I)
 STOPWORDS = {
     "the", "and", "for", "that", "this", "with", "from", "into", "only",
     "your", "you", "use", "using", "not", "are", "was", "were", "has",
@@ -22,10 +23,15 @@ STOPWORDS = {
 
 
 def _tokens(value: str) -> set[str]:
-    return {
-        token.lower() for token in TOKEN_RE.findall(value)
-        if token.lower() not in STOPWORDS
-    }
+    """Keep exact compound identifiers and their punctuation-separated parts."""
+    result: set[str] = set()
+    for match in COMPOUND_RE.finditer(value):
+        raw = match.group(0).lower().strip(".-")
+        candidates = ({raw} if len(raw) >= 2 else set()) | {
+            token.lower() for token in COMPONENT_RE.findall(raw)
+        }
+        result.update(token for token in candidates if token not in STOPWORDS)
+    return result
 
 
 def load_leads(path: str | Path | None = None) -> dict[str, Any]:

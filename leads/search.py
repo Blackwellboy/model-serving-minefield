@@ -12,11 +12,19 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-TOKEN_RE = re.compile(r"[a-z0-9_+.-]{2,}", re.I)
+COMPOUND_RE = re.compile(r"[a-z0-9_+.-]{2,}", re.I)
+COMPONENT_RE = re.compile(r"[a-z0-9_+]{2,}", re.I)
 
 
 def tokens(text: str) -> set[str]:
-    return {m.group(0).lower() for m in TOKEN_RE.finditer(text)}
+    """Index both compound identifiers and punctuation-separated components."""
+    result: set[str] = set()
+    for match in COMPOUND_RE.finditer(text):
+        raw = match.group(0).lower().strip(".-")
+        if len(raw) >= 2:
+            result.add(raw)
+        result.update(token.lower() for token in COMPONENT_RE.findall(raw))
+    return result
 
 
 def searchable(lead: dict) -> str:
