@@ -2,6 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
+from leads.search import search as search_public_leads
 from minefield.leads import load_leads, search_leads
 from minefield.matching import diagnose
 
@@ -60,6 +61,12 @@ class UnverifiedLeadIntegrationTests(unittest.TestCase):
         l024 = next(item for item in matches if item["lead_id"] == "L024")
         self.assertEqual("REPLAY_DID_NOT_REPRODUCE", l024["evidence_status"])
         self.assertEqual("POSSIBLE_UNVERIFIED_LEAD", l024["lead_match_level"])
+
+    def test_natural_space_query_matches_hyphenated_lead(self):
+        packaged = search_leads("out of band route")
+        self.assertTrue(any(item["lead_id"] == "L013" for item in packaged))
+        public = search_public_leads("out of band route", limit=20)
+        self.assertTrue(any(item["id"] == "L013" for item in public))
 
 
 if __name__ == "__main__":
