@@ -1803,6 +1803,12 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - L040 [HYPOTHESIS_ONLY]: Scores plateau, invert or become noisy on difficult outputs even though stronger independent grading disagrees.
 - L041 [HYPOTHESIS_ONLY]: Benchmark accuracy changes because diagnostic/probe rows are counted as normal task rows.
 - L042 [PUBLIC_SOURCE_UNREPRODUCED]: A user needs to know whether a non-first system message remains a distinct role in a served Kimi-K3 prompt.
+- L043 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A Qwen3.8-27B lane reports MTP unsupported, leading the operator to conclude the checkpoint or model family cannot use MTP.
+- L044 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A benchmark or helper container on DGX Spark dies immediately with exec format error and the run appears to be a model or benchmark failure.
+- L045 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A transferred serving image is rejected as the wrong build because its local Docker .Id does not equal the registry digest pinned before docker save/load.
+- L046 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A vLLM-derived container exits before model load with 'Usage: serve ...' and 'No such command /model'.
+- L047 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.
+- L048 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.
 
 ## L-series possible/unverified lead records
 
@@ -2435,6 +2441,96 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Related canonical traps: 56, 113
 - Source class: community_public_source
 - Notes: none
+
+### L043: Qwen3.8 MTP support can be runtime-build specific rather than model-wide
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: high
+- Symptom: A Qwen3.8-27B lane reports MTP unsupported, leading the operator to conclude the checkpoint or model family cannot use MTP.
+- Possible mechanism: MTP capability can depend on the exact serving build, model-family support code and accepted speculative configuration; the same NVFP4 checkpoint was unsupported on one pinned runtime but passed a depth-1 canary on another.
+- Confirmation check: Pin the exact image/build, inspect its Qwen-family MTP implementation and accepted configuration, then run the same bounded canary with MTP off and at depth 1.
+- Refutation check: Show the same checkpoint and MTP configuration fails as unsupported across the compared runtimes after support code and launch semantics are verified equivalent.
+- Conditional mitigation: Change runtime or speculative configuration only after localizing the unsupported boundary; do not describe one runtime result as a Qwen3.8 model limitation.
+- Affected stacks: Qwen3.8-27B, vLLM, aeon-vllm, DGX Spark, MTP
+- Related canonical traps: 09, 28, 71
+- Source class: first_party_campaign
+- Notes: Aeon NVFP4 stage reported MTP_UNSUPPORTED; Drowzeys vLLM development image exposed Qwen-family MTP support and passed MTP1 on the same NVFP4 revision. Later depths were not claimed from the early checkpoint.
+
+### L044: amd64 benchmark images fail natively on arm64 DGX Spark before the model is tested
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: high
+- Symptom: A benchmark or helper container on DGX Spark dies immediately with exec format error and the run appears to be a model or benchmark failure.
+- Possible mechanism: The benchmark image can be built for amd64 while the DGX Spark host is aarch64, so native execution fails before any request reaches the served model.
+- Confirmation check: Record host architecture and inspect the architecture of every benchmark/helper image; reproduce the failure with a harmless container command before contacting the model endpoint.
+- Refutation check: Show host and image architectures are compatible, the helper process starts normally, and the failure occurs only after a model request is actually sent.
+- Conditional mitigation: Use a native arm64/multi-arch benchmark image or an explicitly qualified emulation path; do not score the model from a pre-endpoint exec-format failure.
+- Affected stacks: Docker, ProgramBench, DGX Spark, aarch64, evaluation harnesses
+- Related canonical traps: 08, 09, 52
+- Source class: first_party_campaign
+- Notes: Observed with an amd64 task_cleanroom_v6 image on an aarch64 Spark host; native run returned exec format error and the campaign held the benchmark.
+
+### L045: Docker save/load can preserve runtime content while the local image ID differs from the source repo digest
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: high
+- Symptom: A transferred serving image is rejected as the wrong build because its local Docker .Id does not equal the registry digest pinned before docker save/load.
+- Possible mechanism: Docker local config identity and registry RepoDigest are not interchangeable identity predicates after image transport; equivalent RootFS layers and runtime configuration can survive while the local ID representation differs.
+- Confirmation check: Compare architecture, ordered RootFS layer digests or a stable layer fingerprint, pinned runtime/version environment and load-bearing image labels against the source pin.
+- Refutation check: Show a load-bearing layer/config fingerprint differs, the expected runtime/version label is absent, or the transferred image executes different code.
+- Conditional mitigation: Keep the source registry digest as provenance but verify post-transfer content identity with immutable layers/config rather than requiring local .Id equality alone.
+- Affected stacks: Docker, container image transfer, DGX Spark, aeon-vllm
+- Related canonical traps: 09
+- Source class: first_party_campaign
+- Notes: Campaign verifier was repaired to use a 46-layer fingerprint, architecture, aeon version environment and GB10/SM121 labels instead of LOCAL_ID == source digest.
+
+### L046: Container ENTRYPOINT can reinterpret a model path as a CLI subcommand
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: high
+- Symptom: A vLLM-derived container exits before model load with 'Usage: serve ...' and 'No such command /model'.
+- Possible mechanism: The image ENTRYPOINT already invokes a serve CLI whose argv contract differs from the launcher assumption, so appending /model places the model path in a subcommand position.
+- Confirmation check: Inspect Docker Entrypoint and Cmd, run the image help path, and record the exact final argv; compare with a corrected invocation that reaches a bounded model canary.
+- Refutation check: Show the final argv matches the image CLI contract and the same No-such-command failure persists after the model path is passed in the documented position.
+- Conditional mitigation: Adapt the launcher to the image entrypoint contract rather than changing weights or runtime support code.
+- Affected stacks: Docker, vLLM, DGX Spark, Qwen3.8-27B
+- Related canonical traps: 09, 112
+- Source class: first_party_campaign
+- Notes: The same pinned image/checkpoint later returned BLACKWELL38_READY after launch construction was corrected. A separate truendocker shell-concatenation typo is not merged into this mechanism.
+
+### L047: A telemetry Thread._stop name collision can crash a soak worker at teardown while the endpoint remains healthy
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: high
+- Symptom: A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.
+- Possible mechanism: A threading.Thread subclass can shadow the inherited private _stop() method by assigning a threading.Event to self._stop; Thread.join later attempts to call the Event as a method.
+- Confirmation check: Inspect the worker traceback and Thread subclass fields; preserve request/server telemetry separately; rename the field and rerun an offline join regression plus the bounded soak.
+- Refutation check: Show the server itself restarted/died or requests failed before harness teardown, or reproduce the worker crash without any Thread private-name collision.
+- Conditional mitigation: Fix the harness lifecycle bug and rerun; do not change model/runtime configuration on the basis of a teardown-only worker exception.
+- Affected stacks: Python threading, evaluation harnesses, soak tests, DGX Spark
+- Related canonical traps: 52, 107
+- Source class: first_party_campaign
+- Notes: After _stop was renamed to _stop_event, the recovered Qwen3.8 BF16 Spark soak completed about two hours with 512/512 successful requests and zero server restarts.
+
+### L048: One Qwen3.8 Q4 decimal canary failure did not reproduce on the immediate pinned rerun
+
+- Canonical: no
+- Lead status: FIRST_PARTY_OBSERVED_UNPROMOTED
+- Confidence: medium
+- Symptom: A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.
+- Possible mechanism: The bad response is real but a single response does not localize cause; sampling/defaults, runtime variance, prompt path or quantization remain competing explanations when the immediate pinned rerun passes.
+- Confirmation check: Capture the exact provider-bound request, effective sampling/defaults and raw output, then repeat the same canary across enough runs and compare a higher-precision or otherwise controlled arm.
+- Refutation check: If repeated exact requests stay clean and no quant-specific A/B localizes the failure, refute the quant-corruption causal label while retaining the original bad response as an observation.
+- Conditional mitigation: Do not change the quant or checkpoint from n=1; first make the failure repeatable and localize it with a controlled arm.
+- Affected stacks: Qwen3.8-27B, GGUF, Q4_K_M, llama.cpp, RTX 5090
+- Related canonical traps: 21, 35
+- Source class: first_party_campaign
+- Notes: Pinned campaign first returned 9.11 on the decimal canary and held; the immediate rerun returned 9.9 and passed. Cause was not isolated.
 
 ## Reporting a miss
 

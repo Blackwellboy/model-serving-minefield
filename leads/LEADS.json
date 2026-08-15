@@ -32,9 +32,15 @@
       "confirmation_check": "Capture the fresh and resumed request histories; compare tool-result name, tool_call_id, assistant tool_calls object and ordering. Validate the repaired history with the same targeted validator.",
       "refutation_check": "Show byte/field-equivalent tool history before and after persistence, or reproduce the failure with metadata intact.",
       "conditional_mitigation": "Repair only the missing persisted-history metadata after the mismatch is observed; do not treat a one-turn tool smoke as persistence proof.",
-      "related_traps": ["84"],
-      "affected_stacks": ["OpenAI-compatible agent harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "84"
+      ],
+      "affected_stacks": [
+        "OpenAI-compatible agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -50,9 +56,18 @@
       "confirmation_check": "Identify the killed PID/process and host OOM evidence; compare cold compile-after-load with prewarm-before-load on the same pinned build.",
       "refutation_check": "Show the same cold compile succeeds with weights resident and no host pressure, or that the killed owner is the GPU engine rather than compiler.",
       "conditional_mitigation": "Prewarm/version the JIT cache before model load and serialize heavy compile work, but only after host-compiler OOM is supported.",
-      "related_traps": ["13", "98"],
-      "affected_stacks": ["FlashInfer", "CUDA", "vLLM"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "FlashInfer",
+        "CUDA",
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -68,9 +83,19 @@
       "confirmation_check": "Record configured context, block size/count, reserved/free blocks and a pass/fail request-length boundary; confirm the request waits before prefill.",
       "refutation_check": "Demonstrate admission up to the advertised boundary under the same block pool and scheduling state.",
       "conditional_mitigation": "Reduce admitted request length/concurrency or change the qualified memory profile only after block arithmetic supports the diagnosis.",
-      "related_traps": ["13", "61", "98"],
-      "affected_stacks": ["vLLM", "speculative decoding", "hybrid KV"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "13",
+        "61",
+        "98"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "speculative decoding",
+        "hybrid KV"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -86,9 +111,17 @@
       "confirmation_check": "Use two mock backends with distinct model IDs/response markers and record the resolved request base in the benchmark receipt.",
       "refutation_check": "Prove each selector choice reaches a distinct backend and receipt identity matches the selected target.",
       "conditional_mitigation": "Route by the selected port/path and persist the resolved data-plane endpoint in every result.",
-      "related_traps": ["54", "91"],
-      "affected_stacks": ["benchmark clients", "HTTP proxies"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "54",
+        "91"
+      ],
+      "affected_stacks": [
+        "benchmark clients",
+        "HTTP proxies"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -104,9 +137,16 @@
       "confirmation_check": "Capture live provider config, exact model-facing injected context, and a bare-model control; show the stale fact exists in injected context and not the bare model.",
       "refutation_check": "Show model-facing context contains the current truth or the stale answer occurs without stale injected material.",
       "conditional_mitigation": "Fix the stale retrieval/bootstrap source and add a runtime truth receipt; do not blame the model before inspecting injected context.",
-      "related_traps": ["112"],
-      "affected_stacks": ["agent harnesses", "retrieval/bootstrap layers"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "112"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "retrieval/bootstrap layers"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -122,9 +162,16 @@
       "confirmation_check": "Use a deliberately restrictive schema that an unconstrained response predictably violates; compare accepted request and returned object against the exact schema.",
       "refutation_check": "Show a schema-sensitive A/B where output changes to satisfy the supplied constraint and violations are rejected/prevented.",
       "conditional_mitigation": "Validate output against the requested schema client-side until enforcement is demonstrated on the pinned server path.",
-      "related_traps": ["77"],
-      "affected_stacks": ["llama.cpp", "OpenAI-compatible APIs"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "77"
+      ],
+      "affected_stacks": [
+        "llama.cpp",
+        "OpenAI-compatible APIs"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -140,9 +187,16 @@
       "confirmation_check": "Trace production copy sizes/counts per rank and compare with a microbenchmark reproducing that geometry.",
       "refutation_check": "Show production copy geometry is bulk-like and throughput/skew matches the bulk benchmark.",
       "conditional_mitigation": "Benchmark the transfer geometry the loader actually uses before changing storage/network assumptions.",
-      "related_traps": ["52", "91"],
-      "affected_stacks": ["distributed loaders"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "52",
+        "91"
+      ],
+      "affected_stacks": [
+        "distributed loaders"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -158,9 +212,18 @@
       "confirmation_check": "Re-seat/change one physical path at a time and compare link/FEC/EEPROM state before replacing or reprogramming anything.",
       "refutation_check": "Reproduce the fault with seating proven stable and show identity/EEPROM data itself changes or is invalid.",
       "conditional_mitigation": "Treat reseat/link-state proof as the first reversible check.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -176,9 +239,18 @@
       "confirmation_check": "Run size-stepped ping/PMTU and end-to-end jumbo tests across every relevant hop; inspect host MTU and switch L2 MTU together.",
       "refutation_check": "Show the same large payloads pass end-to-end with the suspected MTU values unchanged.",
       "conditional_mitigation": "Correct the smallest proven MTU/L2MTU mismatch; do not infer from link-up alone.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -194,9 +266,18 @@
       "confirmation_check": "Run paired small TCP, jumbo TCP and RDMA tests on the same endpoints and inspect MSS/PMTU.",
       "refutation_check": "Show jumbo TCP passes consistently under the same path state that was suspected.",
       "conditional_mitigation": "Qualify each transport/size class separately before blaming the switch or NIC.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -212,9 +293,18 @@
       "confirmation_check": "Record immutable image digests/runtime versions on every rank and rerun with exact digest parity.",
       "refutation_check": "Reproduce the failure with identical image digests and runtime libraries across all ranks.",
       "conditional_mitigation": "Pin the same image digest and critical libraries across ranks before deeper network changes.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -230,9 +320,18 @@
       "confirmation_check": "Log selected HCA/interface/address per rank and compare to topology; force the known-good device only as a diagnostic A/B.",
       "refutation_check": "Show the same failure with every rank bound to the intended HCA/interface.",
       "conditional_mitigation": "Pin per-host HCA/interface selection after observing a mismatch.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -248,9 +347,18 @@
       "confirmation_check": "Capture route lookup/source address for control and data destinations on each host; compare with socket/collective logs.",
       "refutation_check": "Prove all relevant traffic uses the intended path while the failure persists.",
       "conditional_mitigation": "Set explicit route/source-interface policy only after the escaped path is observed.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -266,9 +374,18 @@
       "confirmation_check": "Run a directed all-pairs matrix and correlate speed with writer identity; add host-memory/NIC/DMA-local probes on the slow writer.",
       "refutation_check": "Show direction-independent performance or move the bottleneck with the link/port rather than the writer host.",
       "conditional_mitigation": "Investigate writer-side host memory, DMA, PCIe/IOMMU and NIC path before changing healthy switch topology.",
-      "related_traps": ["114"],
-      "affected_stacks": ["RoCE", "NCCL", "TCP", "multi-node"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "114"
+      ],
+      "affected_stacks": [
+        "RoCE",
+        "NCCL",
+        "TCP",
+        "multi-node"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
     },
@@ -284,9 +401,17 @@
       "confirmation_check": "Snapshot GPU/process ownership before and during failure; map every PID to service/session owner.",
       "refutation_check": "Show no unexpected tenant exists while the same instability reproduces.",
       "conditional_mitigation": "Remove/reconcile the unexpected tenant only after ownership is proven.",
-      "related_traps": ["112", "13"],
-      "affected_stacks": ["CUDA", "service managers"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "112",
+        "13"
+      ],
+      "affected_stacks": [
+        "CUDA",
+        "service managers"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -302,9 +427,19 @@
       "confirmation_check": "Inspect loaded quant config, runtime logs/kernel/backend identity, and a path-specific probe.",
       "refutation_check": "Show the intended backend/kernel actually executes for the relevant layers.",
       "conditional_mitigation": "Report the effective backend and fix selection/config only after observing the mismatch.",
-      "related_traps": ["44", "18", "10"],
-      "affected_stacks": ["vLLM", "SGLang", "SM120"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "44",
+        "18",
+        "10"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "SGLang",
+        "SM120"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -320,9 +455,17 @@
       "confirmation_check": "Compare READY footprint/KV allocation baseline vs MTP K=1 with identical non-spec settings; record actual free memory and KV blocks.",
       "refutation_check": "Show equal footprint/readiness and KV allocation with and without MTP under the same settings.",
       "conditional_mitigation": "Re-qualify memory utilization/KV settings for the speculative configuration; never publish a universal threshold.",
-      "related_traps": ["98", "13"],
-      "affected_stacks": ["vLLM", "MTP"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "98",
+        "13"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "MTP"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -338,9 +481,17 @@
       "confirmation_check": "Track parent/cgroup/service ownership and timestamps around session exit; relaunch under a durable owner as a control.",
       "refutation_check": "Show the process dies independently of session/control lifetime.",
       "conditional_mitigation": "Use a durable process/service owner only after lifecycle coupling is proven.",
-      "related_traps": ["112"],
-      "affected_stacks": ["vLLM", "systemd", "automation"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "112"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "systemd",
+        "automation"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -356,9 +507,16 @@
       "confirmation_check": "Measure physical free memory and actual allocated blocks before/after the override and test admission/readiness.",
       "refutation_check": "Show the forced value corresponds to physically allocatable memory with stable operation.",
       "conditional_mitigation": "Remove the override or lower workload/capacity to the physically demonstrated envelope.",
-      "related_traps": ["13", "98"],
-      "affected_stacks": ["vLLM"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -374,9 +532,17 @@
       "confirmation_check": "Take a lifecycle timeline: process baseline, post-runtime-init, post-model, post-KV/graphs, post-first-forward.",
       "refutation_check": "Show the residual appears only when the suspected component is introduced and disappears when it is removed.",
       "conditional_mitigation": "Do not tune/remove the suspected subsystem until the timeline localizes the allocation.",
-      "related_traps": ["13", "98"],
-      "affected_stacks": ["CUDA", "model loaders"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "13",
+        "98"
+      ],
+      "affected_stacks": [
+        "CUDA",
+        "model loaders"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -392,9 +558,17 @@
       "confirmation_check": "Record graph/eager mode in runtime logs and run a matched A/B with only the launch flag changed.",
       "refutation_check": "Show both arms use the same execution mode and performance difference persists.",
       "conditional_mitigation": "Publish/compare results only with execution mode recorded; change the flag only after validating correctness.",
-      "related_traps": ["91", "54"],
-      "affected_stacks": ["CUDA graphs", "vLLM"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "91",
+        "54"
+      ],
+      "affected_stacks": [
+        "CUDA graphs",
+        "vLLM"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -410,9 +584,17 @@
       "confirmation_check": "Capture the provider-bound request and relevant template/rendered fields for each arm.",
       "refutation_check": "Show the intended setting is present and effective in the exact provider-bound request.",
       "conditional_mitigation": "Base A/B labels on the provider-bound request, not UI/profile intent.",
-      "related_traps": ["07", "77"],
-      "affected_stacks": ["agent harnesses", "OpenAI-compatible APIs"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "07",
+        "77"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "OpenAI-compatible APIs"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -428,9 +610,16 @@
       "confirmation_check": "Count malformed/refused turns separately from successfully parsed/executed tool calls.",
       "refutation_check": "Show every contained turn also produced a valid structured call and successful execution.",
       "conditional_mitigation": "Report containment rate and successful-call rate separately.",
-      "related_traps": ["42", "78"],
-      "affected_stacks": ["agent harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42",
+        "78"
+      ],
+      "affected_stacks": [
+        "agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": ""
     },
@@ -446,9 +635,17 @@
       "confirmation_check": "Recover the exact original provider request/response and replay it on the pinned stack with surrounding session state.",
       "refutation_check": "Repeated exact original replay stays clean and no missing state variable can be identified.",
       "conditional_mitigation": "Do not apply a speculative fix; use the lead to avoid prematurely blaming the model or parser.",
-      "related_traps": ["42", "78", "84"],
-      "affected_stacks": ["agent harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42",
+        "78",
+        "84"
+      ],
+      "affected_stacks": [
+        "agent harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "low",
       "notes": ""
     },
@@ -464,9 +661,17 @@
       "confirmation_check": "Reconstruct exact bad-turn provider requests/responses and replay them outside the long session, then with controlled accumulated state.",
       "refutation_check": "Bad turns do not reproduce and all model-facing requests are shown equivalent to clean controls.",
       "conditional_mitigation": "Preserve the bad-turn artifacts and avoid changing unrelated layers until replay localizes the owner.",
-      "related_traps": ["84", "112"],
-      "affected_stacks": ["agent harnesses", "serving endpoints"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "84",
+        "112"
+      ],
+      "affected_stacks": [
+        "agent harnesses",
+        "serving endpoints"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "low",
       "notes": ""
     },
@@ -482,9 +687,17 @@
       "confirmation_check": "Rerun only timed-out IDs with a deliberately generous explicit timeout and record server completion/status.",
       "refutation_check": "Items still fail for the same semantic reason well before the generous timeout, or server itself fails.",
       "conditional_mitigation": "Separate timeout from model-score failure and set a workload-appropriate explicit timeout.",
-      "related_traps": ["42", "54", "61"],
-      "affected_stacks": ["benchmark clients"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42",
+        "54",
+        "61"
+      ],
+      "affected_stacks": [
+        "benchmark clients"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -500,9 +713,17 @@
       "confirmation_check": "Pin the historical source revision and inspect effective kernel/backend; run a small output-fidelity + performance A/B between candidate paths.",
       "refutation_check": "Show the expected CUTLASS path is correct on the same build/model and output checks pass.",
       "conditional_mitigation": "Force the known-good backend only after effective-path verification.",
-      "related_traps": ["10", "44"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "10",
+        "44"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -518,9 +739,17 @@
       "confirmation_check": "Inspect accepted config enums and effective runtime path on the pinned build; compare both names in a no-model/static or tiny-path control.",
       "refutation_check": "Both names resolve identically to the intended implementation.",
       "conditional_mitigation": "Use the runtime's exact accepted/effective identifier and record it.",
-      "related_traps": ["44", "77"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "44",
+        "77"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -536,9 +765,17 @@
       "confirmation_check": "Trace every writer into the target KV pool and assert representation/scale on each path.",
       "refutation_check": "Prove all requests go through the one patched writer.",
       "conditional_mitigation": "Quantize at the common pool/write boundary only after writer inventory is complete.",
-      "related_traps": ["18", "44"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "18",
+        "44"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -554,9 +791,17 @@
       "confirmation_check": "Profile verifier width/work and accepted-token count with cap on/off at matched prompts.",
       "refutation_check": "Show verifier work shrinks in proportion to the cap and throughput responds accordingly.",
       "conditional_mitigation": "Do not infer speedup from acceptance alone; tune only with matched throughput measurements.",
-      "related_traps": ["11", "111"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "11",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -572,9 +817,17 @@
       "confirmation_check": "Use a sentinel prompt and inspect raw response fields; compare completion-only extraction against stored corpus rows.",
       "refutation_check": "Show stored outputs exclude the prompt byte-for-byte.",
       "conditional_mitigation": "Strip only the documented echo field/prefix and retain raw response for audit.",
-      "related_traps": ["42", "54"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "42",
+        "54"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -590,9 +843,17 @@
       "confirmation_check": "Replay accepted/rejected rows with a semantic or task-grounded grader and inspect the exact stop-word calculation.",
       "refutation_check": "Rejected rows are independently invalid and the heuristic has low false-positive rate on controls.",
       "conditional_mitigation": "Treat the heuristic as an advisory feature, not a hard correctness gate, until calibrated.",
-      "related_traps": ["42", "52"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "42",
+        "52"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -608,9 +869,18 @@
       "confirmation_check": "Run a temperature sweep with all runtime settings fixed and record acceptance + throughput distributions.",
       "refutation_check": "Acceptance remains stable across the tested temperature range.",
       "conditional_mitigation": "Match temperature before comparing speculative configurations.",
-      "related_traps": ["17", "54", "111"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "17",
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -626,9 +896,17 @@
       "confirmation_check": "Repeat the exact request many times and report distribution/identity hashes, not only the maximum.",
       "refutation_check": "Demonstrate byte-identical output and stable timings under repeated runs.",
       "conditional_mitigation": "Use medians/distributions and preserve run count even at temp=0.",
-      "related_traps": ["54", "111"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -644,9 +922,17 @@
       "confirmation_check": "Inject a nonzero sentinel per shard and verify each contributes to the captured graph/output.",
       "refutation_check": "Show every shard is executed and contributes under the same captured graph.",
       "conditional_mitigation": "Use per-shard sentinels and inspect the captured/static path before trusting aggregate calibration.",
-      "related_traps": ["52", "91"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "52",
+        "91"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -662,9 +948,18 @@
       "confirmation_check": "Matched A/B: acceptance, useful accepted tokens, verifier work, TTFT and tok/s across repeated prompts.",
       "refutation_check": "Throughput improves consistently after controlling prompt/sampling/run order.",
       "conditional_mitigation": "Optimize for end-to-end useful throughput, not acceptance percentage alone.",
-      "related_traps": ["11", "54", "111"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "11",
+        "54",
+        "111"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -680,9 +975,17 @@
       "confirmation_check": "Record effective env/default and run matched unset vs compact on the exact source revision with a minimal verification workload.",
       "refutation_check": "Compact passes the same workload repeatedly on the pinned build.",
       "conditional_mitigation": "Leave the mode unset/use the proven recipe only for the affected version; do not generalize across releases.",
-      "related_traps": ["77", "98"],
-      "affected_stacks": ["SGLang", "DSpark"],
-      "source_refs": ["https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"],
+      "related_traps": [
+        "77",
+        "98"
+      ],
+      "affected_stacks": [
+        "SGLang",
+        "DSpark"
+      ],
+      "source_refs": [
+        "https://github.com/drowzeys/keys-1M-CTX-Inkling-Small-NVFP4-Dspark-SGlang-SM121-optimized-on-Two-DGX-Sparks"
+      ],
       "confidence": "medium",
       "notes": "Static/public-repository lead from the pinned Keys/Inkling audit; not reproduced by Blackwellboy unless another source says so."
     },
@@ -698,9 +1001,18 @@
       "confirmation_check": "On the pinned build, choose a world size that differs across allow-lists; capture both disable/warning path and the later enabled summary; then inspect actual kernel path.",
       "refutation_check": "Show the summary is topology-aware/effective-state-derived or both paths are actually enabled as reported.",
       "conditional_mitigation": "Trust effective runtime-path evidence over an intent/config summary; record both when benchmarking.",
-      "related_traps": ["77", "91"],
-      "affected_stacks": ["vLLM", "FlashInfer"],
-      "source_refs": ["https://github.com/vllm-project/vllm", "../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "77",
+        "91"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "FlashInfer"
+      ],
+      "source_refs": [
+        "https://github.com/vllm-project/vllm",
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "high",
       "notes": "Earlier 'silent odd-world-size fallback' framing was refuted/narrowed: warnings exist; the useful lead is configured-versus-effective reporting drift."
     },
@@ -716,9 +1028,15 @@
       "confirmation_check": "Use task-grounded execution/reference grading on rows that the compliance classifier passes; measure false-pass rate.",
       "refutation_check": "Classifier-passed rows independently meet task correctness at the required rate.",
       "conditional_mitigation": "Do not use quiet-compliance as the sole capability metric.",
-      "related_traps": ["42"],
-      "affected_stacks": ["evaluation harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "low",
       "notes": ""
     },
@@ -734,9 +1052,16 @@
       "confirmation_check": "Cross-grade the same frozen outputs with stronger/orthogonal judges and execution/verifiable checks where possible.",
       "refutation_check": "Independent verifiable grading agrees with the original judge across hard cases.",
       "conditional_mitigation": "Use a stronger or task-grounded grader when judge-floor evidence appears.",
-      "related_traps": ["42", "52"],
-      "affected_stacks": ["evaluation harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42",
+        "52"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "low",
       "notes": ""
     },
@@ -752,9 +1077,16 @@
       "confirmation_check": "Enumerate row types and recompute metrics with task-only denominator; compare to published score.",
       "refutation_check": "All denominator rows are documented scored tasks.",
       "conditional_mitigation": "Separate probes/controls from scored task rows in schema and reporting.",
-      "related_traps": ["42", "54"],
-      "affected_stacks": ["evaluation harnesses"],
-      "source_refs": ["../mining/2026-08-14-first-party-promotion-audit.md"],
+      "related_traps": [
+        "42",
+        "54"
+      ],
+      "affected_stacks": [
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-14-first-party-promotion-audit.md"
+      ],
       "confidence": "medium",
       "notes": ""
     },
@@ -770,11 +1102,191 @@
       "confirmation_check": "Serve the pinned Kimi-K3 revision with --trust-remote-code and inspect /tokenize for [user Q, system LATESYS, user Q2]; require a distinct system role segment.",
       "refutation_check": "Rendered served prompt drops/welds the inline system message or executes different source than inspected.",
       "conditional_mitigation": "Pin model revision/tokenizer class and verify served render before relying on inline-system semantics.",
-      "related_traps": ["56", "113"],
-      "affected_stacks": ["vLLM", "Kimi-K3"],
-      "source_refs": ["https://github.com/vllm-project/vllm/issues/46710"],
+      "related_traps": [
+        "56",
+        "113"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "Kimi-K3"
+      ],
+      "source_refs": [
+        "https://github.com/vllm-project/vllm/issues/46710"
+      ],
       "confidence": "medium",
       "notes": ""
+    },
+    {
+      "id": "L043",
+      "title": "Qwen3.8 MTP support can be runtime-build specific rather than model-wide",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "runtime",
+      "symptom": "A Qwen3.8-27B lane reports MTP unsupported, leading the operator to conclude the checkpoint or model family cannot use MTP.",
+      "possible_mechanism": "MTP capability can depend on the exact serving build, model-family support code and accepted speculative configuration; the same NVFP4 checkpoint was unsupported on one pinned runtime but passed a depth-1 canary on another.",
+      "confirmation_check": "Pin the exact image/build, inspect its Qwen-family MTP implementation and accepted configuration, then run the same bounded canary with MTP off and at depth 1.",
+      "refutation_check": "Show the same checkpoint and MTP configuration fails as unsupported across the compared runtimes after support code and launch semantics are verified equivalent.",
+      "conditional_mitigation": "Change runtime or speculative configuration only after localizing the unsupported boundary; do not describe one runtime result as a Qwen3.8 model limitation.",
+      "related_traps": [
+        "09",
+        "28",
+        "71"
+      ],
+      "affected_stacks": [
+        "Qwen3.8-27B",
+        "vLLM",
+        "aeon-vllm",
+        "DGX Spark",
+        "MTP"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "high",
+      "notes": "Aeon NVFP4 stage reported MTP_UNSUPPORTED; Drowzeys vLLM development image exposed Qwen-family MTP support and passed MTP1 on the same NVFP4 revision. Later depths were not claimed from the early checkpoint."
+    },
+    {
+      "id": "L044",
+      "title": "amd64 benchmark images fail natively on arm64 DGX Spark before the model is tested",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "evaluation_runtime",
+      "symptom": "A benchmark or helper container on DGX Spark dies immediately with exec format error and the run appears to be a model or benchmark failure.",
+      "possible_mechanism": "The benchmark image can be built for amd64 while the DGX Spark host is aarch64, so native execution fails before any request reaches the served model.",
+      "confirmation_check": "Record host architecture and inspect the architecture of every benchmark/helper image; reproduce the failure with a harmless container command before contacting the model endpoint.",
+      "refutation_check": "Show host and image architectures are compatible, the helper process starts normally, and the failure occurs only after a model request is actually sent.",
+      "conditional_mitigation": "Use a native arm64/multi-arch benchmark image or an explicitly qualified emulation path; do not score the model from a pre-endpoint exec-format failure.",
+      "related_traps": [
+        "08",
+        "09",
+        "52"
+      ],
+      "affected_stacks": [
+        "Docker",
+        "ProgramBench",
+        "DGX Spark",
+        "aarch64",
+        "evaluation harnesses"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "high",
+      "notes": "Observed with an amd64 task_cleanroom_v6 image on an aarch64 Spark host; native run returned exec format error and the campaign held the benchmark."
+    },
+    {
+      "id": "L045",
+      "title": "Docker save/load can preserve runtime content while the local image ID differs from the source repo digest",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "runtime_versioning",
+      "symptom": "A transferred serving image is rejected as the wrong build because its local Docker .Id does not equal the registry digest pinned before docker save/load.",
+      "possible_mechanism": "Docker local config identity and registry RepoDigest are not interchangeable identity predicates after image transport; equivalent RootFS layers and runtime configuration can survive while the local ID representation differs.",
+      "confirmation_check": "Compare architecture, ordered RootFS layer digests or a stable layer fingerprint, pinned runtime/version environment and load-bearing image labels against the source pin.",
+      "refutation_check": "Show a load-bearing layer/config fingerprint differs, the expected runtime/version label is absent, or the transferred image executes different code.",
+      "conditional_mitigation": "Keep the source registry digest as provenance but verify post-transfer content identity with immutable layers/config rather than requiring local .Id equality alone.",
+      "related_traps": [
+        "09"
+      ],
+      "affected_stacks": [
+        "Docker",
+        "container image transfer",
+        "DGX Spark",
+        "aeon-vllm"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "high",
+      "notes": "Campaign verifier was repaired to use a 46-layer fingerprint, architecture, aeon version environment and GB10/SM121 labels instead of LOCAL_ID == source digest."
+    },
+    {
+      "id": "L046",
+      "title": "Container ENTRYPOINT can reinterpret a model path as a CLI subcommand",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "runtime_launch",
+      "symptom": "A vLLM-derived container exits before model load with 'Usage: serve ...' and 'No such command /model'.",
+      "possible_mechanism": "The image ENTRYPOINT already invokes a serve CLI whose argv contract differs from the launcher assumption, so appending /model places the model path in a subcommand position.",
+      "confirmation_check": "Inspect Docker Entrypoint and Cmd, run the image help path, and record the exact final argv; compare with a corrected invocation that reaches a bounded model canary.",
+      "refutation_check": "Show the final argv matches the image CLI contract and the same No-such-command failure persists after the model path is passed in the documented position.",
+      "conditional_mitigation": "Adapt the launcher to the image entrypoint contract rather than changing weights or runtime support code.",
+      "related_traps": [
+        "09",
+        "112"
+      ],
+      "affected_stacks": [
+        "Docker",
+        "vLLM",
+        "DGX Spark",
+        "Qwen3.8-27B"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "high",
+      "notes": "The same pinned image/checkpoint later returned BLACKWELL38_READY after launch construction was corrected. A separate truendocker shell-concatenation typo is not merged into this mechanism."
+    },
+    {
+      "id": "L047",
+      "title": "A telemetry Thread._stop name collision can crash a soak worker at teardown while the endpoint remains healthy",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "evaluation_harness",
+      "symptom": "A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.",
+      "possible_mechanism": "A threading.Thread subclass can shadow the inherited private _stop() method by assigning a threading.Event to self._stop; Thread.join later attempts to call the Event as a method.",
+      "confirmation_check": "Inspect the worker traceback and Thread subclass fields; preserve request/server telemetry separately; rename the field and rerun an offline join regression plus the bounded soak.",
+      "refutation_check": "Show the server itself restarted/died or requests failed before harness teardown, or reproduce the worker crash without any Thread private-name collision.",
+      "conditional_mitigation": "Fix the harness lifecycle bug and rerun; do not change model/runtime configuration on the basis of a teardown-only worker exception.",
+      "related_traps": [
+        "52",
+        "107"
+      ],
+      "affected_stacks": [
+        "Python threading",
+        "evaluation harnesses",
+        "soak tests",
+        "DGX Spark"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "high",
+      "notes": "After _stop was renamed to _stop_event, the recovered Qwen3.8 BF16 Spark soak completed about two hours with 512/512 successful requests and zero server restarts."
+    },
+    {
+      "id": "L048",
+      "title": "One Qwen3.8 Q4 decimal canary failure did not reproduce on the immediate pinned rerun",
+      "canonical": false,
+      "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
+      "source_class": "first_party_campaign",
+      "scope": "evaluation_correctness",
+      "symptom": "A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.",
+      "possible_mechanism": "The bad response is real but a single response does not localize cause; sampling/defaults, runtime variance, prompt path or quantization remain competing explanations when the immediate pinned rerun passes.",
+      "confirmation_check": "Capture the exact provider-bound request, effective sampling/defaults and raw output, then repeat the same canary across enough runs and compare a higher-precision or otherwise controlled arm.",
+      "refutation_check": "If repeated exact requests stay clean and no quant-specific A/B localizes the failure, refute the quant-corruption causal label while retaining the original bad response as an observation.",
+      "conditional_mitigation": "Do not change the quant or checkpoint from n=1; first make the failure repeatable and localize it with a controlled arm.",
+      "related_traps": [
+        "21",
+        "35"
+      ],
+      "affected_stacks": [
+        "Qwen3.8-27B",
+        "GGUF",
+        "Q4_K_M",
+        "llama.cpp",
+        "RTX 5090"
+      ],
+      "source_refs": [
+        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+      ],
+      "confidence": "medium",
+      "notes": "Pinned campaign first returned 9.11 on the decimal canary and held; the immediate rerun returned 9.9 and passed. Cause was not isolated."
     }
   ]
 }
