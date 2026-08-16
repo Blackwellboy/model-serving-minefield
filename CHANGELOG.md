@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-08-16
+
+### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-122)
+
+Contributed by **tonyd2wild**, measured on four DGX Spark (GB10, sm_121a,
+aarch64) nodes over RoCE serving GLM-5.2. Six new entries, five
+contributor-measured and one filed under test:
+
+- [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md) a
+  compilation flag is echoed back enabled and runs disabled; forcing it via the
+  documented override crashes multi-node, because the fused path rendezvouses
+  through symmetric memory within a single host
+- [118](traps/runtime/118-ray-log-monitor-off-hides-worker-progress.md) a
+  healthy boot looks deadlocked because `ray start --include-log-monitor=false`
+  keeps every worker line off the driver log
+- [119](traps/memory/119-free-memory-drifts-down-after-churn.md) unified-memory
+  free drifts down after churn, so a tuned utilization starts failing and the
+  NCCL errors that dominate the log belong to the ranks that did not fail.
+  Temporal companion to [13](traps/memory/13-utilization-fraction-on-unified-memory.md)
+- [120](traps/runtime/120-indexer-block-table-omits-spec-overhang.md) an
+  indexer block table sized from `max_model_len` alone is one block short once
+  MTP spec tokens push past it, which only shows at three or more concurrent
+- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) JSON CLI arguments
+  re-split by the remote shell in an SSH fanout leave workers in `Created`
+  while the launcher reports success
+- [122](traps/quantization/122-prepack-format-detected-by-tensor-name.md)
+  **under test**: a 2-bit expert prepack selects its decoder from tensor names
+  rather than dtype, so a renamed fp8 checkpoint can be routed through the
+  mxfp4 path. Mechanism read from public source; corrupted output not observed,
+  CONFIRM/REFUTE criteria recorded in the entry
+
+Reported first as issues
+[#43](https://github.com/Blackwellboy/model-serving-minefield/issues/43),
+[#44](https://github.com/Blackwellboy/model-serving-minefield/issues/44),
+[#45](https://github.com/Blackwellboy/model-serving-minefield/issues/45),
+[#46](https://github.com/Blackwellboy/model-serving-minefield/issues/46).
+
+
 ## 2026-08-15
 
 ### Qwen3.8 reasoning/template configuration traps (first-party extension)

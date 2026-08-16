@@ -168,12 +168,12 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **19 of the registry's 116 numbered entries**
+The doctor implements checks for **19 of the registry's 122 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 77, 78).
 Every run ends with a coverage line:
 
 ```
-implemented 19/116 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 97
+implemented 19/122 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 103
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -202,7 +202,7 @@ depth, and the coverage block says so every time:
   an expired key reading as a strict server. It rules out "your typo is
   silently accepted"; it does **not** rule out a known-but-unimplemented field
   being accepted and ignored, which stays with 03 and 29.
-- The remaining **97** numbered traps have no check in this tool.
+- The remaining **103** numbered traps have no check in this tool.
 
 The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
 `mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of
