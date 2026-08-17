@@ -117,6 +117,22 @@ Also disable blind auto-retry for this specific startup failure. Repeated
 retries can obscure the first useful exception and, on the measured lane,
 coincided with progressively lower available memory.
 
+## Added 2026-08-17: the same contributor measured boot-to-boot KV-pool drift
+
+In a separate two-DGX-Spark comparison, @tonyd2wild found that identical
+configurations reported materially different KV capacities on successive
+boots: **1,548,597 -> 1,336,656 tokens** on one stack and **1,385,765 ->
+1,533,940** on another. That made a one-boot cross-runtime “11.7% larger KV
+pool” claim smaller than the rig's own observed boot variance, so the claim was
+retracted.
+
+**Status: contributor-measured, conditions as reported.** See
+[issue #37](https://github.com/Blackwellboy/model-serving-minefield/issues/37).
+This is corroborating evidence for the temporal shared-pool state described
+here, not proof that every boot-to-boot capacity difference has the same owner.
+For a capacity comparison, repeat boots or explicitly match/record free-memory
+state before attributing the difference to a runtime.
+
 **Found.** 2026-08-15, after a 433 GB model download and a run of OOM-killed
 boots on one node. Cost several hours and one unnecessary reboot of an
 uninvolved node before we read the primary exception instead of the loudest
@@ -124,3 +140,5 @@ one.
 
 **Attribution.** tonyd2wild, 4x DGX Spark GB10 fleet. Reported as
 [#45](https://github.com/Blackwellboy/model-serving-minefield/issues/45).
+2026-08-17 boot-to-boot KV-pool corroboration: the same contributor,
+[issue #37](https://github.com/Blackwellboy/model-serving-minefield/issues/37).
