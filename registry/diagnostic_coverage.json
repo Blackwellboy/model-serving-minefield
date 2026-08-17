@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 122,
-    "human_review_possible": 122,
+    "guided_experiments_specified": 121,
+    "human_review_possible": 121,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 122
+    "total_canonical_traps": 121
   },
   "traps": [
     {
@@ -8859,7 +8859,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "Ramp concurrency and look for a hard edge rather than a curve: Clean at c=1 and c=2 and dead at c=3, reproducibly, is the signature. If the same ramp degrades gradually instead, you are looking at something else.",
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "",
@@ -8900,7 +8900,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "Ramp concurrency and look for a hard edge rather than a curve: Clean at c=1 and c=2 and dead at c=3, reproducibly, is the signature. If the same ramp degrades gradually instead, you are looking at something else.",
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -8914,7 +8914,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "Ramp concurrency and look for a hard edge rather than a curve: Clean at c=1 and c=2 and dead at c=3, reproducibly, is the signature. If the same ramp degrades gradually instead, you are looking at something else.",
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
@@ -8933,7 +8933,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "Assert running, not merely created, after launch: Any worker reporting Created is a launch failure even if the launcher printed a container ID. To debug the transport, compare a known-good local argv with what the remote entrypoint actually receives; avoid relying only on the human-readable command string printed before ssh.",
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "",
@@ -8974,7 +8974,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "Assert running, not merely created, after launch: Any worker reporting Created is a launch failure even if the launcher printed a container ID. To debug the transport, compare a known-good local argv with what the remote entrypoint actually receives; avoid relying only on the human-readable command string printed before ssh.",
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -8988,81 +8988,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "Assert running, not merely created, after launch: Any worker reporting Created is a launch failure even if the launcher printed a container ID. To debug the transport, compare a known-good local argv with what the remote entrypoint actually receives; avoid relying only on the human-readable command string printed before ssh.",
-          "expected_duration": "seconds",
-          "implemented_checker": null,
-          "limitations": "Static configuration does not prove the live process used it.",
-          "possible_match_only": true,
-          "refute_criterion": "Compare with the effective runtime configuration.",
-          "required_inputs": [
-            "Explicitly supplied configuration files"
-          ],
-          "safety_level": "read-only",
-          "state": "possible"
-        }
-      }
-    },
-    {
-      "id": "122",
-      "modalities": {
-        "endpoint_probe": {
-          "can_prove_clean": false,
-          "confirm_criterion": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm.",
-          "expected_duration": "under one minute",
-          "implemented_checker": null,
-          "limitations": "",
-          "possible_match_only": true,
-          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
-          "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
-        },
-        "guided_experiment": {
-          "can_prove_clean": false,
-          "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
-          "expected_duration": "5-30 minutes unless the entry names a soak",
-          "implemented_checker": null,
-          "limitations": "",
-          "possible_match_only": true,
-          "refute_criterion": "The paired control and test contradict the published failure signature.",
-          "required_inputs": [
-            "A disposable or explicitly authorised test surface",
-            "Raw output capture"
-          ],
-          "safety_level": "unreviewed published procedure; a human must assess impact before running",
-          "state": "specified"
-        },
-        "human_review": {
-          "can_prove_clean": false,
-          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
-          "expected_duration": "variable",
-          "implemented_checker": null,
-          "limitations": "Human review retains the published evidence status.",
-          "possible_match_only": true,
-          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
-          "required_inputs": [
-            "Exact stack, model, versions, and preserved evidence"
-          ],
-          "safety_level": "read-only comparison",
-          "state": "possible"
-        },
-        "log_scan": {
-          "can_prove_clean": false,
-          "confirm_criterion": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm.",
-          "expected_duration": "seconds",
-          "implemented_checker": null,
-          "limitations": "Absence of a signature is not proof of safety.",
-          "possible_match_only": true,
-          "refute_criterion": "Show a later recovery or a contradictory control.",
-          "required_inputs": [
-            "Explicitly supplied bounded log files"
-          ],
-          "safety_level": "read-only",
-          "state": "possible"
-        },
-        "static_config": {
-          "can_prove_clean": false,
-          "confirm_criterion": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm.",
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

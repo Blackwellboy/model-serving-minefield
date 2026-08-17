@@ -34,7 +34,6 @@ shortlists.
 | MiniMax-M3 | [08](../traps/runtime/08-image-toolchain-newer-than-driver.md), [113](../traps/template/113-inline-system-role-is-not-a-stable-contract.md) |
 | GLM-5.1, GLM-5.2, Kimi-K2.6, Kimi-K3, MiniMax-M2.5 and MiniMax-M2.7 (pinned public template/tokenizer artifacts) | [113](../traps/template/113-inline-system-role-is-not-a-stable-contract.md) |
 | GLM-5.2 (QuantTrio Int4-Int8Mix unpruned, W4W8 community build) | [117](../traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md), [118](../traps/runtime/118-ray-log-monitor-off-hides-worker-progress.md), [119](../traps/memory/119-free-memory-drifts-down-after-churn.md), [120](../traps/runtime/120-indexer-block-table-omits-spec-overhang.md), [121](../traps/runtime/121-ssh-fanout-mangles-json-args.md) *(4x DGX Spark GB10, contributor-measured, conditions as reported)* |
-| DeepSeek-V4-Flash (DSpark fp8 repack, 2-bit Moet prepack source) | [122](../traps/quantization/122-prepack-format-detected-by-tensor-name.md) *(under test)* |
 | ~600B-class MoE with MTP drafter (community abliterated re-upload) | [14](../traps/versioning/14-finetune-reupload-not-drop-in.md), [105](../traps/evaluation/105-acceptance-estimator-unnamed.md), [106](../traps/memory/106-kv-occupancy-ceiling-is-not-a-leak.md) |
 | Qwen 3.6 27B (NVFP4 modelopt checkpoint, offline dequant) | [44](../traps/quantization/44-fp4-dequant-scale-swizzle-layout.md) |
 | Nemotron-H 8B Base 8K (Mamba-2 hybrid, squared-ReLU FFN) | [51](../traps/quantization/51-single-backend-nan-fused-path.md) |

@@ -2878,7 +2878,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "120",
-      "untrusted_published_check_text": "Ramp concurrency and look for a hard edge rather than a curve: Clean at c=1 and c=2 and dead at c=3, reproducibly, is the signature. If the same ramp degrades gradually instead, you are looking at something else."
+      "untrusted_published_check_text": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 121 appears under matching conditions.",
@@ -2902,31 +2902,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "121",
-      "untrusted_published_check_text": "Assert running, not merely created, after launch: Any worker reporting Created is a launch failure even if the launcher printed a container ID. To debug the transport, compare a known-good local argv with what the remote entrypoint actually receives; avoid relying only on the human-readable command string printed before ssh."
-    },
-    {
-      "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
-      "control": "Repeat with the suspected variable removed or with the known-good condition.",
-      "expected_duration": "5-30 minutes unless the entry names a soak",
-      "human_review_still_required": true,
-      "limitations": "",
-      "prerequisites": [
-        "A disposable or explicitly authorised test surface",
-        "Raw output capture"
-      ],
-      "question": "Does the observed system reproduce trap 122 under its named conditions?",
-      "raw_artefacts_to_preserve": [
-        "request/configuration",
-        "response/output",
-        "versions",
-        "timestamps"
-      ],
-      "refute_criterion": "The paired control and test contradict the published failure signature.",
-      "risk": "unreviewed published procedure; a human must assess impact before running",
-      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
-      "service_disruption": "none by default; do not run if the published check is disruptive",
-      "trap_id": "122",
-      "untrusted_published_check_text": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm."
+      "untrusted_published_check_text": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state."
     }
   ],
   "schema_version": "1.0"
