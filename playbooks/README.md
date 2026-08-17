@@ -42,5 +42,5 @@ things it has already cost, are in
 ## If you would rather not work through a list
 
 [Run the doctor](../doctor/) against the endpoint. It implements checks for
-19 of this registry's 121 numbered entries, it is a thinking-stack preflight
+19 of this registry's 122 numbered entries, it is a thinking-stack preflight
 rather than a broad bill of health, and it prints its own coverage every run.

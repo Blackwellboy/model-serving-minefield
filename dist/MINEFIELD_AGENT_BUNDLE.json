@@ -5,11 +5,11 @@
     "summary": {
       "counts_overlap": true,
       "endpoint_checks_implemented": 19,
-      "guided_experiments_specified": 121,
-      "human_review_possible": 121,
+      "guided_experiments_specified": 122,
+      "human_review_possible": 122,
       "log_checks_implemented": 9,
       "static_checks_implemented": 10,
-      "total_canonical_traps": 121
+      "total_canonical_traps": 122
     },
     "traps": [
       {
@@ -9003,6 +9003,80 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "122",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "On any MTP + quantized-KV lane, before believing a quality probe: run the two three-probe control sets, MTP flag on vs off on an otherwise identical launch line: (a) a short chat prompt that must emit non-repeating content, (b) one structured tool call that must return toolcalls with valid JSON args, (c) a 4K needle-in-haystack that must return the marker. If any cell in the MTP-on column is empty/garble and the MTP-off column is clean, this trap. Five minutes, and it targets the cell trap 28's suggested matrix does not.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "On any MTP + quantized-KV lane, before believing a quality probe: run the two three-probe control sets, MTP flag on vs off on an otherwise identical launch line: (a) a short chat prompt that must emit non-repeating content, (b) one structured tool call that must return toolcalls with valid JSON args, (c) a 4K needle-in-haystack that must return the marker. If any cell in the MTP-on column is empty/garble and the MTP-off column is clean, this trap. Five minutes, and it targets the cell trap 28's suggested matrix does not.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "On any MTP + quantized-KV lane, before believing a quality probe: run the two three-probe control sets, MTP flag on vs off on an otherwise identical launch line: (a) a short chat prompt that must emit non-repeating content, (b) one structured tool call that must return toolcalls with valid JSON args, (c) a 4K needle-in-haystack that must return the marker. If any cell in the MTP-on column is empty/garble and the MTP-off column is clean, this trap. Five minutes, and it targets the cell trap 28's suggested matrix does not.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied configuration files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -11910,6 +11984,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "121",
       "untrusted_published_check_text": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 122 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "122",
+      "untrusted_published_check_text": "On any MTP + quantized-KV lane, before believing a quality probe: run the two three-probe control sets, MTP flag on vs off on an otherwise identical launch line: (a) a short chat prompt that must emit non-repeating content, (b) one structured tool call that must return toolcalls with valid JSON args, (c) a 4K needle-in-haystack that must return the marker. If any cell in the MTP-on column is empty/garble and the MTP-off column is clean, this trap. Five minutes, and it targets the cell trap 28's suggested matrix does not."
     }
   ],
   "possible_unverified_leads": {
@@ -13237,8 +13335,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 121,
-    "content_sha256": "5929aa33c660ed5c0549369c1deea513acd46ed3cd46857d0ab8be6aeb50a32d",
+    "canonical_trap_count": 122,
+    "content_sha256": "7356613ee96b036aad3cd259de99679736bef3ebbea22331d8cecc9230718706",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -21670,6 +21768,87 @@
         "supersession": null,
         "symptom": "A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.",
         "title": "SSH fanout reparses structured argv while the launcher still reports success"
+      },
+      {
+        "affected_models": [
+          "Qwen3.5-family arch",
+          "Qwen3.8-27B-NVFP4"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "vLLM 0.27.1 on a single RTX 5090 (GB202, sm120; 32 GiB, driver 610.43.02, CUDA 13.3), Python 3.13 venv with flashinfer and nvidia-cutlass-dsl per unsloth's install guide, model = unsloth/Qwen3.8-27B-NVFP4 (compressed-tensors mixed NVFP4+fp8, Qwen3.5-family arch, native 262144 token context). TurboQuant 4-bit KV explicitly selected as turboquant4bitnc. The same weight+KV build with MTP off served clean (that is the control). The fp8-KV MTP cell on this lane carries a caveat: it serves clean only outside FULL-graph capture (see Symptom/Mechanism). One machine, one model build, one vLLM build — version/quant/arch scoped.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "5090",
+            "rtx 5090"
+          ],
+          "exact_checkpoint": [
+            "qwen3.5-family",
+            "qwen3.5-family arch",
+            "qwen3.8-27b-nvfp4",
+            "unsloth qwen3.8-27b-nvfp4"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "qwen3.5",
+            "qwen3.8"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [
+            "fp8",
+            "nvfp4"
+          ],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [
+            "0.27.1"
+          ],
+          "topology": []
+        },
+        "category": "runtime",
+        "check": "On any MTP + quantized-KV lane, before believing a quality probe: run the two three-probe control sets, MTP flag on vs off on an otherwise identical launch line: (a) a short chat prompt that must emit non-repeating content, (b) one structured tool call that must return toolcalls with valid JSON args, (c) a 4K needle-in-haystack that must return the marker. If any cell in the MTP-on column is empty/garble and the MTP-off column is clean, this trap. Five minutes, and it targets the cell trap 28's suggested matrix does not.",
+        "contributor": "ayayalar (A Y)",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "contributor-measured, conditions as reported"
+        ],
+        "exact_conditions": "vLLM 0.27.1 on a single RTX 5090 (GB202, sm120; 32 GiB, driver 610.43.02, CUDA 13.3), Python 3.13 venv with flashinfer and nvidia-cutlass-dsl per unsloth's install guide, model = unsloth/Qwen3.8-27B-NVFP4 (compressed-tensors mixed NVFP4+fp8, Qwen3.5-family arch, native 262144 token context). TurboQuant 4-bit KV explicitly selected as turboquant4bitnc. The same weight+KV build with MTP off served clean (that is the control). The fp8-KV MTP cell on this lane carries a caveat: it serves clean only outside FULL-graph capture (see Symptom/Mechanism). One machine, one model build, one vLLM build — version/quant/arch scoped.",
+        "id": "122",
+        "known_limitations": "",
+        "mechanism": "Measured by the contributor on their own hardware (single RTX 5090, vLLM 0.27.1, model unsloth/Qwen3.8-27B-NVFP4); not yet independently reproduced by the registry. The failure and its absence were both exercised multiple times in a control A/B on the same build (one flag differs); broken and working flow are fully described with command lines and raw responses in the contributions associated with this entry. The working-state evidence is additionally reproducible from the public Qwen3.8-27B-NVFP4-TurboQuant recipe. Symptom. Serving Qwen3.8-27B-NVFP4 on one RTX 5090 with --kv-cache-dtype turboquant4bitnc AND --speculative-config '{\"method\":\"mtp\",\"numspeculativetokens\":2}, the server is fully up: /v1/models responds, requests return HTTP 200, finishreason: stop is normal, and nothing is logged as an error. Yet every completion is garbage: content is empty, tool calls never appear (toolcalls: null), needle-in-haystack retrieval fails, and responses degenerate into repetition (\"a a a a a a …\", \"think think think …\"). It reads like a model-quality problem or a dead checkpoint, and it is neither: the identical build with --speculative-config removed serves cleanly — tool calls with correct JSON args, needle recall passing at 8K/64K/131K/196K, code-edit passing. The interaction is not specific to the 4-bit KV dtype: under the same FULL-graph capture the garble also reproduces with fp8 KV on this lane. (The earlier, pre-control fp8+MTP measurements that served clean were not under FULL-graph capture — see Mechanism.) Mechanism (root-caused by the contributor on the same lane). The observed garble is a CUDA-graph capture artifact, not the KV dtype. On vLLM 0.27.1 at capture-opt level",
+        "mitigation": "The verified working configuration keeps MTP on and removes the FULL-graph capture: use dynamic speculative decoding (\"numspeculativetokensperbatchsize\": [[1,4,3]] in the spec config), which on vLLM 0.27.1 automatically steps cudagraphs from FULLANDPIECEWISE to PIECEWISE, or pass --enforce-eager (costs ~28-40% decode on this build). With PIECEWISE, MTP + turboquant 4-bit KV runs correct at the full 262K window on the contributor's lane (tool calls 12/12, needles 8K-196K PASS, ~148.5 tok/s single-stream at the shipped default), so this is no longer an operational either/or: MTP off with turboquant KV at full context and fp8 KV with MTP on at <=227K remain fallbacks, and remaining single-variable ablations (KV dtype sweep under MTP on) are closed — fp8 KV + MTP garbles under FULL graphs just like 4-bit does, confirming the graph mode, not the KV dtype, is the gate. The upstream fix attempt (vllm PR 40914, K+1 spec-verify routing) targets the same class of bug but its dispatch predicate does not fire on 0.27.1 (verified: 0/3508 calls eligible); the PIECEWISE/dynamic-SD route is what actually fixes it on this version.",
+        "public_evidence_links": [
+          "https://github.com/ayayalar/Qwen3.8-27B-NVFP4-TurboQuant",
+          "https://github.com/vllm-project/vllm/pull/40914"
+        ],
+        "related_traps": [
+          "01",
+          "28",
+          "62"
+        ],
+        "source_path": "traps/runtime/122-mtp-turboquant-kv-corrupts-output.md",
+        "status": "contributor-measured, conditions as reported.",
+        "supersession": null,
+        "symptom": "Serving Qwen3.8-27B-NVFP4 on one RTX 5090 with --kv-cache-dtype turboquant4bitnc AND --speculative-config '{\"method\":\"mtp\",\"numspeculativetokens\":2}, the server is fully up: /v1/models responds, requests return HTTP 200, finishreason: stop is normal, and nothing is logged as an error. Yet every completion is garbage: content is empty, tool calls never appear (toolcalls: null), needle-in-haystack retrieval fails, and responses degenerate into repetition (\"a a a a a a …\", \"think think think …\"). It reads like a model-quality problem or a dead checkpoint, and it is neither: the identical build with --speculative-config removed serves cleanly — tool calls with correct JSON args, needle recall passing at 8K/64K/131K/196K, code-edit passing. The interaction is not specific to the 4-bit KV dtype: under the same FULL-graph capture the garble also reproduces with fp8 KV on this lane. (The earlier, pre-control fp8+MTP measurements that served clean were not under FULL-graph capture — see Mechanism.)",
+        "title": "4-bit turboquant KV + MTP speculative decoding silently corrupts every completion on a build where either works alone"
       }
     ],
     "schema_version": "1.1"
