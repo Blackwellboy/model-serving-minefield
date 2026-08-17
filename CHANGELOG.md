@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-08-17
+
+### Trap 122: FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1
+
+Contributed by **ayayalar (A Y)**; measured on the contributor's single RTX
+5090 with vLLM 0.27.1 and `unsloth/Qwen3.8-27B-NVFP4`. Status remains
+**contributor-measured, conditions as reported**; the registry has not claimed
+an independent reproduction.
+
+- [122](traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md)
+  records a silent HTTP-200 output collapse under FULL CUDA-graph capture of the
+  MTP verification path. The finding was first exposed with
+  `turboquant_4bit_nc` KV, but the contributor later reproduced the same FULL-
+  graph collapse with `fp8` KV, refuting the original "4-bit KV is the gate"
+  hypothesis.
+- The discriminating control is now **FULL versus PIECEWISE**, not merely MTP-on
+  versus MTP-off. Dynamic speculative decoding forces PIECEWISE on this build
+  and restores correct output with MTP still active; the public working recipe
+  reports tools 12/12, needles 8K-196K PASS and ~148.5 tok/s single-stream at
+  its published default.
+- Trap 62 remains the owner of its older DeepSeek/drafter-configuration evidence
+  and unisolated full-graph report. Trap 122 is the scoped Qwen3.8/vLLM 0.27.1
+  graph-mode A/B and does not retroactively strengthen Trap 62's evidence.
+- Registry count remains 122 after the renumber from the contributor's original
+  provisional ID 117; doctor coverage remains 19, leaving 103 canonical entries
+  unimplemented.
+
 ## 2026-08-16
 
 ### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-121)

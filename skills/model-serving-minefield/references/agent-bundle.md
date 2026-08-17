@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `13d6b9818f46c44987a00fb0a9e24921418ebe7b837a6b5e080d72a13d024e03`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `57b6fd68eacc118afd3226f9585f1f15ad2ccba179961bb10a2dedf2ea96ab8b`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -492,6 +492,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 119: A gpu-memory-utilization that has served fine for weeks refuses to boot, with nothing changed in the config: That line is printed once, early, and quietly. What dominates the log is NCCL heartbeat and sendBytes failures from every other rank, so the obvious read is a fabric problem. We rebooted a node that had nothing to do with it. The second half of the symptom is what makes it feel unfixable: the number moves every attempt. Lowering the fraction to fit chases a receding target.
 - 120: The server is completely stable single-stream and at two concurrent requests. At three or more, the engine dies. Concurrency is the only variable: same prompts, same lengths, same model, same everything else. There is no degradation curve beforehand — it works, works, works, then the engine is gone. Because it appears only under load, it reads as a memory-pressure, scheduler or fabric problem. None of those are involved in the contributor's measured case, and ordinary short smoke tests passed.
 - 121: A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.
+- 122: The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.
 
 ## Compact possible/unverified lead index
 

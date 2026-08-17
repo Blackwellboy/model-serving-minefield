@@ -5,11 +5,11 @@
     "summary": {
       "counts_overlap": true,
       "endpoint_checks_implemented": 19,
-      "guided_experiments_specified": 121,
-      "human_review_possible": 121,
+      "guided_experiments_specified": 122,
+      "human_review_possible": 122,
       "log_checks_implemented": 9,
       "static_checks_implemented": 10,
-      "total_canonical_traps": 121
+      "total_canonical_traps": 122
     },
     "traps": [
       {
@@ -9003,6 +9003,80 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "122",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied configuration files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -11910,6 +11984,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "121",
       "untrusted_published_check_text": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 122 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 122 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "122",
+      "untrusted_published_check_text": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122."
     }
   ],
   "possible_unverified_leads": {
@@ -13237,8 +13335,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 121,
-    "content_sha256": "5929aa33c660ed5c0549369c1deea513acd46ed3cd46857d0ab8be6aeb50a32d",
+    "canonical_trap_count": 122,
+    "content_sha256": "413446101368b67298bdf60bf48f415aa6d784ddf2abd2800d92089933622835",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -15307,7 +15405,8 @@
         ],
         "related_traps": [
           "11",
-          "14"
+          "14",
+          "122"
         ],
         "source_path": "traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md",
         "status": "reported by others",
@@ -17552,7 +17651,8 @@
         ],
         "related_traps": [
           "11",
-          "28"
+          "28",
+          "122"
         ],
         "source_path": "traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md",
         "status": "reproduced here",
@@ -21670,6 +21770,87 @@
         "supersession": null,
         "symptom": "A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.",
         "title": "SSH fanout reparses structured argv while the launcher still reports success"
+      },
+      {
+        "affected_models": [
+          "Qwen3.5-family runtime architecture",
+          "Qwen3.8-27B-NVFP4"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "vLLM 0.27.1; single RTX 5090 (GB202/sm120, 32 GiB; driver 610.43.02; CUDA 13.3); Python 3.13 environment with FlashInfer and nvidia-cutlass-dsl; unsloth/Qwen3.8-27B-NVFP4 (compressed-tensors mixed NVFP4+fp8, Qwen3.5-family runtime architecture, native 262144-token context). The original failing cell used turboquant4bitnc KV. A separate fp8-KV FULL capture control showed the same corruption signature. Version, model, hardware, and graph-mode scope matter.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "5090",
+            "rtx 5090"
+          ],
+          "exact_checkpoint": [
+            "qwen3.5-family",
+            "qwen3.5-family runtime architecture",
+            "qwen3.8",
+            "qwen3.8-27b-nvfp4",
+            "unsloth qwen3.8-27b-nvfp4"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "qwen3.5",
+            "qwen3.8"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [
+            "fp8",
+            "nvfp4"
+          ],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [
+            "0.27.1"
+          ],
+          "topology": []
+        },
+        "category": "runtime",
+        "check": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
+        "contributor": "ayayalar (A Y)",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "contributor-measured, conditions as reported"
+        ],
+        "exact_conditions": "vLLM 0.27.1; single RTX 5090 (GB202/sm120, 32 GiB; driver 610.43.02; CUDA 13.3); Python 3.13 environment with FlashInfer and nvidia-cutlass-dsl; unsloth/Qwen3.8-27B-NVFP4 (compressed-tensors mixed NVFP4+fp8, Qwen3.5-family runtime architecture, native 262144-token context). The original failing cell used turboquant4bitnc KV. A separate fp8-KV FULL capture control showed the same corruption signature. Version, model, hardware, and graph-mode scope matter.",
+        "id": "122",
+        "known_limitations": "",
+        "mechanism": "Measured by the contributor on a single RTX 5090 with vLLM 0.27.1 and unsloth/Qwen3.8-27B-NVFP4; not independently reproduced by the registry. The failure and working controls were exercised repeatedly on the contributor's lane. The working recipe and reusable benchmark harness are public in Qwen3.8-27B-NVFP4-TurboQuant. Symptom. The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate. Mechanism (root-caused on the contributor's lane). On vLLM 0.27.1 at capture-opt level >= 2, the default CUDA-graph mode is FULLANDPIECEWISE. With a static MTP configuration, the affected speculative-verification path is captured in FULL mode. On the contributor's measured path, TurboQuantAttentionImpl.forward() performs a GPU-to-CPU synchronization via querystartloc.tolist() during spec verify; under FULL capture the attention chunk is wrong, draft tokens are rejected on every step (Accepted: 0, per-position acceptance 0.000), and output collapses while transport still looks healthy. Switching the same serving build to PIECEWISE graph capture restores correct generation and non-zero draft acceptance. The contributor also reproduced the output-collapse signature with fp8 KV under FULL capture. That is strong evidence that",
+        "mitigation": "On this vLLM 0.27.1 lane, keep MTP but prevent FULL capture of the affected verify path. The contributor's verified route is dynamic speculative decoding (\"numspeculativetokensperbatchsize\": [[1,4,3]]), which makes vLLM downgrade to PIECEWISE for reliability. --enforce-eager is a slower fallback that also avoids FULL capture. Under the PIECEWISE route the contributor reports full-window correctness on the same RTX 5090: tools 12/12, needles 8K through 196K PASS, code-edit PASS, and about 148.5 tok/s single-stream under the published default. Those are working-state measurements for this exact recipe, not a general vLLM performance claim.",
+        "public_evidence_links": [
+          "https://github.com/ayayalar/Qwen3.8-27B-NVFP4-TurboQuant"
+        ],
+        "related_traps": [
+          "01",
+          "28",
+          "62"
+        ],
+        "source_path": "traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md",
+        "status": "contributor-measured, conditions as reported.",
+        "supersession": null,
+        "symptom": "The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.",
+        "title": "FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1"
       }
     ],
     "schema_version": "1.1"
