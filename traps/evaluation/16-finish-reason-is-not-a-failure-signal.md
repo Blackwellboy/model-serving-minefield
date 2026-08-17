@@ -42,7 +42,28 @@ budget before publishing (the discriminating experiment @apollo-mg then
 specified: only truncations on otherwise-solvable problems separate
 "needs budget" from "degenerates").
 
+## Added 2026-08-17: `length` does not identify which length budget ended the request
+
+A separate public Qwen3.8 serving report from TheTom/Offlabel sharpens the
+same rule from the context-accounting side: a request can return
+`finish_reason=length` because the **total server context window** is
+exhausted even when the requested output cap itself still has substantial
+room. That observation is **public-source evidence, not reproduced here** at
+the time of this addendum.
+
+The practical check is stronger than inspecting `max_tokens`: record prompt
+/input tokens, configured server context, requested output budget, completion
+tokens and remaining headroom together. If accumulated conversation history
+consumes the window, `length` still cannot tell you whether the relevant
+boundary was the output cap or total context.
+
+This is an extension of Trap 16, not a new trap. It does not change the
+content-first scoring rule above. Source/reconciliation context:
+[issue #40](https://github.com/Blackwellboy/model-serving-minefield/issues/40).
+
 **Found.** 2026-07-26, in public thread; our complementary data same week.
 
 **Attribution.** @apollo-mg (the correction, credited with respect for
-making it in public); Blackwellboy (the stop-but-empty complement).
+making it in public); Blackwellboy (the stop-but-empty complement). The
+2026-08-17 total-context addendum is credited to TheTom/Offlabel as a public
+source observation pending first-party reproduction.
