@@ -3,12 +3,13 @@
 **Found by tonyd2wild.**
 
 **Status: under test.** The format-selection mechanism is directly readable in
-public source at `Sapid-Labs/vLLM-Moet@2f1056c56a56e08c560c4b2109a4d298d94f2c6b`,
-`spark/prepack_planes.py`. The contributor also inspected an FP8 checkpoint
-whose expert names match the MXFP4 pattern, but the exact public checkpoint
-revision is not pinned in this entry and the mismatched pack was deliberately
-not run. The predicted corrupted-output half is therefore **not** claimed as
-observed; CONFIRM/REFUTE criteria are pre-registered below.
+public source at `Sapid-Labs/vLLM-Moet`, commit
+`2f1056c56a56e08c560c4b2109a4d298d94f2c6b`, `spark/prepack_planes.py`.
+The contributor also inspected an FP8 checkpoint whose expert names match the
+MXFP4 pattern, but the exact public checkpoint revision is not pinned in this
+entry and the mismatched pack was deliberately not run. The predicted
+corrupted-output half is therefore **not** claimed as observed; CONFIRM/REFUTE
+criteria are pre-registered below.
 
 **Symptom (predicted).** An offline expert-prepack step accepts a checkpoint
 whose tensor names look like one supported source format while the stored
@@ -58,11 +59,11 @@ That source-level mismatch is the finding we can inspect publicly today. The
 claim that it necessarily completes packing and produces corrupted served
 output remains the experiment.
 
-**Stacks and builds bitten.** Source inspected:
-`Sapid-Labs/vLLM-Moet@2f1056c56a56e08c560c4b2109a4d298d94f2c6b`,
-`spark/prepack_planes.py`. The broader risk applies to any conversion pipeline
-that infers weight format from names while allowing repacks/renames to preserve
-those names independently of dtype or quantization metadata.
+**Stacks and builds bitten.** Source inspected: `Sapid-Labs/vLLM-Moet`, commit
+`2f1056c56a56e08c560c4b2109a4d298d94f2c6b`, `spark/prepack_planes.py`.
+The broader risk applies to any conversion pipeline that infers weight format
+from names while allowing repacks/renames to preserve those names independently
+of dtype or quantization metadata.
 
 **The check.** Compare what the name detector would infer against both declared
 metadata and actual shard dtype before invoking a destructive/offline pack:
@@ -115,5 +116,5 @@ stopped before running the suspect conversion, which is why this remains
 `under test` instead of borrowing certainty from the source inspection.
 
 **Attribution.** tonyd2wild, 4x DGX Spark GB10 fleet. Public source inspected:
-`Sapid-Labs/vLLM-Moet@2f1056c56a56e08c560c4b2109a4d298d94f2c6b`,
-`spark/prepack_planes.py`.
+`Sapid-Labs/vLLM-Moet`, commit
+`2f1056c56a56e08c560c4b2109a4d298d94f2c6b`, `spark/prepack_planes.py`.
