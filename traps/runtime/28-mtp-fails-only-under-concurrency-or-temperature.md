@@ -63,3 +63,6 @@ Related entries:
 [trap 11](11-speculative-depth-peak-and-collapse.md) (the depth axis),
 [trap 14](../versioning/14-finetune-reupload-not-drop-in.md) (drafter
 artifacts differ across re-uploads).
+[trap 122](122-full-cuda-graph-corrupts-qwen38-mtp-verification.md) is a distinct
+single-stream Qwen3.8/vLLM 0.27.1 failure: its discriminator is FULL versus
+PIECEWISE CUDA-graph mode, not concurrency, temperature, or parallel layout.

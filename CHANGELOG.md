@@ -2,32 +2,30 @@
 
 ## 2026-08-17
 
-### Trap 122: 4-bit turboquant KV + MTP corrupts every completion under FULL CUDA graphs
+### Trap 122: FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1
 
 Contributed by **ayayalar (A Y)**; measured on the contributor's single RTX
-5090 (vLLM 0.27.1, `unsloth/Qwen3.8-27B-NVFP4`). Contributor-measured,
-conditions as reported.
+5090 with vLLM 0.27.1 and `unsloth/Qwen3.8-27B-NVFP4`. Status remains
+**contributor-measured, conditions as reported**; the registry has not claimed
+an independent reproduction.
 
-- [122](traps/runtime/122-mtp-turboquant-kv-corrupts-output.md) a 4-bit
-  turboquant KV cache plus MTP speculative decoding (static spec config, no
-  cudagraph override) silently corrupts every completion on a build where
-  either works alone: empty `content`, no tool calls, token repetition, all
-  HTTP 200 with `finish_reason: stop` and no logged error. Root-caused on the
-  contributor's lane to FULL CUDA-graph capture of the spec-verify path
-  (GPU→CPU sync via `query_start_loc.tolist()` in `TurboQuantAttentionImpl`),
-  not to the KV dtype — dynamic spec-decode routes vLLM to PIECEWISE graphs and
-  the identical build then serves correct at full 262K with MTP accepting
-  drafts (tools 12/12, needles 8K–196K PASS, ~148.5 tok/s). Working-state
-  evidence reproducible from the public
-  [Qwen3.8-27B-NVFP4-TurboQuant](https://github.com/ayayalar/Qwen3.8-27B-NVFP4-TurboQuant)
-  recipe; the Qwen 3.8 lane joins
-  [28](traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md)
-  and [62](traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md)
-  on the speculative-decode failure surface.
-- Registry count 121 to 122; doctor coverage remains 19, leaving 103 entries
-  unimplemented. Commit also renumbered the entry from the previously raised
-  ID 117 (now taken by
-  [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md)) to 122.
+- [122](traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md)
+  records a silent HTTP-200 output collapse under FULL CUDA-graph capture of the
+  MTP verification path. The finding was first exposed with
+  `turboquant_4bit_nc` KV, but the contributor later reproduced the same FULL-
+  graph collapse with `fp8` KV, refuting the original "4-bit KV is the gate"
+  hypothesis.
+- The discriminating control is now **FULL versus PIECEWISE**, not merely MTP-on
+  versus MTP-off. Dynamic speculative decoding forces PIECEWISE on this build
+  and restores correct output with MTP still active; the public working recipe
+  reports tools 12/12, needles 8K-196K PASS and ~148.5 tok/s single-stream at
+  its published default.
+- Trap 62 remains the owner of its older DeepSeek/drafter-configuration evidence
+  and unisolated full-graph report. Trap 122 is the scoped Qwen3.8/vLLM 0.27.1
+  graph-mode A/B and does not retroactively strengthen Trap 62's evidence.
+- Registry count remains 122 after the renumber from the contributor's original
+  provisional ID 117; doctor coverage remains 19, leaving 103 canonical entries
+  unimplemented.
 
 ## 2026-08-16
 
