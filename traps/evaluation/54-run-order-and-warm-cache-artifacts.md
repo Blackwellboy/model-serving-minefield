@@ -86,6 +86,27 @@ determinative and they are not neutral by default. And where this reproduces, **
 between samples is worth more than trusting the flag**: @Defilan's run is the case where setting
 `cache_prompt: false` was not sufficient on its own.
 
+## Added 2026-08-17: cold/idle serving state can depress throughput even after the server says ready
+
+@tonyd2wild independently reported a two-DGX-Spark DSpark lane where the same
+prompt measured about **58.5 tok/s immediately after startup**, stabilized at
+about **83.1–83.3 tok/s after several long generations**, then fell back to
+**60.4 tok/s after ~30 minutes idle** before heavy warm-up restored **83.5
+tok/s**. A newer comparison stack on the same rig did not show the same cold
+penalty, which is exactly why this remains a per-stack measurement-state
+problem rather than a universal warm-up constant.
+
+**Status of this addendum: contributor-measured, conditions as reported.** Raw
+rows are not published in Minefield; the public report and protocol details are
+in [issue #37](https://github.com/Blackwellboy/model-serving-minefield/issues/37).
+It corroborates this trap's measurement discipline rather than creating a new
+canonical mechanism.
+
+The same report also measured 134 output tokens at 59.1 tok/s versus a 1200-token
+completion at 77.7 tok/s on the same server. That second effect is ordinary
+fixed-cost amortization, not a separate trap: publish actual output-token count
+next to any tok/s number and compare like-sized cells.
+
 **The fix.** Treat any unpaired, un-counterbalanced measurement as a hypothesis. A result is a
 result when it survives order reversal, a fresh baseline in the same session, and a null-build run.
 
@@ -98,5 +119,6 @@ work ([trap 52](52-speed-measured-on-a-broken-config.md)), and only then a real 
 **Found.** 2026-05 and 2026-06, across two separate optimization arcs that each produced a
 published-adjacent number before being disproven.
 
-**Attribution.** TheTom.
+**Attribution.** TheTom. 2026-08-17 cold/idle corroboration and short-request
+amortization measurements: @tonyd2wild.
 
