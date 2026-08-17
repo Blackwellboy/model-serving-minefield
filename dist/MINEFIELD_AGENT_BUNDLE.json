@@ -11988,7 +11988,7 @@
         "confidence": "high",
         "confirmation_check": "Record configured context, block size/count, reserved/free blocks and a pass/fail request-length boundary; confirm the request waits before prefill.",
         "id": "L003",
-        "notes": "",
+        "notes": "Qwen3.8 speculative-launch admission is a build/config-scoped extension: resource admission failure must not be generalized into a model-wide MTP unsupported claim.",
         "possible_mechanism": "Whole-sequence block admission, reserved blocks and the live free-block pool may make a below-headline sequence unadmittable.",
         "refutation_check": "Demonstrate admission up to the advertised boundary under the same block pool and scheduling state.",
         "related_traps": [
@@ -11999,7 +11999,8 @@
         "scope": "memory_scheduling",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "../mining/2026-08-14-first-party-promotion-audit.md",
+          "../mining/2026-08-17-qwen38-offlabel-reconciliation.md"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A request below configured/displayed context remains waiting before prefill without a normal OOM or immediate validation error.",
@@ -13193,6 +13194,36 @@
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.",
         "title": "One Qwen3.8 Q4 decimal canary failure did not reproduce on the immediate pinned rerun"
+      },
+      {
+        "affected_stacks": [
+          "vLLM",
+          "DGX Spark GB10",
+          "SM121",
+          "NVFP4"
+        ],
+        "canonical": false,
+        "conditional_mitigation": "Do not force or recommend a backend from flag names alone; use only a backend path whose effective kernel and correctness are proven on the pinned build.",
+        "confidence": "medium",
+        "confirmation_check": "Pin the exact image/build and model revision, prove the effective kernel/backend from runtime evidence on both arms, then run identical correctness canaries before comparing speed or coherence.",
+        "id": "L049",
+        "notes": "The public-source coherence claim remains unreproduced here. A separate first-party Qwen3.8 check found requested Marlin controls unrecognized on its tested build, sharpening the required requested-versus-effective-backend check without reproducing the external result.",
+        "possible_mechanism": "Backend-selection controls may be build/version specific or ignored, so a requested Marlin-versus-default A/B can accidentally compare the same effective kernel or attribute a build-scoped correctness difference too broadly.",
+        "refutation_check": "Show the requested controls are recognized, both arms use the intended distinct effective backends, and the reported coherence difference does not reproduce under the same checkpoint/request.",
+        "related_traps": [
+          "09",
+          "10",
+          "27"
+        ],
+        "scope": "quantization_runtime",
+        "source_class": "community_public_source",
+        "source_refs": [
+          "../mining/2026-08-17-qwen38-offlabel-reconciliation.md",
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/40"
+        ],
+        "status": "PUBLIC_SOURCE_UNREPRODUCED",
+        "symptom": "A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran.",
+        "title": "Requested NVFP4 backend can differ from the effective kernel on SM121"
       }
     ],
     "policy": {
@@ -13207,7 +13238,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 121,
-    "content_sha256": "0de227ba479ba05b00d95596c59b03653a2c61563bdb646ad4b2b424e1c8f1b7",
+    "content_sha256": "5929aa33c660ed5c0549369c1deea513acd46ed3cd46857d0ab8be6aeb50a32d",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -14170,9 +14201,12 @@
         "mechanism": "--gpu-memory-utilization is a fraction of total device memory. On a discrete GPU the remainder is VRAM headroom; on unified memory the \"device\" is also the system's RAM, so the fraction reserves against the same pool the OS, the tokenizer processes, and every other service need. The reservation is also opaque: you cannot tell from the flag how many KV tokens you actually bought, and model-size changes silently change it.",
         "mitigation": "On unified memory, pin the KV cache in bytes instead of by fraction. Our production Laguna recipe runs --kv-cache-memory-bytes 12884901888 (12 GiB, ~327K fp8-KV tokens), chosen deliberately, stable across restarts, with the arithmetic documented next to it (container recipe). The flag pair to know: fraction for throwaway experiments, bytes for anything shared or long-running.",
         "public_evidence_links": [
-          "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/container"
+          "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/container",
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/37"
         ],
-        "related_traps": [],
+        "related_traps": [
+          "119"
+        ],
         "source_path": "traps/memory/13-utilization-fraction-on-unified-memory.md",
         "status": "measured here, raw not published.",
         "supersession": null,
@@ -14360,6 +14394,7 @@
         "mitigation": "Score content, use finishreason only as a diagnostic dimension, and when cap-hits appear, re-run the solvable subset at a larger budget before publishing (the discriminating experiment @apollo-mg then specified: only truncations on otherwise-solvable problems separate \"needs budget\" from \"degenerates\").",
         "public_evidence_links": [
           "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication",
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/40",
           "https://github.com/TheTom/offlabel/pull/10#issuecomment-5084128736"
         ],
         "related_traps": [
@@ -16887,6 +16922,7 @@
         "mitigation": "Treat any unpaired, un-counterbalanced measurement as a hypothesis. A result is a result when it survives order reversal, a fresh baseline in the same session, and a null-build run. Practical framing that has saved us repeatedly: an outsized improvement is a bug report until proven otherwise. If the number moved more than the change plausibly explains, the likely explanations are, in order: a measurement artifact (this trap), a correctness regression that removed work (trap 52), and only then a real win.",
         "public_evidence_links": [
           "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication",
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/37",
           "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099416581",
           "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099697368"
         ],
@@ -21488,6 +21524,7 @@
         "mechanism": "On unified memory the GPU and CPU share one physical pool, so host-side pressure and CUDA-visible free memory are not independent quantities. On the reported GB10 lane, MemAvailable and the free-memory value seen by the runtime moved together as model-download page cache, orphaned GPU contexts, pinned buffers and swap consumed or released the shared pool. That observation should not be read as a universal identity between Linux MemAvailable and cudaMemGetInfo on every UMA stack; the useful diagnostic is that pressure in one shared pool can reduce both. Measured spread on an idle-but-churned node was about 8 GiB — 109.53 GiB while failing against 117.7 GiB after reclaim. That is far more than the margin a razor-tuned utilization leaves. Two things then conspire to misdirect the diagnosis: Rank 0 fails first, everyone else is louder. Rank 0 dies on the memory check; the peers lose it and emit NCCL heartbeat and send errors. Those are secondary and there are many more of them. Reading the loudest error points you at the interconnect, which is healthy. Auto-retry makes it worse. On this lane, repeated failed boots left the reported free-memory value slightly lower on each attempt. An auto-retry loop therefore made the input condition worse while hiding the original primary exception under secondary distributed errors. This is the temporal sibling of 13, which covers the static semantics — a fraction reserved against the pool the OS also needs. Trap 13 explains why the headroom is thin; this entry is about the headroom moving underneath a config that was already tuned, and about the error that surfaces belonging to the wrong rank. See also 96 for the device-listing version of host memory being reported as device free memory.",
         "mitigation": "Stop known serving/model-download processes cleanly and reclaim transient pressure before boot. Do not immediately lower gpu-memory-utilization: that can trade a permanent reduction in KV pool for a transient condition. On a dedicated node only, during a maintenance window, the contributor used this destructive reclaim sequence after confirming no wanted GPU process would be killed: Do not run that blindly on a shared workstation or multi-tenant host. Prefer identifying and stopping the owning processes first; use cache/swap reclaim only when you understand the operational impact. On the reported node this restored 109.53 -> ~117.7 GiB and the original utilization booted unchanged. Also disable blind auto-retry for this specific startup failure. Repeated retries can obscure the first useful exception and, on the measured lane, coincided with progressively lower available memory.",
         "public_evidence_links": [
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/37",
           "https://github.com/Blackwellboy/model-serving-minefield/issues/45"
         ],
         "related_traps": [
