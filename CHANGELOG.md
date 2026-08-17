@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-08-16
+
+### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-121)
+
+Contributed by **tonyd2wild**, measured on four DGX Spark (GB10, sm_121a,
+aarch64) nodes over RoCE serving GLM-5.2. Five new canonical entries, all
+contributor-measured. One additional source-level candidate is retained in
+`mining/` rather than counted because no replication is actually running:
+
+- [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md) a
+  compilation flag is echoed back enabled and runs disabled; forcing it via the
+  documented override crashes multi-node, because the fused path rendezvouses
+  through symmetric memory within a single host
+- [118](traps/runtime/118-ray-log-monitor-off-hides-worker-progress.md) a
+  healthy boot looks deadlocked because `ray start --include-log-monitor=false`
+  keeps every worker line off the driver log
+- [119](traps/memory/119-free-memory-drifts-down-after-churn.md) unified-memory
+  free drifts down after churn, so a tuned utilization starts failing and the
+  NCCL errors that dominate the log belong to the ranks that did not fail.
+  Temporal companion to [13](traps/memory/13-utilization-fraction-on-unified-memory.md)
+- [120](traps/runtime/120-indexer-block-table-omits-spec-overhang.md) an
+  indexer block table sized from `max_model_len` alone is one block short once
+  MTP spec tokens push past it, which only shows at three or more concurrent
+- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) structured argv
+  is re-parsed by a remote shell in an SSH fanout; container IDs are not worker
+  readiness, and Docker state alone is not used to diagnose the quoting fault
+- [prepack name/format collision candidate](mining/2026-08-17-tonyd2wild-prepack-name-format-collision.md):
+  source inspection shows a decoder-selection path driven by tensor names rather
+  than dtype/metadata. The suspect conversion was not run, so this remains a
+  mining lead with pre-registered CONFIRM/REFUTE criteria rather than a numbered trap
+
+Reported first as issues
+[#43](https://github.com/Blackwellboy/model-serving-minefield/issues/43),
+[#44](https://github.com/Blackwellboy/model-serving-minefield/issues/44),
+[#45](https://github.com/Blackwellboy/model-serving-minefield/issues/45),
+[#46](https://github.com/Blackwellboy/model-serving-minefield/issues/46).
+
+
 ## 2026-08-15
 
 ### Qwen3.8 reasoning/template configuration traps (first-party extension)
