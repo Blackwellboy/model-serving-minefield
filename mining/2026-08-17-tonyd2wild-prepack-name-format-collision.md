@@ -18,8 +18,8 @@ runs it.
 whose tensor names look like one supported source format while the stored
 weights/config describe another. If no later shape/dtype guard catches that
 mismatch, the wrong decoder can be selected before planes are written. What the
-served output would look like on the reported FP8/MXFP4-name collision remains
-under test.
+served output would look like on the reported FP8/MXFP4-name collision **has not
+been run or observed**.
 
 **Mechanism.** At the pinned source revision,
 `spark/prepack_planes.py` chooses the source quantization format from regexes
@@ -115,8 +115,8 @@ compatibility hint, treat them as one signal rather than the authority.
 
 **Found.** 2026-08-15, while evaluating whether an FP8 checkpoint could stand
 in for a large MXFP4-source download during prepack work. The contributor
-stopped before running the suspect conversion, which is why this stays in the mining layer instead of borrowing certainty
-from the source inspection.
+stopped before running the suspect conversion, which is why this stays in the
+mining layer instead of borrowing certainty from the source inspection.
 
 **Attribution.** tonyd2wild, 4x DGX Spark GB10 fleet. Public source inspected:
 `Sapid-Labs/vLLM-Moet`, commit
