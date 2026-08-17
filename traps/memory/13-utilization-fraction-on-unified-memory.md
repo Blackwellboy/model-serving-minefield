@@ -60,3 +60,22 @@ correct behaviour for a dedicated node and dangerous the moment anything else
 has to run there.
 
 *Status of this addendum: measured here, raw not published.*
+
+## Added 2026-08-17: single-boot KV-pool comparisons are not stable evidence on UMA
+
+@tonyd2wild reported identical two-DGX-Spark serving configurations whose
+runtime-reported KV capacity moved materially between boots: one stack changed
+from **1,548,597 to 1,336,656 tokens (-13.7%)**, while another changed from
+**1,385,765 to 1,533,940 (+10.7%)**. A one-boot cross-runtime claim of an
+11.7% larger pool was therefore smaller than the observed boot-to-boot spread
+and was retracted.
+
+**Status of this addendum: contributor-measured, conditions as reported.** See
+[issue #37](https://github.com/Blackwellboy/model-serving-minefield/issues/37).
+This corroborates the unified-memory accounting warning here and the temporal
+shared-pool drift in [Trap 119](119-free-memory-drifts-down-after-churn.md); it
+does not establish that every KV allocator has this variance.
+
+For capacity A/Bs on UMA, repeat boots or otherwise prove the compared free
+memory / reservation state is matched. A single startup log is a sample, not a
+stable hardware property.
