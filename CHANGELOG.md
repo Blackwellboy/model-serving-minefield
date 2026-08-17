@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-08-17
+
+### Trap 122: 4-bit turboquant KV + MTP corrupts every completion under FULL CUDA graphs
+
+Contributed by **ayayalar (A Y)**; measured on the contributor's single RTX
+5090 (vLLM 0.27.1, `unsloth/Qwen3.8-27B-NVFP4`). Contributor-measured,
+conditions as reported.
+
+- [122](traps/runtime/122-mtp-turboquant-kv-corrupts-output.md) a 4-bit
+  turboquant KV cache plus MTP speculative decoding (static spec config, no
+  cudagraph override) silently corrupts every completion on a build where
+  either works alone: empty `content`, no tool calls, token repetition, all
+  HTTP 200 with `finish_reason: stop` and no logged error. Root-caused on the
+  contributor's lane to FULL CUDA-graph capture of the spec-verify path
+  (GPU→CPU sync via `query_start_loc.tolist()` in `TurboQuantAttentionImpl`),
+  not to the KV dtype — dynamic spec-decode routes vLLM to PIECEWISE graphs and
+  the identical build then serves correct at full 262K with MTP accepting
+  drafts (tools 12/12, needles 8K–196K PASS, ~148.5 tok/s). Working-state
+  evidence reproducible from the public
+  [Qwen3.8-27B-NVFP4-TurboQuant](https://github.com/ayayalar/Qwen3.8-27B-NVFP4-TurboQuant)
+  recipe; the Qwen 3.8 lane joins
+  [28](traps/runtime/28-mtp-fails-only-under-concurrency-or-temperature.md)
+  and [62](traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md)
+  on the speculative-decode failure surface.
+- Registry count 121 to 122; doctor coverage remains 19, leaving 103 entries
+  unimplemented. Commit also renumbered the entry from the previously raised
+  ID 117 (now taken by
+  [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md)) to 122.
+
 ## 2026-08-16
 
 ### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-121)
