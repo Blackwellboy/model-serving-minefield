@@ -1,24 +1,31 @@
-# Trap 121: the launcher reports success, prints container IDs, and the workers never start
+# Trap 121: SSH fanout reparses structured argv while the launcher still reports success
 
 **Found by tonyd2wild.**
 
-**Status: contributor-measured, conditions as reported** (reproduced against
-two launchers on the same cluster, same image, same arguments, differing only
-in remote-command quoting).
+**Status: contributor-measured, conditions as reported** (two launchers on the
+same cluster, same image and intended arguments; the failing path serialized
+the command through an additional remote-shell parse while the working path
+preserved the arguments).
 
 **Symptom.** A multi-node launcher completes cleanly and prints a container ID
-for every worker. On the head, `docker ps` shows the head container `Up`. On
-the workers, `docker ps -a` shows the container in **`Created`** — never `Up`.
-No crash, no error, and `docker logs` is empty because the entrypoint never
-ran. The head then waits for ranks that will never arrive, which presents as a
-distributed-init hang rather than a launch failure.
+for every worker, but one or more workers never become usable ranks. In the
+contributor's failing run, `docker ps -a` showed the affected worker containers
+in **`Created`** while the head waited for ranks that never arrived.
 
-The launcher's own output is the misleading part: container IDs were genuinely
-issued, so every line it prints is true and the deployment is still dead.
+The container IDs are therefore a false readiness signal: they prove that
+Docker created objects, not that the remote command survived transport or that
+the workers reached the serving entrypoint.
 
-**Mechanism.** The launcher builds a `docker run ... vllm serve ...` command and
-ships it to each worker over `ssh`. The serve command contains JSON-valued
-arguments such as:
+**Important boundary on the observed `Created` state.** `Created` by itself is
+**not evidence of malformed vLLM application arguments**. Docker normally
+starts the container before an application such as vLLM parses arguments after
+the image/command boundary; an application-argument parse failure will commonly
+leave an `Exited` container instead. `Created` has several Docker/runtime causes.
+The measured `Created` state is retained here as part of the contributor's
+observation, but this entry does not use it to prove which token was corrupted.
+
+**Mechanism.** The portable failure class is the extra shell parse. A launcher
+starts from an argv-like command containing structured values such as:
 
 ```
 --speculative-config '{"method":"mtp","num_speculative_tokens":4,
@@ -26,40 +33,47 @@ arguments such as:
                        "attention_backend":"FLASHMLA_SPARSE"}'
 ```
 
-A command that is safe as a local argv can become unsafe when flattened to a
-string and parsed again by a remote shell. In the contributor's failing
-launcher, quoting was consumed/reinterpreted across that second parse and the
-remote `docker run` received different arguments from the local command.
-Docker created the container object but never reached a runnable entrypoint, so
-workers remained in `Created` while the launcher printed valid container IDs.
+If that argv is flattened to a string, sent through `ssh`, and interpreted by a
+second shell, quoting and argument boundaries can change. JSON is an obvious
+victim, but Docker-level options, mounts, environment values and application
+arguments can all be affected depending on where the quoting breaks. A command
+that works when executed directly on the worker is therefore not proof that the
+fanout transported the same argv.
 
-Nothing in the failure mentions quoting. The same command pasted by hand on
-the worker works, which sends people looking at the image, the mounts or the
-fabric.
+The contributor's two launchers differed in this transport behavior and only
+the argument-preserving path brought the workers up. That is the finding carried
+here. The exact reason the failing instance stopped in Docker's `Created` state
+was not independently isolated, so the entry deliberately does not claim that
+malformed JSON application args uniquely produce `Created`.
 
 **Stacks and builds bitten.** Any SSH-fanout launcher that serializes argv into
 a shell command while carrying JSON-valued CLI arguments such as
 `--speculative-config`, `--compilation-config`, `--hf-overrides`, or
 `--attention-config`. Observed with vLLM on four DGX Spark (GB10, sm_121a,
-aarch64) nodes, GLM-5.2 with in-checkpoint MTP. This is a transport/launcher
-failure class rather than a vLLM-specific one.
+aarch64) nodes serving GLM-5.2 with in-checkpoint MTP. This is a
+transport/launcher failure class rather than a vLLM-specific one.
 
-**The check.** Assert *running*, not merely *created*, after launch:
+**The check.** Assert actual worker state after launch and inspect Docker's own
+state/error before assigning a cause:
 
 ```bash
 for h in "${WORKERS[@]}"; do
   ssh "$h" 'docker ps -a --format "{{.Names}}:{{.Status}}"' | grep "$NAME"
+  ssh "$h" 'docker inspect --format "status={{.State.Status}} error={{json .State.Error}} exit={{.State.ExitCode}}" '"$NAME"
 done
 ```
 
-Any worker reporting `Created` is a launch failure even if the launcher printed
-a container ID. To debug the transport, compare a known-good local argv with
-what the remote entrypoint actually receives; avoid relying only on the
-human-readable command string printed before `ssh`.
+Treat `Created`, `Exited`, or a missing expected container as **launch failure**,
+not as proof of this specific trap. To confirm the transport failure, compare a
+known-good local argv with what the remote execution layer actually receives.
+Useful methods are `set -x` in a temporary remote wrapper, an argv-dumping
+entrypoint in a disposable diagnostic container, or a launcher mode that writes
+the exact remote script before executing it. The confirmation is an argument or
+quoting difference across the transport, not a particular Docker state.
 
-**The fix.** Preserve the argument boundaries across the remote transport.
-One contributor-tested option, **when both sides deliberately use Bash**, is
-Bash's `%q` escaping:
+**The fix.** Preserve argument boundaries across the remote transport. One
+contributor-tested option, **when both sides deliberately use Bash**, is Bash's
+`%q` escaping:
 
 ```bash
 shell=$(printf '%q ' "${cmd[@]}")
@@ -73,15 +87,16 @@ environment variable instead of an inline JSON shell fragment, or use an
 argv-safe remote-execution API that does not add another shell parse.
 
 Whatever transport is chosen, add a post-launch assertion that every expected
-worker is actually `Up` before declaring distributed initialization started.
+worker is actually running and has reached the intended entrypoint before
+declaring distributed initialization started.
 
 Related in shape to [112](112-process-liveness-is-not-model-readiness.md): a
 container object existing is not the container running, in the same way a
 process existing is not a model serving.
 
 **Found.** 2026-08-15, when a second operator's launcher could not start
-workers on a cluster where a different launcher, same image and same
-arguments, worked. The material difference was how the remote command
+workers on a cluster where a different launcher, same image and intended
+arguments, worked. The material difference reported was how the remote command
 preserved argument boundaries.
 
 **Attribution.** tonyd2wild, 4x DGX Spark GB10 fleet.
