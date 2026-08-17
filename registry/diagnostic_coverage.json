@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 116,
-    "human_review_possible": 116,
+    "guided_experiments_specified": 121,
+    "human_review_possible": 121,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 116
+    "total_canonical_traps": 121
   },
   "traps": [
     {
@@ -8619,6 +8619,376 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "117",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fusegemmcomms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hiddensize below the printed floor, is the cause.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 117 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fusegemmcomms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hiddensize below the printed floor, is the cause.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fusegemmcomms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hiddensize below the printed floor, is the cause.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "118",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 118 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "119",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep for the first exception rather than the loudest: Then compare both OS-visible pressure and the runtime's own free-memory reading against a known-good baseline before blaming the fabric: If host availability is several GiB under a known-good baseline and the runtime's free-memory check is failing on the same node while peers only emit secondary NCCL noise, reclaim shared-pool pressure and retry once before changing fabric settings or permanently shrinking the KV reservation.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 119 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep for the first exception rather than the loudest: Then compare both OS-visible pressure and the runtime's own free-memory reading against a known-good baseline before blaming the fabric: If host availability is several GiB under a known-good baseline and the runtime's free-memory check is failing on the same node while peers only emit secondary NCCL noise, reclaim shared-pool pressure and retry once before changing fabric settings or permanently shrinking the KV reservation.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep for the first exception rather than the loudest: Then compare both OS-visible pressure and the runtime's own free-memory reading against a known-good baseline before blaming the fabric: If host availability is several GiB under a known-good baseline and the runtime's free-memory check is failing on the same node while peers only emit secondary NCCL noise, reclaim shared-pool pressure and retry once before changing fabric settings or permanently shrinking the KV reservation.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "120",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 120 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "121",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 121 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
