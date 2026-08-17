@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 116
+Four doors, and which one you want depends on why you are here. All 122
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -119,7 +119,7 @@ entries are too many to read; none of these asks you to.
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
 for **19 of these 122 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 92. It runs
+tool parsing, and a clean run from it says nothing about the other 103. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
