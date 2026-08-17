@@ -94,10 +94,11 @@
         "hybrid KV"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "../mining/2026-08-14-first-party-promotion-audit.md",
+        "../mining/2026-08-17-qwen38-offlabel-reconciliation.md"
       ],
       "confidence": "high",
-      "notes": ""
+      "notes": "Qwen3.8 speculative-launch admission is a build/config-scoped extension: resource admission failure must not be generalized into a model-wide MTP unsupported claim."
     },
     {
       "id": "L004",
@@ -1287,6 +1288,36 @@
       ],
       "confidence": "medium",
       "notes": "Pinned campaign first returned 9.11 on the decimal canary and held; the immediate rerun returned 9.9 and passed. Cause was not isolated."
+    },
+    {
+      "id": "L049",
+      "title": "Requested NVFP4 backend can differ from the effective kernel on SM121",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "community_public_source",
+      "scope": "quantization_runtime",
+      "symptom": "A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran.",
+      "possible_mechanism": "Backend-selection controls may be build/version specific or ignored, so a requested Marlin-versus-default A/B can accidentally compare the same effective kernel or attribute a build-scoped correctness difference too broadly.",
+      "confirmation_check": "Pin the exact image/build and model revision, prove the effective kernel/backend from runtime evidence on both arms, then run identical correctness canaries before comparing speed or coherence.",
+      "refutation_check": "Show the requested controls are recognized, both arms use the intended distinct effective backends, and the reported coherence difference does not reproduce under the same checkpoint/request.",
+      "conditional_mitigation": "Do not force or recommend a backend from flag names alone; use only a backend path whose effective kernel and correctness are proven on the pinned build.",
+      "related_traps": [
+        "09",
+        "10",
+        "27"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "DGX Spark GB10",
+        "SM121",
+        "NVFP4"
+      ],
+      "source_refs": [
+        "../mining/2026-08-17-qwen38-offlabel-reconciliation.md",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/40"
+      ],
+      "confidence": "medium",
+      "notes": "The public-source coherence claim remains unreproduced here. A separate first-party Qwen3.8 check found requested Marlin controls unrecognized on its tested build, sharpening the required requested-versus-effective-backend check without reproducing the external result."
     }
   ]
 }

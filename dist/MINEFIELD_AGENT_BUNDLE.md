@@ -422,7 +422,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: vLLM on DGX Spark GB10 fleet boxes. Measured internal audit: util 0.75 on a 121 GiB box reserved ~60 GB against unified memory and left MemAvailable at 1.9 GiB with swap engaged, a margin one extra concurrent session could blow. Separately, oversized context settings on sibling lanes re-inflated reservations after every restart and kept a node permanently at the memory ceiling.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/memory/13-utilization-fraction-on-unified-memory.md`
-- Related traps: none stated
+- Related traps: 119
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 14: an abliterated or finetuned re-upload is not a drop-in
@@ -1879,6 +1879,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - L046 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A vLLM-derived container exits before model load with 'Usage: serve ...' and 'No such command /model'.
 - L047 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.
 - L048 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.
+- L049 [PUBLIC_SOURCE_UNREPRODUCED]: A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran.
 
 ## L-series possible/unverified lead records
 
@@ -1925,7 +1926,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Affected stacks: vLLM, speculative decoding, hybrid KV
 - Related canonical traps: 13, 61, 98
 - Source class: first_party_private_evidence
-- Notes: none
+- Notes: Qwen3.8 speculative-launch admission is a build/config-scoped extension: resource admission failure must not be generalized into a model-wide MTP unsupported claim.
 
 ### L004: Benchmark selector can disagree with the backend actually measured
 
@@ -2601,6 +2602,21 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Related canonical traps: 21, 35
 - Source class: first_party_campaign
 - Notes: Pinned campaign first returned 9.11 on the decimal canary and held; the immediate rerun returned 9.9 and passed. Cause was not isolated.
+
+### L049: Requested NVFP4 backend can differ from the effective kernel on SM121
+
+- Canonical: no
+- Lead status: PUBLIC_SOURCE_UNREPRODUCED
+- Confidence: medium
+- Symptom: A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran.
+- Possible mechanism: Backend-selection controls may be build/version specific or ignored, so a requested Marlin-versus-default A/B can accidentally compare the same effective kernel or attribute a build-scoped correctness difference too broadly.
+- Confirmation check: Pin the exact image/build and model revision, prove the effective kernel/backend from runtime evidence on both arms, then run identical correctness canaries before comparing speed or coherence.
+- Refutation check: Show the requested controls are recognized, both arms use the intended distinct effective backends, and the reported coherence difference does not reproduce under the same checkpoint/request.
+- Conditional mitigation: Do not force or recommend a backend from flag names alone; use only a backend path whose effective kernel and correctness are proven on the pinned build.
+- Affected stacks: vLLM, DGX Spark GB10, SM121, NVFP4
+- Related canonical traps: 09, 10, 27
+- Source class: community_public_source
+- Notes: The public-source coherence claim remains unreproduced here. A separate first-party Qwen3.8 check found requested Marlin controls unrecognized on its tested build, sharpening the required requested-versus-effective-backend check without reproducing the external result.
 
 ## Reporting a miss
 
