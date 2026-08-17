@@ -51,6 +51,22 @@ This is the same general class of mistake as:
 - [trap 52 — speed measured on a broken config](../traps/evaluation/52-speed-measured-on-a-broken-config.md), and
 - [trap 112 — process liveness is not model readiness](../traps/runtime/112-process-liveness-is-not-model-readiness.md).
 
+## Canonical RTX 5090 MTP/CUDA-graph trap (contributor-measured)
+
+A separate public contribution from **ayayalar (A Y)** adds canonical
+[Trap 122](../traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md)
+for `unsloth/Qwen3.8-27B-NVFP4` on one RTX 5090 with vLLM 0.27.1. This is not a
+Blackwellboy reproduction and should retain its published status:
+**contributor-measured, conditions as reported**.
+
+The important discriminator is graph mode. Static MTP under FULL capture silently
+collapsed output while keeping HTTP 200 / normal finish reasons; keeping MTP on
+but forcing PIECEWISE via dynamic speculative decoding restored correct output.
+The contributor also reproduced the FULL-graph collapse with fp8 KV, so the
+canonical owner is the graph-mode/spec-verify interaction, not "4-bit KV is
+broken". Use the three-arm FULL / PIECEWISE / no-spec check in Trap 122 before
+attributing a similar symptom to this mechanism.
+
 ## A useful non-result: vision
 
 The campaign repeatedly marked vision stages unsupported on text baselines.

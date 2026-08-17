@@ -54,6 +54,10 @@ the path
 - [62](../traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md):
   a speculative-decode drafter configuration that garbles the markup dialect,
   with the known-good configuration published as a table.
+- [122](../traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md):
+  on one contributor-measured Qwen3.8 / vLLM 0.27.1 RTX 5090 lane, FULL
+  CUDA-graph capture silently corrupts MTP verification while PIECEWISE is
+  clean; verify graph mode explicitly before blaming the KV dtype.
 - [57](../traps/reasoning/57-thinking-kwarg-truthiness-coercion.md) and
   [58](../traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md): the
   thinking kwarg evaluated for truthiness so `"false"` turns it on, and
