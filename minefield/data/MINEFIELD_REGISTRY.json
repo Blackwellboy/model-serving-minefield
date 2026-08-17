@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 122,
-  "content_sha256": "4e71b5e693c4b6d80cd04d27675bbf3765825533c98fbcf5fcd2c941f0e0fed6",
+  "canonical_trap_count": 121,
+  "content_sha256": "0de227ba479ba05b00d95596c59b03653a2c61563bdb646ad4b2b424e1c8f1b7",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -8299,7 +8299,7 @@
       "affected_stacks": [
         "vLLM"
       ],
-      "affected_versions_builds": "A vLLM build carrying the sparse-MLA / DSA indexer path with in-checkpoint MTP; QuantTrio/GLM-5.2-Int4-Int8Mix (unpruned, 256 experts), 200K context, fp8dsmla KV, TP=4 across four DGX Spark (GB10, sm121a, aarch64) nodes. Any DSA-indexer build that sizes the block table without accounting for spec-token overhang should be exposed. The trigger is MTP plus enough concurrency to reach the boundary, not anything Spark-specific.",
+      "affected_versions_builds": "A vLLM build carrying the sparse-MLA / DSA indexer path with in-checkpoint MTP; QuantTrio/GLM-5.2-Int4-Int8Mix (unpruned, 256 experts), 200K context, fp8dsmla KV, TP=4 across four DGX Spark (GB10, sm121a, aarch64) nodes. Any DSA-indexer build with the same sizing defect should be exposed. The contributor did not provide a public source/build revision for the local 3125-to-3126 patch, so this entry deliberately does not claim a wider version range than the reported lane.",
       "applicability": {
         "concurrency_regime": [],
         "context_regime": [
@@ -8334,7 +8334,7 @@
         ]
       },
       "category": "runtime",
-      "check": "Ramp concurrency and look for a hard edge rather than a curve: Clean at c=1 and c=2 and dead at c=3, reproducibly, is the signature. If the same ramp degrades gradually instead, you are looking at something else.",
+      "check": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash",
       "contributor": "tonyd2wild",
       "diagnostic_modalities": [
         "static_config",
@@ -8349,11 +8349,11 @@
       "evidence_strength": [
         "contributor-measured, conditions as reported"
       ],
-      "exact_conditions": "A vLLM build carrying the sparse-MLA / DSA indexer path with in-checkpoint MTP; QuantTrio/GLM-5.2-Int4-Int8Mix (unpruned, 256 experts), 200K context, fp8dsmla KV, TP=4 across four DGX Spark (GB10, sm121a, aarch64) nodes. Any DSA-indexer build that sizes the block table without accounting for spec-token overhang should be exposed. The trigger is MTP plus enough concurrency to reach the boundary, not anything Spark-specific.",
+      "exact_conditions": "A vLLM build carrying the sparse-MLA / DSA indexer path with in-checkpoint MTP; QuantTrio/GLM-5.2-Int4-Int8Mix (unpruned, 256 experts), 200K context, fp8dsmla KV, TP=4 across four DGX Spark (GB10, sm121a, aarch64) nodes. Any DSA-indexer build with the same sizing defect should be exposed. The contributor did not provide a public source/build revision for the local 3125-to-3126 patch, so this entry deliberately does not claim a wider version range than the reported lane.",
       "id": "120",
       "known_limitations": "",
-      "mechanism": "With MTP speculative decoding enabled, the drafter's speculative tokens extend the effective sequence past maxmodellen. The DSA indexer's expandedblocktablebuffer is sized from maxmodellen alone, so it comes up exactly one block short: 3125 blocks allocated where 3126 are addressed. At low concurrency the final block is never reached. Once enough sequences are in flight to exercise the boundary, the write lands outside the buffer and takes the engine with it. Nothing in the resulting error mentions speculative decoding, which is why the concurrency bisect is the fastest route to it.",
-      "mitigation": "Size the indexer's expanded block table to include the MTP speculative overhang — a one-line +1 on the block count, patched into our serving image and stable since. The correct general fix is deriving the buffer from maxmodellen + numspeculativetokens rather than maxmodellen, so the relationship is expressed rather than rediscovered. Adjacent in spirit to 11: both are cases where a speculative-decoding parameter silently changes a constraint somewhere that does not mention speculation.",
+      "mechanism": "With MTP speculative decoding enabled, the drafter's speculative tokens extend the effective sequence past maxmodellen. The DSA indexer's expandedblocktablebuffer is sized from maxmodellen alone, so it comes up exactly one block short: 3125 blocks allocated where 3126 are addressed in the contributor's reported 200K configuration. The failure therefore needs two conditions at once: a sequence close enough to the configured length boundary for speculative overhang to address the extra block, and enough in-flight sequences to exercise the failing path. At lower concurrency the contributor did not hit that address. Nothing in the resulting error mentions speculative decoding, which is why the concurrency bisect plus a near-boundary sequence is the discriminating check.",
+      "mitigation": "Size the indexer's expanded block table to include the MTP speculative overhang — a one-line +1 on the block count in the contributor's serving image, reported stable since. The robust general expression is to derive the required capacity from the normal sequence bound plus the speculative overhang rather than from maxmodellen alone. The exact upstream implementation is build-specific and is not asserted here without the contributor's source revision. Adjacent in spirit to 11: both are cases where a speculative-decoding parameter changes a constraint somewhere that does not mention speculation.",
       "public_evidence_links": [
         "https://github.com/Blackwellboy/model-serving-minefield/issues/46"
       ],
@@ -8363,7 +8363,7 @@
       "source_path": "traps/runtime/120-indexer-block-table-omits-spec-overhang.md",
       "status": "contributor-measured, conditions as reported",
       "supersession": null,
-      "symptom": "The server is completely stable single-stream and at two concurrent requests. At three or more, the engine dies. Concurrency is the only variable: same prompts, same lengths, same model, same everything else. There is no degradation curve beforehand — it works, works, works, then the engine is gone. Because it appears only under load, it reads as a memory-pressure, scheduler or fabric problem. None of those are involved, and every smoke test passes.",
+      "symptom": "The server is completely stable single-stream and at two concurrent requests. At three or more, the engine dies. Concurrency is the only variable: same prompts, same lengths, same model, same everything else. There is no degradation curve beforehand — it works, works, works, then the engine is gone. Because it appears only under load, it reads as a memory-pressure, scheduler or fabric problem. None of those are involved in the contributor's measured case, and ordinary short smoke tests passed.",
       "title": "stable at two concurrent, dead at three, with no memory or fabric involvement"
     },
     {
@@ -8372,7 +8372,7 @@
         "vLLM",
         "Docker"
       ],
-      "affected_versions_builds": "Any SSH-fanout launcher that serializes argv into a shell command while carrying JSON-valued CLI arguments such as --speculative-config, --compilation-config, --hf-overrides, or --attention-config. Observed with vLLM on four DGX Spark (GB10, sm121a, aarch64) nodes, GLM-5.2 with in-checkpoint MTP. This is a transport/launcher failure class rather than a vLLM-specific one.",
+      "affected_versions_builds": "Any SSH-fanout launcher that serializes argv into a shell command while carrying JSON-valued CLI arguments such as --speculative-config, --compilation-config, --hf-overrides, or --attention-config. Observed with vLLM on four DGX Spark (GB10, sm121a, aarch64) nodes serving GLM-5.2 with in-checkpoint MTP. This is a transport/launcher failure class rather than a vLLM-specific one.",
       "applicability": {
         "concurrency_regime": [],
         "context_regime": [],
@@ -8398,7 +8398,7 @@
         "topology": []
       },
       "category": "runtime",
-      "check": "Assert running, not merely created, after launch: Any worker reporting Created is a launch failure even if the launcher printed a container ID. To debug the transport, compare a known-good local argv with what the remote entrypoint actually receives; avoid relying only on the human-readable command string printed before ssh.",
+      "check": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
       "contributor": "tonyd2wild",
       "diagnostic_modalities": [
         "static_config",
@@ -8413,11 +8413,11 @@
       "evidence_strength": [
         "contributor-measured, conditions as reported"
       ],
-      "exact_conditions": "Any SSH-fanout launcher that serializes argv into a shell command while carrying JSON-valued CLI arguments such as --speculative-config, --compilation-config, --hf-overrides, or --attention-config. Observed with vLLM on four DGX Spark (GB10, sm121a, aarch64) nodes, GLM-5.2 with in-checkpoint MTP. This is a transport/launcher failure class rather than a vLLM-specific one.",
+      "exact_conditions": "Any SSH-fanout launcher that serializes argv into a shell command while carrying JSON-valued CLI arguments such as --speculative-config, --compilation-config, --hf-overrides, or --attention-config. Observed with vLLM on four DGX Spark (GB10, sm121a, aarch64) nodes serving GLM-5.2 with in-checkpoint MTP. This is a transport/launcher failure class rather than a vLLM-specific one.",
       "id": "121",
       "known_limitations": "",
-      "mechanism": "The launcher builds a docker run ... vllm serve ... command and ships it to each worker over ssh. The serve command contains JSON-valued arguments such as: A command that is safe as a local argv can become unsafe when flattened to a string and parsed again by a remote shell. In the contributor's failing launcher, quoting was consumed/reinterpreted across that second parse and the remote docker run received different arguments from the local command. Docker created the container object but never reached a runnable entrypoint, so workers remained in Created while the launcher printed valid container IDs. Nothing in the failure mentions quoting. The same command pasted by hand on the worker works, which sends people looking at the image, the mounts or the fabric.",
-      "mitigation": "Preserve the argument boundaries across the remote transport. One contributor-tested option, when both sides deliberately use Bash, is Bash's %q escaping: printf %q is Bash-specific; do not present it as a portable POSIX-shell solution. Safer cross-environment patterns are to copy a generated script to the worker and execute it, pass structured configuration through a file or environment variable instead of an inline JSON shell fragment, or use an argv-safe remote-execution API that does not add another shell parse. Whatever transport is chosen, add a post-launch assertion that every expected worker is actually Up before declaring distributed initialization started. Related in shape to 112: a container object existing is not the container running, in the same way a process existing is not a model serving.",
+      "mechanism": "The portable failure class is the extra shell parse. A launcher starts from an argv-like command containing structured values such as: If that argv is flattened to a string, sent through ssh, and interpreted by a second shell, quoting and argument boundaries can change. JSON is an obvious victim, but Docker-level options, mounts, environment values and application arguments can all be affected depending on where the quoting breaks. A command that works when executed directly on the worker is therefore not proof that the fanout transported the same argv. The contributor's two launchers differed in this transport behavior and only the argument-preserving path brought the workers up. That is the finding carried here. The exact reason the failing instance stopped in Docker's Created state was not independently isolated, so the entry deliberately does not claim that malformed JSON application args uniquely produce Created.",
+      "mitigation": "Preserve argument boundaries across the remote transport. One contributor-tested option, when both sides deliberately use Bash, is Bash's %q escaping: printf %q is Bash-specific; do not present it as a portable POSIX-shell solution. Safer cross-environment patterns are to copy a generated script to the worker and execute it, pass structured configuration through a file or environment variable instead of an inline JSON shell fragment, or use an argv-safe remote-execution API that does not add another shell parse. Whatever transport is chosen, add a post-launch assertion that every expected worker is actually running and has reached the intended entrypoint before declaring distributed initialization started. Related in shape to 112: a container object existing is not the container running, in the same way a process existing is not a model serving.",
       "public_evidence_links": [],
       "related_traps": [
         "112"
@@ -8425,68 +8425,8 @@
       "source_path": "traps/runtime/121-ssh-fanout-mangles-json-args.md",
       "status": "contributor-measured, conditions as reported",
       "supersession": null,
-      "symptom": "A multi-node launcher completes cleanly and prints a container ID for every worker. On the head, docker ps shows the head container Up. On the workers, docker ps -a shows the container in Created — never Up. No crash, no error, and docker logs is empty because the entrypoint never ran. The head then waits for ranks that will never arrive, which presents as a distributed-init hang rather than a launch failure. The launcher's own output is the misleading part: container IDs were genuinely issued, so every line it prints is true and the deployment is still dead.",
-      "title": "the launcher reports success, prints container IDs, and the workers never start"
-    },
-    {
-      "affected_models": [],
-      "affected_stacks": [
-        "vLLM"
-      ],
-      "affected_versions_builds": "Source inspected: Sapid-Labs/vLLM-Moet, commit 2f1056c56a56e08c560c4b2109a4d298d94f2c6b, spark/prepackplanes.py. The broader risk applies to any conversion pipeline that infers weight format from names while allowing repacks/renames to preserve those names independently of dtype or quantization metadata.",
-      "applicability": {
-        "concurrency_regime": [],
-        "context_regime": [],
-        "device_class": [],
-        "exact_checkpoint": [],
-        "failure_stage": [
-          "decode"
-        ],
-        "gpu_architecture": [],
-        "model_family": [],
-        "node_count": [],
-        "operating_system": [],
-        "parallelism": [],
-        "quantization": [],
-        "serving_stack": [
-          "vllm"
-        ],
-        "stack_version": [],
-        "topology": []
-      },
-      "category": "quantization",
-      "check": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm.",
-      "contributor": "tonyd2wild",
-      "diagnostic_modalities": [
-        "static_config",
-        "log_scan",
-        "guided_experiment",
-        "human_review"
-      ],
-      "doctor_coverage": {
-        "implemented": false,
-        "source": null
-      },
-      "evidence_strength": [
-        "under test"
-      ],
-      "exact_conditions": "Source inspected: Sapid-Labs/vLLM-Moet, commit 2f1056c56a56e08c560c4b2109a4d298d94f2c6b, spark/prepackplanes.py. The broader risk applies to any conversion pipeline that infers weight format from names while allowing repacks/renames to preserve those names independently of dtype or quantization metadata.",
-      "id": "122",
-      "known_limitations": "",
-      "mechanism": "At the pinned source revision, spark/prepackplanes.py chooses the source quantization format from regexes over the checkpoint weight-map names: The source header defines the two naming conventions as: The contributor's candidate collision is a checkpoint whose expert names match the MXFP4 pattern while its quantization metadata describes FP8 E4M3 storage, including values of the form: with expert names shaped like layers.N.ffn.experts.M.w{1,2,3}.{weight,scale}. On the pinned prepacker that name shape selects the MXFP4 branch; asbytes becomes true and K is doubled for the 4-bit packing assumption. The code does not first establish that the selected branch agrees with checkpoint quantization metadata or shard dtype. That source-level mismatch is the finding we can inspect publicly today. The claim that it necessarily completes packing and produces corrupted served output remains the experiment.",
-      "mitigation": "Compare what the name detector would infer against both declared metadata and actual shard dtype before invoking a destructive/offline pack: A name detector selecting MXFP4 while quantmethod says FP8 or relevant weights are stored as F8E4M3 is enough to stop and investigate. It is not by itself proof that the current prepacker will write bad planes; that requires the CONFIRM arm.",
-      "public_evidence_links": [],
-      "related_traps": [
-        "00",
-        "01",
-        "123",
-        "128"
-      ],
-      "source_path": "traps/quantization/122-prepack-format-detected-by-tensor-name.md",
-      "status": "under test.",
-      "supersession": null,
-      "symptom": "A 2-bit expert prepack succeeds on a renamed checkpoint and the served model is degraded",
-      "title": "an expert prepack picks its decoder from tensor names, not dtype"
+      "symptom": "A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.",
+      "title": "SSH fanout reparses structured argv while the launcher still reports success"
     }
   ],
   "schema_version": "1.1"

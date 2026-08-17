@@ -1,17 +1,20 @@
-# Trap 122: an expert prepack picks its decoder from tensor names, not dtype
+# Candidate: an expert prepack picks its decoder from tensor names, not dtype
 
 **Found by tonyd2wild.**
 
-**Status: under test.** The format-selection mechanism is directly readable in
-public source at `Sapid-Labs/vLLM-Moet`, commit
-`2f1056c56a56e08c560c4b2109a4d298d94f2c6b`, `spark/prepack_planes.py`.
-The contributor also inspected an FP8 checkpoint whose expert names match the
-MXFP4 pattern, but the exact public checkpoint revision is not pinned in this
-entry and the mismatched pack was deliberately not run. The predicted
-corrupted-output half is therefore **not** claimed as observed; CONFIRM/REFUTE
-criteria are pre-registered below.
+**Disposition: public source lead; not a canonical trap.** The format-selection
+mechanism is directly readable in public source at `Sapid-Labs/vLLM-Moet`,
+commit `2f1056c56a56e08c560c4b2109a4d298d94f2c6b`,
+`spark/prepack_planes.py`. The contributor also inspected an FP8 checkpoint
+whose expert names match the MXFP4 pattern, but the exact public checkpoint
+revision is not pinned and the mismatched pack was deliberately not run.
+No replication is actually running, so the repository's closed status
+vocabulary does not permit this to be labelled `under test`. The predicted
+corrupted-output half is **not** claimed as observed; CONFIRM/REFUTE criteria
+remain pre-registered below so the lead can be promoted cleanly if somebody
+runs it.
 
-**Symptom (predicted).** An offline expert-prepack step accepts a checkpoint
+**Predicted failure shape (not observed).** An offline expert-prepack step accepts a checkpoint
 whose tensor names look like one supported source format while the stored
 weights/config describe another. If no later shape/dtype guard catches that
 mismatch, the wrong decoder can be selected before planes are written. What the
@@ -112,8 +115,8 @@ compatibility hint, treat them as one signal rather than the authority.
 
 **Found.** 2026-08-15, while evaluating whether an FP8 checkpoint could stand
 in for a large MXFP4-source download during prepack work. The contributor
-stopped before running the suspect conversion, which is why this remains
-`under test` instead of borrowing certainty from the source inspection.
+stopped before running the suspect conversion, which is why this stays in the mining layer instead of borrowing certainty
+from the source inspection.
 
 **Attribution.** tonyd2wild, 4x DGX Spark GB10 fleet. Public source inspected:
 `Sapid-Labs/vLLM-Moet`, commit

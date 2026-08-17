@@ -2,11 +2,12 @@
 
 ## 2026-08-16
 
-### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-122)
+### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-121)
 
 Contributed by **tonyd2wild**, measured on four DGX Spark (GB10, sm_121a,
-aarch64) nodes over RoCE serving GLM-5.2. Six new entries, five
-contributor-measured and one filed under test:
+aarch64) nodes over RoCE serving GLM-5.2. Five new canonical entries, all
+contributor-measured. One additional source-level candidate is retained in
+`mining/` rather than counted because no replication is actually running:
 
 - [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md) a
   compilation flag is echoed back enabled and runs disabled; forcing it via the
@@ -22,14 +23,13 @@ contributor-measured and one filed under test:
 - [120](traps/runtime/120-indexer-block-table-omits-spec-overhang.md) an
   indexer block table sized from `max_model_len` alone is one block short once
   MTP spec tokens push past it, which only shows at three or more concurrent
-- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) JSON CLI arguments
-  re-split by the remote shell in an SSH fanout leave workers in `Created`
-  while the launcher reports success
-- [122](traps/quantization/122-prepack-format-detected-by-tensor-name.md)
-  **under test**: a 2-bit expert prepack selects its decoder from tensor names
-  rather than dtype, so a renamed fp8 checkpoint can be routed through the
-  mxfp4 path. Mechanism read from public source; corrupted output not observed,
-  CONFIRM/REFUTE criteria recorded in the entry
+- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) structured argv
+  is re-parsed by a remote shell in an SSH fanout; container IDs are not worker
+  readiness, and Docker state alone is not used to diagnose the quoting fault
+- [prepack name/format collision candidate](mining/2026-08-17-tonyd2wild-prepack-name-format-collision.md):
+  source inspection shows a decoder-selection path driven by tensor names rather
+  than dtype/metadata. The suspect conversion was not run, so this remains a
+  mining lead with pre-registered CONFIRM/REFUTE criteria rather than a numbered trap
 
 Reported first as issues
 [#43](https://github.com/Blackwellboy/model-serving-minefield/issues/43),
