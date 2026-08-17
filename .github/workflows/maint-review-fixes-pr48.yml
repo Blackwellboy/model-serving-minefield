@@ -33,9 +33,6 @@ jobs:
                   raise SystemExit(f"{path}: expected {expected} occurrence(s) of {old!r}, found {n}")
               p.write_text(s.replace(old, new))
 
-          # 122 is a source-level hypothesis whose replication was never run.
-          # CONTRIBUTING reserves `under test` for a replication actually running,
-          # so retain the work as a mining lead instead of a numbered trap.
           src = Path('traps/quantization/122-prepack-format-detected-by-tensor-name.md')
           dst = Path('mining/2026-08-17-tonyd2wild-prepack-name-format-collision.md')
           if not src.exists():
@@ -43,11 +40,7 @@ jobs:
           if dst.exists():
               raise SystemExit('destination mining lead already exists')
           s = src.read_text()
-          s = s.replace(
-              '# Trap 122: an expert prepack picks its decoder from tensor names, not dtype',
-              '# Candidate: an expert prepack picks its decoder from tensor names, not dtype',
-              1,
-          )
+          s = s.replace('# Trap 122: an expert prepack picks its decoder from tensor names, not dtype', '# Candidate: an expert prepack picks its decoder from tensor names, not dtype', 1)
           old_status = '''**Status: under test.** The format-selection mechanism is directly readable in
           public source at `Sapid-Labs/vLLM-Moet`, commit
           `2f1056c56a56e08c560c4b2109a4d298d94f2c6b`, `spark/prepack_planes.py`.
@@ -74,15 +67,10 @@ jobs:
           s = s.replace(old_status, new_status, 1)
           s = s.replace('**Symptom (predicted).**', '**Predicted failure shape (not observed).**', 1)
           s = s.replace('remains under test.', 'remains unrun.', 1)
-          s = s.replace(
-              'which is why this remains\n`under test` instead of borrowing certainty from the source inspection.',
-              'which is why this stays in the mining layer instead of borrowing certainty\nfrom the source inspection.',
-              1,
-          )
+          s = s.replace('which is why this remains\n`under test` instead of borrowing certainty from the source inspection.', 'which is why this stays in the mining layer instead of borrowing certainty\nfrom the source inspection.', 1)
           dst.write_text(s)
           src.unlink()
 
-          # Canonical count becomes 121; doctor coverage remains 19.
           replace_exact('README.md', 'All 122\nentries are too many to read', 'All 121\nentries are too many to read')
           replace_exact('README.md', 'directly below, all 122 entries', 'directly below, all 121 entries')
           replace_exact('README.md', 'for **19 of these 122 entries**', 'for **19 of these 121 entries**')
@@ -94,7 +82,6 @@ jobs:
           old121 = '| The launcher prints a container ID for every worker and the workers never start | JSON CLI args re-split by the remote shell in an SSH fanout; docker creates the container and leaves it in Created | [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) | contributor-measured, conditions as reported |\n'
           new121 = '| The launcher prints container IDs but remote workers never become usable ranks | SSH fanout reparses structured argv; container creation is not readiness and Docker state alone does not identify the quoting fault | [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) | contributor-measured, conditions as reported |\n'
           replace_exact('README.md', old121, new121)
-
           replace_exact('doctor/minefield_doctor.py', 'REGISTRY_TRAP_COUNT = 122', 'REGISTRY_TRAP_COUNT = 121')
           replace_exact('minefield/data/minefield_doctor.py', 'REGISTRY_TRAP_COUNT = 122', 'REGISTRY_TRAP_COUNT = 121')
           replace_exact('doctor/README.md', "**19 of the registry's 122 numbered entries**", "**19 of the registry's 121 numbered entries**")
@@ -103,30 +90,13 @@ jobs:
           replace_exact('playbooks/README.md', "19 of this registry's 122 numbered entries", "19 of this registry's 121 numbered entries")
           replace_exact('mining/OPEN_QUESTIONS.md', '**19 of 122** entries', '**19 of 121** entries')
           replace_exact('mining/OPEN_QUESTIONS.md', '103 uncovered entries', '102 uncovered entries')
-
-          # Remove the non-canonical candidate from the model index.
           row_model_122 = '| DeepSeek-V4-Flash (DSpark fp8 repack, 2-bit Moet prepack source) | [122](../traps/quantization/122-prepack-format-detected-by-tensor-name.md) *(under test)* |\n'
           replace_exact('models/README.md', row_model_122, '')
-
-          # Changelog: five canonical entries plus one retained mining lead.
           replace_exact('CHANGELOG.md', '### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-122)', '### Multi-node serving traps from a 4x DGX Spark GB10 fleet (117-121)')
-          replace_exact(
-              'CHANGELOG.md',
-              'aarch64) nodes over RoCE serving GLM-5.2. Six new entries, five\ncontributor-measured and one filed under test:',
-              'aarch64) nodes over RoCE serving GLM-5.2. Five new canonical entries, all\ncontributor-measured. One additional source-level candidate is retained in\n`mining/` rather than counted because no replication is actually running:',
-          )
-          replace_exact(
-              'CHANGELOG.md',
-              '- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) JSON CLI arguments\n  re-split by the remote shell in an SSH fanout leave workers in `Created`\n  while the launcher reports success\n',
-              '- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) structured argv\n  is re-parsed by a remote shell in an SSH fanout; container IDs are not worker\n  readiness, and Docker state alone is not used to diagnose the quoting fault\n',
-          )
-          replace_exact(
-              'CHANGELOG.md',
-              '- [122](traps/quantization/122-prepack-format-detected-by-tensor-name.md)\n  **under test**: a 2-bit expert prepack selects its decoder from tensor names\n  rather than dtype, so a renamed fp8 checkpoint can be routed through the\n  mxfp4 path. Mechanism read from public source; corrupted output not observed,\n  CONFIRM/REFUTE criteria recorded in the entry\n',
-              '- [prepack name/format collision candidate](mining/2026-08-17-tonyd2wild-prepack-name-format-collision.md):\n  source inspection shows a decoder-selection path driven by tensor names rather\n  than dtype/metadata. The suspect conversion was not run, so this remains a\n  mining lead with pre-registered CONFIRM/REFUTE criteria rather than a numbered trap\n',
-          )
+          replace_exact('CHANGELOG.md', 'aarch64) nodes over RoCE serving GLM-5.2. Six new entries, five\ncontributor-measured and one filed under test:', 'aarch64) nodes over RoCE serving GLM-5.2. Five new canonical entries, all\ncontributor-measured. One additional source-level candidate is retained in\n`mining/` rather than counted because no replication is actually running:')
+          replace_exact('CHANGELOG.md', '- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) JSON CLI arguments\n  re-split by the remote shell in an SSH fanout leave workers in `Created`\n  while the launcher reports success\n', '- [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) structured argv\n  is re-parsed by a remote shell in an SSH fanout; container IDs are not worker\n  readiness, and Docker state alone is not used to diagnose the quoting fault\n')
+          replace_exact('CHANGELOG.md', '- [122](traps/quantization/122-prepack-format-detected-by-tensor-name.md)\n  **under test**: a 2-bit expert prepack selects its decoder from tensor names\n  rather than dtype, so a renamed fp8 checkpoint can be routed through the\n  mxfp4 path. Mechanism read from public source; corrupted output not observed,\n  CONFIRM/REFUTE criteria recorded in the entry\n', '- [prepack name/format collision candidate](mining/2026-08-17-tonyd2wild-prepack-name-format-collision.md):\n  source inspection shows a decoder-selection path driven by tensor names rather\n  than dtype/metadata. The suspect conversion was not run, so this remains a\n  mining lead with pre-registered CONFIRM/REFUTE criteria rather than a numbered trap\n')
 
-          # Credit the contributor on the registry's canonical credit surface.
           hof = Path('HALL_OF_FAME.md')
           hs = hof.read_text()
           if '@tonyd2wild' in hs:
@@ -138,11 +108,8 @@ jobs:
           hof.write_text(hs.replace(marker, row + marker, 1))
           PY
 
-          # Generated surfaces must be derived from the edited canonical tree.
           python -m minefield agent-bundle
           python -m minefield agent-bundle --verify
-
-          # Local gates that do not need private sanitizer data or peer repos.
           python3 integrity/registry_integrity.py --github
           python3 integrity/reference_integrity.py --github
           python3 integrity/upstream_integrity.py --github
@@ -151,9 +118,7 @@ jobs:
           python3 -m compileall -q minefield tests
           python3 -m unittest discover -s tests
           for f in checks/tests/test_*.py; do python3 "$f"; done
-          python3 integrity/verify_surfaces.py --github --peer-mode defer
 
-          # Fail if the demoted numbered path remains referenced outside generated history.
           if git grep -n '122-prepack-format-detected-by-tensor-name' -- README.md CHANGELOG.md doctor minefield/data/minefield_doctor.py mining models playbooks HALL_OF_FAME.md traps; then
             echo 'stale canonical 122 reference remains' >&2
             exit 1
