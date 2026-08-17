@@ -3,8 +3,8 @@
 **Found by tonyd2wild.**
 
 **Status: contributor-measured, conditions as reported** (free-memory decline
-captured across four consecutive boots; the reclaim result is reproducible on
-any unified-memory box that has been through an OOM-kill).
+captured across four consecutive boots; the reclaim result was measured on the
+reported DGX Spark lane).
 
 **Symptom.** A `gpu-memory-utilization` that has served fine for weeks refuses
 to boot, with nothing changed in the config:
@@ -28,12 +28,17 @@ moves every attempt.
 Lowering the fraction to fit chases a receding target.
 
 **Mechanism.** On unified memory the GPU and CPU share one physical pool, so
-`cudaMemGetInfo`'s "free" tracks `MemAvailable` rather than a dedicated VRAM
-free list. Anything holding system memory depresses it: orphaned GPU contexts
-left by a previous OOM-kill, pinned buffers, page cache from a large model
-download, swap in use. Measured spread on an idle-but-churned node was about
-8 GiB — 109.53 GiB while failing against 117.7 GiB after reclaim. That is far
-more than the margin a razor-tuned utilization leaves.
+host-side pressure and CUDA-visible free memory are not independent quantities.
+On the reported GB10 lane, `MemAvailable` and the free-memory value seen by the
+runtime moved together as model-download page cache, orphaned GPU contexts,
+pinned buffers and swap consumed or released the shared pool. That observation
+should not be read as a universal identity between Linux `MemAvailable` and
+`cudaMemGetInfo` on every UMA stack; the useful diagnostic is that pressure in
+one shared pool can reduce both.
+
+Measured spread on an idle-but-churned node was about 8 GiB — 109.53 GiB while
+failing against 117.7 GiB after reclaim. That is far more than the margin a
+razor-tuned utilization leaves.
 
 Two things then conspire to misdirect the diagnosis:
 
@@ -42,10 +47,10 @@ check; the peers lose it and emit NCCL heartbeat and send errors. Those are
 secondary and there are many more of them. Reading the loudest error points
 you at the interconnect, which is healthy.
 
-*Auto-retry makes it worse.* Each failed boot orphans a little more, so a
-launcher that retries on this failure degrades the exact quantity it is
-retrying against. That is the descending sequence above, and it is why the
-ceiling looks non-deterministic rather than merely low.
+*Auto-retry makes it worse.* On this lane, repeated failed boots left the
+reported free-memory value slightly lower on each attempt. An auto-retry loop
+therefore made the input condition worse while hiding the original primary
+exception under secondary distributed errors.
 
 This is the temporal sibling of
 [13](13-utilization-fraction-on-unified-memory.md), which covers the static
@@ -62,9 +67,10 @@ and as a W4W8 community build; 200K-600K context, `fp8_ds_mla` KV, TP=4 over
 four DGX Spark (GB10, sm_121a, aarch64, 121.69 GiB unified per node), driver
 580.142.
 
-Expected on any unified-memory device of this class, not only Spark. Driver
-590.48.x carries a separate UMA-not-released-on-exit regression that would
-compound it.
+The general risk applies to unified-memory systems where the serving runtime
+and the operating system compete for the same physical pool. The exact
+relationship between OS counters and CUDA-visible free memory remains
+platform/driver specific.
 
 **The check.** Grep for the first exception rather than the loudest:
 
@@ -72,33 +78,44 @@ compound it.
 docker logs <container> 2>&1 | grep -m1 -B2 -A2 "Free memory on device"
 ```
 
-Then compare what the allocator will see against a known-good baseline:
+Then compare both OS-visible pressure and the runtime's own free-memory reading
+against a known-good baseline before blaming the fabric:
 
 ```bash
-grep MemAvailable /proc/meminfo     # what cudaMemGetInfo reports as free
+grep MemAvailable /proc/meminfo
 free -g | awk '/Swap:/{print "swap in use:", $3"G"}'
 ```
 
-`MemAvailable` several GiB under a freshly-rebooted baseline, with NCCL noise
-on the other ranks, is this trap and not the fabric.
+If host availability is several GiB under a known-good baseline and the
+runtime's free-memory check is failing on the same node while peers only emit
+secondary NCCL noise, reclaim shared-pool pressure and retry once before
+changing fabric settings or permanently shrinking the KV reservation.
 
-**The fix.** Reclaim before boot. Do **not** lower `gpu-memory-utilization`:
-that trades a permanent reduction in KV pool for a transient condition, and it
-will not hold anyway while the number is still drifting.
+**The fix.** Stop known serving/model-download processes cleanly and reclaim
+transient pressure before boot. Do **not** immediately lower
+`gpu-memory-utilization`: that can trade a permanent reduction in KV pool for a
+transient condition.
+
+On a **dedicated node only, during a maintenance window**, the contributor used
+this destructive reclaim sequence after confirming no wanted GPU process would
+be killed:
 
 ```bash
-sudo fuser -k -9 /dev/nvidia*       # orphaned GPU contexts
+sudo fuser -k -9 /dev/nvidia*       # destructive: kills GPU users
 sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
 sudo swapoff -a && sudo swapon -a
 ```
 
-This restored 109.53 -> ~117.7 GiB and the original utilization booted
-unchanged. It is now a pre-boot step in the launcher rather than a thing
-someone remembers to do.
+Do not run that blindly on a shared workstation or multi-tenant host. Prefer
+identifying and stopping the owning processes first; use cache/swap reclaim only
+when you understand the operational impact.
 
-Also disable auto-retry for this specific failure. Retrying strictly worsens
-the input condition, and it converts a legible one-shot error into a moving
-target that reads as flaky hardware.
+On the reported node this restored 109.53 -> ~117.7 GiB and the original
+utilization booted unchanged.
+
+Also disable blind auto-retry for this specific startup failure. Repeated
+retries can obscure the first useful exception and, on the measured lane,
+coincided with progressively lower available memory.
 
 **Found.** 2026-08-15, after a 433 GB model download and a run of OOM-killed
 boots on one node. Cost several hours and one unnecessary reboot of an
