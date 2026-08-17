@@ -157,3 +157,14 @@ surfaces, one symptom class, and neither announces itself.
 isolated it from the rest of his serve line, and no causal attribution is
 claimed. If you are debugging garbled or wedged decode on a speculative lane,
 add "are full CUDA graphs on" to the list of things to vary, one at a time.
+
+## Added 2026-08-18: bounded Qwen3.8 FULL-graph cross-reference
+
+[Trap 122](122-full-cuda-graph-corrupts-qwen38-mtp-verification.md) now carries a
+separate **contributor-measured, conditions as reported** Qwen3.8 / RTX 5090 /
+vLLM 0.27.1 A/B in which FULL CUDA-graph capture corrupts MTP verification and
+PIECEWISE restores correct output with MTP still enabled. That is stronger and
+narrower evidence than the Keys addendum above, but it does **not** retroactively
+upgrade this entry's DeepSeek/DGX-Spark report or establish that the mechanisms
+are identical. Trap 62 remains about its documented drafter/configuration lane;
+Trap 122 owns the isolated Qwen3.8 graph-mode discriminator.
