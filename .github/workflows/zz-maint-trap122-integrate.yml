@@ -38,6 +38,7 @@ jobs:
       - name: Commit final integration
         shell: bash
         run: |
+          python -c "from pathlib import Path; p=Path('traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md'); p.write_text(p.read_text(encoding='utf-8').rstrip() + '\n', encoding='utf-8')"
           rm .github/workflows/zz-maint-trap122-integrate.yml
           rm scripts/maint_trap122_integrate.py
           git add -A
