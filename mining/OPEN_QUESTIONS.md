@@ -310,6 +310,65 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   because trap [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) produces
   the identical symptom from a dead IPv6 route with a healthy sampler.
 
+### Q16. Does the cold-prefill speculative-placeholder scheduler bug reproduce as the isolated cause of issue #36?
+
+- **Claim under test.** [Issue #36](https://github.com/Blackwellboy/model-serving-minefield/issues/36)
+  reports a distinct speculative-decode scheduler failure: warm prefix-cache
+  requests stay clean while cold, chunked-prefill requests can have speculative
+  placeholders attached to the final prompt chunk and begin the reply by
+  continuing the system prompt. The reported lane measured warm **0/19 bad**,
+  cold **44/44 bad**, and **0/28 bad** after the scheduler guard; reducing
+  speculative depth did not fix the unguarded path.
+- **Source.** PRIMARY for the contributor's reported lane evidence and patch
+  comparison, attributed to @tonyd2wild; original root-cause patch credit remains
+  with roady001 as stated in the issue. This is not Blackwellboy reproduction.
+- **Needs.** A disposable/scratch DeepSeek-V4-Flash DSpark lane with chunked
+  prefill and speculative decoding where the scheduler guard can be toggled on
+  the same build without risking a production serve.
+- **CONFIRM.** On a pinned build/config, force cold prefill with a front nonce and
+  reproduce corruption with the guard absent, then show the same workload clean
+  with the guard present while speculative depth is otherwise held fixed. Record
+  the effective scheduler code path and preserve a negative k-depth control so
+  the scheduler guard, not a simultaneous drafter change, owns the result.
+- **REFUTE.** The corruption persists with the guard present under the same
+  workload, or fails to reproduce without the guard once cache state, prompt
+  bytes and effective scheduler path are verified, in which case the proposed
+  scheduler mechanism must be narrowed or rejected.
+- **Cost.** M; requires a scratch serve/restart boundary.
+- **Note.** Strong canonical candidate, deliberately unnumbered until promotion
+  is built against current `main`. It is adjacent to Trap 60 but not currently
+  owned by it: Trap 60 records cold-versus-cache behavioral divergence without
+  this isolated scheduler mechanism.
+
+### Q17. Does the DSpark draft loader mapping gap in issue #38 independently explain the missing-shared-expert acceptance collapse?
+
+- **Claim under test.** [Issue #38](https://github.com/Blackwellboy/model-serving-minefield/issues/38)
+  reports a serving-loader name-mapping gap that silently drops 12 shared-expert
+  tensors across three draft stages while the target verifier keeps output
+  coherent. The contributor lane reports cumulative acceptance **25.7% to
+  60.2%**, accepted tokens/step **2.28 to 4.01**, and mean decode **32.7 to
+  55.4 tok/s** after adding the two missing shared-expert mapping rows.
+- **Source.** PRIMARY for the contributor's measured lane evidence and source
+  locations, attributed to @tonyd2wild. The missing mapping rows/source mechanism
+  are inspectable; the performance rows remain contributor-measured with raw
+  per-request records not published.
+- **Needs.** Prefer source inspection first. For runtime confirmation, use a
+  disposable DSpark lane on the affected build/family with acceptance counters
+  available and a way to compare the stock loader with only the mapping repair.
+- **CONFIRM.** Verify the target loader contains the shared-expert mapping while
+  the draft loader omits it, observe the corresponding unknown-weight skips, and
+  on a matched runtime A/B show those skips disappear and acceptance recovers
+  when only the mapping is repaired. Keep throughput secondary to the mechanism.
+- **REFUTE.** The allegedly missing rows are present/effective on the pinned
+  affected build, the 12 tensors are not skipped, or repairing only the mapping
+  leaves the acceptance collapse unchanged, in which case the loader mapping
+  cannot own the reported result.
+- **Cost.** S for source adjudication; M if the runtime A/B is repeated.
+- **Note.** Strong canonical candidate, deliberately unnumbered until promotion
+  is built against current `main`. It is a sibling of Trap 109, not a duplicate:
+  Trap 109 owns a requant/checkpoint-format failure, while this candidate is a
+  serving-loader mapping failure on the drafter path.
+
 ---
 
 ## CLOSED, so nobody re-opens them

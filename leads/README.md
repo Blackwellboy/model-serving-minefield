@@ -64,6 +64,6 @@ The search is deliberately simple and transparent. It ranks token overlap across
 
 ## Current scope
 
-The initial catalogue recovers **42 public-safe leads** across tool-history persistence, SM120/JIT, KV/admission, endpoint identity, stale harness context, schema enforcement, transfer geometry, 200G fabric, lifecycle/memory/speculation, blocked negative observations, public Keys/Inkling source mining, configured-vs-effective vLLM reporting, historical evaluator hypotheses, and the Kimi-K3 served-render verification gap.
+The catalogue covers public-safe leads across tool-history persistence, SM120/JIT, KV/admission, endpoint identity, stale harness context, schema enforcement, transfer geometry, 200G fabric, lifecycle/memory/speculation, blocked negative observations, public Keys/Inkling source mining, configured-vs-effective vLLM reporting, historical evaluator hypotheses, Kimi-K3 served-render verification, and newer Qwen3.8 runtime/backend observations. The machine-readable `LEADS.json` is the authority for the current set; this README deliberately carries no hand-maintained lead count.
 
 This layer is intentionally broader than "things already proven enough to publish as a trap." That is the point.
