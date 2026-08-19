@@ -22,7 +22,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  issues:
+    types: [opened, edited, reopened, closed]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
 
 jobs:
   integrity:
@@ -100,6 +106,51 @@ jobs:
         id: refs
         if: always()
         run: python3 integrity/reference_integrity.py --github
+
+      # OPEN_QUESTIONS claims to contain every unsettled question. Treat any
+      # currently open issue whose title begins [trap] as unsettled intake until
+      # it is either queued with preregistered CONFIRM/REFUTE criteria or closed.
+      # GitHub's issues endpoint also returns PRs, so the checker excludes those.
+      - name: open trap issue queue integrity
+        id: openqueue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GH_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          rows = []
+          for page in range(1, 101):
+              url = f"https://api.github.com/repos/{repo}/issues?state=open&per_page=100&page={page}"
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  batch = json.load(response)
+              rows.extend(batch)
+              if len(batch) < 100:
+                  break
+          else:
+              raise SystemExit("open issue pagination exceeded 100 pages")
+
+          with open("/tmp/open-issues.json", "w", encoding="utf-8") as handle:
+              json.dump(rows, handle)
+          PY
+          python3 integrity/open_issue_queue.py \
+            --issues-json /tmp/open-issues.json \
+            --repo "$GH_REPOSITORY" \
+            --github
 
       # The fourth tier, upstream-reported, publishes material nobody here has
       # reproduced. The only thing that makes that safe is that every entry
@@ -253,6 +304,7 @@ jobs:
           for pair in \
             "registry integrity + contradiction gate=${{ steps.registry.outcome }}" \
             "reference integrity + status vocabulary=${{ steps.refs.outcome }}" \
+            "open trap issue queue=${{ steps.openqueue.outcome }}" \
             "upstream tier requirements=${{ steps.upstream.outcome }}" \
             "claim propagation=${{ steps.claims.outcome }}" \
             "do-not-cite=${{ steps.dnc.outcome }}" \
