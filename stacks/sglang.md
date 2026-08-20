@@ -3,14 +3,17 @@
 **Measured here:** yes (served first-party and contributor-measured on GB10)
 
 
-**3 entries name SGLang** in their evidence surfaces (see
+**4 entries name SGLang** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)).
 
 This page began as a zero-entry page, when "no page" and "no entries" read the
 same from outside and meant different things. **That is no longer the case:
-three entries now name SGLang**, all contributor-measured. The zero-entry
-caveat is kept below only as the reason the page was created, not as a
-description of the stack today.
+four entries now name SGLang.** Three are contributor-measured request/template
+findings; [124](../traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md)
+is a first-party GB10 platform low-power state that degraded SGLang throughput
+on the measured unit without being SGLang-specific. The zero-entry caveat is
+kept below only as the reason the page was created, not as a description of the
+stack today.
 
 ## Where this stack actually stands
 

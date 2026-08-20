@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 123,
-    "human_review_possible": 123,
+    "guided_experiments_specified": 124,
+    "human_review_possible": 124,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 123
+    "total_canonical_traps": 124
   },
   "traps": [
     {
@@ -9137,6 +9137,80 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "124",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 124 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

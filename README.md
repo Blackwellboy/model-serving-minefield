@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 123
+Four doors, and which one you want depends on why you are here. All 124
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -107,7 +107,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 123 entries, one row each, sorted by number. It is the
+  directly below, all 124 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -118,8 +118,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 123 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 104. It runs
+for **19 of these 124 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 105. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -151,7 +151,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 123 entries. If you know what you are running rather than what you are
+All 124 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -222,6 +222,7 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | The launcher prints container IDs but remote workers never become usable ranks | SSH fanout reparses structured argv; container creation is not readiness and Docker state alone does not identify the quoting fault | [121](traps/runtime/121-ssh-fanout-mangles-json-args.md) | contributor-measured, conditions as reported |
 | Server fully up, HTTP 200, normal finish reason, but Qwen3.8 MTP output collapses under FULL CUDA graphs | On the contributor's vLLM 0.27.1 RTX 5090 lane, FULL capture corrupts speculative verification; the same build is clean when MTP is kept on but graph mode is forced to PIECEWISE | [122](traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md) | contributor-measured, conditions as reported |
 | Killed only the outer vLLM API-server PID, GPU memory did not come back, and the next launch OOMs at startup | Abrupt parent-only teardown can leave a distinct `VLLM::EngineCore` alive and owning GPU memory; bind the residual allocation to that PID before changing memory flags | [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md) | contributor-measured, conditions as reported |
+| High util and P0, but SM clock/power stuck abnormally low across reboot; serving and compute both slow until full AC power removal | Persistent GB10 low-power platform state; nvidia-smi clock lock does not recover it; clocks, power, BF16 and LLM throughput recover together after complete AC removal | [124](traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md) | measured here, raw not published |
 | A clean +20% speedup that also reproduces on a build without the feature | Run order, warm caches or cross-session drift; what you varied was not the only thing that varied | [54](traps/evaluation/54-run-order-and-warm-cache-artifacts.md) | contributor-measured, conditions as reported (the framing rule alone is separately reproduced here) |
 | A model serves happily at its advertised context and scores badly on long-context retrieval | Advertised, served and trained context are three different numbers | [55](traps/evaluation/55-supported-context-is-not-trained-context.md) | contributor-measured, conditions as reported |
 | Template forensics reports "no chat template" on a model that chats fine | The template is Python code inside the checkpoint, not a Jinja file | [56](traps/template/56-checkpoint-ships-no-chat-template.md) | reproduced here |
@@ -308,7 +309,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 123 entries in under a minute:
+against 19 of this registry's 124 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

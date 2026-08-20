@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-08-21
+
+### Trap 124: GB10 can stay in a low-power state across reboot while reporting P0 and high utilization
+
+First-party measurement on a DGX Spark / GB10 (Dexter). Status **measured here,
+raw not published**.
+
+- [124](traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md)
+  records a persistent low-power platform state: under sustained load the unit
+  stayed at high utilization and `P0` while SM/graphics clocks and power draw
+  remained abnormally low, with both low-level BF16 compute and LLM serving
+  degraded. `nvidia-smi -lgc` accepted an applications-clock lock without
+  recovering observed clocks or throughput. A complete AC power removal changed
+  the platform power state; clocks, power, BF16, and Ornith SGLang throughput
+  recovered together.
+- Claim boundary is deliberate: the entry proves the stuck low-power state and
+  the AC-removal recovery on the measured unit. It does **not** prove a specific
+  PD, EC, or SoC firmware root cause, a universal OOM trigger, or applicability
+  to every GB10.
+- Registry count moves from 123 to 124; doctor coverage remains 19, leaving
+  105 canonical entries unimplemented.
+
 ## 2026-08-19
 
 ### Trap 123: abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory

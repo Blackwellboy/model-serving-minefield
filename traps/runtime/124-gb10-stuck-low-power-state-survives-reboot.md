@@ -2,7 +2,7 @@
 
 **Found by Blackwellboy.**
 
-**Status: measured here, raw not published.** First-party Dexter DGX Spark measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, and the matching post-recovery throughput. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree (`throughput_rootcause_20260820/power_cycle_20260821/`); the public numbers below are the sanitized adjudicated summary.
+**Status: measured here, raw not published.** First-party Dexter DGX Spark measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, and the matching post-recovery throughput. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree; the public numbers below are the sanitized adjudicated summary.
 
 **Symptom.** A DGX Spark / GB10 suddenly serves the same model much more slowly even though the workload still reports high GPU utilization, `P0`, cool temperatures, and no active thermal or software power-cap throttle reason. A normal reboot does not necessarily clear it, and `nvidia-smi -lgc` may accept a requested applications clock without actually raising the observed SM/graphics clock under load.
 
