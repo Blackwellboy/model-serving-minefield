@@ -1,0 +1,55 @@
+name: maint-vcruz123-index
+
+on:
+  push:
+    branches:
+      - maint/integrate-vcruz-trap123-20260820
+
+permissions:
+  contents: write
+
+jobs:
+  index-and-regenerate:
+    if: ${{ !contains(github.event.head_commit.message, '[skip vcruz index]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: maint/integrate-vcruz-trap123-20260820
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: index Trap 123 on the process-manager route
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('models/README.md')
+          text = p.read_text(encoding='utf-8')
+          old = '| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md), [112](../traps/runtime/112-process-liveness-is-not-model-readiness.md) |'
+          new = '| Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md), [112](../traps/runtime/112-process-liveness-is-not-model-readiness.md), [123](../traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md) |'
+          if old not in text:
+              raise SystemExit('process-manager index anchor not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: regenerate deterministic Minefield surfaces
+        run: |
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git diff --check
+      - name: commit index and generated surfaces
+        run: |
+          git config user.name "blackwellboy"
+          git config user.email "76774064+Blackwellboy@users.noreply.github.com"
+          git add -- models/README.md \
+            dist \
+            minefield/data \
+            registry \
+            web/registry-data.js \
+            skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo "No index changes to commit"
+            exit 0
+          fi
+          git commit -m "Index Trap 123 on process-manager route [skip vcruz index]"
+          git push origin HEAD:maint/integrate-vcruz-trap123-20260820
