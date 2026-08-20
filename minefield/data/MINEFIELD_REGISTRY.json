@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 122,
-  "content_sha256": "413446101368b67298bdf60bf48f415aa6d784ddf2abd2800d92089933622835",
+  "canonical_trap_count": 123,
+  "content_sha256": "fb1706c78eb3b9f814f6bfa6893b4924170ef792a153665a34dd2addccbe3717",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -8516,6 +8516,78 @@
       "supersession": null,
       "symptom": "The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.",
       "title": "FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1"
+    },
+    {
+      "affected_models": [
+        "NemotronHForCausalLM"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM V1 engine, build 0.1.dev1+g75231eff2.d20260809 (a Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, on a DGX Spark (GB10, 121 GiB unified memory). The EngineCore-as-a- subprocess design is a V1 engine property, not something specific to this model, quant format, or hardware — the mechanism likely generalizes across vLLM V1 deployments; I have not checked other builds or discrete-GPU boxes, so treat that generalization as a hypothesis, not a claim.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "nemotronhforcausallm"
+        ],
+        "failure_stage": [
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [
+          "1"
+        ],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1"
+        ],
+        "topology": [
+          "single-node"
+        ]
+      },
+      "category": "runtime",
+      "check": "bash",
+      "contributor": "vcruz305",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM V1 engine, build 0.1.dev1+g75231eff2.d20260809 (a Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, on a DGX Spark (GB10, 121 GiB unified memory). The EngineCore-as-a- subprocess design is a V1 engine property, not something specific to this model, quant format, or hardware — the mechanism likely generalizes across vLLM V1 deployments; I have not checked other builds or discrete-GPU boxes, so treat that generalization as a hypothesis, not a claim.",
+      "id": "123",
+      "known_limitations": "",
+      "mechanism": "vLLM's V1 engine runs EngineCore as a separate OS process from the API server — spawned via multiprocessing, not a thread — visible in ps aux as its own line (VLLM::EngineCore) with its own PID, distinct from the vllm serve / APIServer PID you have. Killing the API server PID, even with SIGKILL, does not signal that child: nothing in the parent's exit path notifies or reaps it, and unless the launcher explicitly put both in one process group and killed the group, the signal never reaches the worker. The EngineCore process is, from its own point of view, still completely alive — weights and KV cache stay resident — until something kills it directly. A plain \"note the PID, kill it, relaunch\" cycle never does that.",
+      "mitigation": "Kill the EngineCore PID directly (kill -9 <enginecorepid>), found via ps aux | grep VLLM::EngineCore or by cross-referencing nvidia-smi --query-compute-apps. For anything you launch yourself, start vllm serve inside its own process group (e.g. setsid vllm serve ...) and kill the whole group (kill -- -$PGID) instead of a single captured PID. Before touching --gpu-memory-utilization or any other launch flag in response to a startup OOM, run nvidia-smi --query-compute-apps and confirm there is genuinely nothing else holding memory — a leftover EngineCore PID reads exactly like a fraction that is set too high.",
+      "public_evidence_links": [],
+      "related_traps": [],
+      "source_path": "traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "You kill the vllm serve process to relaunch with different flags — kill -9 <pid> on the PID your shell reported (or the PID a process manager tracks) — expecting the GPU to come back. ps aux shows that PID gone. The very next vllm serve launch dies at startup with: Nothing else is running. The obvious reads are all wrong: the fraction isn't too high, no other tenant is on the box, and the process you killed really is gone from ps.",
+      "title": "killing the vLLM V1 API server does not kill its EngineCore worker, and the orphan keeps the GPU memory"
     }
   ],
   "schema_version": "1.1"
