@@ -2,7 +2,7 @@
 
 ## 2026-08-19
 
-### Trap 123: killing the vLLM V1 API server does not kill its EngineCore worker, and the orphan keeps the GPU memory
+### Trap 123: abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory
 
 Contributed by **vcruz305**; measured on a DGX Spark (GB10) running vLLM
 build `0.1.dev1+g75231eff2.d20260809` and `NemotronHForCausalLM` at NVFP4.
@@ -10,11 +10,11 @@ Status **contributor-measured, conditions as reported**; the registry has not
 claimed an independent reproduction.
 
 - [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md)
-  records that vLLM's V1 engine runs EngineCore as a separate OS process from
-  the API server, and killing the API server PID (including SIGKILL) does not
-  reach that child. The orphaned EngineCore keeps every megabyte of weights
-  and KV cache resident, and the next `vllm serve` launch fails at startup
-  with a GPU-memory-utilization ValueError that reads like a config problem.
+  records Cruz's contributor-measured parent-only SIGKILL failure: the outer
+  API-server PID exited while a distinct `VLLM::EngineCore` survived and still
+  owned 104277 MiB of GPU memory. Current upstream retains explicit graceful
+  EngineCore shutdown machinery, so the canonical claim is intentionally
+  scoped to abrupt/naive parent-only teardown rather than all vLLM shutdowns.
 - The fix is to kill the `VLLM::EngineCore` PID directly, found via
   `ps aux` or by cross-referencing `nvidia-smi --query-compute-apps`, or to
   launch inside a process group (`setsid`) and kill the whole group.
