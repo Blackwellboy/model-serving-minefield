@@ -9081,7 +9081,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "bash",
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "",
@@ -9122,7 +9122,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "bash",
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -9136,7 +9136,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "bash",
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

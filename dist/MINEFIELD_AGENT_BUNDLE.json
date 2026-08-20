@@ -9083,7 +9083,7 @@
         "modalities": {
           "endpoint_probe": {
             "can_prove_clean": false,
-            "confirm_criterion": "bash",
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
             "expected_duration": "under one minute",
             "implemented_checker": null,
             "limitations": "",
@@ -9124,7 +9124,7 @@
           },
           "log_scan": {
             "can_prove_clean": false,
-            "confirm_criterion": "bash",
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Absence of a signature is not proof of safety.",
@@ -9138,7 +9138,7 @@
           },
           "static_config": {
             "can_prove_clean": false,
-            "confirm_criterion": "bash",
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Static configuration does not prove the live process used it.",
@@ -12105,7 +12105,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "123",
-      "untrusted_published_check_text": "bash"
+      "untrusted_published_check_text": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash"
     }
   ],
   "possible_unverified_leads": {
@@ -13434,7 +13434,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 123,
-    "content_sha256": "fb1706c78eb3b9f814f6bfa6893b4924170ef792a153665a34dd2addccbe3717",
+    "content_sha256": "ff4b9ca5f46e40280b4668bf06812531aafea593d0e361441bda1ecd7f0bbd7e",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -21957,7 +21957,7 @@
         "affected_stacks": [
           "vLLM"
         ],
-        "affected_versions_builds": "vLLM V1 engine, build 0.1.dev1+g75231eff2.d20260809 (a Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, on a DGX Spark (GB10, 121 GiB unified memory). The EngineCore-as-a- subprocess design is a V1 engine property, not something specific to this model, quant format, or hardware — the mechanism likely generalizes across vLLM V1 deployments; I have not checked other builds or discrete-GPU boxes, so treat that generalization as a hypothesis, not a claim.",
+        "affected_versions_builds": "Contributor-measured on vLLM V1 build 0.1.dev1+g75231eff2.d20260809 (Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, DGX Spark (GB10, 121 GiB unified memory). The process split is a V1 architecture property, but the exact teardown behavior is build/launcher/signal dependent. Do not generalize the DGX Spark measurement into \"every vLLM V1 shutdown leaks memory.\" In particular, current upstream source has an EngineCore process manager with an explicit shutdown() path; graceful SIGTERM/service-manager teardown must be measured separately from parent-only SIGKILL.",
         "applicability": {
           "concurrency_regime": [],
           "context_regime": [],
@@ -21994,8 +21994,8 @@
           ]
         },
         "category": "runtime",
-        "check": "bash",
-        "contributor": "vcruz305",
+        "check": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+        "contributor": "vcruz305 (Victor Cruz)",
         "diagnostic_modalities": [
           "static_config",
           "log_scan",
@@ -22009,18 +22009,28 @@
         "evidence_strength": [
           "contributor-measured, conditions as reported"
         ],
-        "exact_conditions": "vLLM V1 engine, build 0.1.dev1+g75231eff2.d20260809 (a Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, on a DGX Spark (GB10, 121 GiB unified memory). The EngineCore-as-a- subprocess design is a V1 engine property, not something specific to this model, quant format, or hardware — the mechanism likely generalizes across vLLM V1 deployments; I have not checked other builds or discrete-GPU boxes, so treat that generalization as a hypothesis, not a claim.",
+        "exact_conditions": "Contributor-measured on vLLM V1 build 0.1.dev1+g75231eff2.d20260809 (Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, DGX Spark (GB10, 121 GiB unified memory). The process split is a V1 architecture property, but the exact teardown behavior is build/launcher/signal dependent. Do not generalize the DGX Spark measurement into \"every vLLM V1 shutdown leaks memory.\" In particular, current upstream source has an EngineCore process manager with an explicit shutdown() path; graceful SIGTERM/service-manager teardown must be measured separately from parent-only SIGKILL.",
         "id": "123",
         "known_limitations": "",
-        "mechanism": "vLLM's V1 engine runs EngineCore as a separate OS process from the API server — spawned via multiprocessing, not a thread — visible in ps aux as its own line (VLLM::EngineCore) with its own PID, distinct from the vllm serve / APIServer PID you have. Killing the API server PID, even with SIGKILL, does not signal that child: nothing in the parent's exit path notifies or reaps it, and unless the launcher explicitly put both in one process group and killed the group, the signal never reaches the worker. The EngineCore process is, from its own point of view, still completely alive — weights and KV cache stay resident — until something kills it directly. A plain \"note the PID, kill it, relaunch\" cycle never does that.",
-        "mitigation": "Kill the EngineCore PID directly (kill -9 <enginecorepid>), found via ps aux | grep VLLM::EngineCore or by cross-referencing nvidia-smi --query-compute-apps. For anything you launch yourself, start vllm serve inside its own process group (e.g. setsid vllm serve ...) and kill the whole group (kill -- -$PGID) instead of a single captured PID. Before touching --gpu-memory-utilization or any other launch flag in response to a startup OOM, run nvidia-smi --query-compute-apps and confirm there is genuinely nothing else holding memory — a leftover EngineCore PID reads exactly like a fraction that is set too high.",
-        "public_evidence_links": [],
-        "related_traps": [],
+        "mechanism": "vLLM V1 is deliberately multi-process. The current upstream architecture documentation separates the API server, EngineCore and GPU-worker processes; the API server talks to EngineCore over ZMQ, and EngineCore is a distinct process per data-parallel rank. Current upstream source also creates local EngineCore instances with multiprocessing and carries explicit graceful-shutdown/finalizer machinery. That distinction matters to the claim boundary. Cruz did not show that normal vLLM shutdown is universally broken. He showed that an abrupt direct SIGKILL of only the API-server PID did not propagate to the distinct EngineCore process on his pinned build. SIGKILL cannot run the parent process's normal cleanup/finalizer path. A launcher or shell pattern that only targets vllm serve can likewise miss a child whose process title is VLLM::EngineCore. The surviving EngineCore then remains a real live resource owner until separately terminated, so the next launch sees genuinely unavailable GPU memory and reports the generic startup utilization error.",
+        "mitigation": "Prefer graceful service teardown that lets vLLM's process manager clean up EngineCore and workers, and verify that the GPU allocation actually falls before relaunching. For a genuinely orphaned measured state, terminate the owning VLLM::EngineCore PID and any associated vLLM workers rather than lowering --gpu-memory-utilization to fit around the leak. For launchers you control, supervise the whole process tree/process group instead of retaining only the API-server PID. A setsid-style process group can make group teardown explicit, but validate the exact service-manager semantics on your stack rather than assuming one shell recipe is portable everywhere. Before changing memory flags in response to this startup error, first inspect the GPU process table. If no EngineCore PID owns the missing memory, this trap does not own the diagnosis; on DGX Spark/shared-memory systems see Trap 119 for moving shared-pool pressure and other reclaim states.",
+        "public_evidence_links": [
+          "https://github.com/vllm-project/vllm-metal/issues/479",
+          "https://github.com/vllm-project/vllm/blob/main/docs/design/arch_overview.md",
+          "https://github.com/vllm-project/vllm/blob/main/vllm/v1/engine/utils.py",
+          "https://github.com/vllm-project/vllm/issues/47266",
+          "https://github.com/vllm-project/vllm/issues/48234"
+        ],
+        "related_traps": [
+          "112",
+          "116",
+          "119"
+        ],
         "source_path": "traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md",
         "status": "contributor-measured, conditions as reported.",
         "supersession": null,
-        "symptom": "You kill the vllm serve process to relaunch with different flags — kill -9 <pid> on the PID your shell reported (or the PID a process manager tracks) — expecting the GPU to come back. ps aux shows that PID gone. The very next vllm serve launch dies at startup with: Nothing else is running. The obvious reads are all wrong: the fraction isn't too high, no other tenant is on the box, and the process you killed really is gone from ps.",
-        "title": "killing the vLLM V1 API server does not kill its EngineCore worker, and the orphan keeps the GPU memory"
+        "symptom": "You kill the outer vllm serve / API-server PID to relaunch with different flags — in the measured case, kill -9 <apiserverpid> — and the PID disappears from ps, but GPU memory does not come back. The next vllm serve launch then dies at startup with a message that looks like a bad memory-utilization setting: On the contributor's failing state, the surviving VLLM::EngineCore process was reported by nvidia-smi as holding 104277 MiB after the outer API-server PID had been killed. The same sequence occurred twice in the session and was cleared by killing the EngineCore PID directly. The trap is therefore not \"0.85 is too high\". The discriminating observation is that the process you killed is gone while a distinct EngineCore PID still owns the GPU allocation.",
+        "title": "abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory"
       }
     ],
     "schema_version": "1.1"

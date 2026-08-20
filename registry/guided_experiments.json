@@ -2950,7 +2950,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "123",
-      "untrusted_published_check_text": "bash"
+      "untrusted_published_check_text": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash"
     }
   ],
   "schema_version": "1.0"
