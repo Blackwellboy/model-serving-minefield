@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 122,
-    "human_review_possible": 122,
+    "guided_experiments_specified": 123,
+    "human_review_possible": 123,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 122
+    "total_canonical_traps": 123
   },
   "traps": [
     {
@@ -9063,6 +9063,80 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "123",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 123 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

@@ -5,11 +5,11 @@
     "summary": {
       "counts_overlap": true,
       "endpoint_checks_implemented": 19,
-      "guided_experiments_specified": 122,
-      "human_review_possible": 122,
+      "guided_experiments_specified": 123,
+      "human_review_possible": 123,
       "log_checks_implemented": 9,
       "static_checks_implemented": 10,
-      "total_canonical_traps": 122
+      "total_canonical_traps": 123
     },
     "traps": [
       {
@@ -9077,6 +9077,80 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "123",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 123 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied configuration files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -12008,6 +12082,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "122",
       "untrusted_published_check_text": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 123 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 123 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "123",
+      "untrusted_published_check_text": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash"
     }
   ],
   "possible_unverified_leads": {
@@ -13335,8 +13433,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 122,
-    "content_sha256": "413446101368b67298bdf60bf48f415aa6d784ddf2abd2800d92089933622835",
+    "canonical_trap_count": 123,
+    "content_sha256": "ff4b9ca5f46e40280b4668bf06812531aafea593d0e361441bda1ecd7f0bbd7e",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -21851,6 +21949,88 @@
         "supersession": null,
         "symptom": "The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.",
         "title": "FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1"
+      },
+      {
+        "affected_models": [
+          "NemotronHForCausalLM"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "Contributor-measured on vLLM V1 build 0.1.dev1+g75231eff2.d20260809 (Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, DGX Spark (GB10, 121 GiB unified memory). The process split is a V1 architecture property, but the exact teardown behavior is build/launcher/signal dependent. Do not generalize the DGX Spark measurement into \"every vLLM V1 shutdown leaks memory.\" In particular, current upstream source has an EngineCore process manager with an explicit shutdown() path; graceful SIGTERM/service-manager teardown must be measured separately from parent-only SIGKILL.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "nemotronhforcausallm"
+          ],
+          "failure_stage": [
+            "startup"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [],
+          "node_count": [
+            "1"
+          ],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [
+            "nvfp4"
+          ],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [
+            "0.1"
+          ],
+          "topology": [
+            "single-node"
+          ]
+        },
+        "category": "runtime",
+        "check": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash",
+        "contributor": "vcruz305 (Victor Cruz)",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "contributor-measured, conditions as reported"
+        ],
+        "exact_conditions": "Contributor-measured on vLLM V1 build 0.1.dev1+g75231eff2.d20260809 (Blackwell/sm121 nightly), single-node uniproc executor, NemotronHForCausalLM (30B-A3B hybrid Mamba+MoE) at NVFP4, DGX Spark (GB10, 121 GiB unified memory). The process split is a V1 architecture property, but the exact teardown behavior is build/launcher/signal dependent. Do not generalize the DGX Spark measurement into \"every vLLM V1 shutdown leaks memory.\" In particular, current upstream source has an EngineCore process manager with an explicit shutdown() path; graceful SIGTERM/service-manager teardown must be measured separately from parent-only SIGKILL.",
+        "id": "123",
+        "known_limitations": "",
+        "mechanism": "vLLM V1 is deliberately multi-process. The current upstream architecture documentation separates the API server, EngineCore and GPU-worker processes; the API server talks to EngineCore over ZMQ, and EngineCore is a distinct process per data-parallel rank. Current upstream source also creates local EngineCore instances with multiprocessing and carries explicit graceful-shutdown/finalizer machinery. That distinction matters to the claim boundary. Cruz did not show that normal vLLM shutdown is universally broken. He showed that an abrupt direct SIGKILL of only the API-server PID did not propagate to the distinct EngineCore process on his pinned build. SIGKILL cannot run the parent process's normal cleanup/finalizer path. A launcher or shell pattern that only targets vllm serve can likewise miss a child whose process title is VLLM::EngineCore. The surviving EngineCore then remains a real live resource owner until separately terminated, so the next launch sees genuinely unavailable GPU memory and reports the generic startup utilization error.",
+        "mitigation": "Prefer graceful service teardown that lets vLLM's process manager clean up EngineCore and workers, and verify that the GPU allocation actually falls before relaunching. For a genuinely orphaned measured state, terminate the owning VLLM::EngineCore PID and any associated vLLM workers rather than lowering --gpu-memory-utilization to fit around the leak. For launchers you control, supervise the whole process tree/process group instead of retaining only the API-server PID. A setsid-style process group can make group teardown explicit, but validate the exact service-manager semantics on your stack rather than assuming one shell recipe is portable everywhere. Before changing memory flags in response to this startup error, first inspect the GPU process table. If no EngineCore PID owns the missing memory, this trap does not own the diagnosis; on DGX Spark/shared-memory systems see Trap 119 for moving shared-pool pressure and other reclaim states.",
+        "public_evidence_links": [
+          "https://github.com/vllm-project/vllm-metal/issues/479",
+          "https://github.com/vllm-project/vllm/blob/main/docs/design/arch_overview.md",
+          "https://github.com/vllm-project/vllm/blob/main/vllm/v1/engine/utils.py",
+          "https://github.com/vllm-project/vllm/issues/47266",
+          "https://github.com/vllm-project/vllm/issues/48234"
+        ],
+        "related_traps": [
+          "112",
+          "116",
+          "119"
+        ],
+        "source_path": "traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md",
+        "status": "contributor-measured, conditions as reported.",
+        "supersession": null,
+        "symptom": "You kill the outer vllm serve / API-server PID to relaunch with different flags — in the measured case, kill -9 <apiserverpid> — and the PID disappears from ps, but GPU memory does not come back. The next vllm serve launch then dies at startup with a message that looks like a bad memory-utilization setting: On the contributor's failing state, the surviving VLLM::EngineCore process was reported by nvidia-smi as holding 104277 MiB after the outer API-server PID had been killed. The same sequence occurred twice in the session and was cleared by killing the EngineCore PID directly. The trap is therefore not \"0.85 is too high\". The discriminating observation is that the process you killed is gone while a distinct EngineCore PID still owns the GPU allocation.",
+        "title": "abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory"
       }
     ],
     "schema_version": "1.1"

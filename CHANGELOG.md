@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-08-19
+
+### Trap 123: abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory
+
+Contributed by **vcruz305**; measured on a DGX Spark (GB10) running vLLM
+build `0.1.dev1+g75231eff2.d20260809` and `NemotronHForCausalLM` at NVFP4.
+Status **contributor-measured, conditions as reported**; the registry has not
+claimed an independent reproduction.
+
+- [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md)
+  records Cruz's contributor-measured parent-only SIGKILL failure: the outer
+  API-server PID exited while a distinct `VLLM::EngineCore` survived and still
+  owned 104277 MiB of GPU memory. Current upstream retains explicit graceful
+  EngineCore shutdown machinery, so the canonical claim is intentionally
+  scoped to abrupt/naive parent-only teardown rather than all vLLM shutdowns.
+- The fix is to kill the `VLLM::EngineCore` PID directly, found via
+  `ps aux` or by cross-referencing `nvidia-smi --query-compute-apps`, or to
+  launch inside a process group (`setsid`) and kill the whole group.
+- Offline adjudicator: `checks/vllm_enginecore_orphan_probe.py`.
+- Registry count moves from 122 to 123; doctor coverage remains 19, leaving
+  104 canonical entries unimplemented.
+
 ## 2026-08-17
 
 ### Trap 122: FULL CUDA-graph capture silently corrupts Qwen3.8 MTP verification on vLLM 0.27.1
