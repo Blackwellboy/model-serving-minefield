@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `bae6f620f82c9817364782260e8e1a94c3b4936bb8a986be3b75ff30c7841587`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `be775cb697321af8aa631694399e78e0d1d0ab7e8360fa1a0a4bb88de20b382d`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -546,5 +546,6 @@ L-series suggestions use a different shape and always remain non-canonical:
 - L047 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability. | check: Inspect the worker traceback and Thread subclass fields; preserve request/server telemetry separately; rename the field and rerun an offline join regression plus the bounded soak.
 - L048 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption. | check: Capture the exact provider-bound request, effective sampling/defaults and raw output, then repeat the same canary across enough runs and compare a higher-precision or otherwise controlled arm.
 - L049 [PUBLIC_SOURCE_UNREPRODUCED]: A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran. | check: Pin the exact image/build and model revision, prove the effective kernel/backend from runtime evidence on both arms, then run identical correctness canaries before comparing speed or coherence.
+- L050 [PUBLIC_SOURCE_UNREPRODUCED]: Qwen3.8 at a high reasoning-effort setting can consume the entire completion budget inside thinking and return empty final content, while prompt-only effort labels provide no hard reasoning-token ceiling. | check: On one pinned Qwen3.8 checkpoint/runtime, hold explicit reasoning_effort, max completion tokens, sampling and prompt constant; compare no budget versus a fixed thinking_token_budget while recording rendered prompt, reasoning/content token counts, finish reason, correctness and latency.
 
 When online, fetch the linked canonical source from the registry JSON or use `AGENT_START_HERE.md` before concluding a match. L-series IDs remain possible leads even when their lexical match is strong.

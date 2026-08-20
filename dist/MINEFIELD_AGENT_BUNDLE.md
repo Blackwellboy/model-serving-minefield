@@ -1908,6 +1908,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - L047 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.
 - L048 [FIRST_PARTY_OBSERVED_UNPROMOTED]: A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.
 - L049 [PUBLIC_SOURCE_UNREPRODUCED]: A GB10/SM121 NVFP4 serve is incoherent under one backend setting and coherent after requesting another backend, but configuration intent alone does not prove which kernel actually ran.
+- L050 [PUBLIC_SOURCE_UNREPRODUCED]: Qwen3.8 at a high reasoning-effort setting can consume the entire completion budget inside thinking and return empty final content, while prompt-only effort labels provide no hard reasoning-token ceiling.
 
 ## L-series possible/unverified lead records
 
@@ -2645,6 +2646,21 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Related canonical traps: 09, 10, 27
 - Source class: community_public_source
 - Notes: The public-source coherence claim remains unreproduced here. A separate first-party Qwen3.8 check found requested Marlin controls unrecognized on its tested build, sharpening the required requested-versus-effective-backend check without reproducing the external result.
+
+### L050: Sampler-enforced thinking budgets can bound Qwen3.8 reasoning without redefining the effort prompt
+
+- Canonical: no
+- Lead status: PUBLIC_SOURCE_UNREPRODUCED
+- Confidence: high
+- Symptom: Qwen3.8 at a high reasoning-effort setting can consume the entire completion budget inside thinking and return empty final content, while prompt-only effort labels provide no hard reasoning-token ceiling.
+- Possible mechanism: vLLM 0.27.1 exposes thinking_token_budget and implements sampler-side tracking that forces the configured end-of-thinking token sequence when the budget is exhausted; this separates an engine-enforced reasoning budget from prompt wording such as xhigh.
+- Confirmation check: On one pinned Qwen3.8 checkpoint/runtime, hold explicit reasoning_effort, max completion tokens, sampling and prompt constant; compare no budget versus a fixed thinking_token_budget while recording rendered prompt, reasoning/content token counts, finish reason, correctness and latency.
+- Refutation check: Show the exact vLLM build lacks the budget path, the request does not reach it, or a matched budget-vs-no-budget A/B fails to change the reasoning-limit behavior despite the sampler control being active.
+- Conditional mitigation: Where the pinned vLLM build and reasoning parser support it, prefer an explicitly measured sampler-side thinking budget over relying on an unbounded xhigh prompt instruction; do not retrofit the setting into historical benchmark arms.
+- Affected stacks: Qwen3.8-27B, vLLM 0.27.1, reasoning parser, DGX Spark GB10
+- Related canonical traps: 03, 07, 16
+- Source class: community_public_source
+- Notes: Implementation existence is source-confirmed in vLLM 0.27.1. The reported Qwen3.8 GB10 numeric A/B (no budget: 97,708 reasoning chars / 0 content; budget 1500: 5,562 reasoning chars / 18,512 content) remains external contributor measurement and has not been reproduced by Blackwellboy.
 
 ## Reporting a miss
 
