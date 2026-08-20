@@ -1,0 +1,84 @@
+name: maint-vcruz123-finalize
+
+on:
+  push:
+    branches:
+      - maint/integrate-vcruz-trap123-20260820
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: ${{ !contains(github.event.head_commit.message, '[skip vcruz finalize]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: maint/integrate-vcruz-trap123-20260820
+          fetch-depth: 0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: align public Trap 123 wording with adjudicated scope
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('README.md')
+          text = p.read_text(encoding='utf-8')
+          old = '| Killed the vllm serve process, GPU memory did not come back, and the next launch OOMs at startup | vLLM V1 EngineCore runs as a separate child process; killing the API server PID does not kill it | [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md) | contributor-measured, conditions as reported |'
+          new = '| Killed only the outer vLLM API-server PID, GPU memory did not come back, and the next launch OOMs at startup | Abrupt parent-only teardown can leave a distinct `VLLM::EngineCore` alive and owning GPU memory; bind the residual allocation to that PID before changing memory flags | [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md) | contributor-measured, conditions as reported |'
+          if old not in text:
+              raise SystemExit('README Trap 123 row anchor not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          p = Path('CHANGELOG.md')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace(
+              '### Trap 123: killing the vLLM V1 API server does not kill its EngineCore worker, and the orphan keeps the GPU memory',
+              '### Trap 123: abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory',
+              1,
+          )
+          old = ('- [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md)\n'
+                 '  records that vLLM\'s V1 engine runs EngineCore as a separate OS process from\n'
+                 '  the API server, and killing the API server PID (including SIGKILL) does not\n'
+                 '  reach that child. The orphaned EngineCore keeps every megabyte of weights\n'
+                 '  and KV cache resident, and the next `vllm serve` launch fails at startup\n'
+                 '  with a GPU-memory-utilization ValueError that reads like a config problem.')
+          new = ('- [123](traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md)\n'
+                 '  records Cruz\'s contributor-measured parent-only SIGKILL failure: the outer\n'
+                 '  API-server PID exited while a distinct `VLLM::EngineCore` survived and still\n'
+                 '  owned 104277 MiB of GPU memory. Current upstream retains explicit graceful\n'
+                 '  EngineCore shutdown machinery, so the canonical claim is intentionally\n'
+                 '  scoped to abrupt/naive parent-only teardown rather than all vLLM shutdowns.')
+          if old not in text:
+              raise SystemExit('CHANGELOG Trap 123 body anchor not found')
+          text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: regenerate deterministic Minefield surfaces
+        run: |
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git diff --check
+
+      - name: commit final public surfaces
+        run: |
+          git config user.name "blackwellboy"
+          git config user.email "76774064+Blackwellboy@users.noreply.github.com"
+          git add -- README.md CHANGELOG.md \
+            dist \
+            minefield/data \
+            registry \
+            web/registry-data.js \
+            skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo "No final changes to commit"
+            exit 0
+          fi
+          git commit -m "Align Trap 123 public scope and regenerate [skip vcruz finalize]"
+          git push origin HEAD:maint/integrate-vcruz-trap123-20260820
