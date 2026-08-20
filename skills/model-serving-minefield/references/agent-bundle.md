@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `57b6fd68eacc118afd3226f9585f1f15ad2ccba179961bb10a2dedf2ea96ab8b`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `58e5f1f21b53f381c5fd3b528b7f71cd13d254558e388be9e98b4b1853579f18`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -493,6 +493,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 120: The server is completely stable single-stream and at two concurrent requests. At three or more, the engine dies. Concurrency is the only variable: same prompts, same lengths, same model, same everything else. There is no degradation curve beforehand — it works, works, works, then the engine is gone. Because it appears only under load, it reads as a memory-pressure, scheduler or fabric problem. None of those are involved in the contributor's measured case, and ordinary short smoke tests passed.
 - 121: A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.
 - 122: The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.
+- 123: You kill the vllm serve process to relaunch with different flags — kill -9 <pid> on the PID your shell reported (or the PID a process manager tracks) — expecting the GPU to come back. ps aux shows that PID gone. The very next vllm serve launch dies at startup with: Nothing else is running. The obvious reads are all wrong: the fraction isn't too high, no other tenant is on the box, and the process you killed really is gone from ps.
 
 ## Compact possible/unverified lead index
 
