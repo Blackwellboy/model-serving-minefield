@@ -4,7 +4,7 @@
 
 ### Trap 124: GB10 can stay in a low-power state across reboot while reporting P0 and high utilization
 
-First-party measurement on a DGX Spark / GB10 (Dexter). Status **measured here,
+First-party measurement on a DGX Spark / GB10. Status **measured here,
 raw not published**.
 
 - [124](traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md)

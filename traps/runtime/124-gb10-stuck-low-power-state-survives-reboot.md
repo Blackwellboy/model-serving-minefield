@@ -2,11 +2,11 @@
 
 **Found by Blackwellboy.**
 
-**Status: measured here, raw not published.** First-party Dexter DGX Spark measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, and the matching post-recovery throughput. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree; the public numbers below are the sanitized adjudicated summary.
+**Status: measured here, raw not published.** First-party DGX Spark / GB10 measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, and the matching post-recovery throughput. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree; the public numbers below are the sanitized adjudicated summary.
 
 **Symptom.** A DGX Spark / GB10 suddenly serves the same model much more slowly even though the workload still reports high GPU utilization, `P0`, cool temperatures, and no active thermal or software power-cap throttle reason. A normal reboot does not necessarily clear it, and `nvidia-smi -lgc` may accept a requested applications clock without actually raising the observed SM/graphics clock under load.
 
-On the measured Dexter state, sustained load showed approximately:
+On the measured unit, sustained load showed approximately:
 
 - GPU utilization: **96%**
 - SM/graphics clock median: **799 MHz** (apps/default clock 2418 MHz; max 3003 MHz)
@@ -36,13 +36,13 @@ The experiment does **not** prove which firmware component causes the state. In 
 
 A prior clock-lock A/B also failed to rescue performance: `nvidia-smi -lgc 2418,2418` applied successfully, but observed SM clocks remained around 0.7-0.8 GHz and Ornith decode stayed about 44.2 tok/s. That rules out "just set the applications clock" as the fix on this state.
 
-**Stacks and builds bitten.** First-party measurement on an NVIDIA DGX Spark / GB10 system (Dexter), Ubuntu 24.04.4, kernel `6.17.0-1029-nvidia`, NVIDIA driver `580.173.02`, BIOS `5.36_GX10DGX`. The serving workload was `ornith-ai/Ornith-1.5-35B-A3B-NVFP4` under the pinned Cruz SGLang environment (`0.5.18.dev760+ge5a3e4d30`, PyTorch `2.13.0+cu130`, FlashInfer `0.6.17`) and the unchanged Cruz quick/prefill benchmark scripts.
+**Stacks and builds bitten.** First-party measurement on an NVIDIA DGX Spark / GB10 system, Ubuntu 24.04.4, kernel `6.17.0-1029-nvidia`, NVIDIA driver `580.173.02`, BIOS `5.36` (DGX Spark OEM revision string recorded privately). The serving workload was `ornith-ai/Ornith-1.5-35B-A3B-NVFP4` under the pinned Cruz SGLang environment (`0.5.18.dev760+ge5a3e4d30`, PyTorch `2.13.0+cu130`, FlashInfer `0.6.17`) and the unchanged Cruz quick/prefill benchmark scripts.
 
-The symptom is platform-level rather than SGLang-specific: before the recovery, the old Dexter vLLM lane and exact Cruz vLLM/SGLang reproductions all clustered around roughly 44-49 tok/s decode, while quality/agentic scores stayed close to the published reference. That cross-engine pattern is what eventually pushed the investigation below the serving engine.
+The symptom is platform-level rather than SGLang-specific: before the recovery, the old vLLM lane on the same unit and exact Cruz vLLM/SGLang reproductions all clustered around roughly 44-49 tok/s decode, while quality/agentic scores stayed close to the published reference. That cross-engine pattern is what eventually pushed the investigation below the serving engine.
 
 Independent public reports describe the same symptom family on DGX Spark / GB10 hardware:
 
-- NVIDIA Developer Forums, "DGX Spark (GB10) GPU clock pinned at 721 MHz under full load — no throttling, not liftable via nvidia-smi": https://forums.developer.nvidia.com/t/dgx-spark-gb10-gpu-clock-pinned-at-721-mhz-under-full-load-no-throttling-not-liftable-via-nvidia-smi/376039
+- NVIDIA Developer Forums, "DGX Spark (GB10) GPU clock pinned at 721 MHz under full load - no throttling, not liftable via nvidia-smi": https://forums.developer.nvidia.com/t/dgx-spark-gb10-gpu-clock-pinned-at-721-mhz-under-full-load-no-throttling-not-liftable-via-nvidia-smi/376039
 - NVIDIA Developer Forums, "DGX Spark Performance Degradation - GPU Power Draw Issue": https://forums.developer.nvidia.com/t/dgx-spark-performance-degradation-gpu-power-draw-issue/361294
 - NVIDIA Developer Forums, "GB10 is power limited after crash": https://forums.developer.nvidia.com/t/gb10-is-power-limited-after-crash/366590
 
@@ -70,7 +70,7 @@ A single low clock sample from a short kernel is not enough. The measured diagno
 
 **The fix.** Preserve evidence first, then perform a clean shutdown and a **true power removal**, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts.
 
-On the measured Dexter unit this restored normal clocks and serving throughput without a Torch rebuild, driver downgrade, FlashInfer change, model change, or runtime tuning.
+On the measured unit this restored normal clocks and serving throughput without a Torch rebuild, driver downgrade, FlashInfer change, model change, or runtime tuning.
 
 Do not deliberately induce OOMs/crashes to reproduce the fault. Do not call a firmware update causal unless it is tested separately. If the state recurs, record the trigger and firmware/PD/EC/SoC inventory before changing it; recurrence data is more valuable than an uninstrumented update.
 
@@ -78,6 +78,6 @@ NVIDIA's DGX Spark hardware guide specifies a 240 W external power supply and a 
 
 **Found.** 2026-08-21, during an exact Victor Cruz Ornith-1.5-35B DGX Spark vLLM/SGLang reproduction. Quality reproduced closely while throughput did not. Cross-engine speed loss, passive telemetry, exclusive microbenchmarks, and an ineffective clock-lock A/B narrowed the issue to the host power/clock path. A complete AC power removal then recovered clocks, power, BF16 throughput, decode, and uncached prefill together.
 
-**Attribution.** **Blackwellboy** — first-party finder and measurement. Victor Cruz / @vcruz305 retains credit for the published Ornith DGX Spark serving recipe/reference that made the performance discrepancy measurable. Public NVIDIA forum reporters linked above are credited as independent corroboration of the same GB10 symptom family.
+**Attribution.** **Blackwellboy** - first-party finder and measurement. Victor Cruz / @vcruz305 retains credit for the published Ornith DGX Spark serving recipe/reference that made the performance discrepancy measurable. Public NVIDIA forum reporters linked above are credited as independent corroboration of the same GB10 symptom family.
 
 **Related.** [09](09-image-choice-changes-outcome.md) (runtime image changes kernel path), [10](../quantization/10-quant-label-is-not-the-kernel-path.md) (quant label does not prove execution path), [54](../evaluation/54-run-order-and-warm-cache-artifacts.md) (apparent speed changes need controlled A/B), [107](../memory/107-soak-duration-changes-the-verdict.md) (longer observation can change a runtime verdict), [119](../memory/119-free-memory-drifts-down-after-churn.md) (DGX Spark unified-memory state can mislead runtime diagnosis).
