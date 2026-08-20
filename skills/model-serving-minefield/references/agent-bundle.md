@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `58e5f1f21b53f381c5fd3b528b7f71cd13d254558e388be9e98b4b1853579f18`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `bae6f620f82c9817364782260e8e1a94c3b4936bb8a986be3b75ff30c7841587`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -493,7 +493,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 120: The server is completely stable single-stream and at two concurrent requests. At three or more, the engine dies. Concurrency is the only variable: same prompts, same lengths, same model, same everything else. There is no degradation curve beforehand — it works, works, works, then the engine is gone. Because it appears only under load, it reads as a memory-pressure, scheduler or fabric problem. None of those are involved in the contributor's measured case, and ordinary short smoke tests passed.
 - 121: A multi-node launcher completes cleanly and prints a container ID for every worker, but one or more workers never become usable ranks. In the contributor's failing run, docker ps -a showed the affected worker containers in Created while the head waited for ranks that never arrived. The container IDs are therefore a false readiness signal: they prove that Docker created objects, not that the remote command survived transport or that the workers reached the serving entrypoint.
 - 122: The server is fully ready, /v1/models responds, requests return HTTP 200 with normal finishreason: stop, and no serving error is logged, yet MTP generations collapse into empty content, missing tool calls, failed needle recall, or repetitive text such as a a a ... / think think think .... The failure was first isolated while using turboquant4bitnc KV, but a later control reproduced the same collapse with fp8 KV under the same FULL CUDA-graph capture. That refutes the original hypothesis that 4-bit KV itself is the gate.
-- 123: You kill the vllm serve process to relaunch with different flags — kill -9 <pid> on the PID your shell reported (or the PID a process manager tracks) — expecting the GPU to come back. ps aux shows that PID gone. The very next vllm serve launch dies at startup with: Nothing else is running. The obvious reads are all wrong: the fraction isn't too high, no other tenant is on the box, and the process you killed really is gone from ps.
+- 123: You kill the outer vllm serve / API-server PID to relaunch with different flags — in the measured case, kill -9 <apiserverpid> — and the PID disappears from ps, but GPU memory does not come back. The next vllm serve launch then dies at startup with a message that looks like a bad memory-utilization setting: On the contributor's failing state, the surviving VLLM::EngineCore process was reported by nvidia-smi as holding 104277 MiB after the outer API-server PID had been killed. The same sequence occurred twice in the session and was cleared by killing the EngineCore PID directly. The trap is therefore not "0.85 is too high". The discriminating observation is that the process you killed is gone while a distinct EngineCore PID still owns the GPU allocation.
 
 ## Compact possible/unverified lead index
 
