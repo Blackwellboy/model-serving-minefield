@@ -2957,7 +2957,7 @@
       "control": "Repeat with the suspected variable removed or with the known-good condition.",
       "expected_duration": "5-30 minutes unless the entry names a soak",
       "human_review_still_required": true,
-      "limitations": "",
+      "limitations": "First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does not include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.",
       "prerequisites": [
         "A disposable or explicitly authorised test surface",
         "Raw output capture"

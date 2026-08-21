@@ -2,23 +2,27 @@
 
 ## 2026-08-21
 
-### Trap 124: GB10 can stay in a low-power state across reboot while reporting P0 and high utilization
+### Trap 124: DGX Spark / GB10 can get stuck in a low-power state while reporting P0 and high utilization
 
-First-party measurement on a DGX Spark / GB10. Status **measured here,
+First-party measurement on an NVIDIA DGX Spark using GB10. Status **measured here,
 raw not published**.
 
-- [124](traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md)
+- [124](traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
   records a persistent low-power platform state: under sustained load the unit
   stayed at high utilization and `P0` while SM/graphics clocks and power draw
   remained abnormally low, with both low-level BF16 compute and LLM serving
   degraded. `nvidia-smi -lgc` accepted an applications-clock lock without
   recovering observed clocks or throughput. A complete AC power removal changed
   the platform power state; clocks, power, BF16, and Ornith SGLang throughput
-  recovered together.
+  recovered together. A post-recovery ~6h33m longevity window (505 telemetry
+  samples; decode 71.47-74.48 tok/s; BF16 91.49-92.64 TFLOP/s;
+  `LOW_POWER_RECURRENCE=NO`) showed the recovered state remained healthy without
+  proving a permanent fix or recurrence rate.
 - Claim boundary is deliberate: the entry proves the stuck low-power state and
-  the AC-removal recovery on the measured unit. It does **not** prove a specific
-  PD, EC, or SoC firmware root cause, a universal OOM trigger, or applicability
-  to every GB10.
+  the AC-removal recovery on the measured NVIDIA DGX Spark / GB10 unit. It does
+  **not** prove a specific PD, EC, or SoC firmware root cause, that ordinary
+  reboot fails as a first-party measured claim (public reports are corroboration
+  only), a permanent fix, or first-party applicability beyond DGX Spark / GB10.
 - Registry count moves from 123 to 124; doctor coverage remains 19, leaving
   105 canonical entries unimplemented.
 
@@ -119,10 +123,10 @@ public lead: **TheTom/offlabel**.
 
 Extends existing entries rather than allocating four new numbers:
 
-- [trap 03](traps/reasoning/03-enable-thinking-default-drift.md) — unset effort defaults to **xhigh**
-- [trap 07](traps/reasoning/07-reasoning-effort-silently-ignored.md) — **medium** accepted without instruction
-- [trap 04](traps/template/04-history-reasoning-stripping.md) — preserve defaults **true** (replay polarity)
-- [trap 25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) — empty think wrappers on content-only priors
+- [trap 03](traps/reasoning/03-enable-thinking-default-drift.md) - unset effort defaults to **xhigh**
+- [trap 07](traps/reasoning/07-reasoning-effort-silently-ignored.md) - **medium** accepted without instruction
+- [trap 04](traps/template/04-history-reasoning-stripping.md) - preserve defaults **true** (replay polarity)
+- [trap 25](traps/template/25-empty-think-blocks-poison-prefix-cache.md) - empty think wrappers on content-only priors
 
 Public offline check + Apache-2.0 template fixture:
 `checks/reproduce_qwen38_reasoning_config_traps.py`,

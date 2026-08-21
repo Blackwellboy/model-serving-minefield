@@ -1,10 +1,15 @@
-# Trap 124: GB10 can stay in a low-power state across reboot while reporting P0 and high utilization
+# Trap 124: DGX Spark / GB10 can get stuck in a low-power state while reporting P0 and high utilization
 
 **Found by Blackwellboy.**
 
-**Status: measured here, raw not published.** First-party DGX Spark / GB10 measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, and the matching post-recovery throughput. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree; the public numbers below are the sanitized adjudicated summary.
+**Status: measured here, raw not published.** First-party NVIDIA DGX Spark (GB10) measurements on 2026-08-21 captured the degraded state, a one-variable complete AC power-removal recovery, matching post-recovery throughput, and a post-recovery longevity observation window. The raw telemetry and benchmark receipts remain in the private BlackwellBench evidence tree; the public numbers below are the sanitized adjudicated summary.
 
-**Symptom.** A DGX Spark / GB10 suddenly serves the same model much more slowly even though the workload still reports high GPU utilization, `P0`, cool temperatures, and no active thermal or software power-cap throttle reason. A normal reboot does not necessarily clear it, and `nvidia-smi -lgc` may accept a requested applications clock without actually raising the observed SM/graphics clock under load.
+**Hardware scope.**
+
+- **FIRST-PARTY measured:** NVIDIA DGX Spark using GB10.
+- **Broader GB10-family / OEM applicability:** corroborated / externally reported only unless separately measured. Do not treat other OEM board or SoC marketing names as synonyms for this first-party DGX Spark / GB10 claim.
+
+**Symptom.** A DGX Spark / GB10 suddenly serves the same model much more slowly even though the workload still reports high GPU utilization, `P0`, cool temperatures, and no active thermal or software power-cap throttle reason. `nvidia-smi -lgc` may accept a requested applications clock without actually raising the observed SM/graphics clock under load.
 
 On the measured unit, sustained load showed approximately:
 
@@ -30,13 +35,17 @@ A full AC power removal changed only the platform power state and produced a coo
 
 Post-cycle decode repeats were 73.92 / 74.02 / 73.89 tok/s, within about 1 tok/s of the published SGLang reference. The 43k uncached prefill result recovered to 5225 tok/s, at or above the published 4839 tok/s reference.
 
-**Mechanism.** The measured mechanism boundary is a **persistent GB10 low-power platform state**: the GPU remains usable and heavily utilized but does not boost into the normal sustained SM-clock/power range, and the degraded state survives ordinary software-level controls. A complete AC power removal reset that state; clocks, low-level compute throughput, and model-serving throughput recovered together.
+**Mechanism.** The measured mechanism boundary is a **persistent GB10 low-power platform state**: the GPU remains usable and heavily utilized but does not boost into the normal sustained SM-clock/power range, and ordinary software-level controls (including applications-clock lock) do not recover it. A complete AC power removal reset that state; clocks, low-level compute throughput, and model-serving throughput recovered together.
 
-The experiment does **not** prove which firmware component causes the state. In particular, this entry does not claim that a specific USB-C PD firmware, EC firmware, SoC firmware, driver version, or runtime bug is the root cause. The one-variable recovery proves the stuck low-power state as the serving-performance mechanism on this measured unit, not the internal component that created it.
+Causal boundary on the measured NVIDIA DGX Spark / GB10 unit: the low-power stuck state is strongly established; complete AC power removal recovered it; the exact PD/EC/SoC firmware root cause is **not** proven. This entry does not claim that a specific USB-C PD firmware, EC firmware, SoC firmware, driver version, or runtime bug is the root cause.
+
+Post-recovery longevity (first-party observation window): after recovery the same unit was observed for **23605 s (~6h33m)** with telemetry samples **505**, decode canaries **26**, BF16 canaries **7**, SM clocks **2385-2405 MHz**, decode **71.47-74.48 tok/s**, BF16 **91.49-92.64 TFLOP/s**, and `LOW_POWER_RECURRENCE=NO`. This does **not** prove a permanent fix or establish a recurrence rate; it proves only that the recovered state remained healthy throughout this observation window.
 
 A prior clock-lock A/B also failed to rescue performance: `nvidia-smi -lgc 2418,2418` applied successfully, but observed SM clocks remained around 0.7-0.8 GHz and Ornith decode stayed about 44.2 tok/s. That rules out "just set the applications clock" as the fix on this state.
 
-**Stacks and builds bitten.** First-party measurement on an NVIDIA DGX Spark / GB10 system, Ubuntu 24.04.4, kernel `6.17.0-1029-nvidia`, NVIDIA driver `580.173.02`, BIOS `5.36` (DGX Spark OEM revision string recorded privately). The serving workload was `ornith-ai/Ornith-1.5-35B-A3B-NVFP4` under the pinned Cruz SGLang environment (`0.5.18.dev760+ge5a3e4d30`, PyTorch `2.13.0+cu130`, FlashInfer `0.6.17`) and the unchanged Cruz quick/prefill benchmark scripts.
+**What this does and does not say.** First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does **not** include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.
+
+**Stacks and builds bitten.** First-party measurement on an NVIDIA DGX Spark / GB10 system, Ubuntu 24.04.4, kernel `6.17.0-1029-nvidia`, NVIDIA driver `580.173.02`, BIOS revision string recorded privately. The serving workload was `ornith-ai/Ornith-1.5-35B-A3B-NVFP4` under the pinned Cruz SGLang environment (`0.5.18.dev760+ge5a3e4d30`, PyTorch `2.13.0+cu130`, FlashInfer `0.6.17`) and the unchanged Cruz quick/prefill benchmark scripts.
 
 The symptom is platform-level rather than SGLang-specific: before the recovery, the old vLLM lane on the same unit and exact Cruz vLLM/SGLang reproductions all clustered around roughly 44-49 tok/s decode, while quality/agentic scores stayed close to the published reference. That cross-engine pattern is what eventually pushed the investigation below the serving engine.
 
@@ -46,7 +55,7 @@ Independent public reports describe the same symptom family on DGX Spark / GB10 
 - NVIDIA Developer Forums, "DGX Spark Performance Degradation - GPU Power Draw Issue": https://forums.developer.nvidia.com/t/dgx-spark-performance-degradation-gpu-power-draw-issue/361294
 - NVIDIA Developer Forums, "GB10 is power limited after crash": https://forums.developer.nvidia.com/t/gb10-is-power-limited-after-crash/366590
 
-Those reports are corroboration only; they do not change this entry's first-party status or prove the internal firmware cause.
+Those reports are corroboration only; they do not change this entry's first-party status, do not expand first-party hardware scope beyond NVIDIA DGX Spark / GB10, and do not prove the internal firmware cause.
 
 **The check.** Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together:
 
@@ -76,7 +85,7 @@ Do not deliberately induce OOMs/crashes to reproduce the fault. Do not call a fi
 
 NVIDIA's DGX Spark hardware guide specifies a 240 W external power supply and a GB10 SoC TDP of 140 W, and says the provided 240 W adapter is required for optimal performance: https://docs.nvidia.com/dgx/dgx-spark/dgx-spark.pdf
 
-**Found.** 2026-08-21, during an exact Victor Cruz Ornith-1.5-35B DGX Spark vLLM/SGLang reproduction. Quality reproduced closely while throughput did not. Cross-engine speed loss, passive telemetry, exclusive microbenchmarks, and an ineffective clock-lock A/B narrowed the issue to the host power/clock path. A complete AC power removal then recovered clocks, power, BF16 throughput, decode, and uncached prefill together.
+**Found.** 2026-08-21, during an exact Victor Cruz Ornith-1.5-35B DGX Spark vLLM/SGLang reproduction. Quality reproduced closely while throughput did not. Cross-engine speed loss, passive telemetry, exclusive microbenchmarks, and an ineffective clock-lock A/B narrowed the issue to the host power/clock path. A complete AC power removal then recovered clocks, power, BF16 throughput, decode, and uncached prefill together. A subsequent ~6h33m recovered-state observation window showed no low-power recurrence without proving permanence.
 
 **Attribution.** **Blackwellboy** - first-party finder and measurement. Victor Cruz / @vcruz305 retains credit for the published Ornith DGX Spark serving recipe/reference that made the performance discrepancy measurable. Public NVIDIA forum reporters linked above are credited as independent corroboration of the same GB10 symptom family.
 

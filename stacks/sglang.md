@@ -9,8 +9,8 @@
 This page began as a zero-entry page, when "no page" and "no entries" read the
 same from outside and meant different things. **That is no longer the case:
 four entries now name SGLang.** Three are contributor-measured request/template
-findings; [124](../traps/runtime/124-gb10-stuck-low-power-state-survives-reboot.md)
-is a first-party GB10 platform low-power state that degraded SGLang throughput
+findings; [124](../traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
+is a first-party NVIDIA DGX Spark / GB10 platform low-power state that degraded SGLang throughput
 on the measured unit without being SGLang-specific. The zero-entry caveat is
 kept below only as the reason the page was created, not as a description of the
 stack today.
