@@ -3,7 +3,7 @@
 **Measured here:** yes (the primary serving lane here)
 
 
-**52 entries name vLLM** in their evidence surfaces (see
+**53 entries name vLLM** in their evidence surfaces (see
 [how that was counted](README.md#how-those-counts-were-derived-and-what-they-do-not-mean)),
 which makes it the most-covered stack here and also the one where a count is
 least meaningful. Below is the shortlist that matters.
