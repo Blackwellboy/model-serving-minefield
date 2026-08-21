@@ -119,3 +119,11 @@ Prior public lead / report: TheTom/offlabel. Independent first-party
 reproduction: Blackwellboy.
 
 *Status of this addendum: reproduced here (runnable public template check).*
+
+## Added 2026-08-21: DeepSeek V4 stock tokenizer mislabeled the levels it did implement
+
+Public source evidence from `tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark` shows a nastier **partially implemented** version of this trap on the recipe's stock DeepSeek V4 tokenizer path. The base image carried one constant named `REASONING_EFFORT_MAX`, but the source investigation found that constant byte-identical to DeepSeek's **high** prompt, while the request normalizer collapsed everything except `max`/`xhigh` into an internal `high` state that injected nothing. Net effect before the merged fix: `low` was not a distinct level, ordinary `high` injected no prefix, `max` received the model's high text, and DeepSeek's actual max prompt was unreachable.
+
+PR #24 restored the three-level table from the checkpoint's own encoder and verified distinct live `/tokenize` prompt lengths of **51 / 527 / 577 tokens for low / high / max**. It also documents the behavior change clearly: existing callers of `max` receive a stronger prompt after the fix.
+
+Source: [merged PR #24](https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/pull/24), read 2026-08-21. This is **public upstream corroboration, not a first-party reproduction by this registry**. It extends the core lesson beyond "parameter ignored": a field can be accepted, normalized, and partially wired while its labels point at the wrong semantic levels. Dump/render the actual prompt before naming an effort arm.
