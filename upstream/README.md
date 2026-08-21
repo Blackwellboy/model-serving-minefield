@@ -57,6 +57,16 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U14, separate chat_template.jinja is not loaded](U14-tgi-separate-chat-template-jinja-not-loaded.md) | TGI | none | open |
 | [U15, an MTP-labelled checkpoint does not prove MTP is executed](U15-mlx-mtp-label-does-not-prove-mtp-runtime.md) | mlx_lm | none | open |
 | [U16, MTP corrupts output at a concurrency/batch boundary](U16-vllm-mtp-corrupts-at-concurrency-boundary.md) | vLLM | none | open |
+| [U17, client stop strings fire inside reasoning and erase the answer](U17-vllm-stop-strings-fire-inside-reasoning.md) | vLLM / DeepSeek V4 | maintainer confirmed | closed, fixed |
+| [U18, empty tool_calls deltas hide valid streamed text](U18-vllm-empty-tool-calls-delta-hides-content.md) | vLLM / agent clients | maintainer confirmed | closed, fixed |
+| [U19, shared multi-node JIT caches corrupt generated build products](U19-multinode-shared-jit-cache-corrupts-build-products.md) | vLLM / multi-node | maintainer confirmed | closed, fixed |
+| [U20, a direct GB10 QSFP pair can use only one of two NICs](U20-gb10-direct-qsfp-single-hca-half-bandwidth.md) | DGX Spark / NCCL | maintainer confirmed | closed, fixed |
+| [U21, speculative stream chunks are decode steps, not token counts](U21-spec-decode-stream-chunks-are-not-tokens.md) | vLLM / speculative decode | maintainer confirmed | closed, fixed |
+| [U22, the DSpark draft loader silently drops shared-expert weights](U22-dspark-loader-silently-drops-shared-expert-weights.md) | vLLM DSpark / DeepSeek V4 | maintainer confirmed | closed, fixed |
+| [U23, invalid padding indices can drive a sparse-KV gather out of bounds](U23-deepseek-sparse-index-padding-token-oob.md) | vLLM / DeepSeek V4 | maintainer confirmed | closed, fixed |
+| [U24, stale DSpark slot ids can kill the engine at request condensation](U24-dspark-stale-slot-id-after-request-condensation.md) | vLLM DSpark | maintainer confirmed | closed, fixed |
+| [U25, naive uniqueness metrics can call a reasoning loop fresh text](U25-loop-detector-block-uniqueness-misses-templated-loops.md) | evaluation / reasoning traces | maintainer confirmed | closed, fixed |
+| [U26, EngineDead can still exit the serving container with code 0](U26-vllm-enginedead-container-exits-zero-and-stays-down.md) | vLLM / Docker | maintainer confirmed | closed, fixed |
 
 ## Where these came from, and what did not survive
 
@@ -76,6 +86,15 @@ loader source inspection; and vLLM's MTP corruption report accumulated
 additional cross-hardware evidence while the root cause remained unresolved.
 The audit trail is in
 [`mining/2026-08-14-upstream-candidate-refresh.md`](../mining/2026-08-14-upstream-candidate-refresh.md).
+
+U17-U26 came from a 2026-08-21 review of the current
+`tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark` tree and its
+merged PR/issue evidence. The pass deliberately did **not** turn every source
+claim into an upstream entry: reasoning-field and reasoning-effort findings
+extend existing canonical traps 01 and 07; the unresolved CUBLAS engine-death
+root cause, non-default-port health-check bug, fragmented-loop limitation and
+other secondary leads remain in
+[`mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md`](../mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md).
 
 The procedural rule from the first pass still holds: **the mining summary is a
 lead, not the source.** Read the current tracker thread, preserve corrections
