@@ -153,9 +153,9 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
 
 ### Q9. Which uncovered entries deserve a doctor check?
 
-- **Claim under test.** The doctor implements checks for **19 of 123** entries and
+- **Claim under test.** The doctor implements checks for **19 of 124** entries and
   says so on every run. That is a coverage statement, not a plan. Which of the
-  104 uncovered entries are reachable by a request-shaped probe is unanswered.
+  105 uncovered entries are reachable by a request-shaped probe is unanswered.
 - **Source.** PRIMARY, ours.
 - **Needs.** No hardware. Reading, plus a lane to validate any check written.
 - **CONFIRM.** A candidate is reachable if a probe can distinguish the trap from
