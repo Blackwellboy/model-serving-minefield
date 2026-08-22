@@ -13532,7 +13532,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 124,
-    "content_sha256": "3abb636b0b1fceea77a97107a5da56319880e9b6bfbe243ef999e03766429a23",
+    "content_sha256": "1ccabb13da513b9764cc7609eadae06a4d042596c88205c1a5d15eb7f54d4dbd",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -13601,7 +13601,8 @@
         "mitigation": "The snippet above, applied to every reasoning-reading tool in your stack at once, plus the positive-control assertion in your preflight.",
         "public_evidence_links": [
           "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/cross-model",
-          "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes"
+          "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes",
+          "https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/pull/23"
         ],
         "related_traps": [
           "02",
@@ -14052,7 +14053,9 @@
         "known_limitations": "",
         "mechanism": "The request schema accepts a reasoningeffort parameter, the server returns 200, and the chat template has no handling for it at all. The parameter parses, validates, and does nothing. On templates like this, prompting is the only depth lever that exists.",
         "mitigation": "Remove the dead knob from your configs and your conclusions. If you need depth control on such a template, it has to come from the prompt.",
-        "public_evidence_links": [],
+        "public_evidence_links": [
+          "https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/pull/24"
+        ],
         "related_traps": [
           "04",
           "63",
