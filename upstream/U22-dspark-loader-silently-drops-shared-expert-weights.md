@@ -10,6 +10,8 @@
 
 **Primary source.** [source commit 8a62e8b8](https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/commit/8a62e8b8d04e5c65d4b4b9dc60134f5b3547f7c5), read on 2026-08-21, including `DSPARK-SHARED-EXPERT-FIX.md` and the README update.
 
+**Registry relationship.** This upstream record overlaps the already-routed open canonical candidate **Q17 / Issue #38** (`[trap] A DSpark draft loader silently drops the shared expert`). It is corroborating/upstream evidence for that candidate, **not a second independent discovery and not a new canonical trap number**. Q17 remains deliberately unnumbered until a promotion PR is built from current `main` with its evidence split and CONFIRM/REFUTE gate preserved. See https://github.com/Blackwellboy/model-serving-minefield/issues/38 and `mining/OPEN_QUESTIONS.md`.
+
 **Symptom.** Swapping to the official DeepSeek-V4-Flash-0731 checkpoint roughly halves speculative decode throughput while answer quality remains correct. Normal INFO-level startup logs report no obvious failed load, so the slowdown looks like a checkpoint regression or hardware/config problem.
 
 The source measured, with the loader fix as the intended variable, draft acceptance moving from 25.7% to 60.2%, mean accepted tokens/step from 2.28 to 4.01, mean decode from 32.7 to 55.4 tok/s and peak from 42.0 to 66.1 tok/s. Decode steps/s stayed around 14, localizing the deficit to draft acceptance rather than target step time.
@@ -28,4 +30,4 @@ Pin the affected runtime/checkpoint. At load time, enumerate checkpoint tensors 
 
 ## Attribution
 
-Root-caused, measured and documented by @tonyd2wild in the source recipe. The registry has not independently reproduced it.
+Root-caused, measured and documented by @tonyd2wild in the source recipe. The registry has not independently reproduced it. This evidence should remain linked to Q17 / Issue #38 rather than being presented as a separate canonical discovery.
