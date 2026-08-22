@@ -108,3 +108,9 @@ next one. Enumerate the keys on **each route you use**, not once per server.
 
 *Status of this addendum: reproduced here. Both the server and the model are
 free to obtain and the three routes are three curl calls.*
+
+## Added 2026-08-21: DeepSeek V4 recipe harnesses measured the wrong response field too
+
+Public source evidence from the `tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark` recipe adds another vLLM/DeepSeek instance of the same mechanism. On that runtime, responses use `message.reasoning` and `delta.reasoning`; `reasoning_content` is deprecated/input-only. Two bundled benchmark tools (`benchmarks/soak.py` and `benchmarks/garble_tap.py`) were reading only `reasoning_content`, so thinking-on traffic could be classified as `EMPTY`/`SHORT-BODY` or lose streamed reasoning even though the server returned it correctly. The merged fix now prefers `reasoning` with a fallback to `reasoning_content`.
+
+Source: [merged PR #23](https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/pull/23), read 2026-08-21. This is **public upstream corroboration, not a new first-party reproduction by this registry**; it does not change the status tier of the canonical trap.
