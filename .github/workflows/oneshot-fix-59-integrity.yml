@@ -1,0 +1,44 @@
+name: one-shot-fix-59-integrity
+
+on:
+  push:
+    branches: [maint/scottleimroth-intake-20260824]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: maint/scottleimroth-intake-20260824
+          fetch-depth: 0
+      - name: Fix registry routing and changelog coverage
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('CHANGELOG.md')
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('- **Trap 125**, found by **@scottleimroth**:', '- [**Trap 125**](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md), found by **@scottleimroth**:', 1)
+          t=t.replace('- **Trap 126**, found by **@scottleimroth**:', '- [**Trap 126**](traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md), found by **@scottleimroth**:', 1)
+          p.write_text(t,encoding='utf-8')
+
+          p=Path('models/README.md')
+          t=p.read_text(encoding='utf-8')
+          old='| Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md), [119](../traps/memory/119-free-memory-drifts-down-after-churn.md), [124](../traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md) *(DGX Spark / GB10 low-power platform state; measured here, raw not published)* |'
+          new='| Unified-memory boxes (DGX Spark, Strix Halo, Apple silicon class) | [13](../traps/memory/13-utilization-fraction-on-unified-memory.md), [119](../traps/memory/119-free-memory-drifts-down-after-churn.md), [124](../traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md) *(DGX Spark / GB10 low-power platform state; measured here, raw not published)*, [125](../traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md) *(DGX Spark / GB10 cgroup MemoryMax CUDA-UMA accounting; contributor-measured, conditions as reported)* |'
+          assert old in t
+          p.write_text(t.replace(old,new,1),encoding='utf-8')
+          PY
+          python3 -m minefield agent-bundle
+      - name: Commit and remove helper
+        run: |
+          rm -f .github/workflows/oneshot-fix-59-integrity.yml
+          git config user.name "Blackwellboy-maintainer-bot"
+          git config user.email "76774064+Blackwellboy@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix registry routing for traps 125 and 126" || exit 0
+          git push origin HEAD:maint/scottleimroth-intake-20260824
