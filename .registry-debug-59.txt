@@ -1,0 +1,16 @@
+registry integrity: /home/runner/work/model-serving-minefield/model-serving-minefield
+  entries counted: 126   redirect stubs (not counted): 10   doctor TRAP_PATHS: 19
+  next free trap number: 127   (derived from the tree, not stored; numbers are provisional and rebased at merge, see CONTRIBUTING)
+
+COUNT (9)
+  README.md:110                                              declares registry total 124, tree has 126 entries (all 124 entries)
+  doctor/README.md:171                                       declares registry total 124, tree has 126 entries (19 of the registry's 124 numbered entries)
+  doctor/README.md:171                                       declares registry total 124, tree has 126 entries (**19 of the registry's 124 numbered entries**)
+  doctor/README.md:176                                       declares registry total 124, tree has 126 entries (implemented 19/124)
+  doctor/README.md:176                                       declares 105 not-implemented, tree has 126 entries minus 19 implemented = 107 (not implemented 105)
+  doctor/README.md:205                                       declares 105 not-implemented, tree has 126 entries minus 19 implemented = 107 (remaining **105** numbered traps)
+  playbooks/README.md:45                                     declares registry total 124, tree has 126 entries (19 of this registry's 124 numbered entries)
+  mining/OPEN_QUESTIONS.md:156                               declares registry total 124, tree has 126 entries (**19 of 124** entries)
+  mining/OPEN_QUESTIONS.md:158                               declares 105 not-implemented, tree has 126 entries minus 19 implemented = 107 (105 uncovered entries)
+
+FAIL: 9 findings
