@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-24 — traps 125-126: community DGX Spark memory guard + Ling thinking-off semantics
+
+- **Trap 125**, found by **@scottleimroth**: on the measured DGX Spark / GB10 cgroup-v2 path, `MemoryMax` did not account CUDA unified-memory allocations strongly enough to enforce the cap; a plain host-allocation positive control did. Scope stays contributor-measured and GB10-specific.
+- **Trap 126**, found by **@scottleimroth**: on inclusionAI's working Ling-3.0 fork, free-text `thinking:false` left reasoning token work essentially unchanged and spilled the trace into `content`, while the same toggle under JSON structured output materially reduced tokens.
+- Issues #57 and #58 remain in the preregistered open queue until the maintainer integration lands and their issue lifecycle can close cleanly.
+
+
 ## 2026-08-21
 
 ### Trap 124: DGX Spark / GB10 can get stuck in a low-power state while reporting P0 and high utilization

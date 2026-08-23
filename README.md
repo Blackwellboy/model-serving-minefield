@@ -118,8 +118,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 124 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 105. It runs
+for **19 of these 126 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 107. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -151,7 +151,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 124 entries. If you know what you are running rather than what you are
+All 126 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -282,6 +282,8 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | Single-stream bench returns 41 to 77 tok/s on a lane that cleanly does 167 to 302 | The endpoint is shared; co-tenant prefills inside the timing window share verify bandwidth, so the benchmark measures the neighbours | [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) | measured here, raw not published |
 | Two interference-clean suites, same config and prompts, medians 20% apart | Greedy decode resamples generated content across sessions and draft acceptance prices content, so speculative throughput inherits the lottery | [111](traps/evaluation/111-greedy-spec-decode-medians-are-a-content-lottery.md) | measured here, raw not published |
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
+| An 8 GiB cgroup memory cap stays green while CUDA consumes 12 GiB of unified memory | `MemoryMax` is not accounting the CUDA UMA allocation on the measured GB10 path | [125](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md) | contributor-measured, conditions as reported |
+| `thinking:false` costs the same and dumps the reasoning trace into the reply, but works under JSON output | Ling free-text thinking-off changes separation rather than suppressing reasoning on the measured fork | [126](traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md) | contributor-measured, conditions as reported |
 
 If you run one check from this registry, make it
 [Trap 04](traps/template/04-history-reasoning-stripping.md). It is the one
@@ -309,7 +311,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 124 entries in under a minute:
+against 19 of this registry's 126 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

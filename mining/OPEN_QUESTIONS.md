@@ -369,6 +369,28 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   Trap 109 owns a requant/checkpoint-format failure, while this candidate is a
   serving-loader mapping failure on the drafter path.
 
+
+### Q18. Does cgroup v2 `MemoryMax` fail to account CUDA unified-memory pressure on DGX Spark as reported in issue #57?
+
+- **Claim under test.** [Issue #57](https://github.com/Blackwellboy/model-serving-minefield/issues/57) reports that an 8 GiB cgroup v2 `MemoryMax` scope allowed a 12 GiB CUDA allocation on DGX Spark while `memory.current` remained around 409 MiB; the same limiter killed a plain host allocator at the expected boundary.
+- **Source.** PRIMARY for the contributor's measured controls, attributed to @scottleimroth. This is not Blackwellboy reproduction.
+- **Needs.** A disposable DGX Spark / GB10 lane with delegated cgroup v2 memory control; no model quality workload is required.
+- **CONFIRM.** With `MemorySwapMax=0`, a host-allocation positive control is killed at the configured cap with an `oom_kill` event, while a matched CUDA allocation materially reduces `MemAvailable` yet remains largely absent from `memory.current` and passes the same `MemoryMax` boundary.
+- **REFUTE.** CUDA physical memory pressure is charged into `memory.current` closely enough that the same `MemoryMax` boundary kills the CUDA allocator, or the host positive control itself does not enforce under the supposedly matched scope.
+- **Cost.** S; two bounded allocators plus counters.
+- **Note.** Distinct from Trap 13 (fractional UMA reservation) and Trap 96 (misreported free-device memory). Canonical promotion is staged as Trap 125 on this maintainer branch, pending CI/merge.
+
+### Q19. Is Ling-3.0-flash `thinking:false` response-shape dependent as reported in issue #58?
+
+- **Claim under test.** [Issue #58](https://github.com/Blackwellboy/model-serving-minefield/issues/58) reports that free-text `thinking:false` leaves reasoning work essentially unchanged and spills the trace into `content`, while the same flag under JSON structured output materially reduces completion tokens and yields clean structured content.
+- **Source.** PRIMARY for the contributor's measured request pairs, attributed to @scottleimroth. This is not Blackwellboy reproduction.
+- **Needs.** The working inclusionAI Ling-3.0 serving fork on a disposable lane; stock vLLM is not an equivalent control for this model according to the contributor's report.
+- **CONFIRM.** On a pinned working fork/model, matched free-text on/off requests show near-equal token work and reasoning spill into `content` only in the off arm, while a matched JSON response-format pair shows a materially cheaper clean off path.
+- **REFUTE.** Free-text off actually suppresses reasoning/token work, or structured-output off behaves the same as the broken free-text path once request shape and parser configuration are pinned.
+- **Cost.** S; four small requests plus response-field inspection.
+- **Note.** The close-tag symptom overlaps Trap 02, but the response-shape-dependent toggle semantics are not owned by Trap 02, 29 or 64. Canonical promotion is staged as Trap 126 on this maintainer branch, pending CI/merge.
+
+
 ---
 
 ## CLOSED, so nobody re-opens them
