@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 124
+Four doors, and which one you want depends on why you are here. All 126
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -107,7 +107,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 124 entries, one row each, sorted by number. It is the
+  directly below, all 126 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
