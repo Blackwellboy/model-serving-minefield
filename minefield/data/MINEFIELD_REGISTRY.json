@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 124,
-  "content_sha256": "1ccabb13da513b9764cc7609eadae06a4d042596c88205c1a5d15eb7f54d4dbd",
+  "canonical_trap_count": 126,
+  "content_sha256": "a70875133b2a3b9a611c7d0cecf402cf136bdda82c68b55723229c6b99babcc0",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -8678,6 +8678,141 @@
       "supersession": null,
       "symptom": "A DGX Spark / GB10 suddenly serves the same model much more slowly even though the workload still reports high GPU utilization, P0, cool temperatures, and no active thermal or software power-cap throttle reason. nvidia-smi -lgc may accept a requested applications clock without actually raising the observed SM/graphics clock under load. On the measured unit, sustained load showed approximately: - GPU utilization: 96% - SM/graphics clock median: 799 MHz (apps/default clock 2418 MHz; max 3003 MHz) - power draw median: 19.5 W - temperature: cool, with no active throttle reason - sustained BF16: 36.5 TFLOP/s - Ornith-1.5-35B-A3B-NVFP4 SGLang Cruz-script decode median: 42.73 tok/s The same pinned model/runtime stack had previously been expected near the published Cruz result of about 75 tok/s, so the low serving number initially looked like a runtime/kernel/build reproduction failure. A full AC power removal changed only the platform power state and produced a coordinated recovery: | Metric | Before | After | Ratio | |---|---:|---:|---:| | SM clock median under sustained load | 799 MHz | 2281 MHz | 2.86x | | power median under sustained load | 19.5 W | 92.5 W | 4.74x | | sustained BF16 | 36.5 TFLOP/s | 91.6 TFLOP/s | 2.51x | | Cruz decode median | 42.73 tok/s | 73.92 tok/s | 1.73x | | ~43k uncached prefill | 2500.9 tok/s | 5225 tok/s | 2.09x | | deep uncached prefill | 1033.6 tok/s | 2523.5 tok/s | 2.44x | Post-cycle decode repeats were 73.92 / 74.02 / 73.89 tok/s, within about 1 tok/s of the published SGLang reference. The 43k uncached prefill result recovered to 5225 tok/s, at or above the published 4839 tok/s reference.",
       "title": "DGX Spark / GB10 can get stuck in a low-power state while reporting P0 and high utilization"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM",
+        "systemd"
+      ],
+      "affected_versions_builds": "NVIDIA DGX Spark / GB10 (sm121), Ubuntu 24.04 aarch64, cgroup v2 with the memory controller delegated to the user slice; CUDA allocations observed from a vLLM 0.26-line serve and a standalone PyTorch allocator. The contributor used systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0. Broader Grace-Blackwell or CUDA-UMA applicability is unmeasured here.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "systemd",
+          "vllm"
+        ],
+        "stack_version": [
+          "0.26"
+        ],
+        "topology": []
+      },
+      "category": "memory",
+      "check": "First prove the limiter itself with a positive control: run a plain host allocator in an 8 GiB scope with MemorySwapMax=0, grow in 1 GiB steps, and require an exit near the limit plus an oomkill increment in memory.events. Then repeat the same growth pattern with CUDA while watching both memory.current and /proc/meminfo MemAvailable. If physical available memory falls with the CUDA allocation while memory.current remains far below the configured cap and no cgroup OOM event fires, MemoryMax is not a valid CUDA guard on that lane. Do not omit the swap control: with swap allowed, even the host control can survive and make a broken test look healthy.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "NVIDIA DGX Spark / GB10 (sm121), Ubuntu 24.04 aarch64, cgroup v2 with the memory controller delegated to the user slice; CUDA allocations observed from a vLLM 0.26-line serve and a standalone PyTorch allocator. The contributor used systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0. Broader Grace-Blackwell or CUDA-UMA applicability is unmeasured here.",
+      "id": "125",
+      "known_limitations": "",
+      "mechanism": "On the measured GB10 unified-memory path, the CUDA driver-side allocation was not charged to the cgroup's memory.current in proportion to the physical memory it consumed. The cgroup therefore had nothing equivalent to the CUDA footprint to enforce against. The small rise that was visible was consistent with bookkeeping/page-table overhead, not the allocation itself. This is a measured platform/runtime behavior, not a claim that every CUDA or every unified-memory implementation behaves this way.",
+      "mitigation": "Do not treat MemoryMax as the sole last-resort guard for CUDA unified-memory pressure on a lane that reproduces this check. The contributor's measured workaround is an off-box or independent watchdog on /proc/meminfo MemAvailable, using consecutive-breach hysteresis so legitimate load/KV transients do not trigger a kill. When terminating a failed serve, also account for child GPU-owning processes rather than assuming the API-server PID owns all allocations; see Trap 123.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/57"
+      ],
+      "related_traps": [
+        "13",
+        "96",
+        "115",
+        "123"
+      ],
+      "source_path": "traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A systemd/cgroup v2 MemoryMax guard around a model server looks armed, but a CUDA allocation can grow beyond the configured limit without the cgroup killing the process. On the reported DGX Spark test, a 12 GiB CUDA allocation completed inside an 8 GiB MemoryMax scope while memory.current only reached about 409 MiB. A plain host-memory control in the same scope shape was killed at the limit.",
+      "title": "cgroup v2 MemoryMax does not account DGX Spark CUDA unified-memory allocations"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "inclusionAI/Ling-3.0-flash-int4 on inclusionAI's vllm-ling-v3 fork (reported branch ling30, Ling-3 reasoning parser), NVIDIA DGX Spark / GB10, aarch64, served using the DGX-Spark Ling recipe referenced by the contributor. The contributor also notes that stock vLLM is not a valid control for this model family because that route silently produces incorrect output; this entry is scoped to the working inclusionAI fork path they measured.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "int4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "reasoning",
+      "check": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under responseformat: {\"type\": \"jsonobject\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "inclusionAI/Ling-3.0-flash-int4 on inclusionAI's vllm-ling-v3 fork (reported branch ling30, Ling-3 reasoning parser), NVIDIA DGX Spark / GB10, aarch64, served using the DGX-Spark Ling recipe referenced by the contributor. The contributor also notes that stock vLLM is not a valid control for this model family because that route silently produces incorrect output; this entry is scoped to the working inclusionAI fork path they measured.",
+      "id": "126",
+      "known_limitations": "",
+      "mechanism": "On the reported Ling serving path, thinking:false in ordinary free-text does not suppress the model's reasoning work; it changes where the generated trace is separated. The contributor's short control measured 81 completion tokens with thinking on versus 80 with thinking off for the same task, while the off response contained the combined reasoning-plus-answer text in content. Under responseformat: {\"type\": \"jsonobject\"}, the same flag did suppress the extra reasoning work and reduced the measured completion from 33 tokens to 12. The important boundary is therefore response-shape dependent on this stack: a toggle accepted by the API is not one stable semantic contract across free text and structured output.",
+      "mitigation": "On the measured free-text path, do not use thinking:false as a latency/cost optimization and do not assume it guarantees clean answer-only content. Prefer the working reasoning-on separation for ordinary text, or use the structured-output path when its semantics fit the application and its off behavior has been verified. If a client must consume the broken free-text off path, treat the visible reasoning prefix/</think> as a parser defect to fail or sanitize, not as model answer content.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/58"
+      ],
+      "related_traps": [
+        "02",
+        "29",
+        "64"
+      ],
+      "source_path": "traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "Setting chattemplatekwargs: {\"thinking\": false} on a Ling-3.0-flash free-text request does not produce the expected faster/non-reasoning path. Token cost stays essentially unchanged, while the reasoning trace is delivered at the front of content and a stray </think> separates it from the user-facing answer. The same toggle behaves differently when the request asks for structured JSON output.",
+      "title": "Ling thinking:false can keep reasoning enabled and spill the trace into content"
     }
   ],
   "schema_version": "1.1"
