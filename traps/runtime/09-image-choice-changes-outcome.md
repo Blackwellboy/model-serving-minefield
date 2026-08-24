@@ -42,3 +42,42 @@ number. When a result surprises you, the image is a first-class suspect.
 **Found.** 2026-07-09, public writeup in the Hy3 repo.
 
 **Attribution.** Blackwellboy; eugr's image is credited as the working path.
+
+## Added 2026-08-25: a bind-mounted runtime overlay changed behavior with the image digest and weights unchanged
+
+**Status of this addendum: measured here, raw not published.** This is a
+supporting instance that sharpens the unit-under-test rule; it is not a new
+public trap number.
+
+On a single DGX Spark serving DeepSeek-v4-Flash 0731 EXL3 with DSpark K5, the
+checkpoint bytes and container image digest were held fixed while an opt-in,
+read-only `model.py` overlay projected a published refusal direction out of the
+attention output stream at runtime. The overlay was enabled with `ABLATE=1`,
+`lambda=3.5`, layers 10-42. No model weights were edited or re-downloaded.
+
+The behavioral result changed dramatically despite identical weight identity
+and unchanged image digest:
+
+- thinking off: **8/8 refusals -> 0/8**;
+- thinking on: **7/8 refusals -> 0/8**.
+
+A small matched capability smoke showed no obvious regression: stock and
+runtime-ablated arms both scored 6/6 with thinking off and 2/6 with thinking on;
+the thinking-on misses were the same empty-content-at-length/reasoning-budget
+artifact in both arms. Performance did not regress in the matched cells: code
+was **36.621 -> 36.985 tok/s** and prose **21.841 -> 22.812 tok/s**. DSpark
+acceptance also stayed effectively flat/slightly higher (code **0.5463 ->
+0.5477**, prose **0.2568 -> 0.2710**). A 13,558-token retrieval sanity check
+passed with no NaNs.
+
+This instance exposes a boundary in the original wording: **pinning the image
+digest is necessary but not sufficient when runtime code can be bind-mounted or
+otherwise overlaid.** The practical unit under test is at least:
+
+`image digest + weights + mounted/overlaid code + runtime config + hardware`.
+
+**The extra check this instance adds:** record read-only bind mounts, injected
+model-code overlays, and compile/AOT cache identity next to the image digest.
+When toggling an overlay, prove from the live process/logs that the intended code
+is actually mounted and active; otherwise a supposedly matched A/B can compare
+stale compiled code to the new configuration.
