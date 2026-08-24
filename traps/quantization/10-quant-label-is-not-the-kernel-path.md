@@ -51,8 +51,7 @@ Then answer: which kernel family does this `quant_method` route to in YOUR
 build on YOUR arch, and is that the fast path or a weight-only fallback? If
 you cannot answer from the config plus your build, expect the fallback.
 
-**The fix.** Choose checkpoints whose format matches a kernel path your
-hardware actually has. State the kernel path next to every published speed
+**The fix.** Choose checkpoints whose format matches a kernel path your hardware actually has. State the kernel path next to every published speed
 number, because the label alone under-determines it.
 
 **Found.** 2026-07-09; hardware claim verified locally 2026-07-10.
@@ -102,3 +101,39 @@ disagreement is silent.
 *Status of this addendum: reproduced here. The `quantization_config` block and
 the HF `8-bit` tag are public and checkable without us; the backend binding is
 in the engine's own startup log on any lane serving the checkpoint.*
+
+## Added 2026-08-25: AutoRound export packing changed the speed class
+
+**Status of this addendum: measured here, raw not published.** The full build
+and benchmark packet is retained privately; the numbers below are the
+claim-scoped summary from one RTX 5090 campaign.
+
+A Qwen3.8-27B OBLITERATED W4A16/group-128 rebuild produced two artifacts that
+could both casually be described as "AutoRound INT4", but they did not encode
+the same runtime representation. The first export, made through
+`--format auto_gptq`, identified as `quant_method=gptq`, carried `g_idx`, and
+served through the GPTQ/Marlin path. A second rebuild reconstructed the known
+fast reference packing as `auto_round:auto_gptq`, with `g_idx=0`, matched
+qweight inventory, matched MTP treatment, and the same auxiliary-tensor size as
+the reference artifact.
+
+On the same RTX 5090, the same vLLM+DFlash2 stack and K7 speculative depth, the
+packing change moved code decode from about **191.9 tok/s** to **233.1 tok/s**.
+The matched non-abliterated Frozenlock reference measured **233.83 tok/s** in
+the same session. Code speculative acceptance was likewise essentially matched
+(**79.9%** OBLIT versus **80.3%** reference). Prose remained workload-sensitive:
+OBLIT K7 measured **101.18 tok/s** versus **107.15 tok/s** reference, while the
+same OBLIT target reached **109.43 tok/s** at K6.
+
+The useful conclusion is narrower than "abliteration is free": **the earlier
+~18% route-level gap was dominated by export/packing identity, not by the target
+weight intervention.** Only after the packing and MTP treatment matched did the
+code path return to reference-class speed. Behavior/correctness checks remained
+green on the matched OBLIT target.
+
+**The extra check this instance adds:** for AutoRound/GPTQ-family artifacts,
+do not stop at bits, group size and a marketing label. Record and compare
+`quant_method`, export format, `g_idx` presence, packed tensor inventory,
+auxiliary/MTP treatment, and the loader/kernel actually selected at runtime.
+Two "W4A16 group-128 AutoRound" checkpoints can otherwise land in different
+speed classes without an obvious launch error.
