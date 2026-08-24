@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 126,
-    "human_review_possible": 126,
+    "guided_experiments_specified": 133,
+    "human_review_possible": 133,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 126
+    "total_canonical_traps": 133
   },
   "traps": [
     {
@@ -9155,7 +9155,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does not include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.",
@@ -9196,7 +9196,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -9210,7 +9210,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+          "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
@@ -9359,6 +9359,524 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under responseformat: {\"type\": \"jsonobject\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "127",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 127 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "128",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 128 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "129",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 129 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "130",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 130 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "131",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 131 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "132",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 132 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "133",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 133 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

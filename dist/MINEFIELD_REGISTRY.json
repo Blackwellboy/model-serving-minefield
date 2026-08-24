@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 126,
-  "content_sha256": "a70875133b2a3b9a611c7d0cecf402cf136bdda82c68b55723229c6b99babcc0",
+  "canonical_trap_count": 133,
+  "content_sha256": "d8d68a006abf1519fbf14d5b45fd710c0f75a8e75af7b2b9141af72ba413ae49",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -8645,7 +8645,7 @@
         "topology": []
       },
       "category": "runtime",
-      "check": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+      "check": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
         "static_config",
@@ -8664,7 +8664,7 @@
       "id": "124",
       "known_limitations": "First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does not include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.",
       "mechanism": "The measured mechanism boundary is a persistent GB10 low-power platform state: the GPU remains usable and heavily utilized but does not boost into the normal sustained SM-clock/power range, and ordinary software-level controls (including applications-clock lock) do not recover it. A complete AC power removal reset that state; clocks, low-level compute throughput, and model-serving throughput recovered together. Causal boundary on the measured NVIDIA DGX Spark / GB10 unit: the low-power stuck state is strongly established; complete AC power removal recovered it; the exact PD/EC/SoC firmware root cause is not proven. This entry does not claim that a specific USB-C PD firmware, EC firmware, SoC firmware, driver version, or runtime bug is the root cause. Post-recovery longevity (first-party observation window): after recovery the same unit was observed for 23605 s (~6h33m) with telemetry samples 505, decode canaries 26, BF16 canaries 7, SM clocks 2385-2405 MHz, decode 71.47-74.48 tok/s, BF16 91.49-92.64 TFLOP/s, and LOWPOWERRECURRENCE=NO. This does not prove a permanent fix or establish a recurrence rate; it proves only that the recovered state remained healthy throughout this observation window. A prior clock-lock A/B also failed to rescue performance: nvidia-smi -lgc 2418,2418 applied successfully, but observed SM clocks remained around 0.7-0.8 GHz and Ornith decode stayed about 44.2 tok/s. That rules out \"just set the applications clock\" as the fix on this state.",
-      "mitigation": "Preserve evidence first, then perform a clean shutdown and a true power removal, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts. On the measured unit this restored normal clocks and serving throughput without a Torch rebuild, driver downgrade, FlashInfer change, model change, or runtime tuning. Do not deliberately induce OOMs/crashes to reproduce the fault. Do not call a firmware update causal unless it is tested separately. If the state recurs, record the trigger and firmware/PD/EC/SoC inventory before changing it; recurrence data is more valuable than an uninstrumented update. NVIDIA's DGX Spark hardware guide specifies a 240 W external power supply and a GB10 SoC TDP of 140 W, and says the provided 240 W adapter is required for optimal performance: https://docs.nvidia.com/dgx/dgx-spark/dgx-spark.pdf",
+      "mitigation": "Preserve evidence first, then perform a clean shutdown and a diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
       "public_evidence_links": [],
       "related_traps": [
         "09",
@@ -8813,6 +8813,545 @@
       "supersession": null,
       "symptom": "Setting chattemplatekwargs: {\"thinking\": false} on a Ling-3.0-flash free-text request does not produce the expected faster/non-reasoning path. Token cost stays essentially unchanged, while the reasoning trace is delivered at the front of content and a stray </think> separates it from the user-facing answer. The same toggle behaves differently when the request asks for structured JSON output.",
       "title": "Ling thinking:false can keep reasoning enabled and spill the trace into content"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM",
+        "Docker"
+      ],
+      "affected_versions_builds": "lmstack router (lmcache/lmstack-router:latest, image built 2026-08-18T19:40Z) fronting vLLM on a 2x DGX Spark (GB10) lane, docker compose whole-file :ro bind mount, watchtower unattended nightly updates monitoring every container by default. Measured: 4 h 22 m of 502 (04:05Z to 08:27Z), 241 container restarts, both model clusters healthy and idle throughout, zero requests lost because none reached them. The mounted module predated PriorityRouter, a class the newer image's stock module imports at module scope. A throwaway-container reproduction of the pre-rebase patch failed with the same ImportError the live container hit; the rebased patch passed and the live service came back healthy, so the failure was pinned to the mount/image pair, not to the config or the model.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker",
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "lmstack router (lmcache/lmstack-router:latest, image built 2026-08-18T19:40Z) fronting vLLM on a 2x DGX Spark (GB10) lane, docker compose whole-file :ro bind mount, watchtower unattended nightly updates monitoring every container by default. Measured: 4 h 22 m of 502 (04:05Z to 08:27Z), 241 container restarts, both model clusters healthy and idle throughout, zero requests lost because none reached them. The mounted module predated PriorityRouter, a class the newer image's stock module imports at module scope. A throwaway-container reproduction of the pre-rebase patch failed with the same ImportError the live container hit; the rebased patch passed and the live service came back healthy, so the failure was pinned to the mount/image pair, not to the config or the model.",
+      "id": "127",
+      "known_limitations": "",
+      "mechanism": "The compose file bind-mounts a host file over a module path inside the image (./patches/foo.py:/opt/venv/.../foo.py:ro). The mount replaces the whole stock file, so the container runs a mix: your mounted module plus every other module from whatever image tag is current. That mix is silently coupled to one upstream revision. When an unattended updater pulls a newer image whose other modules import a symbol the mounted file predates, every start dies at import, before any request can be served. With restart: unless-stopped the failure becomes a crash loop, and the reverse proxy, seeing no healthy backend, answers 502. Nothing in the compose diff changed; the image did.",
+      "mitigation": "Stop feeding the container's own modules from outside the image where you can: subclass and register, or upstream the delta so the mount disappears entirely. Where a whole-file mount must exist, take that container off unattended updates and drive it with a gated script that pulls, diffs the operator delta against the new image's stock module, test-imports in a throwaway container, and restores the known-good image if the live one does not come up. When a crash loop does appear, check the image pull time before reading the last error line: an ImportError naming a symbol your configuration does not reference is the signature of the shadowing mount.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "09",
+        "53",
+        "75",
+        "104"
+      ],
+      "source_path": "traps/versioning/127-bind-mount-shadow-drift-crash-loop.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "An inference gateway behind a reverse proxy answers 502 for hours while the model backends behind it are healthy and idle. The container's restart count climbs steadily. Every start dies at import with an ImportError: cannot import name 'SomeClass' from a module you thought you knew, and nothing in your compose file changed: only the image tag moved, pulled by an unattended updater, at 04:05 in the morning. The reverse proxy has no healthy backend, so it answers 502 for the entire window.",
+      "title": "a whole-file bind mount shadows a module inside the image, and an unattended image update turns that into a crash-loop outage"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, --max-num-seqs 4, --max-num-batched-tokens 8192, chunked prefill on. Upstream before/after on this image class with 8 cold lanes (published by the recipe maintainers): at an 8K prompt wave worst tok/s went 2.07 to 15.31 and worst inter-token latency 482 ms to 65 ms; at 16K 0.47 to 14.86, 2123 ms to 67 ms; at 32K 0.36 to 14.80, 2790 ms to 67.6 ms. The mechanism needs two or more concurrent prefills, not maxnumseqs = 8, so the finder's --max-num-seqs 4 lane still qualifies; the finder's own degradation measurements (severe slowdown growing with prompt length, numpreemptions pinned at zero) matched the upstream description.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "decode",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, --max-num-seqs 4, --max-num-batched-tokens 8192, chunked prefill on. Upstream before/after on this image class with 8 cold lanes (published by the recipe maintainers): at an 8K prompt wave worst tok/s went 2.07 to 15.31 and worst inter-token latency 482 ms to 65 ms; at 16K 0.47 to 14.86, 2123 ms to 67 ms; at 32K 0.36 to 14.80, 2790 ms to 67.6 ms. The mechanism needs two or more concurrent prefills, not maxnumseqs = 8, so the finder's --max-num-seqs 4 lane still qualifies; the finder's own degradation measurements (severe slowdown growing with prompt length, numpreemptions pinned at zero) matched the upstream description.",
+      "id": "128",
+      "known_limitations": "",
+      "mechanism": "In the v1 scheduler on the measured build, SchedulerConfig.maxnumpartialprefills (default 1) is defined but never read in the waiting-admission loop; only maxnumseqs and the token budget gate new admissions. Several admitted-but-still-prefilling requests each take up to maxnumbatchedtokens per step, and decode-active requests further down the running list receive numnewtokens == 0 and are skipped with continue, not preempted. Because nothing is preempted, the preemption counter cannot move, and the starvation is invisible to the counter that normally reports it. The corresponding CLI flag is accepted but has no effect on this build, so the obvious fix changes nothing and reads as a negative result.",
+      "mitigation": "Land the scheduler hotfix that makes the flag mean something. Keep maxnumpartialprefills at its default of 1; raising it recreates the starvation the fix removes. Cap how much of a single prefill lands in one step with the long-prefill token threshold the hotfix pair expects (e.g. 1024), not a value at or above the batch budget, which caps nothing.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "36",
+        "41",
+        "77",
+        "106"
+      ],
+      "source_path": "traps/runtime/128-admission-flag-never-read-decode-starvation.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "Under two or more concurrent requests that are all still prefilling, decode collapses: worst inter-token latency climbs by an order of magnitude and throughput falls, growing worse as prompts lengthen. The preemption counter stays pinned at zero the whole time and the KV pool has headroom, so the two usual suspects are cleared at once. A single-flag \"fix\" you queued produces zero change, which you read as a refuted hypothesis. Both observations are the trap: a flag the scheduler never reads, and a counter that by construction cannot see the starvation.",
+      "title": "an admission flag the scheduler never reads starves decode while the preemption counter sits at zero"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, NVFP4 MLA KV cache (nvfp4dsmla), prefix caching on, --max-num-seqs 4. Finder's measurements: 97% live prefix-cache hit rate on daytime traffic at prompt lengths below the horizon; and a 24 s probe on a busy cluster swept up 721,882 live queries and reported a 95.1% hit rate, so a check that does not control for context length cannot see the trap either.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "load",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "memory",
+      "check": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, NVFP4 MLA KV cache (nvfp4dsmla), prefix caching on, --max-num-seqs 4. Finder's measurements: 97% live prefix-cache hit rate on daytime traffic at prompt lengths below the horizon; and a 24 s probe on a busy cluster swept up 721,882 live queries and reported a 95.1% hit rate, so a check that does not control for context length cannot see the trap either.",
+      "id": "129",
+      "known_limitations": "",
+      "mechanism": "The model's KV is stored in several cache groups, one full-attention (MLA) group and several sliding-window (SWA) groups. The prefix-cache lookup takes the minimum hit length across groups and reports that as the common prefix. SWA managers free blocks outside their window by design, so past the window length their hit length is zero, and the minimum zeroes the common hit even when the full-attention group still holds the entire prefix. Warm requests therefore fully re-prefill. The fix has two parts: a coordinator hotfix and a retention-interval environment variable, because on the upstream lane the hotfix alone still scored 0/8 correct at 44K+ (dense SWA tails evicted MLA prefix blocks before the answer).",
+      "mitigation": "Land the coordinator hotfix AND set the retention interval so the full-attention group's blocks outlive the sliding-window eviction. Re-measure the above-horizon hit rate after both, not after the hotfix alone. On a lane whose mean prompt sits far below the horizon, treat the excellent aggregate hit rate as a masking condition, not a clearance.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "25",
+        "47",
+        "60",
+        "92"
+      ],
+      "source_path": "traps/memory/129-prefix-cache-hit-min-across-kv-groups.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "Long warm requests suddenly re-prefill at zero cache hits, with no preemptions and no KV pressure. Your live prefix-cache hit rate is excellent (97% on daytime traffic), which makes the collapse look impossible, and it is: the collapse binds on context length, not on load. Above the sliding-window horizon, warm traffic pays full cold-prefill cost and nobody can see why from the aggregate counters.",
+      "title": "prefix-cache hits collapse past the sliding-window horizon because the shared hit is the minimum across KV cache groups"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding. Measured: with --max-num-seqs 4 and 6 draft tokens the requested capture size is 28, and the engine clamps to 24 (cudagraphcapturesizes: [1,2,4,8,16,24]), so the 4-way decode shape runs eager; with 5 draft tokens the product is 4 x 6 = 24, lands exactly on the clamp, and FULL capture completes. The resulting spec-depth A/B on code generation: k=6 to k=5 moved steps/s +7.4% (14.52 to 15.60), tokens/step -9.9% (5.596 to 5.040), net tok/s 81.3 to 78.6 (-3.4%), with per-component spreads non-overlapping across five runs per arm, so the step-rate gain was graph coverage and the token yield loss was the dropped draft position.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "decode",
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding. Measured: with --max-num-seqs 4 and 6 draft tokens the requested capture size is 28, and the engine clamps to 24 (cudagraphcapturesizes: [1,2,4,8,16,24]), so the 4-way decode shape runs eager; with 5 draft tokens the product is 4 x 6 = 24, lands exactly on the clamp, and FULL capture completes. The resulting spec-depth A/B on code generation: k=6 to k=5 moved steps/s +7.4% (14.52 to 15.60), tokens/step -9.9% (5.596 to 5.040), net tok/s 81.3 to 78.6 (-3.4%), with per-component spreads non-overlapping across five runs per arm, so the step-rate gain was graph coverage and the token yield loss was the dropped draft position.",
+      "id": "130",
+      "known_limitations": "",
+      "mechanism": "vLLM caps CUDA-graph capture at a fixed size list (on this build [1, 2, 4, 8, 16, 24]) and truncates the effective maximum to the largest list entry at or below the requested value. Many serve lines compute the requested value as maxnumseqs x (spectokens + 1). When that product exceeds the clamp, the full-batch decode shape is never captured and runs eager while smaller shapes get graphs. The effective list is printed once, at startup, and never again.",
+      "mitigation": "Choose the spec depth (or maxnumseqs) so maxnumseqs x (spectokens + 1) lands exactly on the clamp, and verify from the log, not from the flag you set. Do not tune the two independently: capture size is their product, and a maxnumseqs change silently retrades draft depth for graph coverage.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "01",
+        "11",
+        "28",
+        "46",
+        "122"
+      ],
+      "source_path": "traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "The startup log says CUDA graphs captured FULL, yet the full-concurrency decode shape behaves like eager: the biggest batch pays capture, launch and scheduling overhead with no graph. A one-token change in speculative depth (or a one-request change in maxnumseqs) flips the behavior with no error anywhere. The flag you set is not the number that governs.",
+      "title": "the CUDA-graph capture-size clamp silently runs your largest decode shape eager"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, tensor parallel 2, stock DeepSeek-V4-Flash-0731 (~115 GB, 24 shards), loader fastsafetensors 0.3.3. Measured: load reached about 29% (7/24 shards) in ~1.5 min, then the NCCL watchdog reported a 600,053 ms broadcast timeout and aborted the process group; the head failed with WorkerProc initialization failed due to an exception in a background process; no Model loading took line was ever printed (baseline reaches it in 151 s; we waited 16 minutes). On the previous dead boot's kernel log, NVRM allocation-retry noise counted 116 events versus 25 on a healthy boot and 58 on an ordinary cold start, so the messages are normal retry noise on GB10 and only the degree changed. The steady-state figure of 0.65 of RAM looked safe; the 0.85-of-peak warning was the one that applied. After revert to the default loader the same node loaded reproducibly (224 s, twice, with the runtime gate 16/16 PASS).",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "load"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, tensor parallel 2, stock DeepSeek-V4-Flash-0731 (~115 GB, 24 shards), loader fastsafetensors 0.3.3. Measured: load reached about 29% (7/24 shards) in ~1.5 min, then the NCCL watchdog reported a 600,053 ms broadcast timeout and aborted the process group; the head failed with WorkerProc initialization failed due to an exception in a background process; no Model loading took line was ever printed (baseline reaches it in 151 s; we waited 16 minutes). On the previous dead boot's kernel log, NVRM allocation-retry noise counted 116 events versus 25 on a healthy boot and 58 on an ordinary cold start, so the messages are normal retry noise on GB10 and only the degree changed. The steady-state figure of 0.65 of RAM looked safe; the 0.85-of-peak warning was the one that applied. After revert to the default loader the same node loaded reproducibly (224 s, twice, with the runtime gate 16/16 PASS).",
+      "id": "131",
+      "known_limitations": "",
+      "mechanism": "This loader streams checkpoint shards and performs distributed collectives (a torch broadcast, per the stack trace) inside its weight-load path. On a unified-memory box the staging/bounce-buffer path has no separate host RAM to spill into, so the binding constraint is the transient peak during load, not steady-state weights plus KV. vLLM plumbed none of the loader's controls (bounce-buffer size, reader thread count, GDS off switch), so the only knob it did expose was already at its safest value, and there was nothing left to turn down. The loader pipeline itself was already off, which rules out queue depth. The wedge is a userspace memory starvation on the worker, distinct from a kernel panic: the node stays reachable at L4 while service initialization never completes.",
+      "mitigation": "Stay on the default loader on this hardware until the loader exposes controls for its staging path (bounce buffers, thread count, GDS off), or a newer version changes the default envelope. Treat the node as requiring a physical power cycle once wedged at this depth; nothing remote recovered it. Revisit only with a knob that can go lower, on a node that can afford a power cycle if it is wrong.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "08",
+        "115",
+        "116",
+        "119",
+        "123"
+      ],
+      "source_path": "traps/runtime/131-parallel-loader-collectives-wedge-uma.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "You switch the load format to a parallel shard loader to cut the multi-node cold-start time. Weight load starts, progresses a few shards, then a roughly ten-minute NCCL watchdog timeout takes the whole process group down. The worker rank is left wedged: TCP accepts connections but the SSH banner exchange never completes, node exporters never answer, and only a physical power cycle recovers it. The load never prints its completion line. The steady-state memory figure that made the change look safe is not the number that matters.",
+      "title": "a parallel shard loader runs collectives during multi-node weight load, and on unified memory it wedges a rank"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, flashinfer autotuner on. Measured: a 32K cold prefill that reads ~22 s on a warm cluster had not completed after 10+ minutes on a fresh boot, GPU at 96%, both vLLM token counters at zero; the worker log carried CuTeDSL JIT compilation during inference: W4A16FusedMoeKernel. This causes a latency spike, Triton kernel JIT compilation during inference: buildprefillchunkmetadatakernel, and flashinfer.jit [AutoTuner]: No tuned config covers sparsemla... ... perf cliff. A subsequent A/B run on a cluster that had been up 26 h had none of this; the finder's clean clock-cap numbers were produced under that condition.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "first request",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, flashinfer autotuner on. Measured: a 32K cold prefill that reads ~22 s on a warm cluster had not completed after 10+ minutes on a fresh boot, GPU at 96%, both vLLM token counters at zero; the worker log carried CuTeDSL JIT compilation during inference: W4A16FusedMoeKernel. This causes a latency spike, Triton kernel JIT compilation during inference: buildprefillchunkmetadatakernel, and flashinfer.jit [AutoTuner]: No tuned config covers sparsemla... ... perf cliff. A subsequent A/B run on a cluster that had been up 26 h had none of this; the finder's clean clock-cap numbers were produced under that condition.",
+      "id": "132",
+      "known_limitations": "",
+      "mechanism": "The first inference after a cold boot triggers JIT compilation (CuTeDSL, Triton, and the flashinfer autotuner on this stack) for kernels whose build products were not persisted. The generation and prompt token counters advance only on request completion, so a long first request leaves both pinned at zero while the GPU is busy, which is exactly the signature of a hang. The truth is in the worker log: kernel names and \"perf cliff\" warnings next to the long latency.",
+      "mitigation": "Put a warmup request in the boot path, or simply treat the first ~10 minutes after a cold start as non-benchmarkable. Write \"was the cluster warm\" into the A/B runbook next to the other conditions; it is a real confound that looks nothing like one.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "46",
+        "54",
+        "107",
+        "110"
+      ],
+      "source_path": "traps/evaluation/132-first-request-after-boot-pays-jit.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A freshly booted lane looks wedged: GPU utilization pinned near 96%, both token counters at zero, and a request that normally finishes in about 22 seconds running past 10 minutes. It is not a wedge, it is just-in-time kernel compilation. And any A/B run inside this window is contaminated: whichever arm runs first absorbs the one-off cost and looks worse, so the comparison is wrong in a direction you can defend in prose but not on the hardware.",
+      "title": "the first request after a cold start pays kernel JIT compilation, and it reads as a wedge and contaminates your A/B"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash model copy on both nodes and the NAS"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "HF hub cache staged on a NAS and rsynced to two DGX Spark (GB10) nodes running vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), offline mode on (HFHUBOFFLINE=1). Measured: a trailing newline in refs/ broke revision resolution for the DeepSeek-V4-Flash model copy on both nodes and the NAS; a 405 GB sha-pinned fetch of a different model wrote no refs/main, and the bare model name was unresolvable offline until a refs/main carrying the pinned sha was created by hand. The finder's deploy gate exists precisely because this class of divergence is otherwise silent.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash",
+          "deepseek-v4-flash model copy on both nodes and the nas"
+        ],
+        "failure_stage": [
+          "load"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "HF hub cache staged on a NAS and rsynced to two DGX Spark (GB10) nodes running vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), offline mode on (HFHUBOFFLINE=1). Measured: a trailing newline in refs/ broke revision resolution for the DeepSeek-V4-Flash model copy on both nodes and the NAS; a 405 GB sha-pinned fetch of a different model wrote no refs/main, and the bare model name was unresolvable offline until a refs/main carrying the pinned sha was created by hand. The finder's deploy gate exists precisely because this class of divergence is otherwise silent.",
+      "id": "133",
+      "known_limitations": "",
+      "mechanism": "Hugging Face hub revision resolution reads the refs/ files with a plain read and no strip. A stray trailing newline in refs/main changes the resolved revision, so offline resolution of the pinned name fails. Separately, a fetch pinned by commit hash alone writes no refs/main at all, so the hub has no mapping from the bare model name to a revision and any offline resolution by name has nothing to look up. Both are quiet byte-level defects in the staged artifact; neither shows up during an online fetch.",
+      "mitigation": "Strip trailing newlines in the fetcher (and normalize refs/ when staging), and create refs/main from the pinned sha whenever the fetch was pinned by hash alone. Treat the staged hub-cache snapshot as a deploy artifact, not a byproduct: gate both nodes on refs bytes and shard checksums before serving. A revision pin in the serve config is not a substitute for a byte-correct local cache when offline.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "14",
+        "21",
+        "75"
+      ],
+      "source_path": "traps/versioning/133-hf-refs-file-breaks-offline-resolution.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A model that staged and verified fine fails to resolve offline on one or more nodes, with no change to the weights or the pin. Or: a fetch pinned by commit hash alone leaves the bare model name unresolvable, so the first load errors even though the same snapshot loaded during staging. If the failure is only noticed after a load, two nodes can silently hold different weights under the same model name, which is divergence, not failure.",
+      "title": "a stray byte in the HF hub refs file breaks pinned offline revision resolution on every node"
     }
   ],
   "schema_version": "1.1"
