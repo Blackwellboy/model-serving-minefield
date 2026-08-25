@@ -3142,7 +3142,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "131",
-      "untrusted_published_check_text": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after."
+      "untrusted_published_check_text": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not."
     },
     {
       "confirm_criterion": "The failure signature described by trap 132 appears under matching conditions.",
