@@ -36,8 +36,8 @@ jobs:
           rows = (
               '| Q16 / issue #36 cold-prefill speculative-placeholder corruption | **PROMOTED and issue closed.** Contributor-measured warm/cold and scheduler-guard A/B retained; @tonyd2wild credited for measurement and @Roady001 for the original scheduler-guard root-cause fix | trap [132](../traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) |\n'
               '| Q17 / issue #38 DSpark draft-loader shared-expert mapping gap | **PROMOTED and issue closed.** Source-inspectable missing mapping stays separate from contributor-measured performance rows; sibling, not duplicate, of Trap 109 | trap [133](../traps/runtime/133-dspark-loader-drops-shared-expert.md) |\n'
-              '| Q18 / issue #57 DGX Spark cgroup `MemoryMax` vs CUDA unified memory | **PROMOTED and issue closed.** Contributor-measured GB10 scope preserved; no broader CUDA-platform generalisation | trap [125](../traps/memory/125-dgx-spark-memorymax-misses-cuda-uma.md) |\n'
-              '| Q19 / issue #58 Ling-3.0 `thinking:false` response-shape dependence | **PROMOTED and issue closed.** Contributor-measured Ling/fork scope preserved | trap [126](../traps/reasoning/126-thinking-false-does-not-disable-thinking.md) |\n'
+              '| Q18 / issue #57 DGX Spark cgroup `MemoryMax` vs CUDA unified memory | **PROMOTED and issue closed.** Contributor-measured GB10 scope preserved; no broader CUDA-platform generalisation | trap [125](../traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md) |\n'
+              '| Q19 / issue #58 Ling-3.0 `thinking:false` response-shape dependence | **PROMOTED and issue closed.** Contributor-measured Ling/fork scope preserved | trap [126](../traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md) |\n'
           )
           s = s.replace(header, header + rows, 1)
           p.write_text(s)
