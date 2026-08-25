@@ -77,6 +77,11 @@ This trap is strongly indicated when all of the following line up:
 
 A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.
 
+
+**A query caveat for the healthy-but-capped case, contributed by @sethforprivacy.** **Status: contributor-measured, conditions as reported.** On the contributor's private 2x DGX Spark GB10 lane, `nvidia-smi -lgc` successfully applied a clock cap while `nvidia-smi -q -d CLOCK` still printed the hardware `Max Clocks` value and an idle sample remained low. On that measured driver the query did not expose the applied range, so the output can look like "the cap did not apply" even when it did.
+
+For that state, preserve the command/service journal line that records the applied range and sample `clocks.sm` under sustained load. Do not use the static max-clock query alone to distinguish a genuinely stuck-low-power unit from a healthy unit that is intentionally capped.
+
 **The fix.** Preserve evidence first, then perform a clean shutdown and a **true power removal**, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts.
 
 On the measured unit this restored normal clocks and serving throughput without a Torch rebuild, driver downgrade, FlashInfer change, model change, or runtime tuning.

@@ -190,6 +190,49 @@ reports as 2.83x concurrency for a full-length request, so a million-token
 prompt fits comfortably and was observed resident at roughly a third of the
 cache. Nothing here is a capacity problem.
 
+**A second lane, measured by a contributor (stock weights, a different
+build).** @sethforprivacy measured the same class on a private 2x DGX Spark
+(GB10) lane serving **stock** DeepSeek-V4-Flash-0731 (revision
+`9e165c30e2704aec5d9d593cce3eebd58bbef1cb`) on vLLM
+`0.25.2.dev0+g752a3a504.d20260714` (Anemll DSpark image), NVFP4 MLA KV cache,
+DSpark multi-token-prediction speculative decoding at depth 6,
+`--max-model-len` 1,048,576 advertised, prefix caching on, chunked prefill
+on. Status: contributor-measured, conditions as reported; Blackwellboy has
+not reproduced this lane; the contributor's raw logs are private.
+
+Needle-in-haystack runs (a random code at a stated depth in unique
+non-repeating filler) at 50% depth on an idle cluster:
+
+| context | prompt tokens | ms/token | KV peak | outcome |
+|---|---|---|---|---|
+| 384K | 377,781 | 0.689 | 25.3% | passed |
+| 512K | 503,162 | 0.756 | 28.4% | passed |
+| 640K | 628,536 | 0.826 | 31.0% | passed |
+| 862K | n/a | n/a | 28.0% | froze the worker ~11 min into decode |
+
+Cost per token is superlinear (about 9% per 125K tokens), so the failing rung
+was plausibly near completion when it died. The 862K failure was not gradual
+memory exhaustion: worker available memory sat flat at 5.4 GB, preemptions
+stayed at zero, and KV peaked at only 28% of the pool. The head lost its
+worker rank mid-decode to an inter-rank RPC timeout on the TP=2 shared-memory
+broadcast path, and the worker was dead at the network layer (no route,
+no ping, no SSH); only a physical power cycle recovered it. The thermal
+hypothesis was retracted on the same night: the kernel's critical trip point
+is 105 degC, the observed peak was 95.1 degC, and the worker ran 2.5 hours at
+92-95 degC under the same workload without dying. The contributor adopted
+640K as the operational ceiling, narrowed the fatal boundary to between
+628K and 840K actual prompt tokens, and stopped bisecting on purpose because
+each further rung risks a freeze plus a power cycle. `--max-model-len` still
+advertises 1,048,576.
+
+What this adds to the entry: a second build (stock weights, not the
+abliterated re-upload) where the advertised window fails not by silent wrong
+answers but by a hard worker freeze, and where the failing length was found
+by bisection rather than by a single cold attempt. Both lanes agree on the
+structural claim: the advertised number is not a serviceable length, and a
+request inside the advertised window can take the lane down in a way no
+client-side timeout explains.
+
 **The check.** Three steps, and the first two cost nothing.
 
 1. Read the checkpoint's `config.json` rope-scaling block before you trust any

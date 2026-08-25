@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 126,
-  "content_sha256": "a70875133b2a3b9a611c7d0cecf402cf136bdda82c68b55723229c6b99babcc0",
+  "canonical_trap_count": 133,
+  "content_sha256": "48ad05331f54852d8fc149f4fec7b1b9ea45eb02bff69cb98be01a6004c6e35f",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -3694,7 +3694,8 @@
         "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099697368"
       ],
       "related_traps": [
-        "52"
+        "52",
+        "60"
       ],
       "source_path": "traps/evaluation/54-run-order-and-warm-cache-artifacts.md",
       "status": "contributor-measured, conditions as reported.",
@@ -8813,6 +8814,559 @@
       "supersession": null,
       "symptom": "Setting chattemplatekwargs: {\"thinking\": false} on a Ling-3.0-flash free-text request does not produce the expected faster/non-reasoning path. Token cost stays essentially unchanged, while the reasoning trace is delivered at the front of content and a stray </think> separates it from the user-facing answer. The same toggle behaves differently when the request asks for structured JSON output.",
       "title": "Ling thinking:false can keep reasoning enabled and spill the trace into content"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM",
+        "Docker"
+      ],
+      "affected_versions_builds": "lmstack router (lmcache/lmstack-router:latest, image built 2026-08-18T19:40Z) fronting vLLM on a 2x DGX Spark (GB10) lane, docker compose whole-file :ro bind mount, watchtower unattended nightly updates monitoring every container by default. Measured: 4 h 22 m of 502 (04:05Z to 08:27Z), 241 container restarts, both model clusters healthy and idle throughout, zero requests lost because none reached them. The mounted module predated PriorityRouter, a class the newer image's stock module imports at module scope. A throwaway-container reproduction of the pre-rebase patch failed with the same ImportError the live container hit; the rebased patch passed and the live service came back healthy, so the failure was pinned to the mount/image pair, not to the config or the model.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker",
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "lmstack router (lmcache/lmstack-router:latest, image built 2026-08-18T19:40Z) fronting vLLM on a 2x DGX Spark (GB10) lane, docker compose whole-file :ro bind mount, watchtower unattended nightly updates monitoring every container by default. Measured: 4 h 22 m of 502 (04:05Z to 08:27Z), 241 container restarts, both model clusters healthy and idle throughout, zero requests lost because none reached them. The mounted module predated PriorityRouter, a class the newer image's stock module imports at module scope. A throwaway-container reproduction of the pre-rebase patch failed with the same ImportError the live container hit; the rebased patch passed and the live service came back healthy, so the failure was pinned to the mount/image pair, not to the config or the model.",
+      "id": "127",
+      "known_limitations": "",
+      "mechanism": "The compose file bind-mounts a host file over a module path inside the image (./patches/foo.py:/opt/venv/.../foo.py:ro). The mount replaces the whole stock file, so the container runs a mix: your mounted module plus every other module from whatever image tag is current. That mix is silently coupled to one upstream revision. When an unattended updater pulls a newer image whose other modules import a symbol the mounted file predates, every start dies at import, before any request can be served. With restart: unless-stopped the failure becomes a crash loop, and the reverse proxy, seeing no healthy backend, answers 502. Nothing in the compose diff changed; the image did.",
+      "mitigation": "Stop feeding the container's own modules from outside the image where you can: subclass and register, or upstream the delta so the mount disappears entirely. Where a whole-file mount must exist, take that container off unattended updates and drive it with a gated script that pulls, diffs the operator delta against the new image's stock module, test-imports in a throwaway container, and restores the known-good image if the live one does not come up. When a crash loop does appear, check the image pull time before reading the last error line: an ImportError naming a symbol your configuration does not reference is the signature of the shadowing mount.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "09",
+        "53",
+        "75",
+        "104"
+      ],
+      "source_path": "traps/versioning/127-bind-mount-shadow-drift-crash-loop.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "An inference gateway behind a reverse proxy answers 502 for hours while the model backends behind it are healthy and idle. The container's restart count climbs steadily. Every start dies at import with an ImportError: cannot import name 'SomeClass' from a module you thought you knew, and nothing in your compose file changed: only the image tag moved, pulled by an unattended updater, at 04:05 in the morning. The reverse proxy has no healthy backend, so it answers 502 for the entire window.",
+      "title": "a whole-file bind mount shadows a module inside the image, and an unattended image update turns that into a crash-loop outage"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, --max-num-seqs 4, --max-num-batched-tokens 8192, chunked prefill on. Upstream before/after on this image class with 8 cold lanes (published by the recipe maintainers): at an 8K prompt wave worst tok/s went 2.07 to 15.31 and worst inter-token latency 482 ms to 65 ms; at 16K 0.47 to 14.86, 2123 ms to 67 ms; at 32K 0.36 to 14.80, 2790 ms to 67.6 ms. The mechanism needs two or more concurrent prefills, not maxnumseqs = 8, so the finder's --max-num-seqs 4 lane still qualifies; the finder's own degradation measurements (severe slowdown growing with prompt length, numpreemptions pinned at zero) matched the upstream description.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "decode",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, --max-num-seqs 4, --max-num-batched-tokens 8192, chunked prefill on. Upstream before/after on this image class with 8 cold lanes (published by the recipe maintainers): at an 8K prompt wave worst tok/s went 2.07 to 15.31 and worst inter-token latency 482 ms to 65 ms; at 16K 0.47 to 14.86, 2123 ms to 67 ms; at 32K 0.36 to 14.80, 2790 ms to 67.6 ms. The mechanism needs two or more concurrent prefills, not maxnumseqs = 8, so the finder's --max-num-seqs 4 lane still qualifies; the finder's own degradation measurements (severe slowdown growing with prompt length, numpreemptions pinned at zero) matched the upstream description.",
+      "id": "128",
+      "known_limitations": "",
+      "mechanism": "In the v1 scheduler on the measured build, SchedulerConfig.maxnumpartialprefills (default 1) is defined but never read in the waiting-admission loop; only maxnumseqs and the token budget gate new admissions. Several admitted-but-still-prefilling requests each take up to maxnumbatchedtokens per step, and decode-active requests further down the running list receive numnewtokens == 0 and are skipped with continue, not preempted. Because nothing is preempted, the preemption counter cannot move, and the starvation is invisible to the counter that normally reports it. The corresponding CLI flag is accepted but has no effect on this build, so the obvious fix changes nothing and reads as a negative result.",
+      "mitigation": "Land the scheduler hotfix that makes the flag mean something. Keep maxnumpartialprefills at its default of 1; raising it recreates the starvation the fix removes. Cap how much of a single prefill lands in one step with the long-prefill token threshold the hotfix pair expects (e.g. 1024), not a value at or above the batch budget, which caps nothing.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "36",
+        "41",
+        "77",
+        "106"
+      ],
+      "source_path": "traps/runtime/128-admission-flag-never-read-decode-starvation.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "Under two or more concurrent requests that are all still prefilling, decode collapses: worst inter-token latency climbs by an order of magnitude and throughput falls, growing worse as prompts lengthen. The preemption counter stays pinned at zero the whole time and the KV pool has headroom, so the two usual suspects are cleared at once. A single-flag \"fix\" you queued produces zero change, which you read as a refuted hypothesis. Both observations are the trap: a flag the scheduler never reads, and a counter that by construction cannot see the starvation.",
+      "title": "an admission flag the scheduler never reads starves decode while the preemption counter sits at zero"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, NVFP4 MLA KV cache (nvfp4dsmla), prefix caching on, --max-num-seqs 4. Finder's measurements: 97% live prefix-cache hit rate on daytime traffic at prompt lengths below the horizon; and a 24 s probe on a busy cluster swept up 721,882 live queries and reported a 95.1% hit rate, so a check that does not control for context length cannot see the trap either.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "load",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "memory",
+      "check": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, NVFP4 MLA KV cache (nvfp4dsmla), prefix caching on, --max-num-seqs 4. Finder's measurements: 97% live prefix-cache hit rate on daytime traffic at prompt lengths below the horizon; and a 24 s probe on a busy cluster swept up 721,882 live queries and reported a 95.1% hit rate, so a check that does not control for context length cannot see the trap either.",
+      "id": "129",
+      "known_limitations": "",
+      "mechanism": "The model's KV is stored in several cache groups, one full-attention (MLA) group and several sliding-window (SWA) groups. The prefix-cache lookup takes the minimum hit length across groups and reports that as the common prefix. SWA managers free blocks outside their window by design, so past the window length their hit length is zero, and the minimum zeroes the common hit even when the full-attention group still holds the entire prefix. Warm requests therefore fully re-prefill. The fix has two parts: a coordinator hotfix and a retention-interval environment variable, because on the upstream lane the hotfix alone still scored 0/8 correct at 44K+ (dense SWA tails evicted MLA prefix blocks before the answer).",
+      "mitigation": "Land the coordinator hotfix AND set the retention interval so the full-attention group's blocks outlive the sliding-window eviction. Re-measure the above-horizon hit rate after both, not after the hotfix alone. On a lane whose mean prompt sits far below the horizon, treat the excellent aggregate hit rate as a masking condition, not a clearance.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "25",
+        "47",
+        "60",
+        "92"
+      ],
+      "source_path": "traps/memory/129-prefix-cache-hit-min-across-kv-groups.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "Long warm requests suddenly re-prefill at zero cache hits, with no preemptions and no KV pressure. Your live prefix-cache hit rate is excellent (97% on daytime traffic), which makes the collapse look impossible, and it is: the collapse binds on context length, not on load. Above the sliding-window horizon, warm traffic pays full cold-prefill cost and nobody can see why from the aggregate counters.",
+      "title": "prefix-cache hits collapse past the sliding-window horizon because the shared hit is the minimum across KV cache groups"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-0731"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding. Measured: with --max-num-seqs 4 and 6 draft tokens the requested capture size is 28, and the engine clamps to 24 (cudagraphcapturesizes: [1,2,4,8,16,24]), so the 4-way decode shape runs eager; with 5 draft tokens the product is 4 x 6 = 24, lands exactly on the clamp, and FULL capture completes. The resulting spec-depth A/B on code generation: k=6 to k=5 moved steps/s +7.4% (14.52 to 15.60), tokens/step -9.9% (5.596 to 5.040), net tok/s 81.3 to 78.6 (-3.4%), with per-component spreads non-overlapping across five runs per arm, so the step-rate gain was graph coverage and the token yield loss was the dropped draft position.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 4"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-0731"
+        ],
+        "failure_stage": [
+          "decode",
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), tensor parallel 2, two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding. Measured: with --max-num-seqs 4 and 6 draft tokens the requested capture size is 28, and the engine clamps to 24 (cudagraphcapturesizes: [1,2,4,8,16,24]), so the 4-way decode shape runs eager; with 5 draft tokens the product is 4 x 6 = 24, lands exactly on the clamp, and FULL capture completes. The resulting spec-depth A/B on code generation: k=6 to k=5 moved steps/s +7.4% (14.52 to 15.60), tokens/step -9.9% (5.596 to 5.040), net tok/s 81.3 to 78.6 (-3.4%), with per-component spreads non-overlapping across five runs per arm, so the step-rate gain was graph coverage and the token yield loss was the dropped draft position.",
+      "id": "130",
+      "known_limitations": "",
+      "mechanism": "vLLM caps CUDA-graph capture at a fixed size list (on this build [1, 2, 4, 8, 16, 24]) and truncates the effective maximum to the largest list entry at or below the requested value. Many serve lines compute the requested value as maxnumseqs x (spectokens + 1). When that product exceeds the clamp, the full-batch decode shape is never captured and runs eager while smaller shapes get graphs. The effective list is printed once, at startup, and never again.",
+      "mitigation": "Choose the spec depth (or maxnumseqs) so maxnumseqs x (spectokens + 1) lands exactly on the clamp, and verify from the log, not from the flag you set. Do not tune the two independently: capture size is their product, and a maxnumseqs change silently retrades draft depth for graph coverage.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "01",
+        "11",
+        "28",
+        "46",
+        "122"
+      ],
+      "source_path": "traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "The startup log says CUDA graphs captured FULL, yet the full-concurrency decode shape behaves like eager: the biggest batch pays capture, launch and scheduling overhead with no graph. A one-token change in speculative depth (or a one-request change in maxnumseqs) flips the behavior with no error anywhere. The flag you set is not the number that governs.",
+      "title": "the CUDA-graph capture-size clamp silently runs your largest decode shape eager"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash model copy on both nodes and the NAS"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "HF hub cache staged on a NAS and rsynced to two DGX Spark (GB10) nodes running vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), offline mode on (HFHUBOFFLINE=1). Measured: a trailing newline in refs/ broke revision resolution for the DeepSeek-V4-Flash model copy on both nodes and the NAS; a 405 GB commit-pinned staging fetch of another model had no refs/main, and a later bare/main offline lookup was unresolvable until the staging layout was normalized to include the mapping that deployment expected. The finder's deploy gate exists precisely because this class of divergence is otherwise silent.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash",
+          "deepseek-v4-flash model copy on both nodes and the nas"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.1.1",
+          "0.25.2"
+        ],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
+      "contributor": "@sethforprivacy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "HF hub cache staged on a NAS and rsynced to two DGX Spark (GB10) nodes running vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), offline mode on (HFHUBOFFLINE=1). Measured: a trailing newline in refs/ broke revision resolution for the DeepSeek-V4-Flash model copy on both nodes and the NAS; a 405 GB commit-pinned staging fetch of another model had no refs/main, and a later bare/main offline lookup was unresolvable until the staging layout was normalized to include the mapping that deployment expected. The finder's deploy gate exists precisely because this class of divergence is otherwise silent.",
+      "id": "131",
+      "known_limitations": "",
+      "mechanism": "Hugging Face Hub revision resolution uses the refs/ files to map branch/tag names to snapshot commits. On the measured copy, a trailing newline in refs/main became part of the revision string, so offline resolution failed even though the snapshot bytes were present. A second measured staging case had no refs/main after a commit-hash-only fetch. That is not, by itself, a Hugging Face Hub bug: a workflow that asks only for an exact commit need not have established a branch mapping. It becomes a deployment trap when staging verifies one addressing mode (exact SHA) and the later offline serve uses another (bare name / main) without validating that the required ref mapping exists. The common mechanism is a local cache whose refs bytes/mappings do not match the revision contract production will use.",
+      "mitigation": "Make the staging and serving revision contract identical. Normalize accidental whitespace in refs/; preserve or deliberately create only the branch/tag mappings that the later offline deployment actually requires; and gate every node on both the expected ref mapping and snapshot checksums. A pin written in a serve config is not sufficient if the local offline cache cannot resolve that same pin/addressing mode.",
+      "public_evidence_links": [
+        "https://github.com/huggingface/huggingface_hub/issues/4133"
+      ],
+      "related_traps": [
+        "14",
+        "21",
+        "75"
+      ],
+      "source_path": "traps/versioning/131-hf-refs-file-breaks-offline-resolution.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A model that staged and verified fine fails to resolve offline on one or more nodes, with no change to the weights or the pin. Or a cache staged by exact commit works when addressed by that commit but later fails when the serve path asks for a branch name such as main. If the mismatch is only noticed after deployment, nodes can end up resolving different local snapshots under what the operator thought was one model identity.",
+      "title": "a stray byte in the HF hub refs file breaks pinned offline revision resolution on every node"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4-Flash-DSpark"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "Docker"
+      ],
+      "affected_versions_builds": "vLLM 0.21.1rc1 plus a custom GB10 kernel overlay; fraserprice/DeepSeek-V4-Flash-DSpark; two NVIDIA DGX Spark GB10 nodes, TP=2 over RoCE; nvfp4dsmla KV, block size 256; DSpark MTP with numspeculativetokens=5, probabilistic draft sampling; --max-model-len 1000000, --max-num-seqs 6, --max-num-batched-tokens 8192, chunked prefill enabled. The deployed image predated the scheduler guard even though the recipe documented the patched scheduler path.",
+      "applicability": {
+        "concurrency_regime": [
+          "seqs 6"
+        ],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4-flash-dspark",
+          "fraserprice deepseek-v4-flash-dspark"
+        ],
+        "failure_stage": [
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "docker",
+          "vllm"
+        ],
+        "stack_version": [
+          "0.21"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
+      "contributor": "@tonyd2wild; original scheduler-guard root-cause fix credited to @Roady001",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.21.1rc1 plus a custom GB10 kernel overlay; fraserprice/DeepSeek-V4-Flash-DSpark; two NVIDIA DGX Spark GB10 nodes, TP=2 over RoCE; nvfp4dsmla KV, block size 256; DSpark MTP with numspeculativetokens=5, probabilistic draft sampling; --max-model-len 1000000, --max-num-seqs 6, --max-num-batched-tokens 8192, chunked prefill enabled. The deployed image predated the scheduler guard even though the recipe documented the patched scheduler path.",
+      "id": "132",
+      "known_limitations": "",
+      "mechanism": "On the affected scheduler, speculative-placeholder resizing ran for requests that were still in chunked prefill instead of only for decode steps. That attached speculative tokens to the final prompt chunk of a cold resume and corrupted the prompt tail before generation began. A guard that excludes isprefillchunk requests from the placeholder path removes that state transition. The controlled fix is the load-bearing evidence: 44/44 cold bad without the guard -> 0/28 bad with the guard. Lowering speculative depth was a negative control, not a fix: k=3 remained 10/10 bad without the scheduler guard, while guarded k=3 and guarded k=5 were both 0/10 bad. The guard also reduced the reported cold-prefill time from roughly 36 s to roughly 12 s on the captured workload, consistent with speculative work no longer being attached to prefill chunks.",
+      "mitigation": "Use a build carrying the scheduler guard, or bind-mount the exact guarded scheduler only when that patch is pinned to the image revision. Do not lower speculative depth as a substitute: the contributor's k=3 negative control remained corrupted and only threw away decode throughput.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/36"
+      ],
+      "related_traps": [
+        "28",
+        "60",
+        "62"
+      ],
+      "source_path": "traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A speculative-decoding server passes warm smoke tests and ordinary short prompts, then real agent sessions that force a cold prefill begin their answer by continuing the system prompt. The corruption is coherent enough to look like a model misunderstanding: replies can start mid-word, reproduce text from the tool/skill catalogue, leak a BOS marker, or return only whitespace while billing tokens. The same prompt becomes clean as soon as its long prefix is warm. The reported separation was stark: 0/19 warm requests bad versus 44/44 cold requests bad across four configurations. The contributor forced the cold path by changing a nonce at the front of the long system prompt on every request.",
+      "title": "speculative placeholders can corrupt the prompt tail only on cold chunked prefill"
+    },
+    {
+      "affected_models": [
+        "deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.21.1rc1.dev339+g1967a5627bc3, private fork with custom sm120/sm121 kernels; deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on the second lane; FP8 target weights, NVFP4 MLA KV, DSpark draft stages; two DGX Spark GB10 nodes, TP=2 over RoCE; dsparkblocksize: 5, target layer ids 40/41/42, markov rank 256, probabilistic draft sampling, prefix caching and chunked prefill enabled.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-ai deepseek-v4-flash-0731",
+          "deepseek-ai deepseek-v4-flash-0731 plus a community-abliterated derivative on"
+        ],
+        "failure_stage": [
+          "decode",
+          "load",
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [
+          "fp8",
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.21"
+        ],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "runtime",
+      "check": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
+      "contributor": "@tonyd2wild",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.21.1rc1.dev339+g1967a5627bc3, private fork with custom sm120/sm121 kernels; deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on the second lane; FP8 target weights, NVFP4 MLA KV, DSpark draft stages; two DGX Spark GB10 nodes, TP=2 over RoCE; dsparkblocksize: 5, target layer ids 40/41/42, markov rank 256, probabilistic draft sampling, prefix caching and chunked prefill enabled.",
+      "id": "133",
+      "known_limitations": "",
+      "mechanism": "The draft loader's STACKEDPARAMNAMEMAPPING omitted the two shared-expert rows for .sharedexperts.w1 and .sharedexperts.w3. Across three draft stages that silently dropped twelve tensors belonging to the always-on shared expert. The target model's loader already had the equivalent mapping; the draft path did not. Because the target verifies every emitted token, output quality can stay green while speculative acceptance collapses. This is a sibling of Trap 109, not a duplicate. Trap 109 is a checkpoint/requant problem that leaves draft experts in the wrong representation. This entry is a serving-loader name-mapping gap on an otherwise loadable drafter path.",
+      "mitigation": "Use a build whose DSpark draft loader carries the shared-expert mapping, or add the two missing mapping rows to the pinned loader and verify that the unknown-weight skips disappear. Make skipped DSpark weights a launch gate or at least a warning; a debug-only skip is too quiet for tensors that can halve the drafter's useful work.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/38"
+      ],
+      "related_traps": [
+        "62",
+        "71",
+        "80",
+        "109"
+      ],
+      "source_path": "traps/runtime/133-dspark-loader-drops-shared-expert.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "The model is coherent and correct, the server reports no warning at normal log level, and speculative decoding is clearly active -- but acceptance and decode throughput sit around half of the expected lane. The target verifier hides the drafter defect because every bad proposal is simply rejected. On the reported lane, repairing the loader moved cumulative acceptance 25.7% -> 60.2%, accepted tokens per step 2.28 -> 4.01, and mean decode throughput 32.7 -> 55.4 tok/s, while decode steps/s stayed roughly flat (14.4 -> 13.8). A warm peak-finder on the fixed path reached 78.4 tok/s at 98.9% acceptance. The only load-time trace was twelve debug-level Skipping unknown DSpark weight messages.",
+      "title": "a DSpark draft loader can silently drop shared-expert weights and halve speculative yield"
     }
   ],
   "schema_version": "1.1"
