@@ -9157,7 +9157,7 @@
         "modalities": {
           "endpoint_probe": {
             "can_prove_clean": false,
-            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
             "expected_duration": "under one minute",
             "implemented_checker": null,
             "limitations": "First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does not include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.",
@@ -9198,7 +9198,7 @@
           },
           "log_scan": {
             "can_prove_clean": false,
-            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Absence of a signature is not proof of safety.",
@@ -9212,7 +9212,7 @@
           },
           "static_config": {
             "can_prove_clean": false,
-            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+            "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Static configuration does not prove the live process used it.",
@@ -9675,7 +9675,7 @@
         "modalities": {
           "endpoint_probe": {
             "can_prove_clean": false,
-            "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
             "expected_duration": "under one minute",
             "implemented_checker": null,
             "limitations": "",
@@ -9716,7 +9716,7 @@
           },
           "log_scan": {
             "can_prove_clean": false,
-            "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Absence of a signature is not proof of safety.",
@@ -9730,7 +9730,7 @@
           },
           "static_config": {
             "can_prove_clean": false,
-            "confirm_criterion": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
+            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Static configuration does not prove the live process used it.",
@@ -9749,7 +9749,7 @@
         "modalities": {
           "endpoint_probe": {
             "can_prove_clean": false,
-            "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+            "confirm_criterion": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
             "expected_duration": "under one minute",
             "implemented_checker": null,
             "limitations": "",
@@ -9790,7 +9790,7 @@
           },
           "log_scan": {
             "can_prove_clean": false,
-            "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+            "confirm_criterion": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Absence of a signature is not proof of safety.",
@@ -9804,7 +9804,7 @@
           },
           "static_config": {
             "can_prove_clean": false,
-            "confirm_criterion": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
+            "confirm_criterion": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Static configuration does not prove the live process used it.",
@@ -9823,7 +9823,7 @@
         "modalities": {
           "endpoint_probe": {
             "can_prove_clean": false,
-            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+            "confirm_criterion": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
             "expected_duration": "under one minute",
             "implemented_checker": null,
             "limitations": "",
@@ -9864,7 +9864,7 @@
           },
           "log_scan": {
             "can_prove_clean": false,
-            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+            "confirm_criterion": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Absence of a signature is not proof of safety.",
@@ -9878,7 +9878,7 @@
           },
           "static_config": {
             "can_prove_clean": false,
-            "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+            "confirm_criterion": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
             "expected_duration": "seconds",
             "implemented_checker": null,
             "limitations": "Static configuration does not prove the live process used it.",
@@ -12869,7 +12869,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "124",
-      "untrusted_published_check_text": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts."
+      "untrusted_published_check_text": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts."
     },
     {
       "confirm_criterion": "The failure signature described by trap 125 appears under matching conditions.",
@@ -13037,7 +13037,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "131",
-      "untrusted_published_check_text": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here."
+      "untrusted_published_check_text": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after."
     },
     {
       "confirm_criterion": "The failure signature described by trap 132 appears under matching conditions.",
@@ -13061,7 +13061,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "132",
-      "untrusted_published_check_text": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency."
+      "untrusted_published_check_text": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present."
     },
     {
       "confirm_criterion": "The failure signature described by trap 133 appears under matching conditions.",
@@ -13085,7 +13085,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "133",
-      "untrusted_published_check_text": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after."
+      "untrusted_published_check_text": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s."
     }
   ],
   "possible_unverified_leads": {
@@ -14414,7 +14414,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 133,
-    "content_sha256": "d8d68a006abf1519fbf14d5b45fd710c0f75a8e75af7b2b9141af72ba413ae49",
+    "content_sha256": "8f723a161f9a5df1cf0305e72cf9c98d2359846d7d733df384cd8a4c5c6b6fcb",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -18107,7 +18107,8 @@
           "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099697368"
         ],
         "related_traps": [
-          "52"
+          "52",
+          "60"
         ],
         "source_path": "traps/evaluation/54-run-order-and-warm-cache-artifacts.md",
         "status": "contributor-measured, conditions as reported.",
@@ -23058,7 +23059,7 @@
           "topology": []
         },
         "category": "runtime",
-        "check": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+        "check": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
           "static_config",
@@ -23077,7 +23078,7 @@
         "id": "124",
         "known_limitations": "First-party scope is NVIDIA DGX Spark using GB10 only. Broader GB10-family / OEM applicability is corroborated/reported only unless separately measured; other OEM board or SoC marketing names are not synonyms for this first-party GB10 claim. This first-party packet does not include a controlled ordinary-reboot survival test as a measured claim - public reports that reboot did not clear similar states are corroboration only. Prefer a true AC power removal over assuming reboot is sufficient. Longevity evidence does not prove permanence or a recurrence rate.",
         "mechanism": "The measured mechanism boundary is a persistent GB10 low-power platform state: the GPU remains usable and heavily utilized but does not boost into the normal sustained SM-clock/power range, and ordinary software-level controls (including applications-clock lock) do not recover it. A complete AC power removal reset that state; clocks, low-level compute throughput, and model-serving throughput recovered together. Causal boundary on the measured NVIDIA DGX Spark / GB10 unit: the low-power stuck state is strongly established; complete AC power removal recovered it; the exact PD/EC/SoC firmware root cause is not proven. This entry does not claim that a specific USB-C PD firmware, EC firmware, SoC firmware, driver version, or runtime bug is the root cause. Post-recovery longevity (first-party observation window): after recovery the same unit was observed for 23605 s (~6h33m) with telemetry samples 505, decode canaries 26, BF16 canaries 7, SM clocks 2385-2405 MHz, decode 71.47-74.48 tok/s, BF16 91.49-92.64 TFLOP/s, and LOWPOWERRECURRENCE=NO. This does not prove a permanent fix or establish a recurrence rate; it proves only that the recovered state remained healthy throughout this observation window. A prior clock-lock A/B also failed to rescue performance: nvidia-smi -lgc 2418,2418 applied successfully, but observed SM clocks remained around 0.7-0.8 GHz and Ornith decode stayed about 44.2 tok/s. That rules out \"just set the applications clock\" as the fix on this state.",
-        "mitigation": "Preserve evidence first, then perform a clean shutdown and a diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
+        "mitigation": "Preserve evidence first, then perform a clean shutdown and a true power removal, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts. On the measured unit this restored normal clocks and serving throughput without a Torch rebuild, driver downgrade, FlashInfer change, model change, or runtime tuning. Do not deliberately induce OOMs/crashes to reproduce the fault. Do not call a firmware update causal unless it is tested separately. If the state recurs, record the trigger and firmware/PD/EC/SoC inventory before changing it; recurrence data is more valuable than an uninstrumented update. NVIDIA's DGX Spark hardware guide specifies a 240 W external power supply and a GB10 SoC TDP of 140 W, and says the provided 240 W adapter is required for optimal performance: https://docs.nvidia.com/dgx/dgx-spark/dgx-spark.pdf",
         "public_evidence_links": [],
         "related_traps": [
           "09",
@@ -23540,160 +23541,6 @@
       },
       {
         "affected_models": [
-          "DeepSeek-V4-Flash-0731"
-        ],
-        "affected_stacks": [
-          "vLLM"
-        ],
-        "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, tensor parallel 2, stock DeepSeek-V4-Flash-0731 (~115 GB, 24 shards), loader fastsafetensors 0.3.3. Measured: load reached about 29% (7/24 shards) in ~1.5 min, then the NCCL watchdog reported a 600,053 ms broadcast timeout and aborted the process group; the head failed with WorkerProc initialization failed due to an exception in a background process; no Model loading took line was ever printed (baseline reaches it in 151 s; we waited 16 minutes). On the previous dead boot's kernel log, NVRM allocation-retry noise counted 116 events versus 25 on a healthy boot and 58 on an ordinary cold start, so the messages are normal retry noise on GB10 and only the degree changed. The steady-state figure of 0.65 of RAM looked safe; the 0.85-of-peak warning was the one that applied. After revert to the default loader the same node loaded reproducibly (224 s, twice, with the runtime gate 16/16 PASS).",
-        "applicability": {
-          "concurrency_regime": [],
-          "context_regime": [],
-          "device_class": [
-            "dgx spark",
-            "gb10"
-          ],
-          "exact_checkpoint": [
-            "deepseek-v4-flash-0731"
-          ],
-          "failure_stage": [
-            "load"
-          ],
-          "gpu_architecture": [
-            "blackwell"
-          ],
-          "model_family": [
-            "deepseek"
-          ],
-          "node_count": [],
-          "operating_system": [],
-          "parallelism": [
-            "tp"
-          ],
-          "quantization": [],
-          "serving_stack": [
-            "vllm"
-          ],
-          "stack_version": [
-            "0.1.1",
-            "0.25.2"
-          ],
-          "topology": [
-            "tp"
-          ]
-        },
-        "category": "runtime",
-        "check": "Before enabling a new loader, answer two questions rather than one. First: can the default loader's completion line (\"Model loading took ...\") be used as a baseline? Record it, then compare. Second: is the memory envelope computed as a PEAK (weights + loader transient + KV), not steady state? If the loader exposes pipeline depth or bounce-buffer controls, verify each is at its safest value and confirm there is nothing left to turn down. During the load, watch the worker for the wedge signature: ports accept but initialization encounters never complete. A TCP probe is not a liveness probe here.",
-        "contributor": "@sethforprivacy",
-        "diagnostic_modalities": [
-          "static_config",
-          "log_scan",
-          "guided_experiment",
-          "human_review"
-        ],
-        "doctor_coverage": {
-          "implemented": false,
-          "source": null
-        },
-        "evidence_strength": [
-          "contributor-measured, conditions as reported"
-        ],
-        "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, tensor parallel 2, stock DeepSeek-V4-Flash-0731 (~115 GB, 24 shards), loader fastsafetensors 0.3.3. Measured: load reached about 29% (7/24 shards) in ~1.5 min, then the NCCL watchdog reported a 600,053 ms broadcast timeout and aborted the process group; the head failed with WorkerProc initialization failed due to an exception in a background process; no Model loading took line was ever printed (baseline reaches it in 151 s; we waited 16 minutes). On the previous dead boot's kernel log, NVRM allocation-retry noise counted 116 events versus 25 on a healthy boot and 58 on an ordinary cold start, so the messages are normal retry noise on GB10 and only the degree changed. The steady-state figure of 0.65 of RAM looked safe; the 0.85-of-peak warning was the one that applied. After revert to the default loader the same node loaded reproducibly (224 s, twice, with the runtime gate 16/16 PASS).",
-        "id": "131",
-        "known_limitations": "",
-        "mechanism": "This loader streams checkpoint shards and performs distributed collectives (a torch broadcast, per the stack trace) inside its weight-load path. On a unified-memory box the staging/bounce-buffer path has no separate host RAM to spill into, so the binding constraint is the transient peak during load, not steady-state weights plus KV. vLLM plumbed none of the loader's controls (bounce-buffer size, reader thread count, GDS off switch), so the only knob it did expose was already at its safest value, and there was nothing left to turn down. The loader pipeline itself was already off, which rules out queue depth. The wedge is a userspace memory starvation on the worker, distinct from a kernel panic: the node stays reachable at L4 while service initialization never completes.",
-        "mitigation": "Stay on the default loader on this hardware until the loader exposes controls for its staging path (bounce buffers, thread count, GDS off), or a newer version changes the default envelope. Treat the node as requiring a physical power cycle once wedged at this depth; nothing remote recovered it. Revisit only with a knob that can go lower, on a node that can afford a power cycle if it is wrong.",
-        "public_evidence_links": [],
-        "related_traps": [
-          "08",
-          "115",
-          "116",
-          "119",
-          "123"
-        ],
-        "source_path": "traps/runtime/131-parallel-loader-collectives-wedge-uma.md",
-        "status": "contributor-measured, conditions as reported.",
-        "supersession": null,
-        "symptom": "You switch the load format to a parallel shard loader to cut the multi-node cold-start time. Weight load starts, progresses a few shards, then a roughly ten-minute NCCL watchdog timeout takes the whole process group down. The worker rank is left wedged: TCP accepts connections but the SSH banner exchange never completes, node exporters never answer, and only a physical power cycle recovers it. The load never prints its completion line. The steady-state memory figure that made the change look safe is not the number that matters.",
-        "title": "a parallel shard loader runs collectives during multi-node weight load, and on unified memory it wedges a rank"
-      },
-      {
-        "affected_models": [
-          "DeepSeek-V4-Flash-0731"
-        ],
-        "affected_stacks": [
-          "vLLM"
-        ],
-        "affected_versions_builds": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, flashinfer autotuner on. Measured: a 32K cold prefill that reads ~22 s on a warm cluster had not completed after 10+ minutes on a fresh boot, GPU at 96%, both vLLM token counters at zero; the worker log carried CuTeDSL JIT compilation during inference: W4A16FusedMoeKernel. This causes a latency spike, Triton kernel JIT compilation during inference: buildprefillchunkmetadatakernel, and flashinfer.jit [AutoTuner]: No tuned config covers sparsemla... ... perf cliff. A subsequent A/B run on a cluster that had been up 26 h had none of this; the finder's clean clock-cap numbers were produced under that condition.",
-        "applicability": {
-          "concurrency_regime": [],
-          "context_regime": [],
-          "device_class": [
-            "dgx spark",
-            "gb10"
-          ],
-          "exact_checkpoint": [
-            "deepseek-v4-flash-0731"
-          ],
-          "failure_stage": [
-            "first request",
-            "prefill"
-          ],
-          "gpu_architecture": [
-            "blackwell"
-          ],
-          "model_family": [
-            "deepseek"
-          ],
-          "node_count": [],
-          "operating_system": [],
-          "parallelism": [],
-          "quantization": [],
-          "serving_stack": [
-            "vllm"
-          ],
-          "stack_version": [
-            "0.1.1",
-            "0.25.2"
-          ],
-          "topology": []
-        },
-        "category": "evaluation",
-        "check": "When a fresh lane looks stuck, read the container log before killing anything: look for JIT-compilation lines with the GPU busy and both token counters at zero. Those counters advance on completion, so zero is expected while a long first request is still in flight. Before benchmarking after any boot, warm the lane and wait until a normal request completes at normal latency.",
-        "contributor": "@sethforprivacy",
-        "diagnostic_modalities": [
-          "static_config",
-          "log_scan",
-          "guided_experiment",
-          "human_review"
-        ],
-        "doctor_coverage": {
-          "implemented": false,
-          "source": null
-        },
-        "evidence_strength": [
-          "contributor-measured, conditions as reported"
-        ],
-        "exact_conditions": "vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), two DGX Spark (GB10) nodes, stock DeepSeek-V4-Flash-0731, DSpark speculative decoding, flashinfer autotuner on. Measured: a 32K cold prefill that reads ~22 s on a warm cluster had not completed after 10+ minutes on a fresh boot, GPU at 96%, both vLLM token counters at zero; the worker log carried CuTeDSL JIT compilation during inference: W4A16FusedMoeKernel. This causes a latency spike, Triton kernel JIT compilation during inference: buildprefillchunkmetadatakernel, and flashinfer.jit [AutoTuner]: No tuned config covers sparsemla... ... perf cliff. A subsequent A/B run on a cluster that had been up 26 h had none of this; the finder's clean clock-cap numbers were produced under that condition.",
-        "id": "132",
-        "known_limitations": "",
-        "mechanism": "The first inference after a cold boot triggers JIT compilation (CuTeDSL, Triton, and the flashinfer autotuner on this stack) for kernels whose build products were not persisted. The generation and prompt token counters advance only on request completion, so a long first request leaves both pinned at zero while the GPU is busy, which is exactly the signature of a hang. The truth is in the worker log: kernel names and \"perf cliff\" warnings next to the long latency.",
-        "mitigation": "Put a warmup request in the boot path, or simply treat the first ~10 minutes after a cold start as non-benchmarkable. Write \"was the cluster warm\" into the A/B runbook next to the other conditions; it is a real confound that looks nothing like one.",
-        "public_evidence_links": [],
-        "related_traps": [
-          "46",
-          "54",
-          "107",
-          "110"
-        ],
-        "source_path": "traps/evaluation/132-first-request-after-boot-pays-jit.md",
-        "status": "contributor-measured, conditions as reported.",
-        "supersession": null,
-        "symptom": "A freshly booted lane looks wedged: GPU utilization pinned near 96%, both token counters at zero, and a request that normally finishes in about 22 seconds running past 10 minutes. It is not a wedge, it is just-in-time kernel compilation. And any A/B run inside this window is contaminated: whichever arm runs first absorbs the one-off cost and looks worse, so the comparison is wrong in a direction you can defend in prose but not on the hardware.",
-        "title": "the first request after a cold start pays kernel JIT compilation, and it reads as a wedge and contaminates your A/B"
-      },
-      {
-        "affected_models": [
           "DeepSeek-V4-Flash model copy on both nodes and the NAS"
         ],
         "affected_stacks": [
@@ -23750,21 +23597,191 @@
           "contributor-measured, conditions as reported"
         ],
         "exact_conditions": "HF hub cache staged on a NAS and rsynced to two DGX Spark (GB10) nodes running vLLM 0.25.2.dev0+g752a3a504.d20260714 (Anemll dspark-vllm-gx10:0.1.1 image), offline mode on (HFHUBOFFLINE=1). Measured: a trailing newline in refs/ broke revision resolution for the DeepSeek-V4-Flash model copy on both nodes and the NAS; a 405 GB sha-pinned fetch of a different model wrote no refs/main, and the bare model name was unresolvable offline until a refs/main carrying the pinned sha was created by hand. The finder's deploy gate exists precisely because this class of divergence is otherwise silent.",
-        "id": "133",
+        "id": "131",
         "known_limitations": "",
         "mechanism": "Hugging Face hub revision resolution reads the refs/ files with a plain read and no strip. A stray trailing newline in refs/main changes the resolved revision, so offline resolution of the pinned name fails. Separately, a fetch pinned by commit hash alone writes no refs/main at all, so the hub has no mapping from the bare model name to a revision and any offline resolution by name has nothing to look up. Both are quiet byte-level defects in the staged artifact; neither shows up during an online fetch.",
         "mitigation": "Strip trailing newlines in the fetcher (and normalize refs/ when staging), and create refs/main from the pinned sha whenever the fetch was pinned by hash alone. Treat the staged hub-cache snapshot as a deploy artifact, not a byproduct: gate both nodes on refs bytes and shard checksums before serving. A revision pin in the serve config is not a substitute for a byte-correct local cache when offline.",
-        "public_evidence_links": [],
+        "public_evidence_links": [
+          "https://github.com/huggingface/huggingface_hub/issues/4133"
+        ],
         "related_traps": [
           "14",
           "21",
           "75"
         ],
-        "source_path": "traps/versioning/133-hf-refs-file-breaks-offline-resolution.md",
+        "source_path": "traps/versioning/131-hf-refs-file-breaks-offline-resolution.md",
         "status": "contributor-measured, conditions as reported.",
         "supersession": null,
         "symptom": "A model that staged and verified fine fails to resolve offline on one or more nodes, with no change to the weights or the pin. Or: a fetch pinned by commit hash alone leaves the bare model name unresolvable, so the first load errors even though the same snapshot loaded during staging. If the failure is only noticed after a load, two nodes can silently hold different weights under the same model name, which is divergence, not failure.",
         "title": "a stray byte in the HF hub refs file breaks pinned offline revision resolution on every node"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4-Flash-DSpark"
+        ],
+        "affected_stacks": [
+          "vLLM",
+          "Docker"
+        ],
+        "affected_versions_builds": "vLLM 0.21.1rc1 plus a custom GB10 kernel overlay; fraserprice/DeepSeek-V4-Flash-DSpark; two NVIDIA DGX Spark GB10 nodes, TP=2 over RoCE; nvfp4dsmla KV, block size 256; DSpark MTP with numspeculativetokens=5, probabilistic draft sampling; --max-model-len 1000000, --max-num-seqs 6, --max-num-batched-tokens 8192, chunked prefill enabled. The deployed image predated the scheduler guard even though the recipe documented the patched scheduler path.",
+        "applicability": {
+          "concurrency_regime": [
+            "seqs 6"
+          ],
+          "context_regime": [],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4-flash-dspark",
+            "fraserprice deepseek-v4-flash-dspark"
+          ],
+          "failure_stage": [
+            "prefill"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [
+            "docker",
+            "vllm"
+          ],
+          "stack_version": [
+            "0.21"
+          ],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "runtime",
+        "check": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
+        "contributor": "@tonyd2wild; original scheduler-guard root-cause fix credited to @Roady001",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "contributor-measured, conditions as reported"
+        ],
+        "exact_conditions": "vLLM 0.21.1rc1 plus a custom GB10 kernel overlay; fraserprice/DeepSeek-V4-Flash-DSpark; two NVIDIA DGX Spark GB10 nodes, TP=2 over RoCE; nvfp4dsmla KV, block size 256; DSpark MTP with numspeculativetokens=5, probabilistic draft sampling; --max-model-len 1000000, --max-num-seqs 6, --max-num-batched-tokens 8192, chunked prefill enabled. The deployed image predated the scheduler guard even though the recipe documented the patched scheduler path.",
+        "id": "132",
+        "known_limitations": "",
+        "mechanism": "On the affected scheduler, speculative-placeholder resizing ran for requests that were still in chunked prefill instead of only for decode steps. That attached speculative tokens to the final prompt chunk of a cold resume and corrupted the prompt tail before generation began. A guard that excludes isprefillchunk requests from the placeholder path removes that state transition. The controlled fix is the load-bearing evidence: 44/44 cold bad without the guard -> 0/28 bad with the guard. Lowering speculative depth was a negative control, not a fix: k=3 remained 10/10 bad without the scheduler guard, while guarded k=3 and guarded k=5 were both 0/10 bad. The guard also reduced the reported cold-prefill time from roughly 36 s to roughly 12 s on the captured workload, consistent with speculative work no longer being attached to prefill chunks.",
+        "mitigation": "Use a build carrying the scheduler guard, or bind-mount the exact guarded scheduler only when that patch is pinned to the image revision. Do not lower speculative depth as a substitute: the contributor's k=3 negative control remained corrupted and only threw away decode throughput.",
+        "public_evidence_links": [
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/36"
+        ],
+        "related_traps": [
+          "28",
+          "60",
+          "62"
+        ],
+        "source_path": "traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md",
+        "status": "contributor-measured, conditions as reported.",
+        "supersession": null,
+        "symptom": "A speculative-decoding server passes warm smoke tests and ordinary short prompts, then real agent sessions that force a cold prefill begin their answer by continuing the system prompt. The corruption is coherent enough to look like a model misunderstanding: replies can start mid-word, reproduce text from the tool/skill catalogue, leak a BOS marker, or return only whitespace while billing tokens. The same prompt becomes clean as soon as its long prefix is warm. The reported separation was stark: 0/19 warm requests bad versus 44/44 cold requests bad across four configurations. The contributor forced the cold path by changing a nonce at the front of the long system prompt on every request.",
+        "title": "speculative placeholders can corrupt the prompt tail only on cold chunked prefill"
+      },
+      {
+        "affected_models": [
+          "deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "vLLM 0.21.1rc1.dev339+g1967a5627bc3, private fork with custom sm120/sm121 kernels; deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on the second lane; FP8 target weights, NVFP4 MLA KV, DSpark draft stages; two DGX Spark GB10 nodes, TP=2 over RoCE; dsparkblocksize: 5, target layer ids 40/41/42, markov rank 256, probabilistic draft sampling, prefix caching and chunked prefill enabled.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-ai deepseek-v4-flash-0731",
+            "deepseek-ai deepseek-v4-flash-0731 plus a community-abliterated derivative on"
+          ],
+          "failure_stage": [
+            "decode",
+            "load",
+            "prefill"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [
+            "fp8",
+            "nvfp4"
+          ],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [
+            "0.21"
+          ],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "runtime",
+        "check": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
+        "contributor": "@tonyd2wild",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "contributor-measured, conditions as reported"
+        ],
+        "exact_conditions": "vLLM 0.21.1rc1.dev339+g1967a5627bc3, private fork with custom sm120/sm121 kernels; deepseek-ai/DeepSeek-V4-Flash-0731 plus a community-abliterated derivative on the second lane; FP8 target weights, NVFP4 MLA KV, DSpark draft stages; two DGX Spark GB10 nodes, TP=2 over RoCE; dsparkblocksize: 5, target layer ids 40/41/42, markov rank 256, probabilistic draft sampling, prefix caching and chunked prefill enabled.",
+        "id": "133",
+        "known_limitations": "",
+        "mechanism": "The draft loader's STACKEDPARAMNAMEMAPPING omitted the two shared-expert rows for .sharedexperts.w1 and .sharedexperts.w3. Across three draft stages that silently dropped twelve tensors belonging to the always-on shared expert. The target model's loader already had the equivalent mapping; the draft path did not. Because the target verifies every emitted token, output quality can stay green while speculative acceptance collapses. This is a sibling of Trap 109, not a duplicate. Trap 109 is a checkpoint/requant problem that leaves draft experts in the wrong representation. This entry is a serving-loader name-mapping gap on an otherwise loadable drafter path.",
+        "mitigation": "Use a build whose DSpark draft loader carries the shared-expert mapping, or add the two missing mapping rows to the pinned loader and verify that the unknown-weight skips disappear. Make skipped DSpark weights a launch gate or at least a warning; a debug-only skip is too quiet for tensors that can halve the drafter's useful work.",
+        "public_evidence_links": [
+          "https://github.com/Blackwellboy/model-serving-minefield/issues/38"
+        ],
+        "related_traps": [
+          "62",
+          "71",
+          "80",
+          "109"
+        ],
+        "source_path": "traps/runtime/133-dspark-loader-drops-shared-expert.md",
+        "status": "contributor-measured, conditions as reported.",
+        "supersession": null,
+        "symptom": "The model is coherent and correct, the server reports no warning at normal log level, and speculative decoding is clearly active -- but acceptance and decode throughput sit around half of the expected lane. The target verifier hides the drafter defect because every bad proposal is simply rejected. On the reported lane, repairing the loader moved cumulative acceptance 25.7% -> 60.2%, accepted tokens per step 2.28 -> 4.01, and mean decode throughput 32.7 -> 55.4 tok/s, while decode steps/s stayed roughly flat (14.4 -> 13.8). A warm peak-finder on the fixed path reached 78.4 tok/s at 98.9% acceptance. The only load-time trace was twelve debug-level Skipping unknown DSpark weight messages.",
+        "title": "a DSpark draft loader can silently drop shared-expert weights and halve speculative yield"
       }
     ],
     "schema_version": "1.1"

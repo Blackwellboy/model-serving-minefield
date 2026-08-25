@@ -128,8 +128,11 @@ same OBLIT target reached **109.43 tok/s** at K6.
 The useful conclusion is narrower than "abliteration is free": **the earlier
 ~18% route-level gap was dominated by export/packing identity, not by the target
 weight intervention.** Only after the packing and MTP treatment matched did the
-code path return to reference-class speed. Behavior/correctness checks remained
-green on the matched OBLIT target.
+code path return to reference-class speed. The matched behavior/correctness fixture remained green, but a separate tiny
+eight-task intelligence smoke scored the Frozenlock reference **8/8** and the
+matched OBLIT target **7/8** because of one strict tool-call-format near-miss.
+That bounded miss is reported rather than hidden, and this experiment does
+**not** establish universal intelligence equivalence.
 
 **The extra check this instance adds:** for AutoRound/GPTQ-family artifacts,
 do not stop at bits, group size and a marketing label. Record and compare

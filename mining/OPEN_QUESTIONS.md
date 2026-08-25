@@ -335,9 +335,9 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   bytes and effective scheduler path are verified, in which case the proposed
   scheduler mechanism must be narrowed or rejected.
 - **Cost.** M; requires a scratch serve/restart boundary.
-- **Note.** Strong canonical candidate, deliberately unnumbered until promotion
-  is built against current `main`. It is adjacent to Trap 60 but not currently
-  owned by it: Trap 60 records cold-versus-cache behavioral divergence without
+- **Note.** Canonical promotion is staged as **Trap 132** on the 2026-08-25
+  maintainer adjudication branch, pending exact-head CI/merge. It remains distinct
+  from Trap 60: Trap 60 records cold-versus-cache behavioral divergence without
   this isolated scheduler mechanism.
 
 ### Q17. Does the DSpark draft loader mapping gap in issue #38 independently explain the missing-shared-expert acceptance collapse?
@@ -364,10 +364,10 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   leaves the acceptance collapse unchanged, in which case the loader mapping
   cannot own the reported result.
 - **Cost.** S for source adjudication; M if the runtime A/B is repeated.
-- **Note.** Strong canonical candidate, deliberately unnumbered until promotion
-  is built against current `main`. It is a sibling of Trap 109, not a duplicate:
-  Trap 109 owns a requant/checkpoint-format failure, while this candidate is a
-  serving-loader mapping failure on the drafter path.
+- **Note.** Canonical promotion is staged as **Trap 133** on the 2026-08-25
+  maintainer adjudication branch, pending exact-head CI/merge. It remains a sibling
+  of Trap 109, not a duplicate: Trap 109 owns a requant/checkpoint-format failure,
+  while this candidate is a serving-loader mapping failure on the drafter path.
 
 
 ### Q18. Does cgroup v2 `MemoryMax` fail to account CUDA unified-memory pressure on DGX Spark as reported in issue #57?

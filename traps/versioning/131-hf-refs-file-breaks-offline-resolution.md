@@ -1,4 +1,4 @@
-# Trap 133: a stray byte in the HF hub refs file breaks pinned offline revision resolution on every node
+# Trap 131: a stray byte in the HF hub refs file breaks pinned offline revision resolution on every node
 
 **Found by @sethforprivacy.**
 
@@ -22,6 +22,8 @@ at all, so the hub has no mapping from the bare model name to a revision and
 any offline resolution by name has nothing to look up. Both are quiet
 byte-level defects in the staged artifact; neither shows up during an online
 fetch.
+
+**Public corroboration for the newline half.** [`huggingface_hub` issue #4133](https://github.com/huggingface/huggingface_hub/issues/4133) reports the same offline-resolution failure when a trailing newline becomes part of the commit-hash string. That upstream report does not upgrade this entry's status; the measured lane and counts here remain contributor-measured.
 
 **Stacks and builds bitten.** HF hub cache staged on a NAS and rsynced to two
 DGX Spark (GB10) nodes running vLLM `0.25.2.dev0+g752a3a504.d20260714`

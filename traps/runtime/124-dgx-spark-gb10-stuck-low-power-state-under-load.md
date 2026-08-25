@@ -75,23 +75,12 @@ This trap is strongly indicated when all of the following line up:
 6. low-level compute **and** LLM serving are both degraded;
 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together.
 
-diagnosis used sustained load because short kernels can leave telemetry stale
-or sampled between boosts.
+A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.
 
-**A query caveat on the same driver, for the healthy-capped case, contributed
-by @sethforprivacy.** Contributor-measured on a private 2x DGX Spark (GB10)
-lane, 2026-08-16; Blackwellboy has not reproduced this lane. The reverse
-state is just as easy to misread: after `nvidia-smi -lgc` successfully pins a
-clock cap, `nvidia-smi -q -d CLOCK` still prints `Max Clocks: 3003 MHz` (the
-hardware ceiling) and an idle reading shows 208 MHz, so both look like "the
-cap did not apply". The pinned range is not exposed by that query on the
-measured driver. Read the unit's own set line (for example `nvidia-smi: GPU
-clocks set to "(gpuClkMin 0, gpuClkMax 2200)"`, in the service journal for
-that boot) or sample `clocks.sm` under real load. The two GB10 clock states,
-stuck-low-power and healthy-but-capped, present the same misleading query
-output, so the query alone cannot tell them apart.
 
-**The fix.** Preserve evidence first, then perform a clean shutdown and a diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.
+**A query caveat for the healthy-but-capped case, contributed by @sethforprivacy.** **Status: contributor-measured, conditions as reported.** On the contributor's private 2x DGX Spark GB10 lane, `nvidia-smi -lgc` successfully applied a clock cap while `nvidia-smi -q -d CLOCK` still printed the hardware `Max Clocks` value and an idle sample remained low. On that measured driver the query did not expose the applied range, so the output can look like "the cap did not apply" even when it did.
+
+For that state, preserve the command/service journal line that records the applied range and sample `clocks.sm` under sustained load. Do not use the static max-clock query alone to distinguish a genuinely stuck-low-power unit from a healthy unit that is intentionally capped.
 
 **The fix.** Preserve evidence first, then perform a clean shutdown and a **true power removal**, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts.
 
