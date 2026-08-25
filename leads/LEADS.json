@@ -1318,6 +1318,38 @@
       ],
       "confidence": "medium",
       "notes": "The public-source coherence claim remains unreproduced here. A separate first-party Qwen3.8 check found requested Marlin controls unrecognized on its tested build, sharpening the required requested-versus-effective-backend check without reproducing the external result."
+    },
+    {
+      "id": "L050",
+      "title": "Sampler-enforced thinking budgets can bound Qwen3.8 reasoning without redefining the effort prompt",
+      "canonical": false,
+      "status": "PUBLIC_SOURCE_UNREPRODUCED",
+      "source_class": "community_public_source",
+      "scope": "reasoning_runtime",
+      "symptom": "Qwen3.8 at a high reasoning-effort setting can consume the entire completion budget inside thinking and return empty final content, while prompt-only effort labels provide no hard reasoning-token ceiling.",
+      "possible_mechanism": "vLLM 0.27.1 exposes thinking_token_budget and implements sampler-side tracking that forces the configured end-of-thinking token sequence when the budget is exhausted; this separates an engine-enforced reasoning budget from prompt wording such as xhigh.",
+      "confirmation_check": "On one pinned Qwen3.8 checkpoint/runtime, hold explicit reasoning_effort, max completion tokens, sampling and prompt constant; compare no budget versus a fixed thinking_token_budget while recording rendered prompt, reasoning/content token counts, finish reason, correctness and latency.",
+      "refutation_check": "Show the exact vLLM build lacks the budget path, the request does not reach it, or a matched budget-vs-no-budget A/B fails to change the reasoning-limit behavior despite the sampler control being active.",
+      "conditional_mitigation": "Where the pinned vLLM build and reasoning parser support it, prefer an explicitly measured sampler-side thinking budget over relying on an unbounded xhigh prompt instruction; do not retrofit the setting into historical benchmark arms.",
+      "related_traps": [
+        "03",
+        "07",
+        "16"
+      ],
+      "affected_stacks": [
+        "Qwen3.8-27B",
+        "vLLM 0.27.1",
+        "reasoning parser",
+        "DGX Spark GB10"
+      ],
+      "source_refs": [
+        "../mining/2026-08-20-jschmied-qwen38-fixed-template-reconciliation.md",
+        "https://github.com/jschmied/Qwen-Fixed-Chat-Templates",
+        "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/v1/sample/thinking_budget_state.py",
+        "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/entrypoints/openai/chat_completion/protocol.py"
+      ],
+      "confidence": "high",
+      "notes": "Implementation existence is source-confirmed in vLLM 0.27.1. The reported Qwen3.8 GB10 numeric A/B (no budget: 97,708 reasoning chars / 0 content; budget 1500: 5,562 reasoning chars / 18,512 content) remains external contributor measurement and has not been reproduced by Blackwellboy."
     }
   ]
 }
