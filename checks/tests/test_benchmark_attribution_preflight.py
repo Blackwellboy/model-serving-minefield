@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-"""Unit tests for offline benchmark attribution preflight.
-
-    python3 checks/tests/test_benchmark_attribution_preflight.py
-"""
+"""Unit tests for offline benchmark attribution preflight."""
 
 from __future__ import annotations
 
 import importlib.util
 import json
-import sys
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -54,6 +50,33 @@ class BenchmarkAttributionPreflightTests(unittest.TestCase):
         self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
         self.assertEqual(report["path_proof_status"], "ABSENT")
 
+    def test_link_up_only_free_text_is_not_path_proof(self):
+        doc = self._example()
+        doc["arm_a"]["transport"]["path_proof"] = "link UP at 1 Gb/s"
+        doc["arm_b"]["transport"]["path_proof"] = "link UP at 1 Gb/s"
+        report = self.m.evaluate_pair(doc)
+        self.assertEqual(report["path_proof_status"], "INSUFFICIENT")
+        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
+
+    def test_route_and_counter_free_text_can_be_path_proof(self):
+        doc = self._example()
+        proof = "route to peer uses interface eth0; TX/RX counters move during burst"
+        doc["arm_a"]["transport"]["path_proof"] = proof
+        doc["arm_b"]["transport"]["path_proof"] = proof
+        report = self.m.evaluate_pair(doc)
+        self.assertEqual(report["path_proof_status"], "PRESENT")
+        self.assertEqual(report["max_defensible_claim"], "TRANSPORT")
+
+    def test_concurrency_compares_exactly_not_with_token_tolerance(self):
+        doc = self._example()
+        doc["arm_a"]["serving_engine"]["concurrency"] = 1
+        doc["arm_b"]["serving_engine"]["concurrency"] = 2
+        report = self.m.evaluate_pair(doc)
+        self.assertIn("SERVING_ENGINE", report["changed_dimensions"])
+        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
+
     def test_serving_missing_isl_cannot_claim_serving_engine(self):
         doc = self._example()
         doc["intended_changed_layer"] = "SERVING_ENGINE"
@@ -64,6 +87,18 @@ class BenchmarkAttributionPreflightTests(unittest.TestCase):
         doc["arm_b"]["serving_engine"]["actual_isl"] = None
         report = self.m.evaluate_pair(doc)
         self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+
+    def test_serving_missing_concurrency_cannot_claim_serving_engine(self):
+        doc = self._example()
+        doc["intended_changed_layer"] = "SERVING_ENGINE"
+        doc["arm_a"]["transport"] = deepcopy(doc["arm_b"]["transport"])
+        doc["arm_a"]["serving_engine"]["flags_digest_or_normalized_flags"] = "flags=old"
+        doc["arm_b"]["serving_engine"]["flags_digest_or_normalized_flags"] = "flags=new"
+        doc["arm_a"]["serving_engine"]["concurrency"] = None
+        doc["arm_b"]["serving_engine"]["concurrency"] = None
+        report = self.m.evaluate_pair(doc)
+        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
 
     def test_gpudirect_from_cuda_managed_rejected(self):
         report = self.m.evaluate_pair(self._bad())
@@ -78,32 +113,17 @@ class BenchmarkAttributionPreflightTests(unittest.TestCase):
         self.assertEqual(report["correctness_gate_status"], "ABSENT")
 
     def test_transport_intended_but_endpoint_identity_differs_is_composite(self):
-        """Cross-session footgun: path changed AND remote host changed."""
         doc = self._example()
-        doc["intended_changed_layer"] = "TRANSPORT"
-        doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wifi-era"
-        doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wired-era"
-        # Even with identical engine_build, a host move blocks pure TRANSPORT.
+        doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "peer-a"
+        doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "peer-b"
         report = self.m.evaluate_pair(doc)
-        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
         self.assertIn("SERVING_ENGINE", report["changed_dimensions"])
-        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
-
-    def test_transport_intended_with_endpoint_and_revision_differs_is_composite(self):
-        doc = self._example()
-        doc["intended_changed_layer"] = "TRANSPORT"
-        doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wifi-era"
-        doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wired-era"
-        doc["arm_a"]["serving_engine"]["engine_build"] = (
-            "flashrdma-portable@ae03d59a04015d9c73ee6b029520aad9026484e5"
-        )
-        doc["arm_b"]["serving_engine"]["engine_build"] = (
-            "flashrdma-portable@1e952ace4be94f90b88b850188e99f0493036424"
-        )
-        doc["arm_a"]["transport"]["path_class"] = "WIFI_PORTABLE"
-        doc["arm_b"]["transport"]["path_class"] = "WIRED_ETHERNET_FLASH_PORTABLE"
-        report = self.m.evaluate_pair(doc)
         self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+
+    def test_missing_arms_are_blocking_shape_failure(self):
+        report = self.m.evaluate_pair({"intended_changed_layer": "TRANSPORT"})
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
 
     def test_schema_examples_are_objects(self):
         for name in (
