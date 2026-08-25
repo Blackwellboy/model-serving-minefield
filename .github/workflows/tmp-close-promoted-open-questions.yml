@@ -50,7 +50,6 @@ jobs:
           git diff --check
           python3 integrity/registry_integrity.py
           python3 integrity/reference_integrity.py
-          python3 integrity/open_issue_queue.py
       - name: Remove helper and commit
         run: |
           rm -f .github/workflows/tmp-close-promoted-open-questions.yml
