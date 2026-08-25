@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `4e49cbfd2ea40fc9f7f1a469aa7cba50de2af6ecbf8b339db94191ba4ae81b76`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `e49a6a6698523d521a57b35aa94efc13128b07911dd51a34ce40e02027d5936d`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -504,6 +504,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 131: A model that staged and verified fine fails to resolve offline on one or more nodes, with no change to the weights or the pin. Or a cache staged by exact commit works when addressed by that commit but later fails when the serve path asks for a branch name such as main. If the mismatch is only noticed after deployment, nodes can end up resolving different local snapshots under what the operator thought was one model identity.
 - 132: A speculative-decoding server passes warm smoke tests and ordinary short prompts, then real agent sessions that force a cold prefill begin their answer by continuing the system prompt. The corruption is coherent enough to look like a model misunderstanding: replies can start mid-word, reproduce text from the tool/skill catalogue, leak a BOS marker, or return only whitespace while billing tokens. The same prompt becomes clean as soon as its long prefix is warm. The reported separation was stark: 0/19 warm requests bad versus 44/44 cold requests bad across four configurations. The contributor forced the cold path by changing a nonce at the front of the long system prompt on every request.
 - 133: The model is coherent and correct, the server reports no warning at normal log level, and speculative decoding is clearly active -- but acceptance and decode throughput sit around half of the expected lane. The target verifier hides the drafter defect because every bad proposal is simply rejected. On the reported lane, repairing the loader moved cumulative acceptance 25.7% -> 60.2%, accepted tokens per step 2.28 -> 4.01, and mean decode throughput 32.7 -> 55.4 tok/s, while decode steps/s stayed roughly flat (14.4 -> 13.8). A warm peak-finder on the fixed path reached 78.4 tok/s at 98.9% acceptance. The only load-time trace was twelve debug-level Skipping unknown DSpark weight messages.
+- 134: An Ethernet/NIC/interface reports link UP at a plausible negotiated speed, so the operator concludes "the test is wired" or "this transport used interface X." The labelled transport arm then produces a clean tok/s table. Later path forensics show the workload never used that interface: routes and packet counters belong to another path (commonly wireless fallback or a default route), while the intended interface stays healthy and mostly idle. The benchmark looks valid while measuring a different transport than the label says.
 
 ## Compact possible/unverified lead index
 

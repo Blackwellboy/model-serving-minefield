@@ -3191,6 +3191,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "133",
       "untrusted_published_check_text": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 134 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 134 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "134",
+      "untrusted_published_check_text": "Before recording any transport-labelled performance result, require path proof against the actual benchmark peer, not a generic gateway: 1. Route lookup to the peer: which interface / gateway is selected. 2. Source / interface bind where the OS supports it: bind to the intended address and show success; bind to the wrong source and show failure or a different path rather than silent fallback. 3. ARP / neighbour evidence where applicable. 4. Before/after TX/RX counter deltas on the intended interface during a known traffic burst. 5. Peer-side counter or path evidence when available. 6. Negative / discriminator: intentionally remove or mis-bind the intended path and prove the result changes or fails rather than silently continuing on the alternate path. A green ping alone is insufficient. Preserve pathclass, localinterface, peer path, route proof, counter proof, and fallback state beside every transport-labelled number."
     }
   ],
   "schema_version": "1.0"
