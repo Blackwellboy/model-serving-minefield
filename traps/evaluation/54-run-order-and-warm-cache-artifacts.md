@@ -107,6 +107,19 @@ completion at 77.7 tok/s on the same server. That second effect is ordinary
 fixed-cost amortization, not a separate trap: publish actual output-token count
 next to any tok/s number and compare like-sized cells.
 
+
+## Added 2026-08-25: first-request JIT can look like a dead lane
+
+**Status of this addendum: contributor-measured, conditions as reported.** @sethforprivacy reported a stock DeepSeek-V4-Flash-0731 DSpark lane on 2x DGX Spark where a 32K request that normally took about **22 s** had still not completed after **10+ minutes** immediately after a cold boot. GPU utilization sat around 96% while the request-level token counters stayed at zero. Worker logs, however, were printing CuTeDSL/Triton JIT and FlashInfer autotuner/perf-cliff messages. A later A/B on the already-warm cluster did not show the event.
+
+That is the mechanism already owned by this trap -- compilation, graph/kernel-cache population and run order -- so it is **folded here rather than assigned a new number**. The extra operational signature is useful: on some stacks the counters advance only when the request completes, so "GPU busy + zero tokens" during the first request is not proof of a wedge. Read the worker log before killing the lane, and do not benchmark until a normal warmup request completes at ordinary latency.
+
+## Added 2026-08-25: 322K context made the cold/warm gap three orders of magnitude
+
+**Status of this addendum: measured here, raw not published.** On the frozen GLM-5.2 Path-A triple-DGX-Spark lane, a tokenizer-counted **322,672-token** retrieval request recovered planted markers at 10%, 50% and 90% in both states. Cold TTFT was **1883.5 s**; the immediate warm repeat was **3.41 s**. The correctness result stayed green in both arms, so this is evidence for the *latency/measurement-state* half of Trap 54, not for Trap 60's answer-divergence mechanism.
+
+Publication rule sharpened by the pair: at deep context, "TTFT" without an explicit cold/warm or prefix-reuse state can differ by roughly three orders of magnitude while the model, request and answer stay the same.
+
 **The fix.** Treat any unpaired, un-counterbalanced measurement as a hypothesis. A result is a
 result when it survives order reversal, a fresh baseline in the same session, and a null-build run.
 
@@ -120,5 +133,7 @@ work ([trap 52](52-speed-measured-on-a-broken-config.md)), and only then a real 
 published-adjacent number before being disproven.
 
 **Attribution.** TheTom. 2026-08-17 cold/idle corroboration and short-request
-amortization measurements: @tonyd2wild.
+amortization measurements: @tonyd2wild. 2026-08-25 cold-boot JIT signature and
+measurement: @sethforprivacy. 2026-08-25 322,672-token GLM cold/warm pair:
+Blackwellboy.
 

@@ -1,47 +1,25 @@
 # Changelog
 
-## 2026-08-24 — traps 127-133: seven contributor-measured entries from a stock DeepSeek-V4-Flash DSpark lane
+## 2026-08-25 — PR #61 adjudicated + Q16/Q17 promoted (canonical 127-133)
 
-All measured by **@sethforprivacy** on a private 2x DGX Spark GB10 lane
-serving stock DeepSeek-V4-Flash-0731 on vLLM `0.25.2.dev0+g752a3a504` (Anemll
-DSpark image), contributor-measured, conditions as reported; second-lane data
-added to three existing entries.
+Maintainer pass over **@sethforprivacy** PR #61 plus the two long-standing strong candidates from **@tonyd2wild**. Contributor commits/credit are preserved; numbers are assigned gaplessly at merge as MAINTAINING requires.
 
-- [**Trap 127**](traps/versioning/127-bind-mount-shadow-drift-crash-loop.md):
-  a whole-file bind mount shadowing a module inside a container image silently
-  couples an operator patch to one upstream revision; an unattended image
-  update then made every start die at import (4 h 22 m of 502, 241 restarts).
-- [**Trap 128**](traps/runtime/128-admission-flag-never-read-decode-starvation.md):
-  `max_num_partial_prefills` is defined but never read in the v1
-  waiting-admission loop, so decode starves under concurrent prefills with the
-  preemption counter pinned at zero, and the obvious single-flag fix is a
-  no-op.
-- [**Trap 129**](traps/memory/129-prefix-cache-hit-min-across-kv-groups.md):
-  the shared prefix hit is the minimum across KV cache groups, so
-  sliding-window groups collapse it past the horizon while a ~97% aggregate
-  hit rate masks the trap.
-- [**Trap 130**](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md):
-  the CUDA-graph capture-size clamp silently runs the largest batch decode
-  shape eager; seen in the spec-depth A/B where landing exactly on the clamp
-  bought the step-rate gain.
-- [**Trap 131**](traps/runtime/131-parallel-loader-collectives-wedge-uma.md):
-  a parallel shard loader running collectives during multi-node weight load
-  trips the NCCL watchdog and wedges a unified-memory rank until a physical
-  power cycle.
-- [**Trap 132**](traps/evaluation/132-first-request-after-boot-pays-jit.md):
-  the first request after a cold start pays kernel JIT compilation, reads as
-  a wedge (GPU busy, token counters at zero), and contaminates any A/B run in
-  the window.
-- [**Trap 133**](traps/versioning/133-hf-refs-file-breaks-offline-resolution.md):
-  a stray byte in an HF hub `refs/*` file (or a sha-pinned fetch writing no
-  `refs/main`) breaks pinned offline revision resolution on every node.
-- Second-lane data added to
-  [61](traps/evaluation/61-advertised-window-fails-silently.md) (the
-  640K-safe / 862K-fatal ceiling bisect with a hard-freeze failure mode),
-  [71](traps/runtime/71-mtp-config-key-and-draft-count.md) (the DSpark
-  `dspark_block_size: 5` silent truncation floor), and
-  [124](traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
-  (the `nvidia-smi` query that cannot see an applied `-lgc` cap).
+- [**127**](traps/versioning/127-bind-mount-shadow-drift-crash-loop.md) — @sethforprivacy: whole-file bind-mount shadow + unattended image drift can turn a previously valid operator patch into an import crash loop.
+- [**128**](traps/runtime/128-admission-flag-never-read-decode-starvation.md) — @sethforprivacy: `max_num_partial_prefills` can be accepted/configured while the measured scheduler path never reads it, leaving decode starvation invisible to the preemption counter.
+- [**129**](traps/memory/129-prefix-cache-hit-min-across-kv-groups.md) — @sethforprivacy: shared prefix reuse can collapse past a sliding-window horizon because the common hit is the minimum across KV groups; high aggregate hit rate can hide it.
+- [**130**](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md) — @sethforprivacy: CUDA-graph capture-size clamping can leave the largest speculative decode shape eager even while smaller shapes are captured.
+- [**131**](traps/versioning/131-hf-refs-file-breaks-offline-resolution.md) — @sethforprivacy: HF hub `refs/*` byte/mapping defects can break offline revision resolution. This is PR #61's proposed 133, renumbered at merge; the trailing-newline half has public upstream corroboration in huggingface_hub #4133.
+- [**132**](traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) — @tonyd2wild, original scheduler-guard fix credited to @Roady001: cold chunked prefill can receive speculative placeholders and corrupt the prompt tail while warm smoke tests remain clean (issue #36 / Q16).
+- [**133**](traps/runtime/133-dspark-loader-drops-shared-expert.md) — @tonyd2wild: a DSpark draft-loader mapping gap can silently skip the shared expert, collapsing speculative acceptance/throughput while target-verified output stays coherent (issue #38 / Q17).
+
+PR #61 dispositions that deliberately did **not** get their proposed numbers:
+
+- proposed **131** parallel-loader/UMA wedge: **HELD in mining**, because the observed NCCL timeout + hard worker wedge is strong but the claimed transient-UMA-memory cause is not isolated from other distributed-loader failure modes;
+- proposed **132** first-request JIT: **FOLDED into Trap 54**, because cold compilation/graph/cache warm-up and first-arm A/B contamination are already Trap 54's mechanism. Seth's 10+ minute cold-boot observation and JIT log signature are retained there.
+
+Second-lane additions from @sethforprivacy to Traps **61, 71 and 124** are retained; Trap 124's prose was repaired during integration so the clock-query caveat no longer duplicates/truncates the existing fix paragraph.
+
+Also corrects the newly merged Trap 10 AutoRound addendum after Codex review: the matched behavior fixture stayed green, but the separate tiny intelligence smoke was **8/8 Frozenlock vs 7/8 OBLIT** (one strict tool-call-format near-miss), so no intelligence-equivalence claim is made.
 
 ## 2026-08-24 — traps 125-126: community DGX Spark memory guard + Ling thinking-off semantics
 
