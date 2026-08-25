@@ -79,6 +79,18 @@ median single-stream decode and cost 388K tokens of context capacity plus 130 ms
 of TTFT. If your workload is many short completions over long prompts, measure
 before assuming it is a win.
 
+**The neighbouring DSpark build: a block-size minimum enforced by silence.**
+The same "the key is not what you will grep for" class bites the Anemll
+DeepSeek V4 Flash DSpark lane in a second place. The checkpoint carries
+`dspark_block_size: 5`; the serve env var is `MTP_NUM_TOKENS`, not
+`num_spec_tokens`; and a value below 5 **truncates draft blocks silently** on
+vLLM `0.25.2.dev0+g752a3a504.d20260714` - the image does not warn, and the
+only observable is degraded throughput. Contributor-measured, conditions as
+reported, on a private 2x DGX Spark (GB10) lane: the recipe's own docs state
+"keep k >= 5", and the deploy gate checks it. Also related is the capture-size
+product `max_num_seqs x (k + 1)`, which is [its own
+trap](130-cudagraph-clamp-runs-top-shape-eager.md).
+
 **A note on how to establish a speedup like this, which generalises.** The two
 arms require separate server processes, so they are **sequential** and arm is
 confounded with time. What licenses the causal reading here is not the size of
