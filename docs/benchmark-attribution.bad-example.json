@@ -11,6 +11,7 @@
     "serving_engine": {
       "engine_build": "engine@1",
       "image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "endpoint_or_host_identity": "spark-peer-A",
       "flags_digest_or_normalized_flags": "flags=v1",
       "actual_isl": 1015,
       "actual_osl": 64,
@@ -34,6 +35,7 @@
     "serving_engine": {
       "engine_build": "engine@1",
       "image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "endpoint_or_host_identity": "spark-peer-B",
       "flags_digest_or_normalized_flags": "flags=v1",
       "actual_isl": null,
       "actual_osl": null,

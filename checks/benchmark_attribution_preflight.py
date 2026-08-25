@@ -42,6 +42,7 @@ MODEL_KEYS = (
 SERVING_KEYS = (
     "engine_build",
     "image_digest",
+    "endpoint_or_host_identity",
     "flags_digest_or_normalized_flags",
     "actual_isl",
     "actual_osl",
@@ -62,6 +63,7 @@ MODEL_HOLD_KEYS = (
 )
 SERVING_HOLD_KEYS = (
     "engine_build",
+    "endpoint_or_host_identity",
     "flags_digest_or_normalized_flags",
     "actual_isl",
     "actual_osl",
@@ -522,6 +524,13 @@ def _control_gpudirect_from_managed():
     return gate_intended(report)
 
 
+def _control_transport_endpoint_identity_differs():
+    doc = _load_example("benchmark-attribution.example.json")
+    doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wifi-era"
+    doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wired-era"
+    return gate_intended(evaluate_pair(doc))
+
+
 def _control_correctness_absent():
     doc = _load_example("benchmark-attribution.example.json")
     doc["arm_a"]["model"]["correctness_gate"] = "ABSENT"
@@ -543,6 +552,7 @@ NEGATIVE_CONTROLS = [
     ("SERVING_ENGINE with missing ISL is not a clean SERVING_ENGINE gate", _control_serving_missing_isl),
     ("GPUDirect inferred from CUDA-managed is not a clean intended gate", _control_gpudirect_from_managed),
     ("absent correctness gate is not a clean TRANSPORT gate", _control_correctness_absent),
+    ("TRANSPORT intended but endpoint identity differs is composite", _control_transport_endpoint_identity_differs),
     ("missing intended_changed_layer is blocking", _control_malformed_intended),
 ]
 

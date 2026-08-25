@@ -58,6 +58,10 @@
           "properties": {
             "engine_build": { "type": ["string", "null"] },
             "image_digest": { "type": ["string", "null"] },
+            "endpoint_or_host_identity": {
+              "type": ["string", "null"],
+              "description": "Sanitized peer/host identity for the arm (e.g. spark-A). Required to hold serving identity for TRANSPORT claims; absence never proves equality."
+            },
             "flags_digest_or_normalized_flags": { "type": ["string", "null"] },
             "actual_isl": { "type": ["number", "null"] },
             "actual_osl": { "type": ["number", "null"] },

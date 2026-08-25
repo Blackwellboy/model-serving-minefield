@@ -88,6 +88,10 @@ claim defensibility; it does not replace live route/counter forensics.
 - Must **not** claim from this entry alone: transport protocol failure, switch
   failure, RDMA failure, GPUDirect failure, or that Ethernet is inherently
   slower or faster than another medium.
+- Path proof on one session does **not** license a cross-session performance
+  comparison when the remote host, engine revision, or other serving identity
+  also changed. Those pairs stay end-to-end composite until the lower layers
+  are held.
 
 **If you miss it.** You optimise or blame a transport that never carried the
 bytes, promote a "wired" win that was still wireless, or conclude the fabric is

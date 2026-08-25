@@ -77,6 +77,34 @@ class BenchmarkAttributionPreflightTests(unittest.TestCase):
         self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
         self.assertEqual(report["correctness_gate_status"], "ABSENT")
 
+    def test_transport_intended_but_endpoint_identity_differs_is_composite(self):
+        """Cross-session footgun: path changed AND remote host changed."""
+        doc = self._example()
+        doc["intended_changed_layer"] = "TRANSPORT"
+        doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wifi-era"
+        doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wired-era"
+        # Even with identical engine_build, a host move blocks pure TRANSPORT.
+        report = self.m.evaluate_pair(doc)
+        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+        self.assertIn("SERVING_ENGINE", report["changed_dimensions"])
+        self.assertEqual(self.m.gate_intended(report), self.m.BLOCKING)
+
+    def test_transport_intended_with_endpoint_and_revision_differs_is_composite(self):
+        doc = self._example()
+        doc["intended_changed_layer"] = "TRANSPORT"
+        doc["arm_a"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wifi-era"
+        doc["arm_b"]["serving_engine"]["endpoint_or_host_identity"] = "spark-peer-wired-era"
+        doc["arm_a"]["serving_engine"]["engine_build"] = (
+            "flashrdma-portable@ae03d59a04015d9c73ee6b029520aad9026484e5"
+        )
+        doc["arm_b"]["serving_engine"]["engine_build"] = (
+            "flashrdma-portable@1e952ace4be94f90b88b850188e99f0493036424"
+        )
+        doc["arm_a"]["transport"]["path_class"] = "WIFI_PORTABLE"
+        doc["arm_b"]["transport"]["path_class"] = "WIRED_ETHERNET_FLASH_PORTABLE"
+        report = self.m.evaluate_pair(doc)
+        self.assertEqual(report["max_defensible_claim"], "END_TO_END_COMPOSITE_ONLY")
+
     def test_schema_examples_are_objects(self):
         for name in (
             "benchmark-attribution.schema.json",

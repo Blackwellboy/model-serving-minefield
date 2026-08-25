@@ -4,7 +4,7 @@
 
 - [**134**](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) - Blackwellboy: link-up / negotiated speed is not path proof that the labelled interface carried a transport benchmark. Status **measured here, raw not published**. Multi-homed measurement footgun; claim boundary excludes protocol/switch/RDMA/GPUDirect failure claims.
 - [**49**](traps/evaluation/49-prompt-not-tokenized-to-target.md) gains a dated FlashRDMA corroboration addendum: character/repeated-text "8K" fixtures understated tokenizer depth; corrected fixtures **61 / 1015 / 4019 / 8004**. TheTom remains Found by.
-- [Before you publish an A/B](playbooks/before-you-publish-an-ab.md) §11 adds the MODEL / SERVING_ENGINE / TRANSPORT / END_TO_END claim ladder, a sanitized Wi-Fi→wired throughput lesson, and a native RoCE/GPUDirect claim boundary.
+- [Before you publish an A/B](playbooks/before-you-publish-an-ab.md) §11 adds the MODEL / SERVING_ENGINE / TRANSPORT / END_TO_END claim ladder, a sanitized cross-session FlashRDMA example deliberately classified `END_TO_END_COMPOSITE_ONLY` (path + endpoint + revision moved), and a native RoCE/GPUDirect claim boundary.
 - Offline metadata gate: [`checks/benchmark_attribution_preflight.py`](checks/benchmark_attribution_preflight.py) + [`docs/benchmark-attribution.schema.json`](docs/benchmark-attribution.schema.json). Not part of live Doctor.
 - Public mining note: [`mining/2026-08-25-flashrdma-transport-attribution.md`](mining/2026-08-25-flashrdma-transport-attribution.md) (W32 under test; PR#12 map/UDP fixes remain engineering-only).
 - Registry count moves from 133 to 134; doctor coverage remains 19, leaving 115 canonical entries unimplemented.

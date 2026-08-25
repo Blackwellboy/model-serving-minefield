@@ -254,6 +254,7 @@ claim defensible.
 **SERVING_ENGINE**
 
 - engine / build / image (prefer digest)
+- endpoint / host identity for each peer under test (sanitized alias is fine)
 - launch and request flags (or a normalized flags digest)
 - actual ISL (tokenizer- or server-counted)
 - actual OSL
@@ -283,7 +284,7 @@ claim defensible.
 |---|---|
 | **MODEL** | The model/artifact is the intended changed layer, and serving + transport conditions are held or controlled enough for that claim. |
 | **SERVING_ENGINE** | Model and transport are held while serving implementation/config is the intended changed layer. |
-| **TRANSPORT** | Model and serve configuration are held, transport/path is the intended changed layer, and **path proof** is present. |
+| **TRANSPORT** | Model and serve configuration are held (including endpoint/host identity and engine revision), transport/path is the intended changed layer, and **path proof** is present. |
 | **END_TO_END_COMPOSITE_ONLY** | Multiple layers changed, lower layers are unknown, or required attribution fields are missing. |
 
 Missing evidence **lowers** the claim class. Absence never proves two arms were equal.
@@ -297,18 +298,26 @@ from the metadata you already have.
 
 ### Concrete lesson (sanitized FlashRDMA portable serving)
 
-Same upstream FlashRDMA code and tokenizer-verified token-exact fixtures, moving
-only the previous Wi-Fi environment to proven wired Ethernet, changed median
-decode throughput approximately:
+Across two campaign stages, observed end-to-end 8K median decode throughput
+moved dramatically:
 
-| Arm | Wi-Fi 8K (tok/s) | Wired 8K (tok/s) |
+| Arm | Prior Wi-Fi session (tok/s) | Later wired session (tok/s) |
 |---|---:|---:|
 | Flash | 1.479 | 7.339 |
 | TCP | 3.465 | 7.631 |
 
-That delta is **transport/environment-sensitive end-to-end throughput**
-evidence. It is **not** a model speedup. Do not overclaim causality beyond the
-controlled evidence (path proof, held code/fixtures, measured walls).
+The later run changed **not only** physical path but also the Spark endpoint
+and the upstream FlashRDMA revision. Therefore this cross-session pair is
+deliberately classified as **`END_TO_END_COMPOSITE_ONLY`**. It must **not** be
+cited as a pure transport, model, or serving-engine speedup. A plausible story
+is not enough when more than one layer changed - that is the point of the
+attribution contract.
+
+A **within-session** wired cell remains a valid transport-implementation A/B
+when endpoint, revision, fixtures, and path proof are held: on the later wired
+session, tokenizer-exact 8K medians were TCP 7.631 vs Flash 7.339 tok/s (with
+near-parity also at 1K/4K). Do not collapse that held A/B into the composite
+cross-session table above.
 
 ### Native RoCE / GPUDirect claim boundary
 

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "intended_changed_layer": "TRANSPORT",
-  "notes": "Sanitized example: same model and serving metadata; wired Ethernet path proven on both arms after addressing fix.",
+  "notes": "Sanitized within-session example: same model, same Spark endpoint alias, same upstream revision, proven wired path; only transport implementation differs (TCP vs Flash).",
   "arm_a": {
     "model": {
       "checkpoint_revision": "example-model@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -11,22 +11,23 @@
     "serving_engine": {
       "engine_build": "flashrdma-portable@1e952ace4be94f90b88b850188e99f0493036424",
       "image_digest": null,
+      "endpoint_or_host_identity": "spark-peer-A",
       "flags_digest_or_normalized_flags": "send_window=16,kv=on,flags=v1",
       "actual_isl": 8004,
       "actual_osl": 32,
       "concurrency": 1,
-      "decode_tps": 1.479
+      "decode_tps": 7.631
     },
     "transport": {
-      "path_class": "WIFI_PORTABLE",
-      "interface": "wlan0",
+      "path_class": "WIRED_ETHERNET_TCP",
+      "interface": "eth0",
       "path_proof": "PRESENT",
-      "staging_class": "CUDA_MANAGED_PATH",
+      "staging_class": "ONE_COPY_SHARED_PATH",
       "gpudirect_claimed": false,
       "gpudirect_evidence": "ABSENT"
     },
     "end_to_end": {
-      "request_wall_s": 21.6
+      "request_wall_s": 4.19
     }
   },
   "arm_b": {
@@ -38,6 +39,7 @@
     "serving_engine": {
       "engine_build": "flashrdma-portable@1e952ace4be94f90b88b850188e99f0493036424",
       "image_digest": null,
+      "endpoint_or_host_identity": "spark-peer-A",
       "flags_digest_or_normalized_flags": "send_window=16,kv=on,flags=v1",
       "actual_isl": 8004,
       "actual_osl": 32,
@@ -45,7 +47,7 @@
       "decode_tps": 7.339
     },
     "transport": {
-      "path_class": "WIRED_ETHERNET_PORTABLE",
+      "path_class": "WIRED_ETHERNET_FLASH_PORTABLE",
       "interface": "eth0",
       "path_proof": "PRESENT",
       "staging_class": "CUDA_MANAGED_PATH",

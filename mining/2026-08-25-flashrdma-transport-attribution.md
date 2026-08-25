@@ -19,18 +19,28 @@ with **no local library delta**.
 
 ## Why attribution mattered
 
-On tokenizer-verified, token-exact depth cells, moving only the environment from
-the previous Wi-Fi path to proven wired Ethernet changed end-to-end median
-decode throughput roughly:
+Across two campaign stages, observed end-to-end 8K median decode throughput
+moved dramatically:
 
-| Arm | Prior Wi-Fi 8K (tok/s) | Proven wired 8K (tok/s) |
+| Arm | Prior Wi-Fi session (tok/s) | Later wired session (tok/s) |
 |---|---:|---:|
 | Flash portable | 1.479 | 7.339 |
 | TCP twin | 3.465 | 7.631 |
 
-Same upstream code. That is transport/environment-sensitive **end-to-end**
-evidence, not a model speedup. The offline preflight exists so a missing path
-proof or unheld lower layer cannot be published as `MODEL` /
+The later run changed more than physical path: Spark endpoint identity and
+upstream FlashRDMA revision also moved. Classify that **cross-session** pair as
+**`END_TO_END_COMPOSITE_ONLY`**. Do not cite it as a pure `TRANSPORT`, `MODEL`,
+or `SERVING_ENGINE` speedup. A plausible Wi-Fi-versus-wired story is not enough
+when multiple layers changed.
+
+Preserve the later **within-session** wired TCP-versus-Flash cell separately:
+same wired execution environment, same upstream revision, tokenizer-exact
+fixtures, path proof present (8K medians TCP 7.631 vs Flash 7.339). That held
+A/B may support a transport-implementation comparison; the composite table
+above must not borrow its claim class.
+
+The offline preflight exists so a missing path proof, changed endpoint/host
+identity, or other unheld lower layer cannot be published as `MODEL` /
 `SERVING_ENGINE` / `TRANSPORT` by accident.
 
 ## What stays private / unfinished
