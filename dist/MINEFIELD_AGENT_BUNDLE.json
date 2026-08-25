@@ -5,11 +5,11 @@
     "summary": {
       "counts_overlap": true,
       "endpoint_checks_implemented": 19,
-      "guided_experiments_specified": 134,
-      "human_review_possible": 134,
+      "guided_experiments_specified": 135,
+      "human_review_possible": 135,
       "log_checks_implemented": 9,
       "static_checks_implemented": 10,
-      "total_canonical_traps": 134
+      "total_canonical_traps": 135
     },
     "traps": [
       {
@@ -9965,6 +9965,80 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "135",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 135 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied configuration files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -13184,6 +13258,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "134",
       "untrusted_published_check_text": "Before recording any transport-labelled performance result, require path proof against the actual benchmark peer, not a generic gateway: 1. Route lookup to the peer: which interface / gateway is selected. 2. Source / interface bind where the OS supports it: bind to the intended address and show success; bind to the wrong source and show failure or a different path rather than silent fallback. 3. ARP / neighbour evidence where applicable. 4. Before/after TX/RX counter deltas on the intended interface during a known traffic burst. 5. Peer-side counter or path evidence when available. 6. Negative / discriminator: intentionally remove or mis-bind the intended path and prove the result changes or fails rather than silently continuing on the alternate path. A green ping alone is insufficient. Preserve pathclass, localinterface, peer path, route proof, counter proof, and fallback state beside every transport-labelled number."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 135 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 135 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "135",
+      "untrusted_published_check_text": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py."
     }
   ],
   "possible_unverified_leads": {
@@ -14543,8 +14641,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 134,
-    "content_sha256": "928dc0a972c056b057d09f5e0d47d195ebd22fe9d1105b152f86a1266a06bae2",
+    "canonical_trap_count": 135,
+    "content_sha256": "0ed5e4f607255f121f672937bab9d33e8aaa6dfce6e973d0accf808ad016d214",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -23966,6 +24064,66 @@
         "supersession": null,
         "symptom": "An Ethernet/NIC/interface reports link UP at a plausible negotiated speed, so the operator concludes \"the test is wired\" or \"this transport used interface X.\" The labelled transport arm then produces a clean tok/s table. Later path forensics show the workload never used that interface: routes and packet counters belong to another path (commonly wireless fallback or a default route), while the intended interface stays healthy and mostly idle. The benchmark looks valid while measuring a different transport than the label says.",
         "title": "link-up is not path proof for the interface under test"
+      },
+      {
+        "affected_models": [],
+        "affected_stacks": [
+          "llama.cpp"
+        ],
+        "affected_versions_builds": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer.",
+        "applicability": {
+          "concurrency_regime": [
+            "concurrency 4"
+          ],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [],
+          "failure_stage": [],
+          "gpu_architecture": [],
+          "model_family": [],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [
+            "llama.cpp"
+          ],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "evaluation",
+        "check": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer.",
+        "id": "135",
+        "known_limitations": "",
+        "mechanism": "Distinguish four different quantities: 1. HTTP / client concurrency - simultaneous sockets or in-flight requests, 2. queued request concurrency - accepted but waiting work, 3. active model sequences - sequences the engine believes are live, 4. simultaneous model execution - work actually progressing together. A front end may accept N requests while a downstream lock, worker, single-flight queue, slot count, or execution policy serializes the actual model work. Therefore a client-side concurrency setting or N simultaneous sockets is not proof that the model ran N sequences concurrently.",
+        "mitigation": "Benchmark and report at least two quantities separately: 1. client / request concurrency, 2. actual execution concurrency / completed-work throughput. Do not label C4 as \"4-way model concurrency\" unless execution evidence supports it. Prefer publishing time-to-finished-batch, aggregate completed tok/s, and active sequence count / actual worker concurrency beside per-request tok/s.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "41",
+          "46",
+          "110",
+          "128"
+        ],
+        "source_path": "traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "A serving benchmark launches C1 / C2 / C4 concurrent HTTP requests. The server accepts all of them. The harness reports \"concurrency 4.\" But batch wall scales approximately with the number of clients, aggregate completed tok/s stays roughly flat, and generations are effectively serialized. The operator then reports \"the model handles four concurrent generations\" or compares two servers as though client concurrency equals execution concurrency.",
+        "title": "concurrent HTTP clients are not concurrent model execution"
       }
     ],
     "schema_version": "1.1"

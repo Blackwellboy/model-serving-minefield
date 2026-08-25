@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 134
+Four doors, and which one you want depends on why you are here. All 135
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -107,7 +107,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 134 entries, one row each, sorted by number. It is the
+  directly below, all 135 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -118,7 +118,7 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 134 entries**, weighted toward reasoning fields, templates and
+for **19 of these 135 entries**, weighted toward reasoning fields, templates and
 tool parsing, and a clean run from it says nothing about the other 107. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
@@ -151,7 +151,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 134 entries. If you know what you are running rather than what you are
+All 135 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -206,7 +206,8 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | Time-to-first-token stays flat as an agent conversation grows | The engine auto-disabled prefix caching for a hybrid or recurrent arch and said so once, at startup | [47](traps/runtime/47-prefix-caching-autodisabled-hybrid.md) | contributor-measured, conditions as reported |
 | Every request takes ~30s including cache hits, but the server log says it finished in seconds | A `.local` name resolving dual-stack with a dead IPv6 route; the tax is entirely client-side | [48](traps/routing/48-dual-stack-mdns-latency-tax.md) | contributor-measured, conditions as reported |
 | A clean, reproducible performance gap that collapses when the harness is fixed | The benchmark prompt never tokenized to the length the table claims | [49](traps/evaluation/49-prompt-not-tokenized-to-target.md) | contributor-measured, conditions as reported |
-| Ethernet/NIC shows link UP so you label the run “wired”, but counters prove another interface carried the traffic | Link-up is not path proof for the interface under test | [134](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) | measured here, raw not published |
+| Ethernet/NIC shows link UP so you label the run "wired", but counters prove another interface carried the traffic | Link-up is not path proof for the interface under test | [134](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) | measured here, raw not published |
+| Concurrent HTTP clients report C4 while batch wall ~scales with C and aggregate tok/s stays flat | Concurrent HTTP clients are not concurrent model execution | [135](traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) | measured here, raw not published |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -319,7 +320,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 134 entries in under a minute:
+against 19 of this registry's 135 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
@@ -426,6 +427,7 @@ otherwise.
 
 ## Recently added
 
+- 2026-08-25: **trap [135](traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) + Trap [134](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) controlled TRANSPORT addendum** - concurrent HTTP clients are not concurrent model execution (**measured here, raw not published**); Trap 134 gains the positive holds+path-proof TRANSPORT corroboration; offline `concurrency_execution_proof_preflight`. Registry 134→135. [Mining note](mining/2026-08-25-flashrdma-final-followup.md).
 - 2026-07-28: **first published SGLang evidence surfaces**, contributor-measured by [@newageinvestments25-byte](https://github.com/newageinvestments25-byte) on a DGX Spark. A pinned Nemotron NVFP4 control generated first; Laguna S 2.1 loaded its compressed-tensors NVFP4 MoE path and generated a correct first token, refuting Q7 under its pre-registered generation criterion without claiming healthy long-form output. Two 14-request doctor runs confirmed Q8 portability and reproduced SGLang instances inside traps [02](traps/template/02-orphaned-think-close-tag.md), [12](traps/evaluation/12-empty-content-at-token-ceiling.md) and [77](traps/reasoning/77-only-one-request-field-is-validated.md). The same run found and regression-tested a doctor fix: SGLang identifies itself in `/v1/models`, not `/version`. [Conditions and bounded disposition](mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).
 - 2026-07-28: **traps [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md) through [97](traps/runtime/97-partial-offload-is-invisible-in-log-and-props.md): the determinism axis, and the registry's first cross-architecture and co-tenancy coverage**, on the same llama.cpp lane as 82 to 88. The one to read is [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md), because its failure mode is a **false negative**: temperature-0 divergence under concurrency needs a prompt above roughly 220 tokens, and the natural minimal reproduction is shorter than that, so the check passes and the lane is not deterministic. [93](traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md) is the one that corrects widely repeated advice: on a template that relocates the system block, a clock at the head of the system prompt is inert (136 cached tokens against 135), and moving it into the first user message, which is the usual remedy, is the single change that takes reuse from 77% to 0.6%. [94](traps/runtime/94-temp0-reproducibility-is-architecture-dependent.md) is a regime and not a ranking: `sm_86` and `sm_120` both diverge at 220 tokens, and only `sm_120` still diverges at 444. [95](traps/runtime/95-two-gpu-co-tenancy-does-not-perturb-either-lane.md) is a **negative** that removes a standing caveat, and it states the case it does not cover. [92](traps/runtime/92-prompt-cache-is-a-second-divergence-source.md) is a self-caught error: prompt-cache state survived across separate invocations against one process and inverted one of our own results before we found it.
 - 2026-07-28: **traps [82](traps/template/82-system-prompt-relocates-to-last-user-turn.md) through [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md): a fourth serving stack**, llama.cpp with `--jinja` against a Mistral-family Q8_0 GGUF of unstated provenance supplied by **Exile**. The checkpoint is deliberately not characterised and nothing here generalises to any named model. Headline: an agent loop of user, tool call, tool result, user is **unrenderable** and the 400 blames the template rather than your message list; and the template carries a hard-coded default system prompt injected whenever you omit one, so a no-system-prompt control arm **is not a control**. Also a negative worth as much as the positives: [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md) finds `cache_prompt: false` DOES isolate on this build, a third data point that does not reproduce two prior stacks, and it lands with its build qualifier attached.
