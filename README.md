@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 126
+Four doors, and which one you want depends on why you are here. All 133
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -107,7 +107,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 126 entries, one row each, sorted by number. It is the
+  directly below, all 133 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -118,7 +118,7 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 126 entries**, weighted toward reasoning fields, templates and
+for **19 of these 133 entries**, weighted toward reasoning fields, templates and
 tool parsing, and a clean run from it says nothing about the other 107. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
@@ -151,7 +151,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 126 entries. If you know what you are running rather than what you are
+All 133 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -284,6 +284,13 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | Output contains a stray ` /think` you never sent, breaking exact-match scoring | The mirror case: the template appends the marker to the last user message and it leaks | [66 (injection)](traps/template/66-in-text-thinking-toggle-mutates-user-text.md#the-mirror-case-injection-on-ollama) | reproduced here |
 | An 8 GiB cgroup memory cap stays green while CUDA consumes 12 GiB of unified memory | `MemoryMax` is not accounting the CUDA UMA allocation on the measured GB10 path | [125](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md) | contributor-measured, conditions as reported |
 | `thinking:false` costs the same and dumps the reasoning trace into the reply, but works under JSON output | Ling free-text thinking-off changes separation rather than suppressing reasoning on the measured fork | [126](traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md) | contributor-measured, conditions as reported |
+| A router outage answers 502 for hours while model backends are healthy, and the container restart count climbs | A whole-file bind mount shadowed a module inside the image; an unattended image update made every start die at import | [127](traps/versioning/127-bind-mount-shadow-drift-crash-loop.md) | contributor-measured, conditions as reported |
+| Decode collapses under concurrent prefills with the preemption counter pinned at zero, and a single-flag fix changes nothing | The prefill-admission flag is defined but never read in the waiting-admission loop | [128](traps/runtime/128-admission-flag-never-read-decode-starvation.md) | contributor-measured, conditions as reported |
+| Warm long requests suddenly re-prefill at zero cache hits while the daytime hit rate is ~97% | The shared prefix hit is the minimum across KV cache groups; sliding-window groups hit zero past their horizon | [129](traps/memory/129-prefix-cache-hit-min-across-kv-groups.md) | contributor-measured, conditions as reported |
+| CUDA graphs report captured FULL yet the top decode shape runs eager; a one-token spec-depth change flips it | The capture-size clamp silently drops the largest batch shape from graph coverage | [130](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md) | contributor-measured, conditions as reported |
+| A staged model fails to resolve offline after a cache copy, or a bare-name offline lookup has no branch mapping | A malformed or missing HF hub `refs/*` mapping makes the local snapshot unreachable by the revision production actually requests | [131](traps/versioning/131-hf-refs-file-breaks-offline-resolution.md) | contributor-measured, conditions as reported |
+| Warm spec-decode smokes are clean but a long cold prefill starts the reply by continuing the system prompt | Speculative placeholders are attached to the final chunked-prefill block instead of decode-only state | [132](traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) | contributor-measured, conditions as reported |
+| Output is correct but speculative acceptance and decode speed are roughly halved, with only debug-level unknown-weight skips | The DSpark draft loader silently dropped the shared expert because two stacked-parameter mapping rows were missing | [133](traps/runtime/133-dspark-loader-drops-shared-expert.md) | contributor-measured, conditions as reported |
 
 If you run one check from this registry, make it
 [Trap 04](traps/template/04-history-reasoning-stripping.md). It is the one
@@ -311,7 +318,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 126 entries in under a minute:
+against 19 of this registry's 133 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
