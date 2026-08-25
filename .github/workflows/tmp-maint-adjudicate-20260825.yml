@@ -42,6 +42,40 @@ jobs:
       - name: Apply maintainer adjudication
         run: python3 tools/maint_adjudicate_20260825.py
 
+      - name: Apply post-adjudication integrity fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # The Q17 draft referenced a provisional/nonexistent Trap 80 slug.
+          p = Path('traps/runtime/133-dspark-loader-drops-shared-expert.md')
+          s = p.read_text()
+          s = s.replace(
+              '[80](../evaluation/80-parser-buffering-fakes-server-stalls.md)',
+              '[80](80-reasoning-parser-batches-sse-deltas.md)'
+          )
+          p.write_text(s)
+
+          # Registry integrity requires every new canonical file to be linked
+          # or covered explicitly in CHANGELOG, not only named by bare number.
+          p = Path('CHANGELOG.md')
+          s = p.read_text()
+          replacements = {
+              '- **127** — @sethforprivacy:': '- [**127**](traps/versioning/127-bind-mount-shadow-drift-crash-loop.md) — @sethforprivacy:',
+              '- **128** — @sethforprivacy:': '- [**128**](traps/runtime/128-admission-flag-never-read-decode-starvation.md) — @sethforprivacy:',
+              '- **129** — @sethforprivacy:': '- [**129**](traps/memory/129-prefix-cache-hit-min-across-kv-groups.md) — @sethforprivacy:',
+              '- **130** — @sethforprivacy:': '- [**130**](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md) — @sethforprivacy:',
+              '- **131** — @sethforprivacy:': '- [**131**](traps/versioning/131-hf-refs-file-breaks-offline-resolution.md) — @sethforprivacy:',
+              '- **132** — @tonyd2wild,': '- [**132**](traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) — @tonyd2wild,',
+              '- **133** — @tonyd2wild:': '- [**133**](traps/runtime/133-dspark-loader-drops-shared-expert.md) — @tonyd2wild:',
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'missing CHANGELOG marker: {old}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+
       - name: Regenerate repository-owned surfaces
         run: |
           python3 -m minefield agent-bundle
