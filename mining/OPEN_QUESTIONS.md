@@ -310,86 +310,6 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   because trap [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) produces
   the identical symptom from a dead IPv6 route with a healthy sampler.
 
-### Q16. Does the cold-prefill speculative-placeholder scheduler bug reproduce as the isolated cause of issue #36?
-
-- **Claim under test.** [Issue #36](https://github.com/Blackwellboy/model-serving-minefield/issues/36)
-  reports a distinct speculative-decode scheduler failure: warm prefix-cache
-  requests stay clean while cold, chunked-prefill requests can have speculative
-  placeholders attached to the final prompt chunk and begin the reply by
-  continuing the system prompt. The reported lane measured warm **0/19 bad**,
-  cold **44/44 bad**, and **0/28 bad** after the scheduler guard; reducing
-  speculative depth did not fix the unguarded path.
-- **Source.** PRIMARY for the contributor's reported lane evidence and patch
-  comparison, attributed to @tonyd2wild; original root-cause patch credit remains
-  with roady001 as stated in the issue. This is not Blackwellboy reproduction.
-- **Needs.** A disposable/scratch DeepSeek-V4-Flash DSpark lane with chunked
-  prefill and speculative decoding where the scheduler guard can be toggled on
-  the same build without risking a production serve.
-- **CONFIRM.** On a pinned build/config, force cold prefill with a front nonce and
-  reproduce corruption with the guard absent, then show the same workload clean
-  with the guard present while speculative depth is otherwise held fixed. Record
-  the effective scheduler code path and preserve a negative k-depth control so
-  the scheduler guard, not a simultaneous drafter change, owns the result.
-- **REFUTE.** The corruption persists with the guard present under the same
-  workload, or fails to reproduce without the guard once cache state, prompt
-  bytes and effective scheduler path are verified, in which case the proposed
-  scheduler mechanism must be narrowed or rejected.
-- **Cost.** M; requires a scratch serve/restart boundary.
-- **Note.** Canonical promotion is staged as **Trap 132** on the 2026-08-25
-  maintainer adjudication branch, pending exact-head CI/merge. It remains distinct
-  from Trap 60: Trap 60 records cold-versus-cache behavioral divergence without
-  this isolated scheduler mechanism.
-
-### Q17. Does the DSpark draft loader mapping gap in issue #38 independently explain the missing-shared-expert acceptance collapse?
-
-- **Claim under test.** [Issue #38](https://github.com/Blackwellboy/model-serving-minefield/issues/38)
-  reports a serving-loader name-mapping gap that silently drops 12 shared-expert
-  tensors across three draft stages while the target verifier keeps output
-  coherent. The contributor lane reports cumulative acceptance **25.7% to
-  60.2%**, accepted tokens/step **2.28 to 4.01**, and mean decode **32.7 to
-  55.4 tok/s** after adding the two missing shared-expert mapping rows.
-- **Source.** PRIMARY for the contributor's measured lane evidence and source
-  locations, attributed to @tonyd2wild. The missing mapping rows/source mechanism
-  are inspectable; the performance rows remain contributor-measured with raw
-  per-request records not published.
-- **Needs.** Prefer source inspection first. For runtime confirmation, use a
-  disposable DSpark lane on the affected build/family with acceptance counters
-  available and a way to compare the stock loader with only the mapping repair.
-- **CONFIRM.** Verify the target loader contains the shared-expert mapping while
-  the draft loader omits it, observe the corresponding unknown-weight skips, and
-  on a matched runtime A/B show those skips disappear and acceptance recovers
-  when only the mapping is repaired. Keep throughput secondary to the mechanism.
-- **REFUTE.** The allegedly missing rows are present/effective on the pinned
-  affected build, the 12 tensors are not skipped, or repairing only the mapping
-  leaves the acceptance collapse unchanged, in which case the loader mapping
-  cannot own the reported result.
-- **Cost.** S for source adjudication; M if the runtime A/B is repeated.
-- **Note.** Canonical promotion is staged as **Trap 133** on the 2026-08-25
-  maintainer adjudication branch, pending exact-head CI/merge. It remains a sibling
-  of Trap 109, not a duplicate: Trap 109 owns a requant/checkpoint-format failure,
-  while this candidate is a serving-loader mapping failure on the drafter path.
-
-
-### Q18. Does cgroup v2 `MemoryMax` fail to account CUDA unified-memory pressure on DGX Spark as reported in issue #57?
-
-- **Claim under test.** [Issue #57](https://github.com/Blackwellboy/model-serving-minefield/issues/57) reports that an 8 GiB cgroup v2 `MemoryMax` scope allowed a 12 GiB CUDA allocation on DGX Spark while `memory.current` remained around 409 MiB; the same limiter killed a plain host allocator at the expected boundary.
-- **Source.** PRIMARY for the contributor's measured controls, attributed to @scottleimroth. This is not Blackwellboy reproduction.
-- **Needs.** A disposable DGX Spark / GB10 lane with delegated cgroup v2 memory control; no model quality workload is required.
-- **CONFIRM.** With `MemorySwapMax=0`, a host-allocation positive control is killed at the configured cap with an `oom_kill` event, while a matched CUDA allocation materially reduces `MemAvailable` yet remains largely absent from `memory.current` and passes the same `MemoryMax` boundary.
-- **REFUTE.** CUDA physical memory pressure is charged into `memory.current` closely enough that the same `MemoryMax` boundary kills the CUDA allocator, or the host positive control itself does not enforce under the supposedly matched scope.
-- **Cost.** S; two bounded allocators plus counters.
-- **Note.** Distinct from Trap 13 (fractional UMA reservation) and Trap 96 (misreported free-device memory). Canonical promotion is staged as Trap 125 on this maintainer branch, pending CI/merge.
-
-### Q19. Is Ling-3.0-flash `thinking:false` response-shape dependent as reported in issue #58?
-
-- **Claim under test.** [Issue #58](https://github.com/Blackwellboy/model-serving-minefield/issues/58) reports that free-text `thinking:false` leaves reasoning work essentially unchanged and spills the trace into `content`, while the same flag under JSON structured output materially reduces completion tokens and yields clean structured content.
-- **Source.** PRIMARY for the contributor's measured request pairs, attributed to @scottleimroth. This is not Blackwellboy reproduction.
-- **Needs.** The working inclusionAI Ling-3.0 serving fork on a disposable lane; stock vLLM is not an equivalent control for this model according to the contributor's report.
-- **CONFIRM.** On a pinned working fork/model, matched free-text on/off requests show near-equal token work and reasoning spill into `content` only in the off arm, while a matched JSON response-format pair shows a materially cheaper clean off path.
-- **REFUTE.** Free-text off actually suppresses reasoning/token work, or structured-output off behaves the same as the broken free-text path once request shape and parser configuration are pinned.
-- **Cost.** S; four small requests plus response-field inspection.
-- **Note.** The close-tag symptom overlaps Trap 02, but the response-shape-dependent toggle semantics are not owned by Trap 02, 29 or 64. Canonical promotion is staged as Trap 126 on this maintainer branch, pending CI/merge.
-
 
 ---
 
@@ -400,6 +320,10 @@ as much a result as an entry.
 
 | Item | Disposition | Where |
 |---|---|---|
+| Q16 / issue #36 cold-prefill speculative-placeholder corruption | **PROMOTED and issue closed.** Contributor-measured warm/cold and scheduler-guard A/B retained; @tonyd2wild credited for measurement and @Roady001 for the original scheduler-guard root-cause fix | trap [132](../traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) |
+| Q17 / issue #38 DSpark draft-loader shared-expert mapping gap | **PROMOTED and issue closed.** Source-inspectable missing mapping stays separate from contributor-measured performance rows; sibling, not duplicate, of Trap 109 | trap [133](../traps/runtime/133-dspark-loader-drops-shared-expert.md) |
+| Q18 / issue #57 DGX Spark cgroup `MemoryMax` vs CUDA unified memory | **PROMOTED and issue closed.** Contributor-measured GB10 scope preserved; no broader CUDA-platform generalisation | trap [125](../traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md) |
+| Q19 / issue #58 Ling-3.0 `thinking:false` response-shape dependence | **PROMOTED and issue closed.** Contributor-measured Ling/fork scope preserved | trap [126](../traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md) |
 | R2-39 thinking plus tools yields empty output | **REFUTED AS STATED**, then closed on the stack it was re-scoped to. Empty content tracks tools alone, in both thinking states, and every empty response carried a tool call. Not a defect: a harness reading `content` and ignoring `tool_calls` | [note](2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md) |
 | R2-27 Mistral tokenizer-mode | **llama.cpp-inapplicable, NOT weight-blocked.** A Mistral checkpoint arriving does not unblock it: the flag is hard-rejected by the binary and GGUF conversion discards the tokenizer the flag selects. Open only against a stack that implements the flag | [note](2026-07-27-r2-blocked-not-testable.md) |
 | Is SGLang feasible on this hardware class? | **ANSWERED: not infeasible**, and since superseded by an actual first-party bring-up. Stop re-asking the feasibility question. Q7 and Q8 have since been CLOSED by contributor evidence (see the closed table below); **the only open SGLang item is Q6**, plus the still-unresolved degraded longer-form Laguna output and its mechanism, which no question currently owns | [note](2026-07-28-sglang-on-gb10-feasibility.md) |
