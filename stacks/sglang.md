@@ -31,8 +31,8 @@ That note is packaging only. No server was started for it.
 published here yet.**
 [CONTRIBUTING](../CONTRIBUTING.md#where-coverage-is-thin) carries the dated
 correction: SGLang has been brought up on our own hardware, the
-reasoning-parser null-content report that was the standing open ask has been
-that report was tested, and its disposition is written and awaiting publication.
+reasoning-parser null-content report that was the standing open ask was tested,
+and its disposition is written and awaiting publication.
 
 **A contributor then ran the control SGLang session through generation and
 ran the doctor against both endpoints.** The
@@ -50,6 +50,46 @@ for what they rule out and why:
 [R2 blocked, not testable](../mining/2026-07-27-r2-blocked-not-testable.md)
 and
 [the blocked llama.cpp candidates, adjudicated](../mining/2026-07-28-r2-llamacpp-queue-dispositions.md).
+
+## Upstream reports that do not change the measured count
+
+A 2026-08-25 pass over SGLang v0.5.18 promoted nine source-level mechanisms to
+the separate [`upstream/`](../upstream/) tier. **None has been reproduced here,
+none counts toward the four measured SGLang entries above, and none counts
+toward Doctor coverage or the canonical registry total.** They are useful
+because each points to a merged upstream fix and gives a confirmation/refutation
+procedure for someone with the affected stack.
+
+The new reports cover:
+
+- [U27](../upstream/U27-sglang-dsv4-spec-draft-over4-stale-compress-state.md):
+  speculative DSV4 draft counts above four could leave stale compressed state;
+- [U28](../upstream/U28-sglang-prefill-graph-stale-track-prefix-cache.md):
+  stale captured Mamba track rows could make a prefix-cache hit restore another
+  request's conv state;
+- [U29](../upstream/U29-sglang-unified-triton-deterministic-virtual-physical-kv.md):
+  unified memory + Triton + deterministic inference could mix virtual and
+  physical KV locations;
+- [U30](../upstream/U30-sglang-unified-page-recycle-stale-tail.md) and
+  [U31](../upstream/U31-sglang-int32-slot-stride-wrap-recurrent-state.md):
+  two independent unified-memory/DSPARK corruption mechanisms, recycled page
+  tails and int32 slot-stride wrap;
+- [U32](../upstream/U32-sglang-spec-stop-eos-crosses-length-cap.md): a
+  speculative accept run could leak tokens after an in-budget EOS/stop when the
+  same step crossed the length cap;
+- [U33](../upstream/U33-sglang-dflash-missing-is-causal-default-drift.md):
+  missing DFlash causality metadata could change semantics after a runtime
+  default moved;
+- [U34](../upstream/U34-sglang-dflash-dcp-draft-kv-budget-undercount.md): exact
+  DFlash draft-KV budgeting could omit the DCP replication factor; and
+- [U35](../upstream/U35-sglang-fa4-blackwell-resolved-deps-still-fail-compile.md):
+  a dependency pair could resolve successfully and still make FA4 fail to
+  compile on Blackwell.
+
+The source-mining and dedupe record is
+[here](../mining/2026-08-25-sglang-upstream-promotion.md). Treat these as
+upstream reports, not as evidence that current SGLang releases or every model
+still carry the behavior.
 
 ## What to check anyway, from the cross-stack classes
 
