@@ -67,6 +67,15 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U24, stale DSpark slot ids can kill the engine at request condensation](U24-dspark-stale-slot-id-after-request-condensation.md) | vLLM DSpark | maintainer confirmed | closed, fixed |
 | [U25, naive uniqueness metrics can call a reasoning loop fresh text](U25-loop-detector-block-uniqueness-misses-templated-loops.md) | evaluation / reasoning traces | maintainer confirmed | closed, fixed |
 | [U26, EngineDead can still exit the serving container with code 0](U26-vllm-enginedead-container-exits-zero-and-stays-down.md) | vLLM / Docker | maintainer confirmed | closed, fixed |
+| [U27, draft counts above four can leave stale DSV4 compressed state](U27-sglang-dsv4-spec-draft-over4-stale-compress-state.md) | SGLang / DeepSeek V4 | maintainer confirmed | closed, fixed |
+| [U28, a prefix-cache hit can restore another request's conv state](U28-sglang-prefill-graph-stale-track-prefix-cache.md) | SGLang / hybrid SWA-Mamba | maintainer confirmed | closed, fixed |
+| [U29, unified memory + Triton + deterministic inference can mix KV id spaces](U29-sglang-unified-triton-deterministic-virtual-physical-kv.md) | SGLang | maintainer confirmed | closed, fixed |
+| [U30, recycled unified-memory page tails can leak historical bytes](U30-sglang-unified-page-recycle-stale-tail.md) | SGLang / DSPARK | maintainer confirmed | closed, fixed |
+| [U31, 32-bit slot-stride multiplication can wrap recurrent state addresses](U31-sglang-int32-slot-stride-wrap-recurrent-state.md) | SGLang / DSPARK | maintainer confirmed | closed, fixed |
+| [U32, a speculative accept run can leak tokens after EOS at the length cap](U32-sglang-spec-stop-eos-crosses-length-cap.md) | SGLang / speculative decode | maintainer confirmed | closed, fixed |
+| [U33, missing DFlash causality metadata can change semantics after an update](U33-sglang-dflash-missing-is-causal-default-drift.md) | SGLang / DFlash | maintainer confirmed | closed, fixed |
+| [U34, DFlash draft-KV budgeting can undercount by the DCP factor](U34-sglang-dflash-dcp-draft-kv-budget-undercount.md) | SGLang / DFlash / DCP | maintainer confirmed | closed, fixed |
+| [U35, a resolvable dependency set can still make FA4 fail on Blackwell](U35-sglang-fa4-blackwell-resolved-deps-still-fail-compile.md) | SGLang / FA4 / Blackwell | maintainer confirmed | closed, fixed |
 
 ## Where these came from, and what did not survive
 
@@ -95,6 +104,14 @@ extend existing canonical traps 01 and 07; the unresolved CUBLAS engine-death
 root cause, non-default-port health-check bug, fragmented-loop limitation and
 other secondary leads remain in
 [`mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md`](../mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md).
+
+U27-U35 came from the 2026-08-25 SGLang v0.5.18 source-mining pass. Each entry
+is backed by a merged SGLang PR with a concrete source-level mechanism, but none
+has been reproduced by this registry. The exact promotion map and duplicate
+boundaries are recorded in
+[`mining/2026-08-25-sglang-upstream-promotion.md`](../mining/2026-08-25-sglang-upstream-promotion.md).
+The community `glm52-spark-kit` and `veloGB10` findings from the same harvest
+remain in the lead/adjudication path rather than being silently upgraded.
 
 The procedural rule from the first pass still holds: **the mining summary is a
 lead, not the source.** Read the current tracker thread, preserve corrections
