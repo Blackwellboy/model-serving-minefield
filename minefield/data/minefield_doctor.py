@@ -188,6 +188,10 @@ def A(claim, observed, held=True):
             "result": "held" if held else "failed"}
 
 
+class RequestBudgetExceeded(RuntimeError):
+    """Raised before an HTTP chat completion that would exceed doc.request_budget."""
+
+
 class Doc:
     """Verdict accumulator.
 
@@ -202,11 +206,23 @@ class Doc:
                     (this is preflight_template's NO_RENDER_PATH shape)
     """
 
-    def __init__(self):
+    def __init__(self, request_budget=None):
         self.findings = []
         self.requests_made = 0
+        # Hard ceiling on chat completions (None = unlimited). Checked before
+        # every chat-completion HTTP call via consume_request().
+        self.request_budget = request_budget
         self.stack, self.model, self.build = "unknown", None, None
         self.evidence = {}
+
+    def consume_request(self):
+        """Reserve one chat-completion request before the HTTP call is issued."""
+        if self.request_budget is not None and self.requests_made >= self.request_budget:
+            raise RequestBudgetExceeded(
+                f"request budget exhausted: made={self.requests_made} "
+                f"budget={self.request_budget}"
+            )
+        self.requests_made += 1
 
     def _add(self, level, traps, title, code, detail, asserts):
         self.findings.append({"level": level, "code": code, "traps": list(traps),
@@ -258,7 +274,7 @@ def chat(doc, base, key, model, messages, **kw):
     body = {"model": model or "default", "messages": messages,
             "temperature": 0, "max_tokens": kw.pop("max_tokens", 128)}
     body.update(kw)
-    doc.requests_made += 1
+    doc.consume_request()
     st, txt = post(base + "/chat/completions", body, key)
     if st != 200:
         return st, None, txt
@@ -678,7 +694,7 @@ def check_streaming(doc, base, key):
             "messages": [{"role": "user", "content": "Capital of Norway? One word."}],
             "stream": True, "max_tokens": 64, "temperature": 0,
             "chat_template_kwargs": {"enable_thinking": False}}
-    doc.requests_made += 1
+    doc.consume_request()
     try:
         req = urllib.request.Request(base + "/chat/completions",
                                      json.dumps(body).encode(),
@@ -2170,22 +2186,147 @@ def emit(doc, args):
         print("```")
 
 
-def run(doc, base, root, args):
-    """Every check, in order. Split out of main() so the regression suite can
-    drive a full run against a fixture server without going through argv."""
-    # First, because it is the cheapest and because it qualifies every check
-    # after it: on a lane that accepts anything, every parameter the checks
-    # below send is a hypothesis rather than a setting.
+# ------------------------------------------------------------------ probe catalog
+# Executable Doctor probes with planning metadata for the reusable library API.
+# Trap markdown remains documentation-only; these call first-party check_* fns.
+# request_cost is the MAX chat completions a probe may issue (planning ceiling).
+
+class ProbeSpec:
+    __slots__ = (
+        "id", "traps", "request_cost", "lite_eligible", "lite_priority",
+        "requires", "invoke", "title",
+    )
+
+    def __init__(self, id, traps, request_cost, lite_eligible, lite_priority,
+                 requires, invoke, title):
+        self.id = id
+        self.traps = tuple(traps)
+        self.request_cost = int(request_cost)
+        self.lite_eligible = bool(lite_eligible)
+        self.lite_priority = int(lite_priority)
+        self.requires = tuple(requires)
+        self.invoke = invoke
+        self.title = title
+
+
+def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
+
+
+def _probe_reasoning_fields(doc, base, root, args):
     check_reasoning_fields(doc, base, args.api_key)
+
+
+def _probe_streaming(doc, base, root, args):
     check_streaming(doc, base, args.api_key)
+
+
+def _probe_history_assembly(doc, base, root, args):
     check_history_assembly(doc, root, args.api_key)
+
+
+def _probe_kwarg_deadness(doc, base, root, args):
     check_kwarg_deadness(doc, base, root, args.api_key)
+
+
+def _probe_multimodal(doc, base, root, args):
     check_multimodal(doc, base, root, args.api_key)
+
+
+def _probe_tools(doc, base, root, args):
     check_tools(doc, base, args.api_key)
+
+
+def _probe_tool_choice_gate(doc, base, root, args):
     check_tool_choice_gate(doc, base, args.api_key)
+
+
+def _probe_ceiling(doc, base, root, args):
     check_ceiling(doc, base, args.api_key)
+
+
+def _probe_configs(doc, base, root, args):
     check_configs(doc, args.hf_repo, args.hf_revision)
+
+
+# Order matches historical run(): validation first, then behavioural probes.
+PROBE_SPECS = (
+    ProbeSpec(
+        "request_validation", ("77",), 2, True, 100, (),
+        _probe_request_validation,
+        "request-field validation (unknown field acceptance)",
+    ),
+    ProbeSpec(
+        "reasoning_fields", ("01", "02", "03", "29"), 2, True, 80, (),
+        _probe_reasoning_fields,
+        "reasoning field / thinking toggle map",
+    ),
+    ProbeSpec(
+        "streaming", ("23",), 1, True, 90, ("streaming",),
+        _probe_streaming,
+        "streaming content deltas",
+    ),
+    ProbeSpec(
+        "history_assembly", ("04", "20", "25"), 0, True, 70, (),
+        _probe_history_assembly,
+        "history / empty-think shell render inspection",
+    ),
+    ProbeSpec(
+        "kwarg_deadness", ("03", "29"), 3, False, 40, (),
+        _probe_kwarg_deadness,
+        "thinking kwarg acceptance vs behavioural effect",
+    ),
+    ProbeSpec(
+        "multimodal", (), 2, False, 20, ("multimodal",),
+        _probe_multimodal,
+        "multimodal image probe (advisory)",
+    ),
+    ProbeSpec(
+        "tools", ("19", "26"), 2, True, 50, ("tools",),
+        _probe_tools,
+        "tool-call surface",
+    ),
+    ProbeSpec(
+        "tool_choice_gate", ("19",), 2, False, 30, ("tools",),
+        _probe_tool_choice_gate,
+        "tool_choice=none gate",
+    ),
+    ProbeSpec(
+        "ceiling", ("12", "16", "22"), 1, True, 60, (),
+        _probe_ceiling,
+        "output ceiling / empty content at cap",
+    ),
+    ProbeSpec(
+        "configs", ("10", "17", "21"), 0, False, 10, ("hf_repo",),
+        _probe_configs,
+        "checkpoint config checks (requires --hf-repo)",
+    ),
+)
+
+
+def iter_probe_specs(only_ids=None):
+    """Yield ProbeSpec entries, optionally filtered by id (order preserved)."""
+    if only_ids is None:
+        for spec in PROBE_SPECS:
+            yield spec
+        return
+    wanted = set(only_ids)
+    for spec in PROBE_SPECS:
+        if spec.id in wanted:
+            yield spec
+
+
+def run(doc, base, root, args, only_ids=None):
+    """Every selected check, in catalog order.
+
+    Split out of main() so the regression suite can drive a full run against a
+    fixture server without going through argv. ``only_ids`` selects a subset
+    for the reusable library API (None = full Doctor catalogue order).
+    """
+    # First probe remains request_validation when included: cheapest qualifier
+    # for whether parameters are hypotheses vs settings.
+    for spec in iter_probe_specs(only_ids):
+        spec.invoke(doc, base, root, args)
 
 
 def main():
