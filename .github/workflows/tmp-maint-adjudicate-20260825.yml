@@ -22,6 +22,23 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Repair one-shot helper for PR61 Hall-of-Fame replacement
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/maint_adjudicate_20260825.py')
+          s = p.read_text()
+          s = s.replace(
+              'if not tony_pattern.search(h):\n    raise SystemExit("tonyd2wild Hall-of-Fame row not found")\n',
+              ''
+          )
+          s = s.replace(
+              'h = tony_pattern.sub(tony_row, h, count=1)\nwrite(hof_path, h)',
+              '''if tony_pattern.search(h):\n    h = tony_pattern.sub(tony_row, h, count=1)\nelse:\n    marker = "| **Blackwellboy**"\n    idx = h.find(marker)\n    if idx < 0:\n        raise SystemExit("Blackwellboy Hall-of-Fame insertion point not found")\n    h = h[:idx] + tony_row + "\\n" + h[idx:]\nwrite(hof_path, h)'''
+          )
+          p.write_text(s)
+          PY
+
       - name: Apply maintainer adjudication
         run: python3 tools/maint_adjudicate_20260825.py
 
