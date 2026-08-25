@@ -9673,7 +9673,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+          "confirm_criterion": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "",
@@ -9714,7 +9714,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+          "confirm_criterion": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -9728,7 +9728,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "1. cat -A the refs/ files in the staged cache: a trailing $ at end of line is the defect. 2. After any sha-pinned fetch, verify refs/main exists and contains exactly the pinned sha with no trailing newline. If it is missing, write it by hand. 3. Compare the refs/ bytes across nodes (and the staging copy) before the first load, and checksum the snapshot on each node; load-time parity is the gate that catches divergence before inference, not after.",
+          "confirm_criterion": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",
