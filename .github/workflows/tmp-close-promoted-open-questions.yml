@@ -1,0 +1,62 @@
+name: tmp-close-promoted-open-questions
+
+on:
+  push:
+    branches:
+      - maint/close-promoted-open-questions-20260825
+
+permissions:
+  contents: write
+
+jobs:
+  close-promoted:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Move Q16-Q19 from OPEN to CLOSED
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('mining/OPEN_QUESTIONS.md')
+          s = p.read_text()
+          pat = re.compile(r'\n### Q16\..*?\n\n---\n\n## CLOSED, so nobody re-opens them', re.S)
+          if not pat.search(s):
+              raise SystemExit('Q16-Q19 block not found exactly once')
+          s = pat.sub('\n\n---\n\n## CLOSED, so nobody re-opens them', s, count=1)
+          header = '| Item | Disposition | Where |\n|---|---|---|\n'
+          if header not in s:
+              raise SystemExit('closed table header not found')
+          rows = (
+              '| Q16 / issue #36 cold-prefill speculative-placeholder corruption | **PROMOTED and issue closed.** Contributor-measured warm/cold and scheduler-guard A/B retained; @tonyd2wild credited for measurement and @Roady001 for the original scheduler-guard root-cause fix | trap [132](../traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md) |\n'
+              '| Q17 / issue #38 DSpark draft-loader shared-expert mapping gap | **PROMOTED and issue closed.** Source-inspectable missing mapping stays separate from contributor-measured performance rows; sibling, not duplicate, of Trap 109 | trap [133](../traps/runtime/133-dspark-loader-drops-shared-expert.md) |\n'
+              '| Q18 / issue #57 DGX Spark cgroup `MemoryMax` vs CUDA unified memory | **PROMOTED and issue closed.** Contributor-measured GB10 scope preserved; no broader CUDA-platform generalisation | trap [125](../traps/memory/125-dgx-spark-memorymax-misses-cuda-uma.md) |\n'
+              '| Q19 / issue #58 Ling-3.0 `thinking:false` response-shape dependence | **PROMOTED and issue closed.** Contributor-measured Ling/fork scope preserved | trap [126](../traps/reasoning/126-thinking-false-does-not-disable-thinking.md) |\n'
+          )
+          s = s.replace(header, header + rows, 1)
+          p.write_text(s)
+          PY
+      - name: Regenerate and validate
+        run: |
+          set -euxo pipefail
+          python3 -m minefield agent-bundle
+          python3 -m minefield agent-bundle --verify
+          git diff --check
+          python3 integrity/registry_integrity.py
+          python3 integrity/reference_integrity.py
+          python3 integrity/open_issue_queue.py
+      - name: Remove helper and commit
+        run: |
+          rm -f .github/workflows/tmp-close-promoted-open-questions.yml
+          git config user.name "blackwellboy-maint-bot"
+          git config user.email "76774064+Blackwellboy@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Close promoted Minefield questions Q16-Q19"
+          git push origin HEAD:maint/close-promoted-open-questions-20260825
