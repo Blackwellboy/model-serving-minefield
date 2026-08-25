@@ -232,6 +232,99 @@ Two log-reading corollaries, both published:
   what came **after** it, and do not let a health check grep for the alarming
   string ([trap 76](../traps/runtime/76-device-rejection-log-line-is-not-fatal.md)).
 
+## 11. Name the layer that moved before naming the speedup
+
+**Guards:** [trap 09](../traps/runtime/09-image-choice-changes-outcome.md),
+[trap 52](../traps/evaluation/52-speed-measured-on-a-broken-config.md),
+[trap 54](../traps/evaluation/54-run-order-and-warm-cache-artifacts.md),
+[trap 134](../traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md)
+
+An end-to-end tok/s delta is not automatically a model speedup. Before you name
+the winner, name **which layer moved**, and record the fields that make that
+claim defensible.
+
+### Required layer fields
+
+**MODEL**
+
+- checkpoint / revision
+- artifact / weights digest
+- correctness gate (same-build probe, not a stale run)
+
+**SERVING_ENGINE**
+
+- engine / build / image (prefer digest)
+- launch and request flags (or a normalized flags digest)
+- actual ISL (tokenizer- or server-counted)
+- actual OSL
+- TTFT / prefill when relevant
+- decode tok/s
+- queue / concurrency
+- speculative acceptance when speculative decoding is in play
+
+**TRANSPORT**
+
+- path class
+- intended and **actual** interface
+- path proof ([trap 134](../traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md))
+- bytes TX/RX where relevant
+- transport wall where measurable
+- host staging / directness if known
+
+**END_TO_END**
+
+- request wall
+- time-to-finished-batch
+- time-to-finished-task
+
+### Claim ladder (maximum defensible class)
+
+| Class | Defensible only when |
+|---|---|
+| **MODEL** | The model/artifact is the intended changed layer, and serving + transport conditions are held or controlled enough for that claim. |
+| **SERVING_ENGINE** | Model and transport are held while serving implementation/config is the intended changed layer. |
+| **TRANSPORT** | Model and serve configuration are held, transport/path is the intended changed layer, and **path proof** is present. |
+| **END_TO_END_COMPOSITE_ONLY** | Multiple layers changed, lower layers are unknown, or required attribution fields are missing. |
+
+Missing evidence **lowers** the claim class. Absence never proves two arms were equal.
+
+Offline metadata audit (no endpoint contact):
+[`checks/benchmark_attribution_preflight.py`](../checks/benchmark_attribution_preflight.py)
+with schema
+[`docs/benchmark-attribution.schema.json`](../docs/benchmark-attribution.schema.json).
+Doctor probes live endpoints; this checker only classifies claim defensibility
+from the metadata you already have.
+
+### Concrete lesson (sanitized FlashRDMA portable serving)
+
+Same upstream FlashRDMA code and tokenizer-verified token-exact fixtures, moving
+only the previous Wi-Fi environment to proven wired Ethernet, changed median
+decode throughput approximately:
+
+| Arm | Wi-Fi 8K (tok/s) | Wired 8K (tok/s) |
+|---|---:|---:|
+| Flash | 1.479 | 7.339 |
+| TCP | 3.465 | 7.631 |
+
+That delta is **transport/environment-sensitive end-to-end throughput**
+evidence. It is **not** a model speedup. Do not overclaim causality beyond the
+controlled evidence (path proof, held code/fixtures, measured walls).
+
+### Native RoCE / GPUDirect claim boundary
+
+Do **not** claim native RoCE or GPUDirect merely because:
+
+- `mlx5` (or another RDMA device) exists on one endpoint,
+- CUDA-managed memory is used,
+- traffic is Ethernet,
+- a setting or path class string contains "RDMA".
+
+A native / GPUDirect claim needs positive path evidence such as: the actual
+native backend selected, correct HCA/device, correct GID/path, direct
+GPU-memory registration / dma-buf where applicable, NIC/RDMA counters, and
+proof that host staging / fallback was **not** the executed path. Negative or
+unproven evidence stays a claim boundary, not a new trap.
+
 ## Before the lane counts as up at all
 
 Readiness is a completed generation, not an endpoint answering. `/v1/models`

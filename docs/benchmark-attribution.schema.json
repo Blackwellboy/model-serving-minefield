@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Blackwellboy/model-serving-minefield/blob/main/docs/benchmark-attribution.schema.json",
+  "title": "Benchmark Attribution Pair",
+  "description": "Offline metadata for classifying the maximum defensible throughput claim between two arms. No endpoint contact. Absence never implies equality.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "intended_changed_layer",
+    "arm_a",
+    "arm_b"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "intended_changed_layer": {
+      "type": "string",
+      "enum": [
+        "MODEL",
+        "SERVING_ENGINE",
+        "TRANSPORT"
+      ]
+    },
+    "arm_a": { "$ref": "#/$defs/arm" },
+    "arm_b": { "$ref": "#/$defs/arm" },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "arm": {
+      "type": "object",
+      "required": [
+        "model",
+        "serving_engine",
+        "transport"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "checkpoint_revision": { "type": ["string", "null"] },
+            "artifact_digest": { "type": ["string", "null"] },
+            "correctness_gate": {
+              "type": ["string", "null"],
+              "description": "PASS | FAIL | ABSENT | unknown label; null means missing."
+            }
+          }
+        },
+        "serving_engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "engine_build": { "type": ["string", "null"] },
+            "image_digest": { "type": ["string", "null"] },
+            "flags_digest_or_normalized_flags": { "type": ["string", "null"] },
+            "actual_isl": { "type": ["number", "null"] },
+            "actual_osl": { "type": ["number", "null"] },
+            "concurrency": { "type": ["number", "null"] },
+            "ttft_s": { "type": ["number", "null"] },
+            "decode_tps": { "type": ["number", "null"] },
+            "speculative_acceptance": { "type": ["number", "null"] }
+          }
+        },
+        "transport": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path_class": { "type": ["string", "null"] },
+            "interface": { "type": ["string", "null"] },
+            "path_proof": {
+              "type": ["string", "null"],
+              "description": "PRESENT | ABSENT | INSUFFICIENT or free-text; null means missing."
+            },
+            "staging_class": { "type": ["string", "null"] },
+            "bytes_tx": { "type": ["number", "null"] },
+            "bytes_rx": { "type": ["number", "null"] },
+            "transport_wall_s": { "type": ["number", "null"] },
+            "gpudirect_claimed": { "type": ["boolean", "null"] },
+            "gpudirect_evidence": { "type": ["string", "null"] }
+          }
+        },
+        "end_to_end": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "request_wall_s": { "type": ["number", "null"] },
+            "finished_batch_wall_s": { "type": ["number", "null"] },
+            "finished_task_wall_s": { "type": ["number", "null"] }
+          }
+        }
+      }
+    }
+  }
+}
