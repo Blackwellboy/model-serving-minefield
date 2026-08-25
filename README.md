@@ -72,7 +72,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 133
+Four doors, and which one you want depends on why you are here. All 134
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -107,7 +107,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 133 entries, one row each, sorted by number. It is the
+  directly below, all 134 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -118,7 +118,7 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 133 entries**, weighted toward reasoning fields, templates and
+for **19 of these 134 entries**, weighted toward reasoning fields, templates and
 tool parsing, and a clean run from it says nothing about the other 107. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
@@ -151,7 +151,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 133 entries. If you know what you are running rather than what you are
+All 134 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -206,6 +206,7 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | Time-to-first-token stays flat as an agent conversation grows | The engine auto-disabled prefix caching for a hybrid or recurrent arch and said so once, at startup | [47](traps/runtime/47-prefix-caching-autodisabled-hybrid.md) | contributor-measured, conditions as reported |
 | Every request takes ~30s including cache hits, but the server log says it finished in seconds | A `.local` name resolving dual-stack with a dead IPv6 route; the tax is entirely client-side | [48](traps/routing/48-dual-stack-mdns-latency-tax.md) | contributor-measured, conditions as reported |
 | A clean, reproducible performance gap that collapses when the harness is fixed | The benchmark prompt never tokenized to the length the table claims | [49](traps/evaluation/49-prompt-not-tokenized-to-target.md) | contributor-measured, conditions as reported |
+| Ethernet/NIC shows link UP so you label the run “wired”, but counters prove another interface carried the traffic | Link-up is not path proof for the interface under test | [134](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) | measured here, raw not published |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -318,7 +319,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 133 entries in under a minute:
+against 19 of this registry's 134 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

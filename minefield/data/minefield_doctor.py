@@ -54,7 +54,7 @@ REG = "https://github.com/Blackwellboy/model-serving-minefield/blob/main/traps"
 # asserts this constant still matches the tree, so it cannot drift silently.
 # Any PR that lands new trap files fails that test until this is bumped and the
 # coverage sentences in README.md and doctor/README.md are updated with it.
-REGISTRY_TRAP_COUNT = 133
+REGISTRY_TRAP_COUNT = 134
 
 TRAP_PATHS = {
     "01": "reasoning/01-reasoning-field-two-names.md",

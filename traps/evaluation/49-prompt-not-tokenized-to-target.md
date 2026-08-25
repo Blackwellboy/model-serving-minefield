@@ -52,4 +52,29 @@ and once for a "90% saved" figure that a full-distribution run disproved.
 
 **Attribution.** TheTom.
 
+### Addendum - 2026-08-25: character-labelled depth understates tokenizer depth (FlashRDMA portable serving)
+
+**Status for this addendum: measured here, raw not published** (Blackwellboy; portable
+cross-host serving harness). TheTom remains **Found by** for the entry. This addendum
+corroborates only the shared class **nominal length ≠ realized token length**. It does
+not claim to reproduce every detail of TheTom's original 18x→2-3x collapse story.
+
+On a FlashRDMA portable serving depth suite, an earlier repetitive / character-oriented
+"8K"-style fixture tokenized to only about **1.5K** model tokens. Depth cliffs and
+transport timing conclusions therefore reflected a much shallower prompt than the label
+claimed. The corrected suite asserted the **target-model tokenizer count before serving**
+and published verified fixtures:
+
+| Label | Tokenizer-verified prompt tokens |
+|---|---:|
+| short | 61 |
+| 1K | 1015 |
+| 4K | 4019 |
+| 8K | 8004 |
+
+Performance conclusions moved once depth was real: an "8K" result is only an 8K result
+when the measured/tokenizer-counted length is ~8000, not when the file has ~8000
+characters or the operator intended 8K. The check is unchanged - assert tokenized length
+(and cold server-observed counts) beside every depth label.
+
 **Check script.** [`checks/tokenized_length_assert.py`](../../checks/tokenized_length_assert.py) declares the negative and empty-set controls required by [the check contract](../../checks/README.md), so it is able to report a problem. The inline assertion above remains the check; the script is a convenience wrapper for it.
