@@ -75,7 +75,23 @@ This trap is strongly indicated when all of the following line up:
 6. low-level compute **and** LLM serving are both degraded;
 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together.
 
-A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.
+diagnosis used sustained load because short kernels can leave telemetry stale
+or sampled between boosts.
+
+**A query caveat on the same driver, for the healthy-capped case, contributed
+by @sethforprivacy.** Contributor-measured on a private 2x DGX Spark (GB10)
+lane, 2026-08-16; Blackwellboy has not reproduced this lane. The reverse
+state is just as easy to misread: after `nvidia-smi -lgc` successfully pins a
+clock cap, `nvidia-smi -q -d CLOCK` still prints `Max Clocks: 3003 MHz` (the
+hardware ceiling) and an idle reading shows 208 MHz, so both look like "the
+cap did not apply". The pinned range is not exposed by that query on the
+measured driver. Read the unit's own set line (for example `nvidia-smi: GPU
+clocks set to "(gpuClkMin 0, gpuClkMax 2200)"`, in the service journal for
+that boot) or sample `clocks.sm` under real load. The two GB10 clock states,
+stuck-low-power and healthy-but-capped, present the same misleading query
+output, so the query alone cannot tell them apart.
+
+**The fix.** Preserve evidence first, then perform a clean shutdown and a diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.
 
 **The fix.** Preserve evidence first, then perform a clean shutdown and a **true power removal**, not merely a reboot. Disconnect power from the DGX Spark long enough for the platform power state to clear; if practical, de-energize the external power supply as well. Reconnect the original rated supply, boot normally, and immediately repeat the same telemetry + low-level + serving checks before changing drivers, runtimes, kernels, or model artifacts.
 

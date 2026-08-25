@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-08-24 — traps 127-133: seven contributor-measured entries from a stock DeepSeek-V4-Flash DSpark lane
+
+All measured by **@sethforprivacy** on a private 2x DGX Spark GB10 lane
+serving stock DeepSeek-V4-Flash-0731 on vLLM `0.25.2.dev0+g752a3a504` (Anemll
+DSpark image), contributor-measured, conditions as reported; second-lane data
+added to three existing entries.
+
+- [**Trap 127**](traps/versioning/127-bind-mount-shadow-drift-crash-loop.md):
+  a whole-file bind mount shadowing a module inside a container image silently
+  couples an operator patch to one upstream revision; an unattended image
+  update then made every start die at import (4 h 22 m of 502, 241 restarts).
+- [**Trap 128**](traps/runtime/128-admission-flag-never-read-decode-starvation.md):
+  `max_num_partial_prefills` is defined but never read in the v1
+  waiting-admission loop, so decode starves under concurrent prefills with the
+  preemption counter pinned at zero, and the obvious single-flag fix is a
+  no-op.
+- [**Trap 129**](traps/memory/129-prefix-cache-hit-min-across-kv-groups.md):
+  the shared prefix hit is the minimum across KV cache groups, so
+  sliding-window groups collapse it past the horizon while a ~97% aggregate
+  hit rate masks the trap.
+- [**Trap 130**](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md):
+  the CUDA-graph capture-size clamp silently runs the largest batch decode
+  shape eager; seen in the spec-depth A/B where landing exactly on the clamp
+  bought the step-rate gain.
+- [**Trap 131**](traps/runtime/131-parallel-loader-collectives-wedge-uma.md):
+  a parallel shard loader running collectives during multi-node weight load
+  trips the NCCL watchdog and wedges a unified-memory rank until a physical
+  power cycle.
+- [**Trap 132**](traps/evaluation/132-first-request-after-boot-pays-jit.md):
+  the first request after a cold start pays kernel JIT compilation, reads as
+  a wedge (GPU busy, token counters at zero), and contaminates any A/B run in
+  the window.
+- [**Trap 133**](traps/versioning/133-hf-refs-file-breaks-offline-resolution.md):
+  a stray byte in an HF hub `refs/*` file (or a sha-pinned fetch writing no
+  `refs/main`) breaks pinned offline revision resolution on every node.
+- Second-lane data added to
+  [61](traps/evaluation/61-advertised-window-fails-silently.md) (the
+  640K-safe / 862K-fatal ceiling bisect with a hard-freeze failure mode),
+  [71](traps/runtime/71-mtp-config-key-and-draft-count.md) (the DSpark
+  `dspark_block_size: 5` silent truncation floor), and
+  [124](traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
+  (the `nvidia-smi` query that cannot see an applied `-lgc` cap).
+
 ## 2026-08-24 — traps 125-126: community DGX Spark memory guard + Ling thinking-off semantics
 
 - [**Trap 125**](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md), found by **@scottleimroth**: on the measured DGX Spark / GB10 cgroup-v2 path, `MemoryMax` did not account CUDA unified-memory allocations strongly enough to enforce the cap; a plain host-allocation positive control did. Scope stays contributor-measured and GB10-specific.
