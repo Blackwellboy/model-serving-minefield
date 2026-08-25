@@ -1,0 +1,8 @@
+{
+  "notes": "Healthy scaling ladder: aggregate throughput rises with concurrency; should not flag.",
+  "rows": [
+    {"concurrency": 1, "batch_wall": 2.0, "aggregate_tps": 15.0, "label": "c1"},
+    {"concurrency": 2, "batch_wall": 2.1, "aggregate_tps": 29.0, "label": "c2"},
+    {"concurrency": 4, "batch_wall": 2.2, "aggregate_tps": 55.0, "label": "c4"}
+  ]
+}
