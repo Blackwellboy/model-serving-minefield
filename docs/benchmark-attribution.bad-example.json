@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "intended_changed_layer": "MODEL",
+  "notes": "Negative control: operator intended a model claim, but transport differs and path proof is missing on one arm; also incorrectly infers GPUDirect from CUDA-managed staging.",
+  "arm_a": {
+    "model": {
+      "checkpoint_revision": "model-a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "correctness_gate": "ABSENT"
+    },
+    "serving_engine": {
+      "engine_build": "engine@1",
+      "image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "endpoint_or_host_identity": "spark-peer-A",
+      "flags_digest_or_normalized_flags": "flags=v1",
+      "actual_isl": 1015,
+      "actual_osl": 64,
+      "concurrency": 1
+    },
+    "transport": {
+      "path_class": "WIFI_PORTABLE",
+      "interface": "wlan0",
+      "path_proof": "ABSENT",
+      "staging_class": "CUDA_MANAGED_PATH",
+      "gpudirect_claimed": true,
+      "gpudirect_evidence": "CUDA_MANAGED_ONLY"
+    }
+  },
+  "arm_b": {
+    "model": {
+      "checkpoint_revision": "model-b@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "artifact_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "correctness_gate": "ABSENT"
+    },
+    "serving_engine": {
+      "engine_build": "engine@1",
+      "image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "endpoint_or_host_identity": "spark-peer-B",
+      "flags_digest_or_normalized_flags": "flags=v1",
+      "actual_isl": null,
+      "actual_osl": null,
+      "concurrency": 1
+    },
+    "transport": {
+      "path_class": "WIRED_ETHERNET_PORTABLE",
+      "interface": "eth0",
+      "path_proof": "ABSENT",
+      "staging_class": "CUDA_MANAGED_PATH",
+      "gpudirect_claimed": true,
+      "gpudirect_evidence": "CUDA_MANAGED_ONLY"
+    }
+  }
+}

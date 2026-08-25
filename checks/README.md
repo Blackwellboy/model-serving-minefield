@@ -3,6 +3,19 @@
 Runnable checks that catch registry entries. Stdlib-only where possible so
 they run anywhere the lane is reachable.
 
+
+## benchmark_attribution_preflight.py
+
+Offline classifier for the maximum defensible throughput claim between two
+arms (`MODEL` / `SERVING_ENGINE` / `TRANSPORT` / `END_TO_END_COMPOSITE_ONLY`).
+Stdlib-only. No endpoint requests. Doctor probes live behavior; this audits
+benchmark metadata only. See `docs/benchmark-attribution.schema.json`.
+
+```bash
+python3 checks/benchmark_attribution_preflight.py --pair docs/benchmark-attribution.example.json
+python3 checks/benchmark_attribution_preflight.py --pair docs/benchmark-attribution.example.json --gate-intended
+```
+
 ## preflight_template.py
 
 Template forensics. Answers the question every request-shaped check misses:
@@ -199,4 +212,4 @@ unset.
 
 ## Qwen3.8 reasoning-config traps
 
-`python3 checks/reproduce_qwen38_reasoning_config_traps.py` — offline template claims for Qwen3.8 NVFP4@52d1adc.
+`python3 checks/reproduce_qwen38_reasoning_config_traps.py` - offline template claims for Qwen3.8 NVFP4@52d1adc.
