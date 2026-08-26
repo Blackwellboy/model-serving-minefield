@@ -185,6 +185,19 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             raise RegistryError(f"{path}: compiler could not resolve symptom/check")
 
         stacks_text = _section(text, ("Stacks and builds bitten", "Scope"), "")
+        # Prefer the dedicated Stacks/Scope section for serving_stack applicability.
+        # Full-text scanning also matches Related/neighbour mentions (e.g. "llama.cpp"
+        # in a Related line) and falsely narrows intentionally generic traps.
+        if stacks_text:
+            affected_stacks = [
+                name for name in STACK_NAMES
+                if re.search(re.escape(name), stacks_text, re.I)
+            ]
+        else:
+            affected_stacks = [
+                name for name in STACK_NAMES
+                if re.search(re.escape(name), text, re.I)
+            ]
         entry: dict[str, Any] = {
             "id": trap_id,
             "title": _clean(title_match.group(2), 500),
@@ -197,7 +210,7 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             "status": status_raw,
             "evidence_strength": _status_labels(status_raw),
             "contributor": _clean(finder_match.group(1), 500) if finder_match else "unknown",
-            "affected_stacks": [name for name in STACK_NAMES if re.search(re.escape(name), text, re.I)],
+            "affected_stacks": affected_stacks,
             "affected_models": sorted({
                 _clean(match.group(0), 100).rstrip(" .,:;-")
                 for match in MODEL_RE.finditer(stacks_text or text[:5000])

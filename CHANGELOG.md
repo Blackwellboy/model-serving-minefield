@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-25 - FlashRDMA follow-up (Trap 134 TRANSPORT corroboration + trap 135)
+
+- [**134**](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) addendum - controlled same-endpoint / same-pin / path-only wired-versus-Wi-Fi A/B with path proof; offline attribution preflight returned **`TRANSPORT`**. Status unchanged: **measured here, raw not published**. Does not claim universal Ethernet superiority, Flash-caused gain, RoCE, or GPUDirect.
+- [**135**](traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) - Blackwellboy: concurrent HTTP clients are not concurrent model execution. Status **measured here, raw not published**. Distinguishes client concurrency from completed-work / execution concurrency; related but not owned by traps 41 / 46 / 110 / 128.
+- Playbook [`before-you-publish-an-ab.md`](playbooks/before-you-publish-an-ab.md) §11 - contrasting composite versus controlled `TRANSPORT` examples for the same "wired was faster" narrative.
+- Offline helper [`checks/concurrency_execution_proof_preflight.py`](checks/concurrency_execution_proof_preflight.py) flags `CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF` from ladder metadata.
+- Registry count moves from 134 to 135; doctor coverage remains 19, leaving 116 canonical entries unimplemented.
+
 ## 2026-08-25 - FlashRDMA transport attribution harvest (trap 134 + Trap 49 addendum)
 
 - [**134**](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) - Blackwellboy: link-up / negotiated speed is not path proof that the labelled interface carried a transport benchmark. Status **measured here, raw not published**. Multi-homed measurement footgun; claim boundary excludes protocol/switch/RDMA/GPUDirect failure claims.
@@ -155,7 +163,7 @@ Reported first as issues
 ### Qwen3.8 reasoning/template configuration traps (first-party extension)
 
 Independently reproduced by **Blackwellboy** on
-`RadixArk/Qwen3.8-27B-NVFP4@52d1adc` (template SHA `c3cf9e34…`). Prior
+`RadixArk/Qwen3.8-27B-NVFP4@52d1adc` (template SHA `c3cf9e34...`). Prior
 public lead: **TheTom/offlabel**.
 
 Extends existing entries rather than allocating four new numbers:

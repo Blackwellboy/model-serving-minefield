@@ -1623,3 +1623,721 @@ dist/model-serving-minefield-agent-pack.zip:49570: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:49589: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:51709: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:51673: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+
+# Adjudications for FlashRDMA follow-up regenerate (trap 135) line-number drift
+dist/MINEFIELD_AGENT_BUNDLE.json:12420: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:12924: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21466: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21484: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21485: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21502: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21535: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21538: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21548: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21607: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21619: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21674: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21675: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21741: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21824: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21836: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22859: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22934: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22990: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23009: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23019: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23244: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:12619: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:13123: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:21665: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37444: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37446: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37449: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37450: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37451: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37454: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37463: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37464: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37465: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37513: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37515: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37518: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37613: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:37765: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:49808: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:49809: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:49810: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:49829: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:51949: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23531: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23587: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23612: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23670: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23695: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23751: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23777: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23825: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23730: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23786: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23811: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23869: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23894: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23950: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:23976: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:24024: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:26265: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:26278: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:26291: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:26304: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36621: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36677: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36702: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36760: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:36785: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+
+# Bulk regenerate adjudications after trap 135 landing (pass 2)
+dist/model-serving-minefield-agent-pack.zip:21683: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21684: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21701: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21734: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21737: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21747: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21806: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21818: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21873: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21874: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21940: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:22023: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:22035: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23058: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23133: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23189: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23208: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23218: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23443: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24335: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24568: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24569: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24572: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24588: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24591: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25885: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25886: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25887: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25897: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25898: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25901: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25910: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25911: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25924: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25926: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25937: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25949: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25950: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26132: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26145: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26157: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26159: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26160: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26196: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27170: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27638: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27639: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27642: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27658: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27661: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34556: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34575: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34625: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34628: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34638: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34697: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34709: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34764: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34765: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34831: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34914: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34926: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35949: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36024: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36080: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36099: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36109: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36334: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37485: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37486: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37646: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41583: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41584: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41585: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41589: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41595: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41596: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41597: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41598: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41599: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41600: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41601: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41602: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41798: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:42042: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:42330: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:45547: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:45589: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48118: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48426: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48455: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48456: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48457: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48458: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48459: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48460: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48474: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48475: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48476: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48477: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49821: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49822: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49845: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49846: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49897: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49898: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49973: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50441: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50442: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50445: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50461: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50464: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51913: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:51914: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1567: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1577: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1590: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1592: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1603: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1616: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1798: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1811: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1823: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1826: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.md:1862: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:25: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:47: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:67: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:85: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:105: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:123: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:141: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:161: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:179: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:199: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:207: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:215: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:229: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:243: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:253: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:263: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:273: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:281: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:293: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:303: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:313: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:323: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:337: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:351: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:361: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:373: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:385: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:395: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:403: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+mining/2026-08-25-sglang-veloGB10-glm52-public-source-harvest.md:411: reviewed style-only punctuation in public evidence, generated mirror, package payload, or product prose; no private data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:150: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:151: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:152: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:153: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:154: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:155: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:156: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:157: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:158: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:159: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:195: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:196: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:197: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:198: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:199: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:200: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:201: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:202: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:203: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:204: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:274: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:275: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:276: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:277: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:278: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:279: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:280: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:1155: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:1156: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1157: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1158: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1159: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1160: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1161: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1162: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1163: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1164: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1165: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1166: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1167: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1168: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1169: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1170: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1171: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1172: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1173: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1174: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1175: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1176: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1177: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1178: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1179: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1180: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1181: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1182: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1183: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1184: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1185: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1186: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1187: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1188: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1190: reviewed regenerated deterministic public surface; no private deployment data is present.
+integrity/_proofs/sanitizer_adjudicated.txt:1191: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1192: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1193: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1194: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1195: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1196: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1197: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1198: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1199: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1200: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1201: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1202: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1203: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1204: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1205: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1206: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1207: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1208: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1209: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1210: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1211: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1212: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1215: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1216: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1217: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1218: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1219: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1220: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1221: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1222: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1223: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1224: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1225: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1226: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1227: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1228: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1229: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1230: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1231: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1232: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1233: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1234: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1235: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1236: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1237: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1238: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1239: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1240: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1241: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1242: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1243: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1244: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1245: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1246: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1247: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1248: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1249: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1250: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1251: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1252: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1253: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1254: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1255: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1256: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1257: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1258: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1259: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1260: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1261: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1262: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1263: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1264: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36841: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36915: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1931: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1944: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1957: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.md:1970: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+
+# PR70 review-fix regenerate adjudications
+minefield/data/MINEFIELD_REGISTRY.json:6735: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6753: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6754: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6771: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6804: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6807: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6876: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6888: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6943: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:6944: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:7010: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:7093: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:7105: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:8116: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:8189: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8245: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:8264: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:8274: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+minefield/data/MINEFIELD_REGISTRY.json:8497: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21376: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21394: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21395: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21412: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21445: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21448: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21458: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21517: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21529: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21584: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21585: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21651: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21734: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:21746: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22757: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22830: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:22886: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22905: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:22915: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_AGENT_BUNDLE.json:23138: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21575: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21593: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21594: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21611: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21644: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21647: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21657: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21716: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21728: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21783: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21784: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21850: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21933: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:21945: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:22956: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23029: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23085: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23104: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23114: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:23337: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24224: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24457: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24458: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24461: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24477: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:24480: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25774: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25775: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25776: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25786: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25787: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25790: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25799: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25800: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25813: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25815: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25826: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25838: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:25839: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26021: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26034: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26046: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26048: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26049: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:26085: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27059: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27527: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27528: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27531: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:27547: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34355: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34373: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34374: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34391: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34424: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34427: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34437: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34496: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34508: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34563: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34564: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34630: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34713: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:34725: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35736: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35809: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:35865: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35884: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:35894: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:36117: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37262: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37263: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37423: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41360: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41361: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41362: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41373: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41374: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41375: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41376: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41377: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41378: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41379: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41575: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:41819: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:42107: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:45324: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:45366: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:47908: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48216: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48248: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48249: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48250: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48264: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48265: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48266: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48267: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49611: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49612: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49635: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49636: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49687: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49688: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49763: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50231: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50232: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50235: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50251: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50254: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51703: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:51704: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:6735: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6753: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6754: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6771: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6804: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6807: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6876: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6888: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6943: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:6944: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:7010: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:7093: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:7105: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:8116: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:8189: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8245: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:8264: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:8274: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/MINEFIELD_REGISTRY.json:8497: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37010: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37226: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37227: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37231: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37240: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37241: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37242: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37290: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37292: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37295: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37390: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:37542: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49599: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49600: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49619: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51739: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+integrity/_proofs/sanitizer_adjudicated.txt:1713: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1738: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1762: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1811: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1812: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1820: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1837: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1849: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1882: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1883: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1884: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1885: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1886: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1887: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1888: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1889: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1890: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1891: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1892: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1893: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1894: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1895: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1896: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1897: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1898: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1899: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1900: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1901: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1902: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1903: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1904: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1905: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1906: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1907: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1908: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1909: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1910: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1911: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1912: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1913: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1914: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1916: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1917: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1918: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1919: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1920: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1921: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1922: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1923: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1924: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1925: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1926: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1927: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1928: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1929: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1930: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1931: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1932: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1933: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1934: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1935: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1936: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1937: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1938: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1939: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1940: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1941: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1942: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1943: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1944: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1945: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1946: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1947: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1948: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1949: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1950: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1951: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1952: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1953: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1954: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1955: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1956: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1957: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1958: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1959: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1960: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1961: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1962: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1963: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1964: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1965: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1966: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1967: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1968: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1969: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1970: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1971: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1972: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1973: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1974: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1975: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1976: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1977: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1978: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1979: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1980: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1981: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1982: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1983: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1984: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1985: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1986: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1987: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1988: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1989: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1990: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1991: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1992: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+integrity/_proofs/sanitizer_adjudicated.txt:1993: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8784: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8840: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8865: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8923: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:8948: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:9004: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:9030: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+minefield/data/MINEFIELD_REGISTRY.json:9078: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23425: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23481: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23506: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23564: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23589: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23645: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23671: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_AGENT_BUNDLE.json:23719: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23624: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23680: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23705: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23763: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23788: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23844: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23870: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:23918: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26154: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26167: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26180: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:26193: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36404: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36460: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36485: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36543: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36568: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36624: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36650: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:36698: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8784: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8840: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8865: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8923: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:8948: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:9004: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:9030: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/MINEFIELD_REGISTRY.json:9078: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.

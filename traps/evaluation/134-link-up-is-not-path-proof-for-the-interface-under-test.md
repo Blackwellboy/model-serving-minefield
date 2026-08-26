@@ -108,6 +108,53 @@ gate green ≠ claimed capability),
 env identity ≠ portable path). None of those owns multi-homed **interface
 selection** for a labelled transport benchmark.
 
+
+### Addendum - 2026-08-25: controlled path-only delta can be TRANSPORT
+
+**Status for this addendum: measured here, raw not published** (Blackwellboy).
+Entry status is unchanged. Raw counter dumps and fleet identity stay private.
+
+Trap 134 is not only a warning that link-up is insufficient. It also sets the
+**positive** standard: when model, serving recipe, endpoint identity, and code
+revision are held, and route / interface / counter path proof is present for
+each arm, a path-only delta may be labelled **`TRANSPORT`**.
+
+A later controlled portable-serving A/B held:
+
+- same client host
+- same Spark endpoint
+- same FlashRDMA pin `1e952ace4be94f90b88b850188e99f0493036424`
+- same Qwen2-0.5B split serving recipe and W16
+- same sampling / output budget
+- tokenizer-verified fixtures (4K = 4019, 8K = 8004)
+
+and changed **network path only** (dedicated 1 GbE copper vs the existing
+Wi-Fi/LAN route), with path proof on both arms. Offline
+[`checks/benchmark_attribution_preflight.py`](../../checks/benchmark_attribution_preflight.py)
+returned `max_defensible_claim=TRANSPORT` (MODEL and SERVING_ENGINE held;
+transport intended; `path_proof` PRESENT; correctness PASS).
+
+Sanitized medians (tok/s):
+
+| Depth | Path | TCP | Flash |
+|---|---|---:|---:|
+| 4K | wired | 15.724 | 15.832 |
+| 4K | Wi-Fi | 9.943 | 8.164 |
+| 8K | wired | 9.871 | 7.817 |
+| 8K | Wi-Fi | 6.401 | 4.862 |
+
+Wired was roughly **1.5-1.9x** Wi-Fi on this held pair. Independent raw path
+baselines on the same hosts were ~940 Mbps / RTT p50 ~0.95 ms (wired) versus
+~166-170 Mbps / RTT p50 ~15 ms, p95 ~109 ms (Wi-Fi).
+
+**Claim boundary for this addendum.** May claim: with holds + path proof, a
+path-only comparison can be `TRANSPORT`. Must **not** claim from these numbers
+alone that Ethernet is universally 1.5-1.9x faster than Wi-Fi, that FlashRDMA
+caused the gain, native RoCE, GPUDirect, or any result beyond this measured
+setup. Cross-session Wi-Fi→wired tables that also change endpoint or revision
+remain **`END_TO_END_COMPOSITE_ONLY`** (see the entry claim boundary above and
+[the A/B playbook §11](../../playbooks/before-you-publish-an-ab.md)).
+
 **Found.** 2026-08-25, multi-homed portable serving transport A/B with path
 forensics before and after addressing correction.
 

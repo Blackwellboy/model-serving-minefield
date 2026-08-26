@@ -1,0 +1,8 @@
+{
+  "notes": "Sanitized example matching trap 135 serialization signature (TCP arm).",
+  "rows": [
+    {"concurrency": 1, "batch_wall": 2.192, "aggregate_tps": 14.60, "label": "tcp_c1"},
+    {"concurrency": 2, "batch_wall": 4.053, "aggregate_tps": 15.79, "label": "tcp_c2"},
+    {"concurrency": 4, "batch_wall": 7.742, "aggregate_tps": 16.53, "label": "tcp_c4"}
+  ]
+}
