@@ -14642,7 +14642,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 135,
-    "content_sha256": "0ed5e4f607255f121f672937bab9d33e8aaa6dfce6e973d0accf808ad016d214",
+    "content_sha256": "7a7b08491eca85d92223acb7ff7ccfe660a1acaf0283d80ca78c6295d8c1f879",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -14651,9 +14651,7 @@
           "Qwen 3.6 NVFP4 that exposes no reasoningcontent key at all"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Ollama",
-          "mlx_lm"
+          "vLLM"
         ],
         "affected_versions_builds": "Five surfaces across three separate tools. A vLLM lane serving Qwen 3.6 NVFP4 that exposes no reasoningcontent key at all; a community spine-probe runner whose reasoning column read 0 on all 42 rows; a third stack whose \"0% fired\" could not be distinguished from \"was not parsed\" until the field was checked directly; and then two thinking-probe scripts in the same upstream toolkit that still read only the one field. Those two are the sharpest case, because their entire job is to measure whether a model reasons: on a vLLM lane one would have reported NOREASONING in every arm, and the other would have shown a persona gate as perfectly effective including in its own control cell. Both are fabricated results that look like findings. Wire-level measurement on Laguna S 2.1 NVFP4 (vLLM 0.25.1) confirmed the streaming variant: reasoning arrives as delta.reasoning, not delta.reasoningcontent (@quantumleap68). The generalization worth carrying: this is not a bug that happened to some scripts, it is a property of any tool that reads a reasoning field. Audit all of them at once, not just the one that surfaced the problem.",
         "applicability": {
@@ -14677,8 +14675,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "mlx_lm",
-            "ollama",
             "vllm"
           ],
           "stack_version": [
@@ -14730,8 +14726,7 @@
           "Laguna S 2.1 with the poolsidev1 reasoning parser"
         ],
         "affected_stacks": [
-          "vLLM",
-          "SGLang"
+          "vLLM"
         ],
         "affected_versions_builds": "First seen on a 3.25bpw EXL3-tail hybrid container serving Laguna S 2.1 with the poolsidev1 reasoning parser, every single response, and initially attributed to that container's configuration. That attribution was wrong: a full-precision spine run reproduced it on a venv-served vLLM 0.25.1 lane with the same parser. It is poolsidev1-on-vLLM behavior, not a container bug. With the kwarg absent it appeared in 42/42 non-firing spine rows on both serving stacks; with the kwarg explicit it appeared in 0/984 A/B rows.",
         "applicability": {
@@ -14751,7 +14746,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "sglang",
             "vllm"
           ],
           "stack_version": [
@@ -14805,9 +14799,7 @@
         ],
         "affected_stacks": [
           "vLLM",
-          "llama.cpp",
-          "mlx_lm",
-          "SGLang"
+          "llama.cpp"
         ],
         "affected_versions_builds": "Laguna S 2.1 across three independently run stacks (vLLM/NVFP4, llama.cpp/Q4KM, and an EXL3-tail container). Revision 0761412 (NVFP4 upload) defaults enablethinking to true; another pinned fork documented false. Reconciling the three stacks took days and produced the corrected kwarg model now documented upstream: explicit false is the one structural off-switch, explicit true fires, and which arm \"absent\" lands in is revision-dependent and server-dependent. The landing map for an absent thinking kwarg, measured across lanes (2026-07-27 sweep): Laguna rev 0761412 templates default it ON (both vLLM lanes); Qwen3.6-27B and Qwen3.5-9B on llama.cpp landed OFF (absent produced no reasoning while explicit true fired, b9193/b9066); and on a llama.cpp Laguna path the server supplies the kwarg so absent renders identical to true (per the upstream 5 correction). Same request, three different arms, depending on family, revision, and server. Send it explicitly, always.",
         "applicability": {
@@ -14839,8 +14831,6 @@
           ],
           "serving_stack": [
             "llama.cpp",
-            "mlx_lm",
-            "sglang",
             "vllm"
           ],
           "stack_version": [],
@@ -14887,9 +14877,7 @@
         ],
         "affected_stacks": [
           "vLLM",
-          "llama.cpp",
-          "Ollama",
-          "mlx_lm"
+          "llama.cpp"
         ],
         "affected_versions_builds": "A 12h production soak on Laguna S 2.1 NVFP4 / vLLM, plus the 3.25bpw EXL3-hybrid lane, plus @quantumleap68's independent client and serving pair. The rendering half is also reproduced by @Defilan on llama.cpp (Laguna S 2.1 Q4KM, Vulkan on gfx1151, deterministic via /apply-template): three prior content-only turns render as three empty think blocks, byte for byte; behavioral suppression on that stack is under test. Four independent testers characterized this model and all four missed it, because every check anyone ran was request-shaped: correct kwargs, correct response parsing, correct field names. Nobody dumped the assembled prompt at turn N. Template mechanism confirmed cross-family on Qwen 3.6 (llama.cpp b9193); preservation kwarg absent on Qwen 3.5 (llama.cpp b9066).",
         "applicability": {
@@ -14917,8 +14905,6 @@
           ],
           "serving_stack": [
             "llama.cpp",
-            "mlx_lm",
-            "ollama",
             "vllm"
           ],
           "stack_version": [
@@ -15025,8 +15011,7 @@
           "Laguna S 2.1"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "Laguna S 2.1, measured at the wire by @quantumleap68 (his CLI client to vLLM 0.25.1, NVFP4 TP=1 and FP8 TP=2, logging proxy, N of at least 6 per cell). His measured cells: no system message",
         "applicability": {
@@ -15051,7 +15036,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [
@@ -15103,8 +15087,7 @@
         ],
         "affected_stacks": [
           "vLLM",
-          "llama.cpp",
-          "mlx_lm"
+          "llama.cpp"
         ],
         "affected_versions_builds": "Laguna S 2.1 on vLLM 0.25.1, measured at the wire by @quantumleap68 (his CLI client, logging proxy): reasoningeffort is a no-op because the template never reads it. Same class as Trap 04's corollary in reverse: there, the template read a kwarg the model card did not document; here, the API accepts a parameter the template does not read. Both directions of the schema/template mismatch produce silent wrong numbers. Reproduced on two more models on llama.cpp (2026-07-27, standardized probe sweep): reasoningeffort low versus high moved measured reasoning length by noise only on Qwen3.6-27B Q4KM (1,996 vs 1,989 chars, llama.cpp b9193) and Qwen3.5-9B Q4KM (2,376 vs 2,528 chars, b9066); both templates read enablethinking and neither reads reasoningeffort (template text inspected live via /props). Related surface: llama.cpp accepted a deliberately bogus chattemplatekwargs key with HTTP 200 on both lanes, so the entire kwargs dict is send-and-pray on this server: nothing validates that any key you send is read. The grep-the-template check is the only real one.",
         "applicability": {
@@ -15131,7 +15114,6 @@
           "quantization": [],
           "serving_stack": [
             "llama.cpp",
-            "mlx_lm",
             "vllm"
           ],
           "stack_version": [
@@ -15182,10 +15164,7 @@
           "Hy3 dual-Spark recipe. - A CuTe-DSL TMA attention kernel that JIT-compile",
           "MiniMax dual-Spark driver. The image label is not the compatibility story"
         ],
-        "affected_stacks": [
-          "vLLM",
-          "Docker"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "Twice on DGX Spark GB10 (CUDA 13.0 driver): - Marlin's NVFP4 repack on a CUDA 13.2-toolchain image: error 222 in marlinutilsfp4.py: repackweight. Not fixable by env vars (TRITONPTXASPATH only affects Triton). Documented with the fix in our Hy3 dual-Spark recipe. - A CuTe-DSL TMA attention kernel that JIT-compiles at first inference on a 13.2-toolkit image over the 13.0 driver: loads clean, ready state, crashes on the first generation. The MoE kernels in the same image family work, because those are prebuilt cubins. Documented in our MiniMax dual-Spark driver. The image label is not the compatibility story; the kernel class is.",
         "applicability": {
           "concurrency_regime": [],
@@ -15214,10 +15193,7 @@
           "quantization": [
             "nvfp4"
           ],
-          "serving_stack": [
-            "docker",
-            "vllm"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -15258,8 +15234,7 @@
           "Hy3 dual-Spark recipe"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "Measured on a ~299B MoE FP4-expert checkpoint across two DGX Spark GB10 nodes (TP=2), one weight set, three images: 1. A 13.2-toolchain image: error 222 at marlin FP4 repack. Never served. 2. A 13.0-toolchain image with the same repack path: the repack transiently about doubled MoE weight memory, OOM and swap-thrash on both nodes. Never served. 3. A 13.0-default-toolchain image with prebuilt kernels (eugr/spark-vllm) on the NVFP4 sibling checkpoint: serves at 13.1 tok/s single-stream. Separately, the serving path the working image takes is weight-only FP4 on forward-compat sm120 cubins, measured at roughly 40% below the native-FP4 target for this hardware. Correct output, reduced speed: the image also picks your speed class, not just success or failure. Full story: Hy3 dual-Spark recipe (README and FINDINGS.md).",
         "applicability": {
@@ -15288,7 +15263,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [],
@@ -15468,11 +15442,7 @@
           "Ternary-Bonsai-27B-mlx-2bit"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp",
-          "Ollama",
-          "mlx_lm",
-          "SGLang"
+          "vLLM"
         ],
         "affected_versions_builds": "Qwen 3.6 35B-A3B NVFP4 on vLLM (GB10), first seen as 28/30 empties in a cross-model grid at 4096, replicated 8/10 in the budget map, converted at 8192. Reproduced on mlxlm (2026-07-27, stock server, prism-ml Ternary-Bonsai-27B-mlx-2bit, Apple silicon): a hard task with thinking on at maxtokens=512 returned HTTP 200, finishreason=length, no content, and 1,484 chars of reasoning; a degeneration screen read the tail as honest truncation (unique-line ratio 1.00, zlib ratio 0.53). The MLX flavor of the signature differs: where vLLM returns content as an empty string, mlxlm OMITS the content key entirely, so msg[\"content\"] raises KeyError on every cap-hit. A KeyError storm that correlates with finishreason=length is this stack's version of the symptom, and it is easy to misread as a client bug instead of a budget artifact (see trap 01 for the absent-key shape). Budget note: the same 27B-class model converted a short arithmetic answer in 225 completion tokens with thinking on and burned all 512 on the hard task without converting, so the thinking-on conversion floor sits somewhere above 512 on that lane; per trap 22, find it for THIS model rather than borrowing a family number. The upstream guide ecosystem adopted the lesson as \"an empty response at a token cap is a failure, not a truncation\" (offlabel patterns.md).",
         "applicability": {
@@ -15502,10 +15472,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
-            "mlx_lm",
-            "ollama",
-            "sglang",
             "vllm"
           ],
           "stack_version": [],
@@ -15687,9 +15653,7 @@
       },
       {
         "affected_models": [],
-        "affected_stacks": [
-          "SGLang"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "Documented and worked around in mrpmorris/sparkrun-recipes' benchllm.py, which (a) maintains an explicit list of loglikelihood-scored tasks, (b) probes the server before running them, and (c) requires the probe response to contain actual tokenlogprobs, not just a 200. His comparison grid marks such servers UNSUPPORTED rather than letting them score zero, alongside OOM, CRASH, HANG, and STARTUP as distinct death-classes; the discipline of classifying why a number is missing is itself the lesson.",
         "applicability": {
           "concurrency_regime": [],
@@ -15705,9 +15669,7 @@
           "operating_system": [],
           "parallelism": [],
           "quantization": [],
-          "serving_stack": [
-            "sglang"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -15884,7 +15846,6 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
           "llama.cpp"
         ],
         "affected_versions_builds": "llama.cpp on gfx1151/Strix Halo (measured); the class applies to any runtime where an attention implementation flag defaults off or gets turned off defensively.",
@@ -15903,8 +15864,7 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "llama.cpp",
-            "vllm"
+            "llama.cpp"
           ],
           "stack_version": [],
           "topology": []
@@ -16027,8 +15987,7 @@
         ],
         "affected_stacks": [
           "vLLM",
-          "llama.cpp",
-          "mlx_lm"
+          "llama.cpp"
         ],
         "affected_versions_builds": "llama.cpp serving Laguna S 2.1 Q4KM (Vulkan on gfx1151, poolside GGUF with the corrected fork template), probed by @Defilan via /apply-template so the render is deterministic and repeats byte for byte: same transcript preserved via reasoningcontent gives three filled think blocks (+180 chars); preserved via reasoning gives a render byte-identical to the stripped arm. vLLM 0.25.1 serving Laguna S 2.1 NVFP4: reasoning passes through (ours). A wrong-field implementation is invisible on vLLM and fatal on llama.cpp; a correct llama.cpp implementation ported to a stack that only reads reasoning would fail the same way in reverse.",
         "applicability": {
@@ -16053,7 +16012,6 @@
           ],
           "serving_stack": [
             "llama.cpp",
-            "mlx_lm",
             "vllm"
           ],
           "stack_version": [
@@ -16103,9 +16061,7 @@
           "Qwen3.6-27B Q4KM"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp",
-          "transformers"
+          "llama.cpp"
         ],
         "affected_versions_builds": "llama.cpp b9066 serving Qwen3.5-9B Q4KM (defaults diverge); llama.cpp b9193 serving Qwen3.6-27B Q4KM (defaults match; control). The class applies to any server with built-in sampling defaults and any checkpoint that documents sampling only in prose.",
         "applicability": {
@@ -16129,9 +16085,7 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "llama.cpp",
-            "transformers",
-            "vllm"
+            "llama.cpp"
           ],
           "stack_version": [
             "b9066",
@@ -16728,8 +16682,7 @@
           "Qwen3.6-27B Q4KM and the same family at 35B Q3"
         ],
         "affected_stacks": [
-          "llama.cpp",
-          "mlx_lm"
+          "llama.cpp"
         ],
         "affected_versions_builds": "llama.cpp b9193 serving Qwen3.6-27B Q4KM and the same family at 35B Q3, both with --reasoning off in the serve line; raw rows in ceilingaudit20260727.jsonl and ceilingauditprodarm20260727.jsonl.",
         "applicability": {
@@ -16752,8 +16705,7 @@
             "q3"
           ],
           "serving_stack": [
-            "llama.cpp",
-            "mlx_lm"
+            "llama.cpp"
           ],
           "stack_version": [
             "b9193"
@@ -16907,9 +16859,7 @@
       },
       {
         "affected_models": [],
-        "affected_stacks": [
-          "mlx_lm"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "mlx-lm 0.31.3 (stock mlxlm server), behaviorally; the no-clamp resolution order is also present in current main at the time of writing. Single version behaviorally tested; if a later release adds a true cap flag, this entry should say so.",
         "applicability": {
           "concurrency_regime": [],
@@ -16923,9 +16873,7 @@
           "operating_system": [],
           "parallelism": [],
           "quantization": [],
-          "serving_stack": [
-            "mlx_lm"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -17243,8 +17191,7 @@
           "Qwen3.6-35B-A3B and derivatives"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "Qwen3.6-35B-A3B and derivatives; a BFCL v4 AST harness over pinned Gorilla 6ea57973c7a6097fd7c5915698c54c17c5b1b6c8 with the bfcl-eval 2026.3.23 wheel; a Terminal-Bench 2.x run under Harbor with terminus-2 against a local vLLM serve. The class is harness-level and applies to any stack; agentic and tool-calling harnesses are the most exposed because they have the most places to reject a valid turn.",
         "applicability": {
@@ -17265,7 +17212,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [],
@@ -17885,8 +17831,7 @@
           "Qwen3.6-27B hybrid-linear-attention checkpoint. Not a flag you can overrid"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.24-era serving hybrid Gated-DeltaNet / Mamba architectures. Confirmed on a Qwen3.6-27B hybrid-linear-attention checkpoint. Not a flag you can override, it is a capability gate.",
         "applicability": {
@@ -17910,7 +17855,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [
@@ -18283,9 +18227,7 @@
       },
       {
         "affected_models": [],
-        "affected_stacks": [
-          "llama.cpp"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "Seen on GPU stacks with graph capture and JIT compilation (torch.compile plus CUDA graphs) and on Metal. Anything with a warm-up phase, which is now everything.",
         "applicability": {
           "concurrency_regime": [],
@@ -18301,9 +18243,7 @@
           "operating_system": [],
           "parallelism": [],
           "quantization": [],
-          "serving_stack": [
-            "llama.cpp"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -18403,8 +18343,7 @@
           "deepseekv4"
         ],
         "affected_stacks": [
-          "vLLM",
-          "transformers"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.21.1rc1.dev339+g1967a5627bc3 serving a community-abliterated DeepSeek-V4-Flash checkpoint, tokenizer mode deepseekv4, --trust-remote-code, tensor parallel 2 across two DGX Spark GB10 nodes. The no-template-file structure and the Python encoder come from the checkpoint, so they are properties of the model family as packaged; the exact renders above are from this build and this server version.",
         "applicability": {
@@ -18433,7 +18372,6 @@
           ],
           "quantization": [],
           "serving_stack": [
-            "transformers",
             "vllm"
           ],
           "stack_version": [
@@ -18718,8 +18656,7 @@
           "DeepSeek-V4-Flash checkpoint on two DGX Spark GB10 nodes"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.21.1rc1.dev339+g1967a5627bc3 serving a community-abliterated DeepSeek-V4-Flash checkpoint on two DGX Spark GB10 nodes, tensor parallel 2, NVFP4 MLA KV cache at block size 256, sparse attention with a top-512 indexer, --max-num-batched-tokens 8192, --max-num-seqs 4, prefix caching and chunked prefill both enabled, multi-token-prediction drafter at depth 3. Scope this to that combination. The ingredients we think are load bearing, sparse top-k attention plus a quantised KV cache plus multi-chunk prefill, are individually common and jointly not, and this is not a claim about stock DeepSeek V4-Flash or about prefix caching in general.",
         "applicability": {
@@ -18756,7 +18693,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [
@@ -18889,8 +18825,7 @@
           "DeepSeek-V4-Flash checkpoint"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "A vLLM 0.21.1rc1.dev339+g1967a5627bc3 build serving a community-abliterated DeepSeek-V4-Flash checkpoint (FP8 weight-block quantisation, NVFP4 MLA KV cache) on two DGX Spark GB10 nodes, tensor parallel 2, arm64 with CUDA 13. Scope this narrowly. The drafter here is the model's own multi-token-prediction head, and the interaction is with that drafter and that sampler path. It is not a claim about speculative decoding generally, and it is not a claim about stock DeepSeek V4-Flash.",
         "applicability": {
@@ -18924,7 +18859,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [
@@ -18975,8 +18909,7 @@
           "Nemotron 3 family on GB10-class single nodes"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "Three checkpoints of the NVIDIA Nemotron 3 family on GB10-class single nodes, characterised in three independent sessions: - Super 120B A12B NVFP4, vLLM 0.20.0 vendor container. The four-arm table above, server-side. - Nano 30B A3B NVFP4, vLLM 0.25.1 in a pip venv. Offline Jinja render of the checkpoint template at the pinned revision confirmed the stripping and the kwarg polarity independently, and correctly reported that the template source reads reasoningcontent only. Live serving then showed the server writes reasoning. - Nano Omni 30B A3B NVFP4, vLLM 0.20.0 upstream arm64 container. Confirmed the kwarg half through POST /tokenize with per-token strings: an inline <think>...</think> in prior content survives with truncatehistorythinking: false (95 prompt tokens against 80 stripped), and an inbound reasoningcontent is dropped before rendering. The reasoning arm was not run on this checkpoint, so its round trip is confirmed for the gate and open for the field name. The Nano and Super conclusions look contradictory and are not. An offline render sees exactly the keys you hand it; a live server maps its own field and drops the unrecognised one. Both are correct about different layers, and a reader who has only one of them will implement the wrong fix.",
         "applicability": {
@@ -19002,7 +18935,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [
@@ -19201,8 +19133,7 @@
           "nemotronv3. Verified through POST /tokenize with per-token strings"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Ollama"
+          "vLLM"
         ],
         "affected_versions_builds": "NVIDIA Nemotron 3 Nano Omni 30B A3B Reasoning NVFP4, vLLM 0.20.0 upstream arm64 container, single GB10-class node, reasoning parser nemotronv3. Verified through POST /tokenize with per-token strings, so the corruption is visible in the assembled prompt rather than inferred from the answer.",
         "applicability": {
@@ -19230,7 +19161,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "ollama",
             "vllm"
           ],
           "stack_version": [
@@ -19822,8 +19752,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "Ollama",
-          "Docker"
+          "Ollama"
         ],
         "affected_versions_builds": "Ollama at some version at or before 0.32.5; observed at 0.32.5 on aarch64. The class is not Ollama-specific: any project that changes archive format without preserving the old asset name does this.",
         "applicability": {
@@ -19839,7 +19768,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "docker",
             "ollama"
           ],
           "stack_version": [
@@ -19944,10 +19872,7 @@
           "qwen3"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp",
-          "Ollama",
-          "SGLang"
+          "Ollama"
         ],
         "affected_versions_builds": "Ollama 0.32.5, /api/chat and /api/generate, qwen3:8b, GB10 aarch64 CUDA 13. The class is general: this registry's methodology preamble already says accepted-but-unread is a dead knob, and this is the strongest instance of it measured here, because the server validates enough to look like it validates.",
         "applicability": {
@@ -19971,10 +19896,7 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "llama.cpp",
-            "ollama",
-            "sglang",
-            "vllm"
+            "ollama"
           ],
           "stack_version": [
             "0.32.5"
@@ -20023,7 +19945,6 @@
           "qwen3"
         ],
         "affected_stacks": [
-          "llama.cpp",
           "Ollama"
         ],
         "affected_versions_builds": "Ollama 0.32.5, /api/chat and /v1/chat/completions, qwen3:8b, GB10 aarch64 CUDA 13.",
@@ -20048,7 +19969,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "llama.cpp",
             "ollama"
           ],
           "stack_version": [
@@ -20163,8 +20083,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
-          "Ollama"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.25.1 serving through a reasoning-parser plugin, GB10 aarch64 CUDA 13. Expected on any lane serving through a reasoning parser, and not established beyond the one plugin measured.",
         "applicability": {
@@ -20186,7 +20105,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "ollama",
             "vllm"
           ],
           "stack_version": [
@@ -20353,9 +20271,7 @@
         "affected_models": [
           "Mistral-family Q80 GGUF of unstated provenance. A template is free to do this"
         ],
-        "affected_stacks": [
-          "llama.cpp"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "One Mistral-family Q80 GGUF of unstated provenance. A template is free to do this and some do; the class is \"read the template's else branch before calling any arm a control\".",
         "applicability": {
           "concurrency_regime": [],
@@ -20377,9 +20293,7 @@
             "gguf",
             "q80"
           ],
-          "serving_stack": [
-            "llama.cpp"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -21091,9 +21005,7 @@
           "Mistral checkpoints generally",
           "Mistral-family Q80 GGUF of unstated provenance"
         ],
-        "affected_stacks": [
-          "llama.cpp"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "Two consumer GPUs, one host, one build (b9878-2da668617, arch 86;120), one Mistral-family Q80 GGUF of unstated provenance, --jinja. Counts and the 444-token boundary are measured here and should be re-measured, not assumed, on other builds, other cards, and other files. No capability claims, no benchmark of either card's quality, no claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 35 is the harness-level consequence: identical weights not scoring identically. Trap 91 is the effect this splits by architecture. Found. 2026-07-28, first hardware-axis pass in this registry.",
         "applicability": {
           "concurrency_regime": [],
@@ -21116,9 +21028,7 @@
             "gguf",
             "q80"
           ],
-          "serving_stack": [
-            "llama.cpp"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -22102,8 +22012,7 @@
           "Nemotron 3 Super 120B A12B NVFP4"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.20.0, NVIDIA Nemotron 3 Super 120B A12B NVFP4, revision 4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6, single GB10-class node, TP=1, MTP numspeculativetokens=3, --async-scheduling, enableprefixcaching=False. Canary sent at temperature=0, seed=20260728, maxtokens=512, thinking off, one request at a time with no other generation traffic on the lane. Two conditions worth stating because they remove the obvious explanations: prefix caching was off in this configuration, so the prefix cache is not the mechanism here; and the driver was strictly sequential, so this is",
         "applicability": {
@@ -22131,7 +22040,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [
@@ -22344,8 +22252,7 @@
           "DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5"
         ],
         "affected_stacks": [
-          "vLLM",
-          "llama.cpp"
+          "vLLM"
         ],
         "affected_versions_builds": "A vLLM-derived build serving Rarri/DeepSeek-V4-Flash-0731-NVFP4 with MTP speculative decoding at fixed depth 5, greedy draft sampling, tensor parallel 2 on 2x RTX PRO 6000 Blackwell. The mechanism applies to any speculative lane benchmarked at temperature 0 across sessions.",
         "applicability": {
@@ -22372,7 +22279,6 @@
             "nvfp4"
           ],
           "serving_stack": [
-            "llama.cpp",
             "vllm"
           ],
           "stack_version": [],
@@ -22419,9 +22325,7 @@
       },
       {
         "affected_models": [],
-        "affected_stacks": [
-          "Docker"
-        ],
+        "affected_stacks": [],
         "affected_versions_builds": "OpenAI-compatible serving behind a container health surface, as reported. The class is general to any stack that equates process presence or unauthenticated HTTP with model readiness.",
         "applicability": {
           "concurrency_regime": [],
@@ -22435,9 +22339,7 @@
           "operating_system": [],
           "parallelism": [],
           "quantization": [],
-          "serving_stack": [
-            "docker"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -22721,8 +22623,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM v0.23.1rc1.dev190+gab6660699.d20260704, QuantTrio/GLM-5.2-Int4-Int8Mix (compressed-tensors, unpruned), 200K context, fp8dsmla KV, in-checkpoint MTP, --distributed-executor-backend mp, TP=4 across four DGX Spark (GB10, sm121a, aarch64) nodes over RoCE. Exposure is wider than this stack. Layer one reaches any model with hiddensize < 8192 on any device, and any device whose capability is missing from SPMINHIDDENSIZE. Layer two reaches any multi-node deployment regardless of model size.",
         "applicability": {
@@ -22751,7 +22652,6 @@
             "int4"
           ],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [
@@ -22795,8 +22695,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM v0.1.dev17863+ge232d2623.d20260715 with --distributed-executor-backend ray, CUDA 13.2, driver 580.159.03; GLM-5.2 W4W8 (compressed-tensors community build), 600K context, fp8dsmla KV, MTP k=6, TP=4 with decode-context-parallel 4, across four DGX Spark (GB10, sm121a, aarch64) nodes, weights NFS-mounted read-only from one node. Any Ray-backed vLLM deployment whose launcher passes --include-log-monitor=false is exposed. Several published DGX Spark launch scripts set it, reasonably, to cut log noise.",
         "applicability": {
@@ -22826,7 +22725,6 @@
           ],
           "quantization": [],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [
@@ -22874,8 +22772,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM v0.23.1rc1.dev190+gab6660699 and v0.1.dev17863+ge232d2623.d20260715; GLM-5.2 as QuantTrio/GLM-5.2-Int4-Int8Mix and as a W4W8 community build; 200K-600K context, fp8dsmla KV, TP=4 over four DGX Spark (GB10, sm121a, aarch64, 121.69 GiB unified per node), driver 580.142. The general risk applies to unified-memory systems where the serving runtime and the operating system compete for the same physical pool. The exact relationship between OS counters and CUDA-visible free memory remains platform/driver specific.",
         "applicability": {
@@ -22902,7 +22799,6 @@
             "int4"
           ],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [
@@ -23022,8 +22918,7 @@
       {
         "affected_models": [],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "Any SSH-fanout launcher that serializes argv into a shell command while carrying JSON-valued CLI arguments such as --speculative-config, --compilation-config, --hf-overrides, or --attention-config. Observed with vLLM on four DGX Spark (GB10, sm121a, aarch64) nodes serving GLM-5.2 with in-checkpoint MTP. This is a transport/launcher failure class rather than a vLLM-specific one.",
         "applicability": {
@@ -23044,7 +22939,6 @@
           "parallelism": [],
           "quantization": [],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [],
@@ -23846,8 +23740,7 @@
           "DeepSeek-V4-Flash-DSpark"
         ],
         "affected_stacks": [
-          "vLLM",
-          "Docker"
+          "vLLM"
         ],
         "affected_versions_builds": "vLLM 0.21.1rc1 plus a custom GB10 kernel overlay; fraserprice/DeepSeek-V4-Flash-DSpark; two NVIDIA DGX Spark GB10 nodes, TP=2 over RoCE; nvfp4dsmla KV, block size 256; DSpark MTP with numspeculativetokens=5, probabilistic draft sampling; --max-model-len 1000000, --max-num-seqs 6, --max-num-batched-tokens 8192, chunked prefill enabled. The deployed image predated the scheduler guard even though the recipe documented the patched scheduler path.",
         "applicability": {
@@ -23879,7 +23772,6 @@
           ],
           "quantization": [],
           "serving_stack": [
-            "docker",
             "vllm"
           ],
           "stack_version": [
@@ -24067,10 +23959,8 @@
       },
       {
         "affected_models": [],
-        "affected_stacks": [
-          "llama.cpp"
-        ],
-        "affected_versions_builds": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer.",
+        "affected_stacks": [],
+        "affected_versions_builds": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer. Not restricted to any named serving stack; Related neighbours are contrasts, not scope limits.",
         "applicability": {
           "concurrency_regime": [
             "concurrency 4"
@@ -24085,9 +23975,7 @@
           "operating_system": [],
           "parallelism": [],
           "quantization": [],
-          "serving_stack": [
-            "llama.cpp"
-          ],
+          "serving_stack": [],
           "stack_version": [],
           "topology": []
         },
@@ -24107,7 +23995,7 @@
         "evidence_strength": [
           "measured here, raw not published"
         ],
-        "exact_conditions": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer.",
+        "exact_conditions": "Any OpenAI-compatible (or similar) serving front end that accepts concurrent HTTP while a single worker, mutex, single-flight queue, or nparallel/maxnumseqs-style slot policy serializes generates. Engine- and model-independent at the measurement layer. Not restricted to any named serving stack; Related neighbours are contrasts, not scope limits.",
         "id": "135",
         "known_limitations": "",
         "mechanism": "Distinguish four different quantities: 1. HTTP / client concurrency - simultaneous sockets or in-flight requests, 2. queued request concurrency - accepted but waiting work, 3. active model sequences - sequences the engine believes are live, 4. simultaneous model execution - work actually progressing together. A front end may accept N requests while a downstream lock, worker, single-flight queue, slot count, or execution policy serializes the actual model work. Therefore a client-side concurrency setting or N simultaneous sockets is not proof that the model ran N sequences concurrently.",

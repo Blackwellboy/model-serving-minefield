@@ -48,7 +48,8 @@ as a universal design verdict.
 **Stacks and builds bitten.** Any OpenAI-compatible (or similar) serving front
 end that accepts concurrent HTTP while a single worker, mutex, single-flight
 queue, or `n_parallel`/`max_num_seqs`-style slot policy serializes generates.
-Engine- and model-independent at the measurement layer.
+Engine- and model-independent at the measurement layer. Not restricted to any
+named serving stack; Related neighbours are contrasts, not scope limits.
 
 **The check.** Require evidence from **completed work**, not request admission
 alone. At minimum compare C1 vs C2 vs C4 and record:
