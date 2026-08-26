@@ -319,6 +319,14 @@ session, tokenizer-exact 8K medians were TCP 7.631 vs Flash 7.339 tok/s (with
 near-parity also at 1K/4K). Do not collapse that held A/B into the composite
 cross-session table above.
 
+A still later **controlled path-only** run held the same endpoint, the same
+upstream pin, the same model/serve recipe, and path proof, and changed only
+wired versus Wi-Fi. Offline attribution preflight returned **`TRANSPORT`**
+(wired ~1.5-1.9x Wi-Fi at tokenizer-exact 4K/8K). Same narrative ("wired was
+faster"), two allowed claim classes: multi-dimension change →
+`END_TO_END_COMPOSITE_ONLY`; holds + path proof + path-only change →
+`TRANSPORT`. That is why the ladder exists.
+
 ### Native RoCE / GPUDirect claim boundary
 
 Do **not** claim native RoCE or GPUDirect merely because:

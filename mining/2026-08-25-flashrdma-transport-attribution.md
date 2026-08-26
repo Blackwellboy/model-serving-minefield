@@ -56,3 +56,7 @@ identity, or other unheld lower layer cannot be published as `MODEL` /
 - [Trap 49 addendum](../traps/evaluation/49-prompt-not-tokenized-to-target.md)
 - [Before you publish an A/B - §11](../playbooks/before-you-publish-an-ab.md)
 - [`checks/benchmark_attribution_preflight.py`](../checks/benchmark_attribution_preflight.py)
+
+## Follow-up
+
+See [2026-08-25-flashrdma-final-followup.md](2026-08-25-flashrdma-final-followup.md) for the controlled TRANSPORT corroboration and Trap 135.

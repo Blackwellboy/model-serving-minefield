@@ -29,6 +29,7 @@
     "benchmark_attribution_preflight.py",
     "upstream_change_triage.py",
     "reproduce_qwen38_reasoning_config_traps.py",
-    "vllm_enginecore_orphan_probe.py"
+    "vllm_enginecore_orphan_probe.py",
+    "concurrency_execution_proof_preflight.py"
   ]
 }

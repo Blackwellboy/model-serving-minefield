@@ -16,6 +16,19 @@ python3 checks/benchmark_attribution_preflight.py --pair docs/benchmark-attribut
 python3 checks/benchmark_attribution_preflight.py --pair docs/benchmark-attribution.example.json --gate-intended
 ```
 
+## concurrency_execution_proof_preflight.py
+
+Offline sanity check for Trap 135. Given concurrency ladder rows
+(`concurrency`, `batch_wall`, `aggregate_tps`, optional `active_sequences`),
+flags `CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF` when concurrency rises while
+completed-work throughput stays approximately flat and batch wall scales with
+C. Stdlib-only. No endpoint requests.
+
+```bash
+python3 checks/concurrency_execution_proof_preflight.py --ladder docs/concurrency-execution-proof.example.json
+python3 checks/concurrency_execution_proof_preflight.py --ladder docs/concurrency-execution-proof.scaling-example.json
+```
+
 ## preflight_template.py
 
 Template forensics. Answers the question every request-shaped check misses:
