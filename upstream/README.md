@@ -80,6 +80,8 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U37, long cold prefill starves a peer decode without preemption](U37-glm53-cold-prefill-starves-peer-decode-without-preemption.md) | GLM-5.3 / vLLM / DGX Spark | maintainer reproduced | closed, fixed |
 | [U38, grouped DFlash block IDs make global KV-token capacity non-fungible](U38-glm53-dflash-block-id-tax-makes-kv-token-capacity-nonfungible.md) | GLM-5.3 / DFlash2 / grouped KV | maintainer reproduced | closed, fixed |
 | [U39, ModelOpt NVFP4 can emit invalid byte-token sequences on SM120](U39-vllm-modelopt-nvfp4-invalid-byte-token-ids-sm120.md) | vLLM / ModelOpt NVFP4 / SM120 | none | open |
+| [U40, XGrammar speculative batches can advance after matcher termination](U40-vllm-xgrammar-spec-batch-continues-after-termination.md) | vLLM / XGrammar / MTP | maintainer confirmed | closed, fixed |
+| [U41, reasoning end can activate grammar inside a speculative window](U41-vllm-spec-reasoning-end-crosses-grammar-activation-window.md) | vLLM / reasoning / XGrammar / spec decode | maintainer confirmed | closed, fixed |
 
 ## Where these came from, and what did not survive
 
@@ -117,19 +119,7 @@ boundaries are recorded in
 The community `glm52-spark-kit` and `veloGB10` findings from the same harvest
 remain in the lead/adjudication path rather than being silently upgraded.
 
-U36-U39 came from the 2026-08-30 GLM-5.3 / Ling-3.0 / Qwen3.8 GB10 harvest.
-H30-10, H30-11 and H30-12 were reopened against current primary tracker
-threads and fixed source before promotion: issue #15 carries a direct
-warm-restart stdout-contamination fix and regression test; issue #6 carries a
-maintainer reproduction plus before/after decode-floor retest; issue #13 and
-merged PR #14 carry the grouped-KV block-ID cause plus before/after occupancy.
-H30-08 was reopened against vLLM #54150 and promoted only as an **open,
-unresolved** upstream report: the observed invalid token IDs are source-backed,
-but damaged ModelOpt conversion versus vLLM ModelOpt-loader execution remains
-unresolved and no maintainer has confirmed the cause. None of U36-U39 is a
-first-party Blackwellboy reproduction, and the remaining H30 findings stay in
-the mining/adjudication queue until their own evidence bars are met.
+U36-U41 came from the 2026-08-30 GLM-5.3 / Ling-3.0 / Qwen3.8 GB10 harvest and its source-level adjudication passes. H30-10, H30-11 and H30-12 were reopened against current primary tracker threads and fixed source before promotion. H30-08 was reopened against vLLM #54150 and promoted only as an open unresolved behavior report, with damaged conversion versus ModelOpt loader path left explicitly unsettled. H30-22 was split instead of promoted as one compound item: vLLM PR #52805 owns speculative XGrammar batches continuing after matcher termination (U40), while PR #53046 owns a separate reasoning-end transition where the grammar activates inside a speculative window and pre-transition draft tokens must be validated before advance (U41). None of U36-U41 is a first-party Blackwellboy reproduction, and the remaining H30 findings stay in the mining/adjudication queue until their own evidence bars are met.
 
-The procedural rule from the first pass still holds: **the mining summary is a
-lead, not the source.** Read the current tracker thread, preserve corrections
+The procedural rule from the first pass still holds: **the mining summary is a lead, not the source.** Read the current tracker thread, preserve corrections
 and retractions, and record resolution state before promoting anything here.
