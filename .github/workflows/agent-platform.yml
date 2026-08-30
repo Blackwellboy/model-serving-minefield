@@ -32,15 +32,10 @@ jobs:
       - name: repository secret scan
         run: |
           python -m pip install detect-secrets==1.5.0
-          # These two machine-generated evidence records intentionally contain
-          # public immutable revisions and SHA-256 digests. The exact files are
-          # excluded from the entropy heuristic only; both local sanitizer
-          # suites and the explicit recursive JSON credential scan below still
-          # scan their actual values.
+          # Raw/private mining evidence is not stored in this public repository.
+          # Scan every public file except generated/build surfaces and the
+          # intentionally synthetic qwen fixture directory.
           detect-secrets scan --all-files \
-            --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/|^mining/2026-07-30-inline-system-evidence/(classification-matrix|raw-executed-render-manifest)\.json$|^checks/fixtures/qwen38_nvfp4_52d1adc/' \
+            --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/|^checks/fixtures/qwen38_nvfp4_52d1adc/' \
             --exclude-lines 'content_sha256' > "$RUNNER_TEMP/detect-secrets.json"
           python -c 'import json,sys; d=json.load(open(sys.argv[1])); n=sum(map(len,d.get("results",{}).values())); print(f"secret findings: {n}"); raise SystemExit(bool(n))' "$RUNNER_TEMP/detect-secrets.json"
-          python integrity/check_evidence_json_secrets.py \
-            mining/2026-07-30-inline-system-evidence/classification-matrix.json \
-            mining/2026-07-30-inline-system-evidence/raw-executed-render-manifest.json
