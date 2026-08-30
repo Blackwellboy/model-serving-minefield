@@ -66,3 +66,40 @@ see [trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md)).
 in is revision- and server-dependent),
 [trap 12](../evaluation/12-empty-content-at-token-ceiling.md),
 [trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md).
+
+## Added 2026-08-30: GLM-5.3/vLLM controller setting hid reasoning but did not stop generation
+
+**First-party Blackwellboy measurement, raw retained privately.** A GLM-5.3
+NVFP4/vLLM lane was being called through an agent/controller whose own
+configuration said reasoning was disabled, while the server also exposed a
+reasoning parser. The request itself did **not** send
+`chat_template_kwargs.enable_thinking:false`.
+
+The live template defaulted thinking ON anyway. On the same short probe:
+
+| request arm | completion tokens | reasoning length | visible answer |
+|---|---:|---:|---|
+| no template kwarg | 34 | 107 | correct |
+| `enable_thinking:false` | 7 | 0 | correct |
+| `enable_thinking:true` | 34 | 107 | correct |
+
+Putting `chat_template_kwargs.enable_thinking:false` on the wire removed the
+hidden reasoning without restarting the model server. The parser was a red
+herring for the off-switch question: it changes how reasoning is separated or
+reported, not whether the template asks the model to reason.
+
+This adds a third practical control-plane spelling to the same trap:
+
+- server-side `--reasoning off` can be overridden by request kwargs;
+- server-side `--chat-template-args {"enable_thinking":false}` can be overridden by request kwargs;
+- client/UI `reasoning.enabled:false` can merely hide reasoning while the
+  template still defaults it ON if the actual chat-template kwarg is absent.
+
+The check is therefore broader than grepping server flags: inspect the exact
+request body that reaches the OpenAI-compatible endpoint and prove the
+chat-template kwarg on the wire.
+
+Full scrubbed disposition is in
+[`mining/2026-08-30-glm53-thinking-level-matrix.md`](../../mining/2026-08-30-glm53-thinking-level-matrix.md).
+
+*Status of this addendum: measured here, raw not published.*
