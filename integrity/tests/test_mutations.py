@@ -463,7 +463,7 @@ class RegistryMutations(unittest.TestCase):
         self.assertEqual(counts, [], "a non-bare delimiter line is content: %s" % counts)
 
 
-    # --- doctor-coverage prose in mining/OPEN_QUESTIONS.md ---------------
+    # --- doctor-coverage prose in mining/OPEN_TRAP_ISSUES.md ---------------
     #
     # This sentence drifted to "19 of 97 / 78 uncovered" while the tree grew
     # to 107, because its bold spans BOTH numbers and no pattern required
@@ -472,13 +472,13 @@ class RegistryMutations(unittest.TestCase):
     # each fails for its own assertion rather than for the other one.
 
     def _oq(self):
-        return os.path.join(self.root, "mining", "OPEN_QUESTIONS.md")
+        return os.path.join(self.root, "mining", "OPEN_TRAP_ISSUES.md")
 
     def test_57_correct_coverage_prose_passes(self):
         """POSITIVE: the corrected sentence produces no COUNT finding."""
         rc, out = run_registry(self.root)
         counts = [f for f in findings_of(out, "COUNT")
-                  if "OPEN_QUESTIONS.md" in f["where"]]
+                  if "OPEN_TRAP_ISSUES.md" in f["where"]]
         self.assertEqual(counts, [], "clean tree must not flag the prose: %s" % counts)
 
     def test_58_stale_registry_total_fails(self):
@@ -491,7 +491,7 @@ class RegistryMutations(unittest.TestCase):
         rc, out = run_registry(self.root)
         self.assertEqual(rc, 1)
         hits = [f for f in findings_of(out, "COUNT")
-                if "OPEN_QUESTIONS.md" in f["where"] and "registry total" in f["message"]]
+                if "OPEN_TRAP_ISSUES.md" in f["where"] and "registry total" in f["message"]]
         self.assertTrue(hits, "must fail on the registry total specifically")
 
     def test_59_stale_uncovered_count_fails(self):
@@ -506,10 +506,10 @@ class RegistryMutations(unittest.TestCase):
         rc, out = run_registry(self.root)
         self.assertEqual(rc, 1)
         hits = [f for f in findings_of(out, "COUNT")
-                if "OPEN_QUESTIONS.md" in f["where"] and "not-implemented" in f["message"]]
+                if "OPEN_TRAP_ISSUES.md" in f["where"] and "not-implemented" in f["message"]]
         self.assertTrue(hits, "must fail on the uncovered count specifically")
         totals = [f for f in findings_of(out, "COUNT")
-                  if "OPEN_QUESTIONS.md" in f["where"] and "registry total" in f["message"]]
+                  if "OPEN_TRAP_ISSUES.md" in f["where"] and "registry total" in f["message"]]
         self.assertEqual(totals, [], "must NOT also fire the total assertion")
 
     def test_60_stale_doctor_coverage_fails(self):
@@ -522,7 +522,7 @@ class RegistryMutations(unittest.TestCase):
         rc, out = run_registry(self.root)
         self.assertEqual(rc, 1)
         hits = [f for f in findings_of(out, "COUNT")
-                if "OPEN_QUESTIONS.md" in f["where"] and "doctor coverage" in f["message"]]
+                if "OPEN_TRAP_ISSUES.md" in f["where"] and "doctor coverage" in f["message"]]
         self.assertTrue(hits, "must fail on doctor coverage specifically")
 
     def test_61_patterns_actually_match_a_known_string(self):
