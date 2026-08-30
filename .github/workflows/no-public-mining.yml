@@ -1,0 +1,23 @@
+name: no-public-mining
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-private-staging-surface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse public mining/staging tree
+        run: |
+          set -euo pipefail
+          if [ -e mining ]; then
+            echo 'ERROR: top-level mining/ is forbidden in the public Minefield repository.' >&2
+            echo 'Raw candidate research belongs in private staging and must be sanitized/adjudicated before public promotion.' >&2
+            exit 1
+          fi
