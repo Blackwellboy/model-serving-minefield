@@ -1,0 +1,31 @@
+name: temporary-private-branch79-mining-export
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive complete mining tree from branch79
+        run: |
+          set -euo pipefail
+          test -d mining
+          tar --sort=name --mtime='UTC 2026-08-30' --owner=0 --group=0 --numeric-owner -czf model-serving-minefield-branch79-mining-20260830.tar.gz mining
+          sha256sum model-serving-minefield-branch79-mining-20260830.tar.gz > model-serving-minefield-branch79-mining-20260830.tar.gz.sha256
+          find mining -type f -print0 | sort -z | xargs -0 sha256sum > branch79-mining-files.sha256
+          find mining -type f | sort > branch79-mining-files.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-serving-minefield-branch79-mining-20260830
+          path: |
+            model-serving-minefield-branch79-mining-20260830.tar.gz
+            model-serving-minefield-branch79-mining-20260830.tar.gz.sha256
+            branch79-mining-files.sha256
+            branch79-mining-files.txt
+          retention-days: 7
