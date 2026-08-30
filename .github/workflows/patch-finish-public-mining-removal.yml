@@ -1,0 +1,45 @@
+name: patch-finish-public-mining-removal
+
+on:
+  push:
+    branches:
+      - ops/remove-public-mining-20260830
+    paths:
+      - .github/workflows/patch-finish-public-mining-removal.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ops/remove-public-mining-20260830
+          fetch-depth: 0
+      - name: Patch migration workflow
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/finish-public-mining-removal.yml')
+          t = p.read_text(encoding='utf-8')
+          old = """          t = t.replace('return os.path.join(self.root, \"mining\", \"OPEN_QUESTIONS.md\")',\n                        'return os.path.join(self.root, \"registry\", \"OPEN_TRAP_ISSUES.md\")')\n          p.write_text(t, encoding='utf-8')\n"""
+          new = """          t = t.replace('return os.path.join(self.root, \"mining\", \"OPEN_QUESTIONS.md\")',\n                        'return os.path.join(self.root, \"registry\", \"OPEN_TRAP_ISSUES.md\")')\n          t = t.replace('OPEN_QUESTIONS.md', 'OPEN_TRAP_ISSUES.md')\n          p.write_text(t, encoding='utf-8')\n"""
+          if old not in t:
+              raise SystemExit('test-mutation patch anchor not found')
+          t = t.replace(old, new, 1)
+          old_grep = "if grep -RInE --include='*.md' '(^|[^A-Za-z0-9_-])((\\.\\./)+)?mining/[A-Za-z0-9_.\\-/]+' .; then"
+          new_grep = "if grep -RIn --include='*.md' 'mining/' .; then"
+          if old_grep not in t:
+              raise SystemExit('grep patch anchor not found')
+          t = t.replace(old_grep, new_grep, 1)
+          p.write_text(t, encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name 'blackwellboy-privacy-bot'
+          git config user.email '76774064+Blackwellboy@users.noreply.github.com'
+          git add .github/workflows/finish-public-mining-removal.yml
+          git commit -m 'ops: fix public governance migration assertions'
+          git push origin HEAD:ops/remove-public-mining-20260830
