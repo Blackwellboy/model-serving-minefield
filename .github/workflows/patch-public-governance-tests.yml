@@ -1,0 +1,39 @@
+name: patch-public-governance-tests
+
+on:
+  push:
+    branches:
+      - ops/remove-public-mining-20260830
+    paths:
+      - .github/workflows/patch-public-governance-tests.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ops/remove-public-mining-20260830
+          fetch-depth: 0
+      - name: Move count-mutation assertions to public governance filename
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('integrity/tests/test_mutations.py')
+          t = p.read_text(encoding='utf-8')
+          count = t.count('OPEN_QUESTIONS.md')
+          if count < 3:
+              raise SystemExit(f'expected at least three OPEN_QUESTIONS anchors, found {count}')
+          t = t.replace('OPEN_QUESTIONS.md', 'OPEN_TRAP_ISSUES.md')
+          p.write_text(t, encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name 'blackwellboy-privacy-bot'
+          git config user.email '76774064+Blackwellboy@users.noreply.github.com'
+          git add integrity/tests/test_mutations.py
+          git commit -m 'privacy: move count integrity tests to public issue governance'
+          git push origin HEAD:ops/remove-public-mining-20260830
