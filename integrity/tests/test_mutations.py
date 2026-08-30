@@ -472,7 +472,7 @@ class RegistryMutations(unittest.TestCase):
     # each fails for its own assertion rather than for the other one.
 
     def _oq(self):
-        return os.path.join(self.root, "mining", "OPEN_TRAP_ISSUES.md")
+        return os.path.join(self.root, "registry", "OPEN_TRAP_ISSUES.md")
 
     def test_57_correct_coverage_prose_passes(self):
         """POSITIVE: the corrected sentence produces no COUNT finding."""
