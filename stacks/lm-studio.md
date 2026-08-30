@@ -70,7 +70,7 @@ exactly where that distinction gets lost.
 The round-2 mining pass carried a community post reporting that this client's
 parser breaks tool calling and reasoning for a specific model family. It rests
 on a single forum post, and it was
-[closed as too weak](../mining/2026-07-28-r2-queue-classified-upstream-tier.md)
+closed as too weak *(private evidence archived)*
 rather than published: no reproduction, no version, and no tracker thread to
 read. It is noted here because the *class* is plausible on the reasoning above,
 not because the report was verified. It was not.

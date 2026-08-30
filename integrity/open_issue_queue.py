@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when an open [trap] issue is absent from mining/OPEN_QUESTIONS.md.
+"""Fail when an open [trap] issue is absent from registry/OPEN_TRAP_ISSUES.md.
 
 This is deliberately issue-state aware. An open issue whose title begins
 "[trap]" is treated as unsettled Minefield intake until it is either represented
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_QUEUE = ROOT / "mining" / "OPEN_QUESTIONS.md"
+DEFAULT_QUEUE = ROOT / "registry" / "OPEN_TRAP_ISSUES.md"
 DEFAULT_REPO = "Blackwellboy/model-serving-minefield"
 SECTION_RE = re.compile(
     r"(?ms)^### (Q\d+)\.[^\n]*\n(?P<body>.*?)(?=^### Q\d+\.|^---\n\n## CLOSED|\Z)"
@@ -58,7 +58,7 @@ def validate_queue(payload: object, queue_text: str, repo: str = DEFAULT_REPO) -
         owners = [qid for qid, section in sections if url in section]
         if not owners:
             findings.append(
-                f"open [trap] issue #{number} is not represented in mining/OPEN_QUESTIONS.md"
+                f"open [trap] issue #{number} is not represented in registry/OPEN_TRAP_ISSUES.md"
             )
             continue
         if len(owners) > 1:

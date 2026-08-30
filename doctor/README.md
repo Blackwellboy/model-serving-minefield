@@ -373,7 +373,7 @@ controls: trap 77's invented top-level field was accepted on both lanes, and
 Laguna reproduced the trap 12 cap-hit and trap 02 orphan-close response shapes.
 Inconclusive quantisation and toggle results stayed inconclusive. Full
 conditions and the Q7/Q8 disposition are in the
-[SGLang field note](../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).
+SGLang field note *(private evidence archived)*.
 
 The probes were portable; stack detection was not. SGLang exposes neither
 `/props` nor `/version`, so both reports originally printed the anonymous

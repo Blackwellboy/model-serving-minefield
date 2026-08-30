@@ -88,7 +88,7 @@ arm.
 *Status of this addendum: contributor-measured, conditions as reported, by
 [@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
 conditions and the paired doctor assertions are in the
-[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+SGLang DGX Spark field note *(private evidence archived)*.*
 
 
 ## Dated addendum (2026-08-06) - startup configuration surface (scottleimroth-issue-19)
@@ -144,4 +144,4 @@ variable removed and a fresh container, the engine still selected
 
 Operator rule unchanged: assert on the rendered prompt and on response fields (`reasoning_content` empty when you believe thinking is off), never on status code alone.
 
-*Status of this addendum: measured here, raw not published.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+*Status of this addendum: measured here, raw not published.* See private evidence archive *(private evidence archived)*.

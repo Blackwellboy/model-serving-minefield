@@ -57,7 +57,7 @@ terminal or an editor, was invisible, silent, and enough to move the output.
 
 Our own round-2 queue carried this as a well-attested vLLM bug and ranked it
 seventh of fifty, and
-[our blocked-candidates note](../mining/2026-07-27-r2-blocked-not-testable.md)
+our blocked-candidates note *(private evidence archived)*
 recorded it as untestable for want of weights, with a test plan that would have
 compared vLLM against Transformers to confirm a defect that is not there. It
 sat that way for months. Nobody had opened the thread past the title. That is

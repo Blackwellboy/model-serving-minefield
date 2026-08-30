@@ -36,7 +36,7 @@ rather than what you launched with
 On Muse Glimmer 30B (2026-08-11), card-style system text `Reasoning strength: low`
 did not bind the template kwarg and produced a dual LOW+HIGH render while
 `chat_template_kwargs.reasoning_strength=low` produced a clean LOW. Full
-writeup: [mining note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+writeup: private evidence archive *(private evidence archived)*.
 Use `/apply-template` (or equivalent) and hash the render next to every arm.
 
 ## The five that bite hardest here

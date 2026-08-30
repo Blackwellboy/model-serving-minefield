@@ -24,7 +24,7 @@ widen that rule so our own result could keep the stronger label, the label
 moved. **What converts it:** the answer sheets published at a URL, or this
 delta becoming a figure other entries measure against, at which point the
 in-repo exception applies on its own terms. Method, numbers and the runnable scripts are in
-[the Q1 writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
+the Q1 writeup *(private evidence archived)*.
 
 **This is the second time a first-party run has confirmed an external
 contributor's finding in this registry**, and it is worth naming as a pattern
@@ -78,7 +78,7 @@ measurement; each is stated on its own terms:
 > an exact paired p-value, which is why 3-point effects are resolvable here.
 > Do not compare them against the plus or minus **1.3 pt at n=600** minimum
 > detectable effect from
-> [our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md):
+> our agreement floor *(private evidence archived)*:
 > that figure bounds **unpaired** run-to-run drift, and a paired test on the
 > same items is strictly more sensitive than it. The MDE is the bar for a
 > delta assembled from two separate runs. If you are quoting one of these
@@ -173,7 +173,7 @@ points, 37/13, p = 0.000936.
 
 **Quoting these deltas.** They are paired, so they carry their discordant
 counts and an exact paired p-value, and the plus-or-minus 1.3 point figure from
-[our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+our agreement floor *(private evidence archived)*
 is **not** the right bar for them: that figure bounds unpaired drift and a
 paired test on identical items is strictly more sensitive. It is quoted here
 only as a scale reference, where the effect is 3.46x it, and because the same
@@ -182,4 +182,4 @@ largest at 0.83 points, while every raised-k contrast landed outside it.
 
 Full method, the choice-logprob arms, the truncation accounting and what this
 does **not** show are in
-[the writeup](../../mining/2026-07-28-trap-33-q1-nvfp4-confirmed.md).
+the writeup *(private evidence archived)*.

@@ -14,9 +14,9 @@ passes of a single server process.
 
 **Evidence.** First-party raw (six answer sheets), the serial scorer and an
 independent re-derivation script are in
-[`mining/2026-07-28-agreement-floor-data/`](../../mining/2026-07-28-agreement-floor-data/);
+private evidence archive *(private evidence archived)*;
 the write-up is
-[here](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md).
+here *(private evidence archived)*.
 The finder's evidence is his DEVLOG and the per-item JSON linked above.
 
 **Symptom.** You re-run a benchmark you already ran. Same weights, same

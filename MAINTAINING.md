@@ -103,7 +103,7 @@ Conditions, all three required:
    that a bug in the original does not reproduce itself in the check.
 
 The worked example is
-[the agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md),
+the agreement floor *(private evidence archived)*,
 whose `verify_numbers.py` re-derives every published figure from the shipped
 answer sheets. Writing that verifier caught two defects in the draft before
 publication, which is the argument for the rule in one sentence.

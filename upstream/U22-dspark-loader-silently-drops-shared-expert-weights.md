@@ -10,7 +10,7 @@
 
 **Primary source.** [source commit 8a62e8b8](https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/commit/8a62e8b8d04e5c65d4b4b9dc60134f5b3547f7c5), read on 2026-08-21, including `DSPARK-SHARED-EXPERT-FIX.md` and the README update.
 
-**Registry relationship.** This upstream record overlaps the already-routed open canonical candidate **Q17 / Issue #38** (`[trap] A DSpark draft loader silently drops the shared expert`). It is corroborating/upstream evidence for that candidate, **not a second independent discovery and not a new canonical trap number**. Q17 remains deliberately unnumbered until a promotion PR is built from current `main` with its evidence split and CONFIRM/REFUTE gate preserved. See https://github.com/Blackwellboy/model-serving-minefield/issues/38 and `mining/OPEN_QUESTIONS.md`.
+**Registry relationship.** This upstream record overlaps the already-routed open canonical candidate **Q17 / Issue #38** (`[trap] A DSpark draft loader silently drops the shared expert`). It is corroborating/upstream evidence for that candidate, **not a second independent discovery and not a new canonical trap number**. Q17 remains deliberately unnumbered until a promotion PR is built from current `main` with its evidence split and CONFIRM/REFUTE gate preserved. See https://github.com/Blackwellboy/model-serving-minefield/issues/38 and `private evidence archive`.
 
 **Symptom.** Swapping to the official DeepSeek-V4-Flash-0731 checkpoint roughly halves speculative decode throughput while answer quality remains correct. Normal INFO-level startup logs report no obvious failed load, so the slowdown looks like a checkpoint regression or hardware/config problem.
 

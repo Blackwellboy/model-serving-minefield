@@ -48,12 +48,12 @@ send a report:
   traps [75](traps/versioning/75-release-asset-renamed-pinned-url-404.md) to
   [79](traps/memory/79-out-of-range-context-request-accepted.md), and the
   thinking-plus-tools candidate that was waiting on it is now
-  [settled](mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md).
+  settled *(private evidence archived)*.
   SGLang came off this list with contributor-measured additions to traps
   [02](traps/template/02-orphaned-think-close-tag.md),
   [12](traps/evaluation/12-empty-content-at-token-ceiling.md) and
   [77](traps/reasoning/77-only-one-request-field-is-validated.md), plus a
-  [pinned field note](mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).
+  pinned field note *(private evidence archived)*.
   **Corrected 2026-07-28:** this paragraph
   previously said we had "stopped short of installing it", and that the
   reasoning-parser null-content report was the single most useful thing one
@@ -61,7 +61,7 @@ send a report:
   hardware and that report was tested. The contributor field run independently
   closes the NVFP4 generation and doctor-portability questions. What remains
   open on this stack, with criteria, is in
-  [OPEN_QUESTIONS.md](mining/OPEN_QUESTIONS.md), including a
+  OPEN_QUESTIONS.md *(private evidence archived)*, including a
   template-less-checkpoint test that is **blocked on naming an ungated
   checkpoint and needs no hardware to help with**.
 - **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
@@ -217,7 +217,7 @@ Every one of these is checked. An entry missing any of them fails the build.
 | **Whether a maintainer engaged**, from a closed vocabulary: `maintainer confirmed`, `maintainer reproduced`, `maintainer responded`, `maintainer disputed`, `none` | A bug a maintainer reproduced in-thread and a report nobody answered are different claims and must not read alike. `maintainer reproduced` is the strongest thing this tier says |
 | **The issue state**, from a closed vocabulary: `open`, `closed, fixed`, `closed, not fixed`, `closed, resolved as usage`, `closed, not planned`, `disputed` | A closed-as-fixed issue is a different claim from an open one, and **closed-as-stale is not closed-as-fixed**. A stale bot closing a bug with a maintainer reproduction still attached changes nothing about whether the bug is there |
 | **A sentence saying plainly that nobody here has reproduced it** | The label implies it. Readers arrive by search, land mid-page, and quote a paragraph. The sentence has to be in the entry |
-| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, per the rule in [OPEN_QUESTIONS](mining/OPEN_QUESTIONS.md). An entry a reader cannot act on is an observation |
+| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, per the rule in OPEN_QUESTIONS *(private evidence archived)*. An entry a reader cannot act on is an observation |
 
 ### What the tier is not, and cannot become
 
@@ -257,7 +257,7 @@ CHANGELOG line rather than a tidy-up.
 An upstream entry that somebody reproduces becomes a registry entry under
 `traps/` with the appropriate measured label, and leaves a pointer behind. The
 reporter keeps the **Found by** line. That is the same promotion path
-[`mining/`](mining/) already has, and the two are different stages of it:
+private evidence archive *(private evidence archived)* already has, and the two are different stages of it:
 `mining/` is *our* queue with our verification notes, `upstream/` is
 published, credited, and addressed to a stranger who can settle it.
 
@@ -319,7 +319,7 @@ separately from whatever produced the numbers re-derives every published
 figure and prints pass or fail. A reader re-runs one command and needs to
 trust nobody.
 
-[The agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)
+The agreement floor *(private evidence archived)*
 is the worked example and the standard other calibration entries are held
 to. Writing its verifier caught two defects in the draft before publication,
 which is the argument for the standard in one sentence. Entries that other
@@ -338,7 +338,7 @@ interchangeable:
 - **Unpaired deltas** (two separate runs, two boxes, two days) carry the
   **minimum detectable effect**. Our own measured floor is **about 1.3 points
   at n=600** on this stack
-  ([agreement floor](mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)),
+  (agreement floor *(private evidence archived)*),
   so a 1-point difference at that n is not a result no matter how clean the
   runs looked.
 - **Paired comparisons on identical items** carry their **discordant-pair
@@ -528,7 +528,7 @@ registry before opening a PR; finding the overlap is a maintainer's job.
 
 **Partial merges.** We will land the entries we can verify or accept and say
 plainly, in the PR, which ones we are holding and what would unblock each.
-Entries we are not ready to land go to [mining/](mining/) rather than being
+Entries we are not ready to land go to private evidence archive *(private evidence archived)* rather than being
 closed, so the work stays findable and stays yours.
 
 ## How your PR gets landed, and what that does to your attribution
@@ -715,3 +715,8 @@ file, the line and the reason.
 
 The evidence bar for a finished registry entry is unchanged. Friendly process
 does not lower technical standards.
+
+
+## Private staging boundary
+
+Do not add raw maintainer mining directories, unpublished source-harvest packets, private evidence bundles, or editorial drafts to this public repository. Public contributions should arrive as scrubbed issues/PRs or deliberately adjudicated registry material. The public open-issue governance surface is `registry/OPEN_TRAP_ISSUES.md`.

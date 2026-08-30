@@ -225,7 +225,7 @@ conversion floor.
 *Status of this addendum: contributor-measured, conditions as reported, by
 [@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
 conditions and the complete doctor coverage line are in the
-[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+SGLang DGX Spark field note *(private evidence archived)*.*
 
 ## Added 2026-07-29: the rate under organic load, and which families carry it
 
@@ -297,4 +297,4 @@ rather than an exception. Single serve, no baseline arm.
 
 Also: request/server "reasoning budget" knobs present on the build were **not** shown to prevent empty finals on a hard high-reasoning task when exercised naively - presence of a budget field is not proof it bounds this path ([trap 77](../reasoning/77-only-one-request-field-is-validated.md) class).
 
-*Status of this addendum: measured here, raw not published; n=30 budget cells are secondary evidence only.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+*Status of this addendum: measured here, raw not published; n=30 budget cells are secondary evidence only.* See private evidence archive *(private evidence archived)*.

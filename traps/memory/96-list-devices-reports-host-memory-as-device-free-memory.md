@@ -85,7 +85,7 @@ as device memory. The candidate moves from blocked-for-hardware to reproduced in
 an adjacent configuration, with the caveat that we have shown it for the
 *reporting* path only: the cache-sizing consequences the candidate also alleges
 were not tested here and remain open. The disposition is recorded in
-[the R2 llama.cpp queue note](../../mining/2026-07-28-r2-llamacpp-queue-dispositions.md).
+the R2 llama.cpp queue note *(private evidence archived)*.
 
 ## Scope
 

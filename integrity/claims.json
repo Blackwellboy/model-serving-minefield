@@ -706,8 +706,8 @@
           "state": "corrected in place; it had inherited the retracted form"
         },
         {
-          "surface": "minefield:mining/2026-07-28-chunked-prefill-vs-cache-replay-experiment.md",
-          "state": "premise rewritten, not merely renumbered: the specification pre-registered its primary endpoint against the retracted figure, so it was designed against an effect nobody measured"
+          "surface": "minefield:traps/runtime/60-cold-prefill-and-cache-hit-disagree.md",
+          "state": "corrected/canonical public owner; raw experiment evidence archived privately"
         }
       ],
       "exempt_paths": [

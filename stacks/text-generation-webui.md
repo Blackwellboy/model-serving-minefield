@@ -29,7 +29,7 @@ away, and nothing in the interface has any reason to flag it.
 
 The mining round looked for maintainer-confirmed silent-wrong reports against
 this project and found none dense enough to publish. That is recorded honestly
-in the [classification note](../mining/2026-07-28-r2-queue-classified-upstream-tier.md):
+in the classification note *(private evidence archived)*:
 plenty of forum claims, no thread worth citing. **A search finding nothing is
 not evidence of nothing.**
 

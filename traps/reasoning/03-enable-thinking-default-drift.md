@@ -125,7 +125,7 @@ negative control for Trap 07 rather than an accepted-but-ignored parameter:
 The bounded preflight used 42, 48 and 347 reasoning tokens for LOW, HIGH and
 MAX respectively. The full disposition, including the matched-budget Sixcat
 result and the Trap 12 corollary, is in
-[`mining/2026-08-30-glm53-thinking-level-matrix.md`](../../mining/2026-08-30-glm53-thinking-level-matrix.md).
+private evidence archive *(private evidence archived)*.
 
 The rule remains the same: **send the thinking kwarg explicitly, and record
 what omitted effort means on the exact template revision.**

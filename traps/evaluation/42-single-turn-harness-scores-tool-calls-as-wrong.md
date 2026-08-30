@@ -236,4 +236,4 @@ measurement on a second stack).
 
 This is the same structural class as the original entry (single-turn exit path vs real tool-return continuation), measured on a sequential chain rather than a HumanEval routing apparatus. The fix arm described in the original entry - feed tool results back and let the turn finish - is exactly what flipped the Muse result.
 
-*Status of this addendum: measured here, raw not published.* See [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+*Status of this addendum: measured here, raw not published.* See private evidence archive *(private evidence archived)*.

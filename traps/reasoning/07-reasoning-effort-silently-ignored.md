@@ -92,7 +92,7 @@ against the public chat template.*
 
 This is the same accepted-and-unread class as the original entry, on a new model family and a documented server-side narrow exception: **do not infer that `"low"`/`"high"` work because `"none"` exists.**
 
-*Status of this addendum: measured here, raw not published.* Full bounded campaign writeup: [mining note](../../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md).
+*Status of this addendum: measured here, raw not published.* Full bounded campaign writeup: private evidence archive *(private evidence archived)*.
 
 ## Added 2026-08-15: Qwen3.8 NVFP4 — `medium` is accepted but has no instruction branch
 

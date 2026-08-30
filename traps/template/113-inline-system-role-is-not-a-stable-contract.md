@@ -5,7 +5,7 @@
 **Status: reproduced here** at the rendered-constructor boundary from immutable
 public template and tokenizer artifacts, with raw executed renders and a
 runnable classifier in
-[`mining/2026-07-30-inline-system-evidence/`](../../mining/2026-07-30-inline-system-evidence/).
+private evidence archive *(private evidence archived)*.
 The live serving-endpoint reproduction in this entry is DeepSeek only; the
 other rows do not claim endpoint acceptance.
 
