@@ -63,7 +63,7 @@ output budget does not fix it
 ## A negative from the same pass
 
 The candidate "thinking plus tools yields empty output" was
-[refuted as stated](../mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md#update-2026-07-28-tested-on-ollama-refuted-as-stated-and-re-scoped)
+refuted as stated *(private evidence archived)*
 on the stack it had been scoped to. Empty content tracked tools alone and
 every empty response carried a tool call: that is a harness reading `content`
 and ignoring `tool_calls`, not a defect.

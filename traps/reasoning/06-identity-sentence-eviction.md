@@ -106,7 +106,7 @@ and that model is the one to try first if you are running an agent:
   that exits via `tool_calls` has a structurally shorter reasoning episode
   because it stops to call the tool. The depth reading did not survive in-run
   interleaved control (all pairwise p >= 0.13). See
-  [the caveat in the r2-39 mining note](../../mining/2026-07-27-r2-39-thinking-plus-tools-not-reproduced-on-vllm.md#scope-of-this-negative)
+  the caveat in the r2-39 mining note *(private evidence archived)*
   for both narrowings.
 - **If your scores dropped rather than your firing rate**, you are in
   [trap 42](../evaluation/42-single-turn-harness-scores-tool-calls-as-wrong.md),

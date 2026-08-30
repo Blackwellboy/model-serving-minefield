@@ -302,10 +302,12 @@ class ReferenceMutations(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-DEFN", out)
 
-    def test_19_mining_note_citing_a_dead_id(self):
-        p = os.path.join(self.repo, "mining", "OPEN_QUESTIONS.md")
+    def test_19_public_surface_citing_a_dead_id(self):
+        p = os.path.join(self.repo, "README.md")
         t = open(p, encoding="utf-8").read()
-        t = t.replace("../traps/runtime/97-", "../traps/runtime/970-", 1)
+        needle = "traps/runtime/60-cold-prefill-and-cache-hit-disagree.md"
+        self.assertIn(needle, t, "fixture drift: canonical trap 60 README link missing")
+        t = t.replace(needle, "traps/runtime/600-cold-prefill-and-cache-hit-disagree.md", 1)
         open(p, "w", encoding="utf-8").write(t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)

@@ -192,7 +192,7 @@ production lane. Until someone runs it, chunking is a hypothesis, not the
 cause.
 
 **The experiment is specified rather than left as a wish.**
-[The chunked-prefill versus cache-replay specification](../../mining/2026-07-28-chunked-prefill-vs-cache-replay-experiment.md)
+The chunked-prefill versus cache-replay specification *(private evidence archived)*
 gives the exact flags, a paired 2x2x2 over prefill shape, KV dtype and cache
 state, n and its justification, pre-registered endpoints, and a decision table
 that includes **what result would make this entry's mechanism paragraph wrong**.

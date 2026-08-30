@@ -70,7 +70,7 @@ saw.
 listed as an open question rather than a hypothesis with support. The mining
 round surfaced a community report of a server producing degrading output after
 long uptime until restarted; it rests on a single forum comment and was closed
-as [too weak to publish](../mining/2026-07-28-r2-queue-classified-upstream-tier.md).
+as too weak to publish *(private evidence archived)*.
 It is recorded here because a soak is expensive, nobody has run one, and if the
 effect is real it is the kind that never gets caught by a short test. Treat it
 as unverified folklore until somebody logs it.

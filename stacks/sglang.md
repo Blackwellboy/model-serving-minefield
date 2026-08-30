@@ -22,7 +22,7 @@ stack's pre-registered questions.
 
 **It is not infeasible on this hardware class.** The packaging question was
 settled on 2026-07-28 and the working is published:
-[SGLang on GB10, feasibility](../mining/2026-07-28-sglang-on-gb10-feasibility.md).
+SGLang on GB10, feasibility *(private evidence archived)*.
 The arm64 wheel exists, `sglang[all]` resolves cleanly on CUDA 13, and the
 open risk named there was whether `sm_121` appears in the torch arch list.
 That note is packaging only. No server was started for it.
@@ -36,7 +36,7 @@ that report was tested, and its disposition is written and awaiting publication.
 
 **A contributor then ran the control SGLang session through generation and
 ran the doctor against both endpoints.** The
-[DGX Spark field note](../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md)
+DGX Spark field note *(private evidence archived)*
 records the pinned models, package set, launch conditions and response shapes.
 Q7 is refuted under its pre-registered first-generation criterion: the
 non-Laguna NVFP4 control generated first, then Laguna loaded its
@@ -47,9 +47,9 @@ support claim.
 
 The blocked-candidate records from before that session are still worth reading
 for what they rule out and why:
-[R2 blocked, not testable](../mining/2026-07-27-r2-blocked-not-testable.md)
+R2 blocked, not testable *(private evidence archived)*
 and
-[the blocked llama.cpp candidates, adjudicated](../mining/2026-07-28-r2-llamacpp-queue-dispositions.md).
+the blocked llama.cpp candidates, adjudicated *(private evidence archived)*.
 
 ## What to check anyway, from the cross-stack classes
 

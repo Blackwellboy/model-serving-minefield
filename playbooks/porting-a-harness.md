@@ -64,7 +64,7 @@ For coding and answer extractors: **score only `content`**, never
 as code is measuring the wrong channel. When comparing reasoning-control
 arms, store the full request body and a hash of the server-rendered prompt
 per row so a later audit can prove which directive actually landed
-([Muse campaign note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md)).
+(Muse campaign note *(private evidence archived)*).
 
 One published server carries **three** names and splits them by route
 (`message.thinking` on one, a top-level field on another, `message.reasoning`

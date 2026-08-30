@@ -69,7 +69,7 @@ empirically and is worth running on any stack.
 
 **What we have not done.** Nobody here has reproduced this. We hold no Mistral
 weights on any machine, which is a coverage gap already recorded in
-[the R2 dispositions](../mining/2026-07-28-r2-llamacpp-queue-dispositions.md).
+the R2 dispositions *(private evidence archived)*.
 We have not verified what PR #26358 changed, or whether the flag now raises
 rather than warns.
 

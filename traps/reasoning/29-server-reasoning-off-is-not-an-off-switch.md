@@ -100,6 +100,6 @@ request body that reaches the OpenAI-compatible endpoint and prove the
 chat-template kwarg on the wire.
 
 Full scrubbed disposition is in
-[`mining/2026-08-30-glm53-thinking-level-matrix.md`](../../mining/2026-08-30-glm53-thinking-level-matrix.md).
+private evidence archive *(private evidence archived)*.
 
 *Status of this addendum: measured here, raw not published.*

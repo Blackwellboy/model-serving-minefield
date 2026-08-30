@@ -30,7 +30,7 @@ print(f"{agree}/{len(run1)} item agreement, score delta {mean_a - mean_b:+.2%}")
 Our own measurement of this floor is published: pooled **97.58%** item
 agreement between identical runs, with cross-machine pairs straddling the
 within-process pair, so machine identity was not the dominant variable
-([the data note](../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md)).
+(the data note *(private evidence archived)*).
 The calibration that came out of it, and its scope: plus or minus **1.3
 points at n=600** for MMLU-style paired comparisons, and explicitly **not**
 transferable to binary-outcome results.
@@ -85,7 +85,7 @@ Two adjacent checks belong here:
   reasoning or system-text control. Card-style prose such as
   `Reasoning strength: low` can leave the template default high in place and
   produce a dual directive while only `chat_template_kwargs` binds the Jinja
-  variable ([Muse Glimmer 30B note](../mining/2026-08-11-muse-glimmer-30b-reasoning-control-and-stack.md)).
+  variable (Muse Glimmer 30B note *(private evidence archived)*).
   Preserve the full request body and render SHA next to every scored row.
 - **Extract only final `content` for code/answer scoring.** Never execute or
   score `reasoning_content` as the answer. Content-only consumers can also

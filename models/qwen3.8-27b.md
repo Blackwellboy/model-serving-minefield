@@ -6,7 +6,7 @@ you what failed, what turned out not to be a model failure, and what to check
 before changing weights or blaming Qwen.
 
 Full sanitized evidence note:
-[2026-08-15 Qwen3.8-27B 5090/Spark audit](../mining/2026-08-15-qwen38-27b-5090-spark.md).
+2026-08-15 Qwen3.8-27B 5090/Spark audit *(private evidence archived)*.
 
 ## What was actually exercised
 
@@ -127,12 +127,12 @@ Offline check:
 [`checks/reproduce_qwen38_reasoning_config_traps.py`](../checks/reproduce_qwen38_reasoning_config_traps.py).
 
 Mining note:
-[2026-08-15 Qwen3.8 reasoning-config traps](../mining/2026-08-15-qwen38-reasoning-config-traps.md).
+2026-08-15 Qwen3.8 reasoning-config traps *(private evidence archived)*.
 
 
 ## External template corroboration and sampler-side thinking budget (2026-08-20)
 
-A public review of [`jschmied/Qwen-Fixed-Chat-Templates`](https://github.com/jschmied/Qwen-Fixed-Chat-Templates) independently agrees with two template-control findings already reproduced here on a different Qwen3.8 pin: unset `reasoning_effort` can render as explicit **xhigh**, and `medium` can be an accepted **no-dedicated-instruction** branch. See the [full reconciliation note](../mining/2026-08-20-jschmied-qwen38-fixed-template-reconciliation.md).
+A public review of [`jschmied/Qwen-Fixed-Chat-Templates`](https://github.com/jschmied/Qwen-Fixed-Chat-Templates) independently agrees with two template-control findings already reproduced here on a different Qwen3.8 pin: unset `reasoning_effort` can render as explicit **xhigh**, and `medium` can be an accepted **no-dedicated-instruction** branch. See the full reconciliation note *(private evidence archived)*.
 
 The useful new runtime control is **L050**: vLLM 0.27.1 source exposes `thinking_token_budget` and sampler-side state that forces the end-of-thinking token sequence when the budget is exhausted. The implementation fact is source-confirmed; jschmied's Qwen3.8 GB10 numeric A/B remains external/unreproduced here. Treat it as a new controlled variable, not a retrofit to historical campaign arms.
 

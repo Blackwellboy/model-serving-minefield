@@ -40,7 +40,7 @@ agentic-trained expert patch at k=32:
 > which is the whole lesson, so quoting either delta without its p-value and
 > discordant counts inverts it. These are not comparable to the plus or minus
 > **1.3 pt at n=600** minimum detectable effect from
-> [our agreement floor](../../mining/2026-07-28-our-agreement-floor-greedy-not-reproducible.md),
+> our agreement floor *(private evidence archived)*,
 > which bounds **unpaired** run-to-run drift at a different n; a paired test
 > on the same items is more sensitive. Quote the MDE when your delta comes
 > from two separate runs, and the discordant counts when it comes from one

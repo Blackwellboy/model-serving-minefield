@@ -74,4 +74,4 @@ thinking-off responses carried no visible think tags.
 *Status of this addendum: contributor-measured, conditions as reported, by
 [@newageinvestments25-byte](https://github.com/newageinvestments25-byte). Exact
 conditions and the Q7/Q8 disposition are in the
-[SGLang DGX Spark field note](../../mining/2026-07-28-sglang-nvfp4-and-doctor-dgx-spark.md).*
+SGLang DGX Spark field note *(private evidence archived)*.*

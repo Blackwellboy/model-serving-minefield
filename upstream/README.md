@@ -83,7 +83,7 @@ U01-U11 came from a fifty-candidate desk-mining round worked in full on
 2026-07-28. The classification table, including the twenty-two candidates
 closed as too weak and the corrections to candidates whose mining summary
 misstated the thread, is in
-[the classification note](../mining/2026-07-28-r2-queue-classified-upstream-tier.md).
+the classification note *(private evidence archived)*.
 
 U12-U16 came from a second recovery pass on 2026-08-14 over Blackwellboy's
 historical private Minefield promotion queue. Every original lead was reopened
@@ -94,7 +94,7 @@ TGI is archived; MLX's original speculative-EOS hypothesis was narrowed by
 loader source inspection; and vLLM's MTP corruption report accumulated
 additional cross-hardware evidence while the root cause remained unresolved.
 The audit trail is in
-[`mining/2026-08-14-upstream-candidate-refresh.md`](../mining/2026-08-14-upstream-candidate-refresh.md).
+private evidence archive *(private evidence archived)*.
 
 U17-U26 came from a 2026-08-21 review of the current
 `tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark` tree and its
@@ -103,13 +103,13 @@ claim into an upstream entry: reasoning-field and reasoning-effort findings
 extend existing canonical traps 01 and 07; the unresolved CUBLAS engine-death
 root cause, non-default-port health-check bug, fragmented-loop limitation and
 other secondary leads remain in
-[`mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md`](../mining/2026-08-21-tonyd2wild-deepseek-v4-community-harvest.md).
+private evidence archive *(private evidence archived)*.
 
 U27-U35 came from the 2026-08-25 SGLang v0.5.18 source-mining pass. Each entry
 is backed by a merged SGLang PR with a concrete source-level mechanism, but none
 has been reproduced by this registry. The exact promotion map and duplicate
 boundaries are recorded in
-[`mining/2026-08-25-sglang-upstream-promotion.md`](../mining/2026-08-25-sglang-upstream-promotion.md).
+private evidence archive *(private evidence archived)*.
 The community `glm52-spark-kit` and `veloGB10` findings from the same harvest
 remain in the lead/adjudication path rather than being silently upgraded.
 
