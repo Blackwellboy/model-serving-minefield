@@ -310,6 +310,35 @@ hour, `M` a few hours, `L` a day or more, `XL` needs hardware nobody here has.
   because trap [48](../traps/routing/48-dual-stack-mdns-latency-tax.md) produces
   the identical symptom from a dead IPv6 route with a healthy sampler.
 
+### Q20. Does SGLang validate the OpenAI `model` field against the model it actually serves?
+
+- **Claim under test.** [Issue #71](https://github.com/Blackwellboy/model-serving-minefield/issues/71): on the reported SGLang build, a request naming a model the server does not serve returns HTTP 200 and normal content from the one loaded model, so a client-side identity probe can silently certify the wrong endpoint.
+- **Source.** PRIMARY, contributor measurement from @scottleimroth. Two separate SGLang serves reportedly answered the deliberate wrong-name negative control; a vLLM 0.26 contrast on the same estate rejected it.
+- **Needs.** One SGLang OpenAI-compatible serve with exactly one loaded model, plus a deliberate wrong-name request and resolved server identity from `/get_server_info` or launch args. A second current SGLang revision is useful for scope.
+- **CONFIRM.** The wrong-name request returns success/content while resolved server state proves a different served model, and the behavior repeats on a clean serve with the negative-control name guaranteed absent.
+- **REFUTE.** Current SGLang rejects the wrong model name, or the reported 200 is explained by an alias/resolved served name that actually matches the request.
+- **Cost.** S.
+- **Note.** Adjacent to Trap 77's unvalidated request-surface lesson, but `model` is an identity selector rather than an optional behavior knob. Do not merge until the request-routing/validation owner is compared directly.
+
+### Q21. Does omitting `reasoning_effort` on the reported SGLang/Qwen3.8 stack deterministically select the maximum effort, and can a server default override the client's requested level?
+
+- **Claim under test.** [Issue #72](https://github.com/Blackwellboy/model-serving-minefield/issues/72): omission renders the same prompt as `xhigh` on an unflagged server, while `--default-chat-template-kwargs` can force one server-side level even when the client asks for another.
+- **Source.** PRIMARY, contributor measurement from @scottleimroth. The strongest evidence is a deterministic `usage.prompt_tokens` grid across four prompts and four effort arms, not the much noisier generation-latency anecdote.
+- **Needs.** The reported SGLang/Qwen3.8 class stack or a current equivalent, with one serve launched without an effort default and one with an explicit server default. Record rendered prompt hashes if available plus `usage.prompt_tokens`.
+- **CONFIRM.** On the unflagged serve, omitted effort is byte-identical or prompt-token-identical to the maximum effort across repeated prompts, and on the flagged serve the server default demonstrably overrides at least one conflicting client effort request.
+- **REFUTE.** Omission is distinct from maximum effort, or explicit client effort survives the server default unchanged on the pinned build.
+- **Cost.** S.
+- **Note.** This overlaps Trap 03's default-drift and Trap 07's effort-control surface, but the issue's two-sided claim — omission selecting the expensive arm plus server-side default overriding the client — needs exact ownership before becoming an addendum or new entry.
+
+### Q22. Do deterministic-inference plus FlashInfer-autotune pinning eliminate reload-to-reload score drift on the reported SGLang/Qwen3.8 stack without changing quality or speed?
+
+- **Claim under test.** [Issue #73](https://github.com/Blackwellboy/model-serving-minefield/issues/73): identical weights/settings can move teacher-forced NLL across cold reloads under stock launch behavior, while `--enable-deterministic-inference --disable-flashinfer-autotune` makes the per-text scores bit-identical across reloads at no material speed/quality cost.
+- **Source.** PRIMARY, contributor measurement from @scottleimroth, offered explicitly as an extension to Trap 35. The issue reports 23/43 texts moving under stock flags versus 0/43 under the pinned flags, with retained per-text NLL rows and matched speed files.
+- **Needs.** The reported SGLang/Qwen3.8 NVFP4 class stack, at least two cold reloads per arm, the same 43-text teacher-forced corpus or a frozen equivalent, and an independent decode-speed check.
+- **CONFIRM.** Stock reloads show non-zero per-item score movement while the two-flag arm is bit-identical across reloads, and the pinned arm's aggregate quality/speed remains inside the stock operating band under the predeclared tolerances.
+- **REFUTE.** The stock arm is already reload-stable, the two flags fail to remove the drift, or the pinned arm materially changes quality/speed rather than merely fixing the execution point.
+- **Cost.** M because it requires multiple cold reloads.
+- **Note.** Do not silently generalise the remedy to other models/engines: the contributor explicitly reports a different within-load nondeterminism signature elsewhere. If confirmed, this most likely extends Trap 35 rather than minting a second generic determinism trap.
 
 ---
 
