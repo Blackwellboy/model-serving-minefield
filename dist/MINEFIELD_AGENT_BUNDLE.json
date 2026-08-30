@@ -14642,7 +14642,7 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 135,
-    "content_sha256": "7a7b08491eca85d92223acb7ff7ccfe660a1acaf0283d80ca78c6295d8c1f879",
+    "content_sha256": "1452babd6eab983dd67b2e24ebb29e87ac6fc11d76a7288e85202cb2da2013b8",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -14861,7 +14861,10 @@
         "public_evidence_links": [
           "https://github.com/Blackwellboy/laguna-s21-lab#cross-validation--related-work"
         ],
-        "related_traps": [],
+        "related_traps": [
+          "07",
+          "12"
+        ],
         "source_path": "traps/reasoning/03-enable-thinking-default-drift.md",
         "status": "reproduced here",
         "supersession": null,
