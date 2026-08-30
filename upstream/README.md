@@ -76,6 +76,9 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U33, missing DFlash causality metadata can change semantics after an update](U33-sglang-dflash-missing-is-causal-default-drift.md) | SGLang / DFlash | maintainer confirmed | closed, fixed |
 | [U34, DFlash draft-KV budgeting can undercount by the DCP factor](U34-sglang-dflash-dcp-draft-kv-budget-undercount.md) | SGLang / DFlash / DCP | maintainer confirmed | closed, fixed |
 | [U35, a resolvable dependency set can still make FA4 fail on Blackwell](U35-sglang-fa4-blackwell-resolved-deps-still-fail-compile.md) | SGLang / FA4 / Blackwell | maintainer confirmed | closed, fixed |
+| [U36, warm-restart startup-hook stdout corrupts launcher JSON](U36-glm53-warm-restart-sitecustomize-stdout-corrupts-json.md) | GLM-5.3 / vLLM / Python launcher | maintainer confirmed | closed, fixed |
+| [U37, long cold prefill starves a peer decode without preemption](U37-glm53-cold-prefill-starves-peer-decode-without-preemption.md) | GLM-5.3 / vLLM / DGX Spark | maintainer reproduced | closed, fixed |
+| [U38, grouped DFlash block IDs make global KV-token capacity non-fungible](U38-glm53-dflash-block-id-tax-makes-kv-token-capacity-nonfungible.md) | GLM-5.3 / DFlash2 / grouped KV | maintainer reproduced | closed, fixed |
 
 ## Where these came from, and what did not survive
 
@@ -112,6 +115,16 @@ boundaries are recorded in
 [`mining/2026-08-25-sglang-upstream-promotion.md`](../mining/2026-08-25-sglang-upstream-promotion.md).
 The community `glm52-spark-kit` and `veloGB10` findings from the same harvest
 remain in the lead/adjudication path rather than being silently upgraded.
+
+U36-U38 came from the 2026-08-30 GLM-5.3 / Ling-3.0 / Qwen3.8 GB10 harvest.
+Unlike most H30 items, these three were reopened against the current primary
+tracker threads and fixed source before promotion: issue #15 carries a direct
+warm-restart stdout-contamination fix and regression test; issue #6 carries a
+maintainer reproduction plus before/after decode-floor retest; issue #13 and
+merged PR #14 carry the grouped-KV block-ID cause plus before/after occupancy.
+They remain upstream-reported because Blackwellboy has not independently
+reproduced those exact source-reported mechanisms. The remaining H30 findings
+stay in the mining/adjudication queue until their own evidence bars are met.
 
 The procedural rule from the first pass still holds: **the mining summary is a
 lead, not the source.** Read the current tracker thread, preserve corrections
