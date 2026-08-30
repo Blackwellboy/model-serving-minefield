@@ -1,0 +1,34 @@
+name: tmp-regenerate-minefield-derived-artifacts
+
+on:
+  push:
+    branches:
+      - work/glm53-thinking-matrix-addenda-20260830
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - name: Regenerate deterministic Minefield artifacts
+        run: python -m minefield agent-bundle
+      - name: Commit generated files if changed
+        shell: bash
+        run: |
+          git add dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "generated: refresh Minefield agent artifacts"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
