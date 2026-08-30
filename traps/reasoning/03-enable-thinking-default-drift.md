@@ -100,3 +100,36 @@ Blackwellboy reproduction on a pinned local artifact, not a first-discovery
 claim.
 
 *Status of this addendum: reproduced here (runnable public template check).*
+
+## Added 2026-08-30: GLM-5.3 Flash EXL3 K2 — absent control lands ON and unset effort lands MAX
+
+**First-party Blackwellboy measurement** on `vcruz305/GLM-5.3-Flash-EXL3-K2`
+revision `8b5d34f00c876027d737525d16c0e7439ca389d2`, Victor recipe commit
+`832c3bd439fb7e40bed4955b73455afabbb90eeb`, served on a single DGX Spark /
+GB10 through the pinned Victor vLLM/ExLlamaV3 runtime.
+
+On this pin, omitting `enable_thinking` is again not neutral: the template
+lands thinking ON. Explicit `enable_thinking:false` is the off arm. When
+thinking is enabled, omitted `reasoning_effort` resolves to MAX; an invalid
+`medium` value also resolves to MAX.
+
+LOW/HIGH/MAX rendered to three distinct prompt hashes, so this is also a
+negative control for Trap 07 rather than an accepted-but-ignored parameter:
+
+| effort | rendered prompt SHA256 |
+|---|---|
+| low | `fa73d9a94cb0d52e1db244a78699ee12172173fea7c6d7df9e8961f5b32cbb82` |
+| high | `bdcd945690ea721de18799a207c3243c8345ea1b856e40084020003cbdd13ba7` |
+| max | `9a12aaef394d5a75bb28dc5cdb62bf6da4e3ad84b0900f5a71713b8d9fddc7cf` |
+
+The bounded preflight used 42, 48 and 347 reasoning tokens for LOW, HIGH and
+MAX respectively. The full disposition, including the matched-budget Sixcat
+result and the Trap 12 corollary, is in
+[`mining/2026-08-30-glm53-thinking-level-matrix.md`](../../mining/2026-08-30-glm53-thinking-level-matrix.md).
+
+The rule remains the same: **send the thinking kwarg explicitly, and record
+what omitted effort means on the exact template revision.**
+
+*Status of this addendum: measured here; raw retained privately, with the
+render/template behavior independently inspectable from the pinned public
+artifact.*
