@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `10055384dc17c94f526f0bde61dc9e839aa30f7add0fbad7141a12c4202ce198`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `51f8dc72ea6c058c399f5ab762f7073b80be0606d1d46a096bd6d50f5bbca171`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -145,7 +145,7 @@ L-series suggestions use a different shape and always remain non-canonical:
 - Named conditions: Laguna S 2.1 across three independently run stacks (vLLM/NVFP4, llama.cpp/Q4KM, and an EXL3-tail container). Revision 0761412 (NVFP4 upload) defaults enablethinking to true; another pinned fork documented false. Reconciling the three stacks took days and produced the corrected kwarg model now documented upstream: explicit false is the one structural off-switch, explicit true fires, and which arm "absent" lands in is revision-dependent and server-dependent. The landing map for an absent thinking kwarg, measured across lanes (2026-07-27 sweep): Laguna rev 0761412 templates default it ON (both vLLM lanes); Qwen3.6-27B and Qwen3.5-9B on llama.cpp landed OFF (absent produced no reasoning while explicit true fired, b9193/b9066); and on a llama.cpp Laguna path the server supplies the kwarg so absent renders identical to true (per the upstream 5 correction). Same request, three different arms, depending on family, revision, and server. Send it explicitly, always.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["laguna path the server supplies the kwarg so absent renders identical to tru", "laguna rev 0761412 templates default it on", "laguna s 2.1 across three independently run stacks", "qwen3.5-9b", "qwen3.6-27b", "qwen3.6-27b and qwen3.5-9b on llama.cpp landed off"], "failure_stage": ["load"], "gpu_architecture": [], "model_family": ["laguna", "qwen3.5", "qwen3.6"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["llama.cpp", "vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/reasoning/03-enable-thinking-default-drift.md`
-- Related traps: none stated
+- Related traps: 07, 12
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 04: prior-turn reasoning stripped from history, and the model reads it
