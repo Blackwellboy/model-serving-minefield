@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-02 - fail-closed probe and implementation-path evidence
+
+- [**136**](traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md) - @vcruz305: a successful log consumer can replace a crashing probe's status and turn a visible traceback into `rc=0`. Status **contributor-measured, conditions as reported**.
+- [**137**](traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md) - @vcruz305: EXL3 extension dispatch selectors were misclassified as process failure codes despite correct finite output. Status **contributor-measured, conditions as reported**.
+- Playbook [`agentic-research-integrity.md`](playbooks/agentic-research-integrity.md) adds a fail-closed implementation-path proof gate: build, load, call, output, negative-control, and timing identity.
+- Registry count moves from 135 to 137; doctor coverage remains 19, leaving 118 canonical entries unimplemented.
+
 ## 2026-08-25 - FlashRDMA follow-up (Trap 134 TRANSPORT corroboration + trap 135)
 
 - [**134**](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) addendum - controlled same-endpoint / same-pin / path-only wired-versus-Wi-Fi A/B with path proof; offline attribution preflight returned **`TRANSPORT`**. Status unchanged: **measured here, raw not published**. Does not claim universal Ethernet superiority, Flash-caused gain, RoCE, or GPUDirect.
