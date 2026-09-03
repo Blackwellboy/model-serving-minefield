@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 135,
-  "content_sha256": "59db8598db158ef82e9445a058f421229a403be13b701a826e7241587154eabf",
+  "canonical_trap_count": 137,
+  "content_sha256": "738dcdf02fda72947d297fefdbc05c9e89376d5383d636fc6dbc9e28f776db9b",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -9374,6 +9374,129 @@
       "supersession": null,
       "symptom": "A serving benchmark launches C1 / C2 / C4 concurrent HTTP requests. The server accepts all of them. The harness reports \"concurrency 4.\" But batch wall scales approximately with the number of clients, aggregate completed tok/s stays roughly flat, and generations are effectively serialized. The operator then reports \"the model handles four concurrent generations\" or compares two servers as though client concurrency equals execution concurrency.",
       "title": "concurrent HTTP clients are not concurrent model execution"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [],
+      "affected_versions_builds": "Contributor-measured with Bash wrapping a Python probe during a DGX Spark / GB10 serving-kernel investigation. The mechanism is shell-generic and applies to any benchmark, readiness probe, profiler, or remote executor that pipes the command under test through tail, tee, grep, or another successful consumer without preserving producer status.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "Use a deliberately failing producer as a negative control before trusting the wrapper: For wrappers that must support shells without pipefail, capture the producer status explicitly (PIPESTATUS[0] in Bash) before running any later command. Also require the receipt to name the stage whose status it records.",
+      "contributor": "vcruz305 (Victor Cruz)",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Contributor-measured with Bash wrapping a Python probe during a DGX Spark / GB10 serving-kernel investigation. The mechanism is shell-generic and applies to any benchmark, readiness probe, profiler, or remote executor that pipes the command under test through tail, tee, grep, or another successful consumer without preserving producer status.",
+      "id": "136",
+      "known_limitations": "",
+      "mechanism": "In a shell pipeline such as: the default pipeline status is the exit status of tail, not python. tail can successfully consume and print a traceback, return zero, and erase the producer's failure from the machine-readable verdict. A remote wrapper can then faithfully propagate the already-wrong zero. This is loss of process identity at the measurement boundary: the recorded status belongs to the log consumer while the claimed status belongs to the probe.",
+      "mitigation": "Enable pipefail before the command-under-test pipeline, or avoid putting presentation filters in the verdict path. Capture and propagate the producer status immediately. Keep log trimming as a separate display step, and make the negative control above part of the wrapper test suite.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "00",
+        "52",
+        "112",
+        "115"
+      ],
+      "source_path": "traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A probe prints an obvious exception, but the wrapper, orchestration receipt, or agent summary records success. In the measured case the producer raised FileNotFoundError; the last stage still completed normally, so the wrapper printed rc=0 and the run was initially treated as green.",
+      "title": "a log-trimming pipeline can report success after the probe crashed"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "ExLlama"
+      ],
+      "affected_versions_builds": "Contributor-measured on NVIDIA DGX Spark (GB10) with exllamav3 1.4.5's EXL3 GEMM extension and synthetic kernel-test inputs. The general mechanism applies to any Python/C++/CUDA extension whose return value encodes dispatch metadata rather than success/failure.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "exllama"
+        ],
+        "stack_version": [
+          "1.4.5"
+        ],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatchid, kernelvariant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success.",
+      "contributor": "vcruz305 (Victor Cruz)",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Contributor-measured on NVIDIA DGX Spark (GB10) with exllamav3 1.4.5's EXL3 GEMM extension and synthetic kernel-test inputs. The general mechanism applies to any Python/C++/CUDA extension whose return value encodes dispatch metadata rather than success/failure.",
+      "id": "137",
+      "known_limitations": "",
+      "mechanism": "A native extension's integer return is part of that function's API contract. It may identify a selected algorithm, launch shape, or dispatch route. It is not automatically a Unix process exit status or C-style zero-success error code. The harness imposed an invented rc == 0 contract and overrode stronger evidence: the call completed, wrote finite output, and matched the reference within the test tolerance.",
+      "mitigation": "Remove the invented return == 0 gate. Decode only values defined by the pinned extension contract, and make output parity plus finite/shape checks the correctness gate. Fail closed when the installed build's semantics cannot be established.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "52",
+        "76",
+        "115"
+      ],
+      "source_path": "traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A kernel probe produces numerically correct output, but the harness marks the call failed because its integer return is not zero. In the measured lane, returns including 3, 4, and 90 accompanied successful calls; 90 selected a small-matrix vector path, while the smaller integers identified tiled kernel variants.",
+      "title": "a nonzero kernel selector return is not a process failure"
     }
   ],
   "schema_version": "1.1"

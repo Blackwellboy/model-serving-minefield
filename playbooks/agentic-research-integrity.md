@@ -59,6 +59,29 @@ numbered promotion. Record one of:
 Preflight terminal states `PASS`/`HOLD`/`FAIL`/`UNKNOWN` are **packet
 validation** outcomes only, not evidence status.
 
+## Prove the implementation path ran
+
+An agent-written `PASS`, a benchmark table, and a clean reference result do not
+prove that the proposed implementation was built or called. Before accepting a
+claim about a new kernel, backend, transport, or optimization, require all of:
+
+1. **Build proof** - the build graph and resulting artifact name the target.
+2. **Import/load proof** - the test loads that artifact and fails closed if it
+   is absent; fallback is not a passing outcome.
+3. **Call proof** - instrumentation or an equivalent discriminator shows the
+   target function ran for the measured cases.
+4. **Output proof** - target output is compared with an independent reference
+   under a preregistered tolerance.
+5. **Negative control** - disabling, renaming, or deliberately breaking the
+   target makes the test fail. If the same `PASS` survives, the test did not
+   establish target execution.
+6. **Timing identity** - the timed region belongs to the target call, not setup,
+   reference computation, fallback, or a different function.
+
+Adjudicate from artifacts and executable controls, not the implementer's prose
+verdict. A measured reference-only path can validate the oracle, but it cannot
+validate or benchmark an implementation it never invoked.
+
 ## Commands
 
 ```bash

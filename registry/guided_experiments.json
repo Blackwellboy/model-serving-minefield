@@ -3239,6 +3239,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "135",
       "untrusted_published_check_text": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 136 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 136 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "136",
+      "untrusted_published_check_text": "Use a deliberately failing producer as a negative control before trusting the wrapper: For wrappers that must support shells without pipefail, capture the producer status explicitly (PIPESTATUS[0] in Bash) before running any later command. Also require the receipt to name the stage whose status it records."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 137 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 137 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "137",
+      "untrusted_published_check_text": "Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatchid, kernelvariant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success."
     }
   ],
   "schema_version": "1.0"

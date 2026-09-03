@@ -267,6 +267,8 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - 133: The model is coherent and correct, the server reports no warning at normal log level, and speculative decoding is clearly active -- but acceptance and decode throughput sit around half of the expected lane. The target verifier hides the drafter defect because every bad proposal is simply rejected. On the reported lane, repairing the loader moved cumulative acceptance 25.7% -> 60.2%, accepted tokens per step 2.28 -> 4.01, and mean decode throughput 32.7 -> 55.4 tok/s, while decode steps/s stayed roughly flat (14.4 -> 13.8). A warm peak-finder on the fixed path reached 78.4 tok/s at 98.9% acceptance. The only load-time trace was twelve debug-level Skipping unknown DSpark weight messages.
 - 134: An Ethernet/NIC/interface reports link UP at a plausible negotiated speed, so the operator concludes "the test is wired" or "this transport used interface X." The labelled transport arm then produces a clean tok/s table. Later path forensics show the workload never used that interface: routes and packet counters belong to another path (commonly wireless fallback or a default route), while the intended interface stays healthy and mostly idle. The benchmark looks valid while measuring a different transport than the label says.
 - 135: A serving benchmark launches C1 / C2 / C4 concurrent HTTP requests. The server accepts all of them. The harness reports "concurrency 4." But batch wall scales approximately with the number of clients, aggregate completed tok/s stays roughly flat, and generations are effectively serialized. The operator then reports "the model handles four concurrent generations" or compares two servers as though client concurrency equals execution concurrency.
+- 136: A probe prints an obvious exception, but the wrapper, orchestration receipt, or agent summary records success. In the measured case the producer raised FileNotFoundError; the last stage still completed normally, so the wrapper printed rc=0 and the run was initially treated as green.
+- 137: A kernel probe produces numerically correct output, but the harness marks the call failed because its integer return is not zero. In the measured lane, returns including 3, 4, and 90 accompanied successful calls; 90 selected a small-matrix vector path, while the smaller integers identified tiled kernel variants.
 
 ## Canonical trap records
 
@@ -2023,6 +2025,32 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Structured applicability: `{"concurrency_regime": ["concurrency 4"], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md`
 - Related traps: 41, 46, 110, 128
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 136: a log-trimming pipeline can report success after the probe crashed
+
+- Evidence: contributor-measured, conditions as reported.
+- Symptom: A probe prints an obvious exception, but the wrapper, orchestration receipt, or agent summary records success. In the measured case the producer raised FileNotFoundError; the last stage still completed normally, so the wrapper printed rc=0 and the run was initially treated as green.
+- Mechanism: In a shell pipeline such as: the default pipeline status is the exit status of tail, not python. tail can successfully consume and print a traceback, return zero, and erase the producer's failure from the machine-readable verdict. A remote wrapper can then faithfully propagate the already-wrong zero. This is loss of process identity at the measurement boundary: the recorded status belongs to the log consumer while the claimed status belongs to the probe.
+- Check: Use a deliberately failing producer as a negative control before trusting the wrapper: For wrappers that must support shells without pipefail, capture the producer status explicitly (PIPESTATUS[0] in Bash) before running any later command. Also require the receipt to name the stage whose status it records.
+- Safe conditional mitigation: Enable pipefail before the command-under-test pipeline, or avoid putting presentation filters in the verdict path. Capture and propagate the producer status immediately. Keep log trimming as a separate display step, and make the negative control above part of the wrapper test suite.
+- Named conditions: Contributor-measured with Bash wrapping a Python probe during a DGX Spark / GB10 serving-kernel investigation. The mechanism is shell-generic and applies to any benchmark, readiness probe, profiler, or remote executor that pipes the command under test through tail, tee, grep, or another successful consumer without preserving producer status.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md`
+- Related traps: 00, 52, 112, 115
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 137: a nonzero kernel selector return is not a process failure
+
+- Evidence: contributor-measured, conditions as reported.
+- Symptom: A kernel probe produces numerically correct output, but the harness marks the call failed because its integer return is not zero. In the measured lane, returns including 3, 4, and 90 accompanied successful calls; 90 selected a small-matrix vector path, while the smaller integers identified tiled kernel variants.
+- Mechanism: A native extension's integer return is part of that function's API contract. It may identify a selected algorithm, launch shape, or dispatch route. It is not automatically a Unix process exit status or C-style zero-success error code. The harness imposed an invented rc == 0 contract and overrode stronger evidence: the call completed, wrote finite output, and matched the reference within the test tolerance.
+- Check: Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatchid, kernelvariant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success.
+- Safe conditional mitigation: Remove the invented return == 0 gate. Decode only values defined by the pinned extension contract, and make output parity plus finite/shape checks the correctness gate. Fail closed when the installed build's semantics cannot be established.
+- Named conditions: Contributor-measured on NVIDIA DGX Spark (GB10) with exllamav3 1.4.5's EXL3 GEMM extension and synthetic kernel-test inputs. The general mechanism applies to any Python/C++/CUDA extension whose return value encodes dispatch metadata rather than success/failure.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["exllama"], "stack_version": ["1.4.5"], "topology": []}`
+- Source: `traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md`
+- Related traps: 52, 76, 115
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ## Possible/unverified lead router

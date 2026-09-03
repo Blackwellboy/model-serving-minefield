@@ -7,16 +7,19 @@
 ExLlamaV2 or EXL2 anywhere. Absence means nobody has reported to us, not that
 the stack is clean.
 
-**One distinction on this page matters more than the zero.** Five entries name
+**One distinction on this page matters more than the zero.** Six entries name
 **EXL3**: traps
 [02](../traps/template/02-orphaned-think-close-tag.md),
 [03](../traps/reasoning/03-enable-thinking-default-drift.md),
 [04](../traps/template/04-history-reasoning-stripping.md),
 [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) and
-[30](../traps/template/30-default-system-message-silently-replaced.md), but
-they name it as a **quantization format** in a hybrid build, served from a
-container, not as ExLlama-the-runtime behind TabbyAPI. We have data about an
-EXL3 *tail* in a mixed-format checkpoint. We have none about this *server*.
+[30](../traps/template/30-default-system-message-silently-replaced.md) and
+[137](../traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md).
+The first five name EXL3 as a **quantization format** in a hybrid build, served
+from a container, not as ExLlama-the-runtime behind TabbyAPI. Trap 137 is a
+contributor measurement of one native extension contract, again not a TabbyAPI
+server run. We have data about EXL3 artifacts and one extension call. We have
+none about this *server*.
 
 Reading those five as TabbyAPI coverage would be the exact error trap
 [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) is about:
