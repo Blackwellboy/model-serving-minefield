@@ -57,6 +57,13 @@ Coverage snapshot: the doctor implements checks for **19 of 137** entries.  118 
 - **REFUTE.** The old build survives the preregistered sustained workload, both ranks enter the same collective rather than diverging, fabric/config drift explains the failure, one of the claimed flag changes reliably fixes the old build, or the newer build reproduces the same rank-divergence death.
 - **Boundary.** Keep this distinct from startup-only NCCL hangs and from upstream reports where every rank spins inside the same collective. Cross-node launch/config identity must be proven before attributing a two-box result to the engine.
 
+### Q94. vLLM n-gram prompt lookup duplicates tokens inside structured output
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/94
+- **CONFIRM.** On the reported pinned vLLM 0.28.0 aarch64 / Qwen3.8-27B lane, run the same deterministic structured-output fixture twice with all serve and request conditions matched except the draftless n-gram speculative config. Strictly parse every response body and retain raw bodies. Confirm the n-gram arm reproducibly introduces duplicated ordinary tokens/keys that make JSON malformed while the speculation-off control removes those same malformed cases. Require HTTP/process success in both arms so transport failure cannot explain the result, and repeat on the reported sibling checkpoint if available.
+- **REFUTE.** The malformed JSON reproduces with n-gram speculation disabled, disappears while n-gram remains enabled under the pinned fixture, is attributable to a parser/template/request mismatch rather than emitted model tokens, or cannot be distinguished from the already-known drafter/special-token mechanism in trap 62.
+- **Boundary.** Treat this as a possible new draftless prompt-lookup mechanism, not automatic proof that all n-gram settings, models, engine versions, or draft-model speculative decoding corrupt structured output. Canonical promotion requires preserving the single-variable A/B and distinguishing it from trap 62's drafter-model/special-token failure class.
+
 ## Privacy rule
 
 Raw candidate research and unpublished evidence are not a public-repository surface. Public promotion starts from a deliberately scrubbed/adjudicated change, not by copying a private research directory into this repository.
