@@ -54,7 +54,7 @@ REG = "https://github.com/Blackwellboy/model-serving-minefield/blob/main/traps"
 # asserts this constant still matches the tree, so it cannot drift silently.
 # Any PR that lands new trap files fails that test until this is bumped and the
 # coverage sentences in README.md and doctor/README.md are updated with it.
-REGISTRY_TRAP_COUNT = 137
+REGISTRY_TRAP_COUNT = 135
 
 TRAP_PATHS = {
     "01": "reasoning/01-reasoning-field-two-names.md",
@@ -1778,14 +1778,14 @@ def hf_resolve_revision(repo, revision):
 def check_configs(doc, hf_repo, hf_revision="main"):
     """Traps 21 (generation_config missing), 17 (defaults vs card), 10 (quant)."""
     props = doc.evidence.get("props")
+    eff = None #always none unless props and p
     if props:
         p = (props.get("default_generation_settings") or {}).get("params", {})
-        eff = {k: round(v, 3) if isinstance(v, float) else v
-               for k, v in p.items()
-               if k in ("temperature", "top_k", "top_p", "min_p", "presence_penalty")}
-        doc.evidence["server_defaults"] = eff
-    else:
-        eff = None
+        if p is not None:
+            eff = {k: round(v, 3) if isinstance(v, float) else v
+                   for k, v in p.items()
+                   if k in ("temperature", "top_k", "top_p", "min_p", "presence_penalty")}
+            doc.evidence["server_defaults"] = eff
     if not hf_repo:
         doc.skip(["21", "17", "10"], "generation_config / card-sampling / quant "
                  "scheme checks",
