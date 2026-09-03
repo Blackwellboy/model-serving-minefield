@@ -25,9 +25,37 @@ Coverage snapshot: the doctor implements checks for **19 of 137** entries.  118 
 ### Q73. Reload-to-reload score drift is removed by deterministic/autotune pinning on the reported stack
 
 - **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/73
-- **CONFIRM.** Reproduce reload-to-reload teacher-forced score movement under the reported stock launch, then repeat matched reloads with deterministic inference enabled and FlashInfer autotune disabled. Confirm per-item score movement collapses to zero (or the preregistered deterministic tolerance) without a material quality or throughput regression.
+- **CONFIRM.** Reproduce reload-to-reload teacher-forced score movement under the reported stock launch, then repeat matched reloads with deterministic inference enabled and FlashInfer autotune disabled. Confirm per-item score movement collapses to zero (or the preregistered deterministic tolerance) without a material quality or short-prompt throughput regression.
 - **REFUTE.** The stock reload drift cannot be reproduced under the pinned protocol, or the drift persists after deterministic/autotune pinning.
-- **Boundary.** A successful pin establishes this stack-specific remedy; it does not prove the same flags solve within-load nondeterminism on other engines/models.
+- **Boundary.** A successful determinism pin establishes this stack-specific measurement remedy only. It does not establish that `--enable-deterministic-inference` is safe for production or long prompts; issue #87 separately tests that serving-side cost.
+
+### Q83. GLM-5.3-Flash vision suppression kwargs redirect reasoning into content instead of stopping it
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/83
+- **CONFIRM.** On the same pinned GLM-5.3-Flash vLLM vision path, run matched image requests with the bare default, `enable_thinking:false`, `thinking:false`, and the model's in-text `/nothink` convention. Record both reasoning/content partition and total completion-token accounting. Confirm the suppression kwargs leave the overall reasoning work materially unchanged while relocating it into `content`, and confirm `/nothink` behaves distinctly as reported. Reproduce on the two reported checkpoint formats if available.
+- **REFUTE.** Either suppression kwarg actually reduces/stops reasoning under matched accounting, the apparent leak disappears when reasoning is measured independently of the response parser, or the behavior cannot be reproduced on the pinned vision path.
+- **Boundary.** Issue #83 explicitly proposes an extension to canonical trap 29. If the mechanism is the same off-switch/representation failure already owned by trap 29, adjudicate as scoped corroboration/addendum rather than allocating a duplicate trap ID.
+
+### Q87. Deterministic inference hard-caps FlashInfer prefill workspace and kills long prompts
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/87
+- **CONFIRM.** On the reported pinned SGLang + FlashInfer lane, compare otherwise matched serves with and without `--enable-deterministic-inference`. Verify from resolved runtime state/source behavior that the flag forces the FlashInfer workspace to 2 GiB and defeats a larger same-name environment setting, then sweep fresh prompt lengths across the predicted workspace threshold while recording required workspace, HTTP/process outcome, KV capacity, and crash trace. Confirm the deterministic arm fails at the computed boundary while the control survives materially longer prompts.
+- **REFUTE.** The flag does not force the claimed workspace limit, the environment setting remains effective, matched long prompts fail identically with the flag off, or the process death is attributable to an independent capacity/runtime fault rather than the deterministic planner/workspace path.
+- **Boundary.** This is a production-serving side effect, not a refutation of issue #73's narrow determinism result. Short-prompt quality/speed parity cannot be used as evidence that the flag is safe for long-context serving.
+
+### Q88. Architecture guard falls through to an unsafe fallback instead of rejecting an unsupported device
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/88
+- **CONFIRM.** On the pinned unreleased engine/model/device combination, prove startup and metadata health checks pass on the unpatched build, then capture the first-inference failure and resolve the architecture guard/fallback path from source. Apply only the reported guard widening and show that text/vision inference now executes through a supported dispatcher path. Require a correctness control against a public checkpoint/reference result before treating the patch as safe rather than merely crash-avoiding.
+- **REFUTE.** The first-request failure is not reached through the alleged guard/fallback path, the device is already explicitly supported/rejected by the pinned build, widening the guard does not remove the failure, or correctness controls reveal numerical corruption after the patch.
+- **Boundary.** Successful model load and HTTP metadata readiness are not positive inference controls. A patch that stops the crash is insufficient by itself; the issue's central risk is that the unsafe fallback could otherwise produce fluent wrong output.
+
+### Q89. Sustained two-box TP=2 rank divergence is fixed by the engine build, not the tested flags
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/89
+- **CONFIRM.** On matched two-node GB10 TP=2 hardware/configuration, reproduce the old-build failure under sustained load and capture two time-separated stacks on both ranks at the first stall warning. Confirm one rank remains inside the collective the peer never enters, with clean fabric/RDMA error counters and no memory-pressure explanation. Repeat the same killer workload on the reported newer engine build and require multiple long survivors without the stall signature, while separately confirming the tested config toggles do not rescue the old build.
+- **REFUTE.** The old build survives the preregistered sustained workload, both ranks enter the same collective rather than diverging, fabric/config drift explains the failure, one of the claimed flag changes reliably fixes the old build, or the newer build reproduces the same rank-divergence death.
+- **Boundary.** Keep this distinct from startup-only NCCL hangs and from upstream reports where every rank spins inside the same collective. Cross-node launch/config identity must be proven before attributing a two-box result to the engine.
 
 ## Privacy rule
 
