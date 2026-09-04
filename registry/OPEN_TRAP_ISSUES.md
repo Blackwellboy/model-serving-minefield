@@ -64,6 +64,13 @@ Coverage snapshot: the doctor implements checks for **19 of 137** entries.  118 
 - **REFUTE.** The malformed JSON reproduces with n-gram speculation disabled, disappears while n-gram remains enabled under the pinned fixture, is attributable to a parser/template/request mismatch rather than emitted model tokens, or cannot be distinguished from the already-known drafter/special-token mechanism in trap 62.
 - **Boundary.** Treat this as a possible new draftless prompt-lookup mechanism, not automatic proof that all n-gram settings, models, engine versions, or draft-model speculative decoding corrupt structured output. Canonical promotion requires preserving the single-variable A/B and distinguishing it from trap 62's drafter-model/special-token failure class.
 
+### Q100. Docker missing bind-mount source is fabricated as a directory and can create late or persistent failures
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/100
+- **CONFIRM.** On a disposable Linux Docker fixture, define a bind mount whose host source is intentionally absent and whose container target expects either a model directory or a file. Record host-source type before launch, container-create/start outcome, the host path Docker leaves behind, and the engine/container failure surface. For the file case, repeat the reported lifecycle: begin with a real file source, delete it, restart the container, verify the missing source is recreated as a directory and the container fails with a file-vs-directory mount error; then restore the intended file and determine whether the fabricated directory must be removed before recovery. Require the useful failure evidence to be distinguished between container logs and `.State.Error` if that part is claimed.
+- **REFUTE.** The pinned Docker version refuses the absent source without creating it, creates a source of the expected type, the late model/checkpoint failure cannot be attributed to the fabricated mount source, or the deleted-file restart does not produce the reported directory/type mismatch under the declared mount syntax.
+- **Boundary.** Keep this separate from canonical trap 127 unless adjudication proves the same mechanism. Trap 127 is whole-file package shadowing plus image drift/unattended update; Q100 is host-source absence/deletion changing mount-source type. Scope any promotion to the tested Docker bind-mount syntax/version rather than claiming every Docker version or mount API behaves identically.
+
 ## Privacy rule
 
 Raw candidate research and unpublished evidence are not a public-repository surface. Public promotion starts from a deliberately scrubbed/adjudicated change, not by copying a private research directory into this repository.
