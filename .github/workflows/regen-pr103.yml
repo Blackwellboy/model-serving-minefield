@@ -1,0 +1,36 @@
+name: regen-pr103
+
+on:
+  push:
+    branches:
+      - fix/null-generation-params-clean-20260905
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: fix/null-generation-params-clean-20260905
+          persist-credentials: true
+      - name: setup python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: regenerate canonical artefacts
+        run: |
+          set -euo pipefail
+          python -m minefield agent-bundle
+          git add -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+            exit 0
+          fi
+          git config user.name 'blackwellboy-ci'
+          git config user.email '76774064+Blackwellboy@users.noreply.github.com'
+          git commit -m 'chore: regenerate artefacts for null-params Doctor fix'
+          git push origin HEAD:fix/null-generation-params-clean-20260905
