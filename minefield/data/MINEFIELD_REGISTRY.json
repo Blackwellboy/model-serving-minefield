@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 137,
-  "content_sha256": "738dcdf02fda72947d297fefdbc05c9e89376d5383d636fc6dbc9e28f776db9b",
+  "canonical_trap_count": 138,
+  "content_sha256": "d25e848fa8280463512cdd393bc5e8096b948876c5d54ffcc68325549b10592f",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -9497,6 +9497,79 @@
       "supersession": null,
       "symptom": "A kernel probe produces numerically correct output, but the harness marks the call failed because its integer return is not zero. In the measured lane, returns including 3, 4, and 90 accompanied successful calls; 90 selected a small-matrix vector path, while the smaller integers identified tiled kernel variants.",
       "title": "a nonzero kernel selector return is not a process failure"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-27B BF16 weights on NVIDIA GB10 Grace Blackwell. The contributor r"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "Contributor-measured on vLLM 0.28.0, aarch64, with Qwen3.8-27B BF16 weights on NVIDIA GB10 Grace Blackwell. The contributor reported the same malformed cases on the abliterated sibling under the same serve configuration. The measured speculative configuration was: Other n-gram widths/ranges, other checkpoints, other engine versions, and speculative decoding with a draft model were not established by this report.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-27b",
+          "qwen3.8-27b bf16 weights on nvidia gb10 grace blackwell. the contributor r"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "bf16"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.28.0"
+        ],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Contributor-measured on vLLM 0.28.0, aarch64, with Qwen3.8-27B BF16 weights on NVIDIA GB10 Grace Blackwell. The contributor reported the same malformed cases on the abliterated sibling under the same serve configuration. The measured speculative configuration was: Other n-gram widths/ranges, other checkpoints, other engine versions, and speculative decoding with a draft model were not established by this report.",
+      "id": "138",
+      "known_limitations": "",
+      "mechanism": "The measured lane used vLLM's draftless n-gram prompt-lookup speculation. Every duplicated fragment observed in the failing structured responses had appeared earlier in the same request, matching the surface that the prompt-lookup matcher searches. A single-variable A/B separated the serving path from the checkpoint under the reported fixture: with the n-gram speculative config enabled, 3 of 12 schema cases produced malformed assistant JSON content; with speculation removed, those same malformations disappeared. One remaining off-arm miss was valid JSON with an incorrect value, so it is not part of this trap. This is not the same evidence class as a draft-model speculative decoder mangling special-token frames. The measured path used no draft model: it was vLLM's n-gram prompt lookup, and the corruption was duplication of ordinary JSON tokens/keys.",
+      "mitigation": "Disable the reported n-gram prompt-lookup speculative config on structured-output lanes unless the exact engine/model/config combination has passed a strict-parser A/B. If keeping the optimization, gate deployment on machine parsing of every structured fixture and re-run the check after engine or speculative-config changes.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "00",
+        "37",
+        "52",
+        "62"
+      ],
+      "source_path": "traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "The OpenAI-compatible request itself succeeds: HTTP 200, a valid response envelope, and a normal finishreason: stop. The corruption is inside .choices[0].message.content: the assistant content is supposed to be JSON, but an ordinary token or key is duplicated adjacent to a prior occurrence, so parsing that content string as JSON fails. The measured examples included shapes equivalent to: The surrounding generated text can remain coherent, so a caller that checks only HTTP/envelope success or does not strictly parse the assistant content can pass the corruption downstream.",
+      "title": "n-gram prompt lookup can duplicate tokens inside structured output"
     }
   ],
   "schema_version": "1.1"
