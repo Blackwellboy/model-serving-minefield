@@ -27,9 +27,15 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('README.md'); t=p.read_text(encoding='utf-8')
-          t=t.replace('All 137\nentries are too many to read','All 138\nentries are too many to read')
-          t=t.replace('for **19 of these 137 entries**','for **19 of these 138 entries**')
-          t=t.replace('about the other 118','about the other 119')
+          for old,new in [
+              ('All 137\nentries are too many to read','All 138\nentries are too many to read'),
+              ('for **19 of these 137 entries**','for **19 of these 138 entries**'),
+              ('about the other 118','about the other 119'),
+              ('all 137 entries','all 138 entries'),
+              ('All 137 entries','All 138 entries'),
+              ("19 of this registry's 137 entries","19 of this registry's 138 entries"),
+          ]:
+              t=t.replace(old,new)
           target='traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md'
           if target not in t:
               lines=t.splitlines(); marker='traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md'
@@ -45,7 +51,12 @@ jobs:
           from pathlib import Path
           changes={
             'playbooks/README.md':[("19 of this registry's 137 numbered entries","19 of this registry's 138 numbered entries")],
-            'doctor/README.md':[("19 of the registry's 137 numbered entries","19 of the registry's 138 numbered entries"),('implemented 19/137','implemented 19/138'),('not implemented 118','not implemented 119')],
+            'doctor/README.md':[
+                ("19 of the registry's 137 numbered entries","19 of the registry's 138 numbered entries"),
+                ('implemented 19/137','implemented 19/138'),
+                ('not implemented 118','not implemented 119'),
+                ('remaining **118** numbered traps','remaining **119** numbered traps'),
+            ],
             'doctor/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 137','REGISTRY_TRAP_COUNT = 138')],
             'minefield/data/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 137','REGISTRY_TRAP_COUNT = 138')],
           }
