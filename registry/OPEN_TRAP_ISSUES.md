@@ -4,7 +4,7 @@ This is a **public governance surface only**. It does not contain raw evidence, 
 
 Every currently open issue whose title begins `[trap]` must appear here with criteria written before adjudication. The integrity gate compares this file against live GitHub issue state.
 
-Coverage snapshot: the doctor implements checks for **19 of 137** entries.  118 uncovered entries remain outside automated doctor checks.
+Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 uncovered entries remain outside automated doctor checks.
 
 ## OPEN
 
@@ -70,6 +70,13 @@ Coverage snapshot: the doctor implements checks for **19 of 137** entries.  118 
 - **CONFIRM.** On a disposable Linux Docker fixture, define a bind mount whose host source is intentionally absent and whose container target expects either a model directory or a file. Record host-source type before launch, container-create/start outcome, the host path Docker leaves behind, and the engine/container failure surface. For the file case, repeat the reported lifecycle: begin with a real file source, delete it, restart the container, verify the missing source is recreated as a directory and the container fails with a file-vs-directory mount error; then restore the intended file and determine whether the fabricated directory must be removed before recovery. Require the useful failure evidence to be distinguished between container logs and `.State.Error` if that part is claimed.
 - **REFUTE.** The pinned Docker version refuses the absent source without creating it, creates a source of the expected type, the late model/checkpoint failure cannot be attributed to the fabricated mount source, or the deleted-file restart does not produce the reported directory/type mismatch under the declared mount syntax.
 - **Boundary.** Keep this separate from canonical trap 127 unless adjudication proves the same mechanism. Trap 127 is whole-file package shadowing plus image drift/unattended update; Q100 is host-source absence/deletion changing mount-source type. Scope any promotion to the tested Docker bind-mount syntax/version rather than claiming every Docker version or mount API behaves identically.
+
+### Q105. DFlash draft budget 2 fails during decode CUDA-graph capture on the reported SGLang path
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/105
+- **CONFIRM.** On the pinned SGLang DFlash2/NVFP4 lane, hold image, target, drafter, block size and all other serve flags fixed while sweeping `--speculative-num-draft-tokens` across at least 2, 4, 6 and 8. Treat startup as the measured outcome before any benchmark request. Confirm budget 2 deterministically fails during the draft worker's decode CUDA-graph capture with the reported non-contiguous FP4-quantization path, while the 4/6/8 controls reach health under the same launch conditions. Preserve the full traceback and resolve whether the tensor-contiguity difference is actually caused by depth 2 rather than merely correlated with it.
+- **REFUTE.** Budget 2 reaches health under the pinned build, one or more matched 4/6/8 controls fail with the same signature, the failure occurs outside the draft decode graph/FP4 path, or source-level inspection/reproduction shows an independent configuration or checkpoint defect explains the contiguity failure.
+- **Boundary.** Keep the observed startup cliff separate from generic high-depth quality/performance or OOM traps. Do not promote the issue's inferred tensor-shape mechanism as proven until source inspection or a bounded reproduction identifies why depth 2 changes contiguity. A failed-to-start arm is an explicit failure outcome, not a zero-score or missing benchmark cell.
 
 ## Privacy rule
 
