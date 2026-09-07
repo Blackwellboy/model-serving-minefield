@@ -63,4 +63,4 @@ For attribution, compare malformed content strings token-by-token across the n-g
 
 **Attribution.** **@scottleimroth** — finder and contributor measurement.
 
-**Related.** [62](62-speculative-drafter-garbles-special-token-frames.md) (speculative decoding can corrupt output through a different draft-model / special-token mechanism), [52](52-speed-measured-on-a-broken-config.md) (correctness must gate performance claims), and [37](37-zero-across-every-arm-is-your-harness.md) (separate engine/model faults from instrument faults before scoring the checkpoint).
+**Related.** [62](../runtime/62-spec-decode-garble-under-wrong-drafter-config.md) (speculative decoding can corrupt output through a different draft-model / special-token mechanism), [52](52-speed-measured-on-a-broken-config.md) (correctness must gate performance claims), and [37](37-uniform-zero-is-a-harness-verdict.md) (separate engine/model faults from instrument faults before scoring the checkpoint).
