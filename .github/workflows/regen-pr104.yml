@@ -1,4 +1,4 @@
-name: regen-pr104
+name: finish-pr104
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  regenerate:
+  finish:
     runs-on: ubuntu-24.04
     steps:
       - name: checkout branch
@@ -21,16 +21,102 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: '3.12'
-      - name: regenerate canonical artefacts
+      - name: integrate Trap 138 across canonical surfaces
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          trap_link = 'traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md'
+          model_link = '../traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md'
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          # README: registry total + symptom row required by registry integrity.
+          p = 'README.md'
+          t = read(p).replace('All 137\nentries are too many to read', 'All 138\nentries are too many to read')
+          if trap_link not in t:
+              lines = t.splitlines()
+              marker = 'traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md'
+              idx = next(i for i, line in enumerate(lines) if marker in line and line.startswith('|'))
+              lines.insert(idx + 1, '| HTTP 200 / normal finish, but assistant JSON contains duplicated ordinary keys or values | Draftless n-gram prompt lookup duplicated structured-output tokens | [138](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) | contributor-measured, conditions as reported |')
+              t = '\n'.join(lines) + ('\n' if t.endswith('\n') else '')
+          write(p, t)
+
+          # Doctor/public count surfaces. Trap 138 is canonical but does not add a Doctor check.
+          replacements = {
+              'playbooks/README.md': [("19 of this registry's 137 numbered entries", "19 of this registry's 138 numbered entries")],
+              'doctor/README.md': [
+                  ("19 of the registry's 137 numbered entries", "19 of the registry's 138 numbered entries"),
+                  ('implemented 19/137', 'implemented 19/138'),
+                  ('not implemented 118', 'not implemented 119'),
+              ],
+              'doctor/minefield_doctor.py': [('REGISTRY_TRAP_COUNT = 137', 'REGISTRY_TRAP_COUNT = 138')],
+              'minefield/data/minefield_doctor.py': [('REGISTRY_TRAP_COUNT = 137', 'REGISTRY_TRAP_COUNT = 138')],
+          }
+          for path, pairs in replacements.items():
+              t = read(path)
+              for old, new in pairs:
+                  if old not in t and new not in t:
+                      raise SystemExit(f'missing expected count marker in {path}: {old}')
+                  t = t.replace(old, new)
+              write(path, t)
+
+          # Per-model routing: make the canonical entry discoverable on the Qwen3.8 row.
+          p = 'models/README.md'
+          t = read(p)
+          if '138-ngram-prompt-lookup-duplicates-structured-output-tokens.md' not in t:
+              lines = t.splitlines()
+              idx = next(i for i, line in enumerate(lines) if line.startswith('| Qwen 3.8 27B ([full page]'))
+              line = lines[idx]
+              end = line.rfind(' |')
+              if end < 0:
+                  raise SystemExit('Qwen3.8 model row has unexpected shape')
+              lines[idx] = line[:end] + ', plus scoped contributor finding [138](../traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) for vLLM 0.28.0 draftless n-gram prompt lookup corrupting structured output' + line[end:]
+              t = '\n'.join(lines) + ('\n' if t.endswith('\n') else '')
+          write(p, t)
+
+          # Hall of Fame: retain existing contributor history and explicitly attach Trap 138.
+          p = 'HALL_OF_FAME.md'
+          t = read(p)
+          if '[138](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md)' not in t:
+              lines = t.splitlines()
+              idx = next(i for i, line in enumerate(lines) if line.startswith('| **@scottleimroth** |'))
+              cells = lines[idx].split('|')
+              if len(cells) < 5:
+                  raise SystemExit('scottleimroth Hall-of-Fame row has unexpected shape')
+              cells[2] = cells[2].rstrip() + '; and isolated draftless vLLM n-gram prompt-lookup corruption of structured assistant content '
+              cells[3] = cells[3].rstrip() + ', [138](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) '
+              lines[idx] = '|'.join(cells)
+              t = '\n'.join(lines) + ('\n' if t.endswith('\n') else '')
+          write(p, t)
+
+          # Changelog: announce the canonical promotion and its unchanged Doctor coverage.
+          p = 'CHANGELOG.md'
+          t = read(p)
+          if trap_link not in t:
+              block = '''## 2026-09-07 - Trap 138 structured-output corruption\n\n- [**138**](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) - @scottleimroth: on the reported vLLM 0.28.0 aarch64 / Qwen3.8-27B BF16 lane, draftless n-gram prompt lookup produced HTTP-successful responses whose assistant `content` duplicated ordinary keys/values and became invalid JSON; the matched speculation-off control removed those malformed cases. Status **contributor-measured, conditions as reported**.\n- Scope stays narrow: the A/B isolates the reported draftless n-gram configuration and does not generalize to all speculative decoding, engines, checkpoints, or n-gram settings.\n- Registry count moves from 137 to 138; Doctor coverage remains 19, leaving 119 canonical entries unimplemented.\n\n'''
+              if not t.startswith('# Changelog\n\n'):
+                  raise SystemExit('CHANGELOG header changed unexpectedly')
+              t = '# Changelog\n\n' + block + t[len('# Changelog\n\n'):]
+          write(p, t)
+          PY
+
           python -m minefield agent-bundle
-          git add -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
-          if git diff --cached --quiet; then
-            echo 'No generated changes.'
-            exit 0
-          fi
+          python integrity/registry_integrity.py
+          python integrity/reference_integrity.py
+          python -m unittest discover -s integrity/tests -t integrity/tests
+          python -m unittest discover -s doctor/tests -t doctor/tests
+          git diff --check
+
+          # One-shot helper must not ship on main.
+          git rm .github/workflows/regen-pr104.yml
+          git add -- README.md CHANGELOG.md HALL_OF_FAME.md models/README.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
           git config user.name 'blackwellboy-ci'
           git config user.email '76774064+Blackwellboy@users.noreply.github.com'
-          git commit -m 'chore: regenerate artefacts for Trap 138'
+          git commit -m 'maint: complete Trap 138 registry integration'
           git push origin HEAD:trap/138-ngram-json-clean-20260905
