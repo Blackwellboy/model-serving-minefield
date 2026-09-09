@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-07 - Trap 138 structured-output corruption
+
+- [**138**](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) - @scottleimroth: on the reported vLLM 0.28.0 aarch64 / Qwen3.8-27B BF16 lane, draftless n-gram prompt lookup produced HTTP-successful responses whose assistant `content` duplicated ordinary keys/values and became invalid JSON; the matched speculation-off control removed those malformed cases. Status **contributor-measured, conditions as reported**.
+- Scope stays narrow: the A/B isolates the reported draftless n-gram configuration and does not generalize to all speculative decoding, engines, checkpoints, or n-gram settings.
+- Registry count moves from 137 to 138; Doctor coverage remains 19, leaving 119 canonical entries unimplemented.
+
 ## 2026-09-02 - fail-closed probe and implementation-path evidence
 
 - [**136**](traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md) - @vcruz305: a successful log consumer can replace a crashing probe's status and turn a visible traceback into `rc=0`. Status **contributor-measured, conditions as reported**.
