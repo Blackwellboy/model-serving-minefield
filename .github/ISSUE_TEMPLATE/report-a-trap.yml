@@ -123,6 +123,19 @@ body:
     validations:
       required: false
   - type: textarea
+    id: fix-pin-closure
+    attributes:
+      label: Exact bad/fixed pins, if you know them
+      description: If possible, give the immutable revision that reproduced the trap, the PR/commit/change that fixed it, and the exact revision where the same repro stopped failing. Commit SHAs, exact tags, image digests and model revisions are best. Do not guess; "unknown" is useful.
+      placeholder: |
+        BROKEN_PIN=abc1234
+        REPRO_BEFORE=PASS
+        FIXED_BY=project/repo#123 or def5678
+        KNOWN_GOOD_PIN=987fedc
+        REPRO_AFTER=PASS
+    validations:
+      required: false
+  - type: textarea
     id: what-serving
     attributes:
       label: What were you serving
