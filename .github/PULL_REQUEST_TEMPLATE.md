@@ -5,11 +5,14 @@ Thanks. Checklist for a new entry (see CONTRIBUTING.md for the format):
 - [ ] One file under the right category, `traps/<category>/NN-short-slug.md`. For the number, run `python3 integrity/registry_integrity.py` and read the `next free trap number` line. **You do not have to get this right:** numbers are provisional and we rebase them at merge, so do not renumber while your PR is in review even if entries land underneath you
 - [ ] **Found by** line directly under the title, naming the finder by the handle they publish under
 - [ ] Status line up top, using **exactly one label from the closed set** below, plus its evidence pointer
-- [ ] Sections in order: Symptom, Mechanism, Stacks and builds bitten, The check, The fix, Found, Attribution
+- [ ] Sections in order: Symptom, Mechanism, Stacks and builds bitten, The check, The fix, Fix/pin closure, Found, Attribution
 - [ ] Symptom leads: it describes what a reader would observe, not the mechanism
 - [ ] Measured, not inferred: counts and conditions are stated (0/42 style)
 - [ ] Stack AND build named: server version, model, revision hash, quantization build
 - [ ] The check is runnable as written (snippet, command, or a script added under `checks/`)
+- [ ] **Fix/pin closure recorded.** If a real fix is known, preserve `BROKEN_PIN`, `REPRO_BEFORE`, `FIXED_BY`, `KNOWN_GOOD_PIN`, and `REPRO_AFTER` using immutable revisions where available. If the fix/pin is not known, say `KNOWN_GOOD_PIN=UNKNOWN` rather than inventing one. See `docs/repro-fix-pin-contract.md`
+- [ ] Before/after evidence uses the same mechanism-level repro; an unrelated green suite is not `REPRO_AFTER=PASS`
+- [ ] A workaround is not labelled as a known-good closing pin unless the actual trap is absent on that tested revision/configuration
 - [ ] Row added to the symptom table in `README.md`
 - [ ] Model row added or extended in `models/README.md` if a model family is named
 - [ ] Attribution names the finder by the handle they publish under, with a link to raw data if public
