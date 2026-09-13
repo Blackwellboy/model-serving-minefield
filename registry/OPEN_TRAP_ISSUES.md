@@ -22,13 +22,6 @@ Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 
 - **REFUTE.** The exact reported broken pin does not contain the claimed 2 GiB deterministic workspace override, the environment setting remains effective on that pin, matched long prompts fail identically with the flag off, or the process death is attributable to an independent capacity/runtime fault rather than the deterministic planner/workspace path.
 - **Boundary.** Treat this as a **versioned/historical mechanism** unless proven on current source. Current upstream source no longer visibly carries the same deterministic 2 GiB hard-set, although deterministic mode still changes FlashInfer planning. Do not generalize the reported threshold to current SGLang without a fresh pin-specific reproduction. This remains separate from issue #73's narrow determinism result.
 
-### Q88. Architecture guard falls through to an unsafe fallback instead of rejecting an unsupported device
-
-- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/88
-- **CONFIRM.** On the pinned unreleased engine/model/device combination, prove startup and metadata health checks pass on the unpatched build, then capture the first-inference failure and resolve the architecture guard/fallback path from source. Apply only the reported guard widening and show that text/vision inference now executes through a supported dispatcher path. Require a correctness control against a public checkpoint/reference result before treating the patch as safe rather than merely crash-avoiding.
-- **REFUTE.** The first-request failure is not reached through the alleged guard/fallback path, the device is already explicitly supported/rejected by the pinned build, widening the guard does not remove the failure, or correctness controls reveal numerical corruption after the patch.
-- **Boundary.** Successful model load and HTTP metadata readiness are not positive inference controls. A patch that stops the crash is insufficient by itself; the issue's central risk is that the unsafe fallback could otherwise produce fluent wrong output.
-
 ### Q89. Sustained two-box TP=2 rank divergence is fixed by the engine build, not the tested flags
 
 - **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/89
