@@ -22,20 +22,6 @@ Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 
 - **REFUTE.** Omission does not match the maximum setting under the pinned protocol, or the alleged client effort knob is genuinely inert across the controls.
 - **Boundary.** Generation wall time is supporting evidence, not the sole mechanism test; the public issue's deterministic prompt-token/rendering control is preferred.
 
-### Q73. Reload-to-reload score drift is removed by deterministic/autotune pinning on the reported stack
-
-- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/73
-- **CONFIRM.** Reproduce reload-to-reload teacher-forced score movement under the reported stock launch, then repeat matched reloads with deterministic inference enabled and FlashInfer autotune disabled. Confirm per-item score movement collapses to zero (or the preregistered deterministic tolerance) without a material quality or short-prompt throughput regression.
-- **REFUTE.** The stock reload drift cannot be reproduced under the pinned protocol, or the drift persists after deterministic/autotune pinning.
-- **Boundary.** A successful determinism pin establishes this stack-specific measurement remedy only. It does not establish that `--enable-deterministic-inference` is safe for production or long prompts; issue #87 separately tests that serving-side cost.
-
-### Q83. GLM-5.3-Flash vision suppression kwargs redirect reasoning into content instead of stopping it
-
-- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/83
-- **CONFIRM.** On the same pinned GLM-5.3-Flash vLLM vision path, run matched image requests with the bare default, `enable_thinking:false`, `thinking:false`, and the model's in-text `/nothink` convention. Record both reasoning/content partition and total completion-token accounting. Confirm the suppression kwargs leave the overall reasoning work materially unchanged while relocating it into `content`, and confirm `/nothink` behaves distinctly as reported. Reproduce on the two reported checkpoint formats if available.
-- **REFUTE.** Either suppression kwarg actually reduces/stops reasoning under matched accounting, the apparent leak disappears when reasoning is measured independently of the response parser, or the behavior cannot be reproduced on the pinned vision path.
-- **Boundary.** Issue #83 explicitly proposes an extension to canonical trap 29. If the mechanism is the same off-switch/representation failure already owned by trap 29, adjudicate as scoped corroboration/addendum rather than allocating a duplicate trap ID.
-
 ### Q87. Deterministic inference hard-caps FlashInfer prefill workspace and kills long prompts
 
 - **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/87
@@ -78,12 +64,12 @@ Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 
 - **REFUTE.** The pinned Qwen3 config class preserves the declared window without the reported gates, small-model layer derivation produces the intended sliding layers under the reported inputs, or the exporter writes/reconstructs the effective window correctly on the pinned path.
 - **Boundary.** The structural config-class half is CPU/source reproducible and may be adjudicated independently from the exporter half. Do not generalize to every Qwen3-family checkpoint or claim a served-quality regression without proving the affected published/runtime config actually resolves to the wrong per-layer attention behavior. Dedupe against existing config/requested-vs-effective traps before allocating a new canonical ID.
 
-### Q110. SGLang `trtllm_mha` prefill gate says Blackwell while requiring SM100 specifically
+### Q113. GB10 page cache can impose a large calibration slowdown while `MemAvailable` barely moves
 
-- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/110
-- **CONFIRM.** Resolve the pinned SGLang prefill-backend capability gate from source and verify the condition is specifically SM100 / compute capability `(10, 0)` rather than the broader NVIDIA Blackwell marketing family. Confirm GB10/SM121 is rejected at startup by that guard and that the emitted error text can reasonably be read as a Blackwell-family requirement while naming SM100. Where possible, compare with a numeric-capability error path or supported SM100 control to show the distinction is gate semantics/message scope rather than a generic broken installation.
-- **REFUTE.** Current pinned source admits SM121/GB10, the failure is caused by a different dependency/backend requirement, or the message unambiguously states an SM100-only requirement without implying broader Blackwell-family eligibility.
-- **Boundary.** This may resolve as a scoped naming/capability-documentation trap or corroboration of an existing architecture-gate entry rather than a new runtime-correctness trap. Do not claim the backend should support GB10 merely because both products are marketed as Blackwell; confirmation of the trap requires only that the actual code gate and the human-facing architecture wording can be confused. Decode-side behavior and other TensorRT-LLM-derived backends remain out of scope unless separately tested.
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/113
+- **CONFIRM.** On the reported GB10 unified-memory calibration path, use a byte-identical workload and run **counterbalanced repeated arms** with controlled cache seeding: hot-cache → cold-cache and cold-cache → hot-cache, with an untimed/discarded warm-up before each measured sequence and enough repeats to report a preregistered median or other repeated statistic. Preserve workload/manifest identity, `MemFree`, `MemAvailable`, `Cached`, elapsed time and driver-pressure messages for every arm. Confirm the hot-cache condition repeatedly shows materially higher elapsed time while `Cached` and `MemFree` move materially and `MemAvailable` remains nearly unchanged. Do not confirm from a single ordered hot/cold pair.
+- **REFUTE.** The counterbalanced repeated hot/cold comparison does not reproduce a material slowdown, `MemAvailable` tracks the condition sufficiently to distinguish the arms, the effect reverses or disappears when order/warm-up is controlled, another launch/workload difference explains the elapsed-time delta, or the reported cache state is not actually present at launch.
+- **Boundary.** Treat the reported 62% as one paired comparison on one box, not a universal page-cache tax or confirmation by itself. Do not claim reclaim contention or the driver's `NV_ERR_NO_MEMORY` line is the proven causal mechanism unless independently instrumented. Adjudicate as an extension or separate measurement trap only after semantic dedupe against trap 119's allocation-time page-cache mechanism and trap 54's run-order/warm-cache controls.
 
 ## Privacy rule
 
