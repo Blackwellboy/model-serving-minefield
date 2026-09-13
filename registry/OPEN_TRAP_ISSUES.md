@@ -15,13 +15,6 @@ Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 
 - **REFUTE.** The mismatched model request is rejected, or resolved server state shows the supposedly mismatched name is actually served.
 - **Boundary.** This queue records the public issue and its adjudication criteria only; raw reproduction artifacts are not stored here.
 
-### Q72. Omitted reasoning effort resolves to the most expensive setting on the reported SGLang path
-
-- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/72
-- **CONFIRM.** On the same pinned lane, compare rendered/request accounting for omitted effort and the model's maximum effort setting, with at least one lower explicit effort control. Confirm omission matches the maximum while the explicit lower setting is measurably distinct, and separately verify any server-side default override if claimed.
-- **REFUTE.** Omission does not match the maximum setting under the pinned protocol, or the alleged client effort knob is genuinely inert across the controls.
-- **Boundary.** Generation wall time is supporting evidence, not the sole mechanism test; the public issue's deterministic prompt-token/rendering control is preferred.
-
 ### Q87. Deterministic inference hard-caps FlashInfer prefill workspace and kills long prompts
 
 - **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/87
