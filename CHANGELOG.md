@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-12 - Trap 139 switchless-triangle NCCL NIC round-robin
+
+- [**139**](traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md) - @btcxoomer: on a 3-node DGX Spark GB10 switchless triangle with two HCAs per node, stock NCCL round-robins both HCAs against each rank's single ring successor, so rank 0 schedules traffic to rank 2 over the leg physically cabled to rank 1, and the collective dies with an `ibv_modify_qp` timeout against a GID pair that has no physical path. The `NCCL_DEBUG=INFO` channel map is the decisive check. Status **contributor-measured, conditions as reported**.
+- Scope stays narrow: observed on the contributor's stock image NCCL and their patched-library fix; not a claim about every NCCL build's handling of `NCCL_IB_SUBNET_AWARE_ROUTING`, and not about switched fabrics.
+- Registry count moves from 138 to 139; Doctor coverage remains 19, leaving 120 canonical entries unimplemented.
+
 ## 2026-09-07 - Trap 138 structured-output corruption
 
 - [**138**](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) - @scottleimroth: on the reported vLLM 0.28.0 aarch64 / Qwen3.8-27B BF16 lane, draftless n-gram prompt lookup produced HTTP-successful responses whose assistant `content` duplicated ordinary keys/values and became invalid JSON; the matched speculation-off control removed those malformed cases. Status **contributor-measured, conditions as reported**.
