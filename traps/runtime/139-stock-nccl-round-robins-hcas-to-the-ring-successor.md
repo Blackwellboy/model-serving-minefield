@@ -112,8 +112,8 @@ NCCL_IB_HCA=<both HCAs>
 Whether `NCCL_IB_SUBNET_AWARE_ROUTING=1` works as a plain env var depends on the
 NCCL build: the contributor's stock image ignored it (that is the trap above),
 and the fix that worked was a **patched `libnccl.so.2` (2.30.7, subnet-aware
-routing compiled in) baked into a derived image** that overwrites the pip-path
-copy (`/usr/local/lib/python3.12/dist-packages/nvidia/nccl/lib/libnccl.so.2`).
+routing compiled in; see [alexellis/switchless-nccl](https://github.com/alexellis/switchless-nccl))
+baked into a derived image** that overwrites the pip-path copy (`/usr/local/lib/python3.12/dist-packages/nvidia/nccl/lib/libnccl.so.2`).
 With that library and the envelope below, the triangle came up clean: zero
 NCCL warnings in the channel bring-up, and the first API call served correctly
 (1/1).
