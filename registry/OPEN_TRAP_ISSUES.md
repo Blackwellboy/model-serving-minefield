@@ -85,6 +85,13 @@ Coverage snapshot: the doctor implements checks for **19 of 138** entries.  119 
 - **REFUTE.** Current pinned source admits SM121/GB10, the failure is caused by a different dependency/backend requirement, or the message unambiguously states an SM100-only requirement without implying broader Blackwell-family eligibility.
 - **Boundary.** This may resolve as a scoped naming/capability-documentation trap or corroboration of an existing architecture-gate entry rather than a new runtime-correctness trap. Do not claim the backend should support GB10 merely because both products are marketed as Blackwell; confirmation of the trap requires only that the actual code gate and the human-facing architecture wording can be confused. Decode-side behavior and other TensorRT-LLM-derived backends remain out of scope unless separately tested.
 
+### Q113. GB10 page cache can impose a large calibration slowdown while `MemAvailable` barely moves
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/113
+- **CONFIRM.** On the reported GB10 unified-memory calibration path, run a matched byte-identical workload with a large inherited Linux page cache and with caches dropped immediately before launch. Preserve the workload/manifest identity, `MemFree`, `MemAvailable`, `Cached`, elapsed time and driver-pressure messages for both arms. Confirm `Cached` and `MemFree` move materially while `MemAvailable` remains nearly unchanged, and that the hot-cache arm is materially slower under otherwise matched conditions.
+- **REFUTE.** The byte-identical hot/cold cache comparison does not reproduce a material slowdown, `MemAvailable` tracks the condition sufficiently to distinguish the arms, another uncontrolled launch/workload difference explains the elapsed-time delta, or the reported cache state is not actually present at launch.
+- **Boundary.** Treat the reported 62% as one paired comparison on one box, not a universal page-cache tax. Do not claim reclaim contention or the driver's `NV_ERR_NO_MEMORY` line is the proven causal mechanism unless independently instrumented. Adjudicate as an extension or separate measurement trap only after semantic dedupe against trap 119's allocation-time page-cache mechanism and other memory-pressure entries.
+
 ## Privacy rule
 
 Raw candidate research and unpublished evidence are not a public-repository surface. Public promotion starts from a deliberately scrubbed/adjudicated change, not by copying a private research directory into this repository.
