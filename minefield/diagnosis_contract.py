@@ -117,6 +117,13 @@ def documented_conditions(entry: dict[str, Any]) -> dict[str, list[str]]:
     topology = []
     if node_count:
         topology.extend("single-node" if item == "1" else f"{item}-node" for item in node_count)
+    # A switchless fabric is a direct-cable topology class, not merely an
+    # implementation detail. Encoding it makes switched-fabric observations
+    # a critical topology mismatch instead of an undocumented condition.
+    if re.search(r"\bswitchless\b", lower):
+        topology.append("switchless-direct-cable")
+    if re.search(r"\bmulti[- ]nic\b", lower):
+        topology.append("multi-nic")
     topology.extend(parallelism)
     stacks = [_normal(item) for item in entry.get("affected_stacks", [])]
     models = [_normal(item) for item in entry.get("affected_models", [])]
