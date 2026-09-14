@@ -57,6 +57,10 @@ jobs:
             ],
             'doctor/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 138','REGISTRY_TRAP_COUNT = 139')],
             'minefield/data/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 138','REGISTRY_TRAP_COUNT = 139')],
+            'registry/OPEN_TRAP_ISSUES.md':[
+                ('**19 of 138** entries','**19 of 139** entries'),
+                ('119 uncovered entries','120 uncovered entries'),
+            ],
           }
           for name,pairs in changes.items():
               p=Path(name); text=p.read_text(encoding='utf-8')
@@ -108,7 +112,7 @@ jobs:
         run: |
           set -euo pipefail
           git rm .github/workflows/finish-trap139.yml
-          git add -- README.md CHANGELOG.md HALL_OF_FAME.md models/README.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          git add -- README.md CHANGELOG.md HALL_OF_FAME.md models/README.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py registry/OPEN_TRAP_ISSUES.md dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
           git config user.name 'blackwellboy-ci'
           git config user.email '76774064+Blackwellboy@users.noreply.github.com'
           git commit -m 'maint: complete Trap 139 registry integration'
