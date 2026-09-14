@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 138,
-  "content_sha256": "d25e848fa8280463512cdd393bc5e8096b948876c5d54ffcc68325549b10592f",
+  "canonical_trap_count": 139,
+  "content_sha256": "a3518b5a84e25001d5e4cf6dbe586f243c2eadbb92fb5fbae2dc95923a7e76d3",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -9570,6 +9570,65 @@
       "supersession": null,
       "symptom": "The OpenAI-compatible request itself succeeds: HTTP 200, a valid response envelope, and a normal finishreason: stop. The corruption is inside .choices[0].message.content: the assistant content is supposed to be JSON, but an ordinary token or key is duplicated adjacent to a prior occurrence, so parsing that content string as JSON fails. The measured examples included shapes equivalent to: The surrounding generated text can remain coherent, so a caller that checks only HTTP/envelope success or does not strictly parse the assistant content can pass the corruption downstream.",
       "title": "n-gram prompt lookup can duplicate tokens inside structured output"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [],
+      "affected_versions_builds": "The exact 3-node report came from a DGX Spark / GB10 switchless triangle using the stock NCCL carried by the contributor's pinned serving image. The exact stock NCCL version string was not preserved before replacement, so this entry does not generalize the failure to every NCCL release. Alex Ellis's independently published implementation is source-pinned to NVIDIA NCCL v2.30.7-1 at commit 73cf112295c33aee2b895f329f592f2a9b4b0f97; his canonical switchless release is v0.0.1 and publishes source/binary provenance in the repository.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Before serving on a switchless multi-NIC cycle, run a value-checked multi-rank collective inside the exact runtime image with NCCL debug logging enabled. For every rank-to-peer relationship, map the selected network device to the physical neighbour that device can actually reach.",
+      "contributor": "@btcxoomer. Independent public implementation and qualification evidence by Alex Ellis (@alexellisuk)",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "The exact 3-node report came from a DGX Spark / GB10 switchless triangle using the stock NCCL carried by the contributor's pinned serving image. The exact stock NCCL version string was not preserved before replacement, so this entry does not generalize the failure to every NCCL release. Alex Ellis's independently published implementation is source-pinned to NVIDIA NCCL v2.30.7-1 at commit 73cf112295c33aee2b895f329f592f2a9b4b0f97; his canonical switchless release is v0.0.1 and publishes source/binary provenance in the repository.",
+      "id": "139",
+      "known_limitations": "",
+      "mechanism": "The reported stock lane selected HCAs as if all selected interfaces could reach the ring successor. That assumption is harmless on a switched fabric where either interface can reach the peer, but it is false on a direct-cable cycle where each interface reaches only its cabled neighbour. The decisive diagnostic is therefore not link state alone: it is whether each selected peer/device pair corresponds to a physically reachable leg. Alex Ellis's public four-node repository independently documents the adjacent topology problem. On a four-node direct-cable cycle, stock NCCL can attempt Tree/PAT relationships between ranks that are not directly cabled. His source-pinned implementation constrains the topology to a qualified Ring path, uses subnet-aware peer/interface selection, verifies the selected fabric identities, and proves which NCCL library each process loaded. This corroborates the switchless topology class without collapsing the two distinct evidence surfaces into one mechanism claim.",
+      "mitigation": "Use a NCCL path explicitly qualified for the direct-cable topology and prove that every rank process loads the same pinned library. Alex's public four-node runtime contract is a concrete reference: Ring-only switchless operation, subnet-aware routing, no NIC merging, explicit RoCE/GID validation, and in-process library-identity verification. Do not blindly hard-code NCCLIBGIDINDEX=3 as a portable fix. GID tables are per-host and can change when stale addresses are present. On modern NCCL, prefer dynamic selection of the intended IPv4 RoCEv2 entry and verify the result on every relevant port. If a legacy deployment must pin an index, verify that exact index independently on every host/interface first. This is the same portability class documented in Trap 114.",
+      "public_evidence_links": [
+        "https://github.com/alexellis/switchless-nccl"
+      ],
+      "related_traps": [
+        "114",
+        "134"
+      ],
+      "source_path": "traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A tensor-parallel bring-up on a switchless topology can fail during NCCL transport setup even though the destination peer is directly connected and the physical links are healthy. In the contributor's 3-node triangle, the debug channel map showed traffic for one peer assigned to the interface physically cabled to the other peer. The resulting peer/interface pairing had no physical path and the collective timed out. The same contributor failure reproduced on two independent surfaces in the same pinned image: the real serving bring-up and a minimal torch.distributed collective. That is strong evidence that the failure was below the serving engine rather than a vLLM-only fault.",
+      "title": "stock NCCL can select the wrong HCA for a peer on a switchless multi-NIC cycle"
     }
   ],
   "schema_version": "1.1"
