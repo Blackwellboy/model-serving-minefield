@@ -30,6 +30,8 @@
     "upstream_change_triage.py",
     "reproduce_qwen38_reasoning_config_traps.py",
     "vllm_enginecore_orphan_probe.py",
-    "concurrency_execution_proof_preflight.py"
+    "concurrency_execution_proof_preflight.py",
+    "agent_literal_cli_intent_preflight.py",
+    "semantic_no_progress_preflight.py"
   ]
 }
