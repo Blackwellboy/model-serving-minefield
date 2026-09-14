@@ -1,0 +1,40 @@
+name: pr123-regenerate-artifact
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate:
+    if: ${{ github.event.pull_request.head.ref == 'integration/trap139-switchless-nccl-alex' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Regenerate and test
+        run: |
+          python -m unittest discover -s tests
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git diff --check
+      - name: Package regenerated files
+        run: |
+          mkdir -p /tmp/regenerated
+          git diff --name-only -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md > /tmp/regenerated-files.txt
+          while IFS= read -r path; do
+            [ -n "$path" ] || continue
+            mkdir -p "/tmp/regenerated/$(dirname "$path")"
+            cp "$path" "/tmp/regenerated/$path"
+          done < /tmp/regenerated-files.txt
+          cp /tmp/regenerated-files.txt /tmp/regenerated/FILES.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr123-regenerated
+          path: /tmp/regenerated
+          if-no-files-found: error
