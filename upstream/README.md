@@ -47,7 +47,7 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U04, a minor version moved the default context by 64x](U04-ollama-vram-tiered-default-context.md) | Ollama | maintainer responded | closed, not fixed |
 | [U05, an empty think block turned tool calls into raw JSON](U05-ollama-gemma4-think-false-leaks-json.md) | Ollama | maintainer confirmed | closed, fixed |
 | [U06, native tool markup with an empty tool_calls array](U06-mlx-lm-gemma4-tool-parser-missing.md) | mlx_lm | maintainer confirmed | closed, fixed |
-| [U07, a valid-looking tool call with contaminated arguments](U07-sglang-tool-choice-required-contaminates-args.md) | SGLang | maintainer confirmed | open |
+| [U07, tool choice required contaminates tool arguments](U07-sglang-tool-choice-required-contaminates-args.md) | SGLang | maintainer confirmed | open |
 | [U08, one extra channel and the chat endpoint throws](U08-sglang-harmony-commentary-channel-valueerror.md) | SGLang | maintainer reproduced | closed, not fixed |
 | [U09, the chat template you passed was ignored, with a warning you did not see](U09-vllm-mistral-chat-template-ignored.md) | vLLM | maintainer confirmed | closed, fixed |
 | [U10, a reranker with no template returns confident, near-reversed scores](U10-vllm-vl-reranker-without-chat-template.md) | vLLM | maintainer responded | closed, resolved as usage |
@@ -76,6 +76,8 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U33, missing DFlash causality metadata can change semantics after an update](U33-sglang-dflash-missing-is-causal-default-drift.md) | SGLang / DFlash | maintainer confirmed | closed, fixed |
 | [U34, DFlash draft-KV budgeting can undercount by the DCP factor](U34-sglang-dflash-dcp-draft-kv-budget-undercount.md) | SGLang / DFlash / DCP | maintainer confirmed | closed, fixed |
 | [U35, a resolvable dependency set can still make FA4 fail on Blackwell](U35-sglang-fa4-blackwell-resolved-deps-still-fail-compile.md) | SGLang / FA4 / Blackwell | maintainer confirmed | closed, fixed |
+| [U36, prefix caching can be configured on while the reported hit path stays at zero](U36-vllm-prefix-cache-enabled-zero-hits-kpooltailmanager.md) | vLLM / GLM-5.3-Flash / GB10 | none | open |
+| [U37, ModelOpt NVFP4 can emit invalid byte-token sequences while a compressed-tensors control stays clean](U37-vllm-modelopt-nvfp4-invalid-byte-token-output.md) | vLLM / GLM-5.3-Flash / Blackwell | none | open |
 
 ## Where these came from, and what did not survive
 
@@ -112,6 +114,13 @@ boundaries are recorded in
 private evidence archive *(private evidence archived)*.
 The community `glm52-spark-kit` and `veloGB10` findings from the same harvest
 remain in the lead/adjudication path rather than being silently upgraded.
+
+U36-U37 came from a 2026-09-13 re-read of two public reports that had already
+passed the private promotion queue's evidence-boundary review. U36 preserves
+@ThinkCode's zero-hit prefix-cache report without assigning blame to
+`KpoolTailManager`; U37 preserves @shing100's matched checkpoint/loader control
+without pretending the unresolved ModelOpt checkpoint-vs-runtime mechanism is
+settled. Neither has been reproduced by this registry.
 
 The procedural rule from the first pass still holds: **the mining summary is a
 lead, not the source.** Read the current tracker thread, preserve corrections
