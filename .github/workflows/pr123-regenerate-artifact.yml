@@ -55,7 +55,7 @@ jobs:
       - name: Package the exact proposed tree changes
         run: |
           mkdir -p /tmp/proposed
-          git diff --name-only > /tmp/proposed-files.txt
+          (git diff --name-only; git ls-files --others --exclude-standard) | sort -u > /tmp/proposed-files.txt
           while IFS= read -r path; do
             [ -n "$path" ] || continue
             mkdir -p "/tmp/proposed/$(dirname "$path")"
