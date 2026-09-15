@@ -94,7 +94,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "04",
-      "untrusted_published_check_text": "Assemble a three-turn conversation whose first assistant message carries a uniquely marked reasoning string, render the actual prompt through your serving path, and grep it for that marker. If it is absent, your multi-turn numbers describe a model that cannot see its own thinking. Then diff the render with and without the preservation kwarg. checks/preflighttemplate.py in this registry does exactly this and refuses to pass the lane if the marker is missing. Corollary worth internalizing: enumerate every kwarg the template reads and diff it against the model card. Anything read-but-undocumented is an untested variable, and if it sits near a thinking branch, assume it changes your results until you have shown it does not."
+      "untrusted_published_check_text": "Assemble a three-turn conversation whose first assistant message carries a uniquely marked reasoning string, render the actual prompt through your serving path, and grep it for that marker. If it is absent, your multi-turn numbers describe a model that cannot see its own thinking. Then diff the render with and without the preservation kwarg. checks/preflight_template.py in this registry does exactly this and refuses to pass the lane if the marker is missing. Corollary worth internalizing: enumerate every kwarg the template reads and diff it against the model card. Anything read-but-undocumented is an untested variable, and if it sits near a thinking branch, assume it changes your results until you have shown it does not."
     },
     {
       "confirm_criterion": "The failure signature described by trap 05 appears under matching conditions.",
@@ -166,7 +166,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "07",
-      "untrusted_published_check_text": "Grep the chat template for the parameter name before trusting any knob you send. If the template never references it, the knob is dead on this build regardless of what the server accepts. The general rule: diff the set of kwargs the template reads against the set the API accepts, in both directions. checks/preflighttemplate.py enumerates the template's kwarg surface for you."
+      "untrusted_published_check_text": "Grep the chat template for the parameter name before trusting any knob you send. If the template never references it, the knob is dead on this build regardless of what the server accepts. The general rule: diff the set of kwargs the template reads against the set the API accepts, in both directions. checks/preflight_template.py enumerates the template's kwarg surface for you."
     },
     {
       "confirm_criterion": "The failure signature described by trap 08 appears under matching conditions.",
@@ -238,7 +238,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "10",
-      "untrusted_published_check_text": "Before downloading 160 GB, read the config, not the repo name: Then answer: which kernel family does this quantmethod route to in YOUR build on YOUR arch, and is that the fast path or a weight-only fallback? If you cannot answer from the config plus your build, expect the fallback."
+      "untrusted_published_check_text": "Before downloading 160 GB, read the config, not the repo name: Then answer: which kernel family does this quant_method route to in YOUR build on YOUR arch, and is that the fast path or a weight-only fallback? If you cannot answer from the config plus your build, expect the fallback."
     },
     {
       "confirm_criterion": "The failure signature described by trap 11 appears under matching conditions.",
@@ -269,7 +269,7 @@
       "control": "Repeat with the suspected variable removed or with the known-good condition.",
       "expected_duration": "5-30 minutes unless the entry names a soak",
       "human_review_still_required": true,
-      "limitations": "The 4.50% and every per-family rate are the rates at maxtokens=1024 on this task mix. They do not transfer to another budget, which is trap 12's own standing warning, and this addendum is an instance of it rather than an exception. Single serve, no baseline arm. Status of this addendum: reproduced here. Single serve, no baseline arm. Evidence for this addendum: study, scrubbed raw, verify.py (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), redaction record.",
+      "limitations": "The 4.50% and every per-family rate are the rates at max_tokens=1024 on this task mix. They do not transfer to another budget, which is trap 12's own standing warning, and this addendum is an instance of it rather than an exception. Single serve, no baseline arm. Status of this addendum: reproduced here. Single serve, no baseline arm. Evidence for this addendum: study, scrubbed raw, verify.py (26 checks, including the 92-of-2,045 rate, the thinking-on/off split, the finish-reason condition, the per-family concentration and the quartile rates), redaction record.",
       "prerequisites": [
         "A disposable or explicitly authorised test surface",
         "Raw output capture"
@@ -334,7 +334,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "14",
-      "untrusted_published_check_text": "Before treating any re-upload as drop-in: bash"
+      "untrusted_published_check_text": "Before treating any re-upload as drop-in: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 15 appears under matching conditions.",
@@ -454,7 +454,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "19",
-      "untrusted_published_check_text": "One request with one tool defined, before anything else: assert the response contains a structured toolcalls array, not prose describing a call. If prose: check the serve line for the template/parser flags before touching the client."
+      "untrusted_published_check_text": "One request with one tool defined, before anything else: assert the response contains a structured tool_calls array, not prose describing a call. If prose: check the serve line for the template/parser flags before touching the client."
     },
     {
       "confirm_criterion": "The failure signature described by trap 20 appears under matching conditions.",
@@ -478,7 +478,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "20",
-      "untrusted_published_check_text": "Probe both field names on your lane, same transcript, before trusting either. Render a conversation whose prior assistant turn carries a uniquely marked reasoning string once under reasoning and once under reasoningcontent, and diff the two renders (llama.cpp's /apply-template makes this deterministic; on other runtimes compare prompttokens and grep the assembled prompt for the marker, as in checks/preflighttemplate.py). The arm whose render contains the marker is your write field. If neither does, you are in trap 04 with no preservation path and need the kwarg route."
+      "untrusted_published_check_text": "Probe both field names on your lane, same transcript, before trusting either. Render a conversation whose prior assistant turn carries a uniquely marked reasoning string once under reasoning and once under reasoning_content, and diff the two renders (llama.cpp's /apply-template makes this deterministic; on other runtimes compare prompttokens and grep the assembled prompt for the marker, as in checks/preflighttemplate.py). The arm whose render contains the marker is your write field. If neither does, you are in trap 04 with no preservation path and need the kwarg route."
     },
     {
       "confirm_criterion": "The failure signature described by trap 21 appears under matching conditions.",
@@ -550,7 +550,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "23",
-      "untrusted_published_check_text": "One streamed request against your lane, thinking off, logging the key set of every delta: does the answer text arrive under content, reasoning, or reasoningcontent? Then the same request with stream: false. Confirmed if the streamed answer exists only in reasoning deltas while the non-streamed answer sits in content. Assert streaming and non-streaming parity before trusting any streamed harness number."
+      "untrusted_published_check_text": "One streamed request against your lane, thinking off, logging the key set of every delta: does the answer text arrive under content, reasoning, or reasoning_content? Then the same request with stream: false. Confirmed if the streamed answer exists only in reasoning deltas while the non-streamed answer sits in content. Assert streaming and non-streaming parity before trusting any streamed harness number."
     },
     {
       "confirm_criterion": "The failure signature described by trap 24 appears under matching conditions.",
@@ -622,7 +622,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "26",
-      "untrusted_published_check_text": "On forced-tool prompts, log the raw model text before any parser, alongside the structured response. Confirmed on any turn where raw text contains tool markup inside an open think block while structured toolcalls is empty. Never conclude \"cannot tool-call\" from the structured channel alone; that conclusion requires the raw dump."
+      "untrusted_published_check_text": "On forced-tool prompts, log the raw model text before any parser, alongside the structured response. Confirmed on any turn where raw text contains tool markup inside an open think block while structured tool_calls is empty. Never conclude \"cannot tool-call\" from the structured channel alone; that conclusion requires the raw dump."
     },
     {
       "confirm_criterion": "The failure signature described by trap 27 appears under matching conditions.",
@@ -646,7 +646,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "27",
-      "untrusted_published_check_text": "A ten-prompt factual probe at temperature 0 immediately after first load, before any speed benching, compared against the unquantized model's known answers. Then diff every module name in the checkpoint against quantizationconfig.ignore and confirm the layers the architecture requires unquantized actually match. Record the engine version next to the accuracy number."
+      "untrusted_published_check_text": "A ten-prompt factual probe at temperature 0 immediately after first load, before any speed benching, compared against the unquantized model's known answers. Then diff every module name in the checkpoint against quantization_config.ignore and confirm the layers the architecture requires unquantized actually match. Record the engine version next to the accuracy number."
     },
     {
       "confirm_criterion": "The failure signature described by trap 28 appears under matching conditions.",
@@ -694,7 +694,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "29",
-      "untrusted_published_check_text": "Send the same hard prompt twice at your production maxtokens: once bare, once with the thinking kwarg enabled. If the kwarg arm hits the ceiling with empty content while the bare arm completes, every caller's kwarg surface is part of your budget model. Grep your callers for chattemplatekwargs."
+      "untrusted_published_check_text": "Send the same hard prompt twice at your production maxtokens: once bare, once with the thinking kwarg enabled. If the kwarg arm hits the ceiling with empty content while the bare arm completes, every caller's kwarg surface is part of your budget model. Grep your callers for chat_template_kwargs."
     },
     {
       "confirm_criterion": "The failure signature described by trap 30 appears under matching conditions.",
@@ -718,7 +718,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "30",
-      "untrusted_published_check_text": "Do not infer this from behavior; read it: 1. Pull chattemplate.jinja (or the chattemplate field of tokenizerconfig.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts."
+      "untrusted_published_check_text": "Do not infer this from behavior; read it: 1. Pull chat_template.jinja (or the chat_template field of tokenizer_config.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts."
     },
     {
       "confirm_criterion": "The failure signature described by trap 31 appears under matching conditions.",
@@ -766,7 +766,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "32",
-      "untrusted_published_check_text": "Send one request with maxtokens greater than the server flag and read usage.completiontokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees."
+      "untrusted_published_check_text": "Send one request with max_tokens greater than the server flag and read usage.completion_tokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees."
     },
     {
       "confirm_criterion": "The failure signature described by trap 33 appears under matching conditions.",
@@ -790,7 +790,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "33",
-      "untrusted_published_check_text": "Before you change a MoE's active-expert count, measure both settings on the same items, paired, and report the delta. If you are not running a benchmark, the cheap structural check is to confirm what your serving stack does with the extra experts: dump the post-selection gate weights for one token at both k values and compare the weight assigned to the rank-1 expert. If it fell, you bought dilution, not capacity. python"
+      "untrusted_published_check_text": "Before you change a MoE's active-expert count, measure both settings on the same items, paired, and report the delta. If you are not running a benchmark, the cheap structural check is to confirm what your serving stack does with the extra experts: dump the post-selection gate weights for one token at both k values and compare the weight assigned to the rank-1 expert. If it fell, you bought dilution, not capacity. ```python"
     },
     {
       "confirm_criterion": "The failure signature described by trap 34 appears under matching conditions.",
@@ -862,7 +862,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "36",
-      "untrusted_published_check_text": "Report the truncation count per arm, next to every generated number, and refuse to compare arms whose truncation rates differ materially. Two assertions catch both halves: python"
+      "untrusted_published_check_text": "Report the truncation count per arm, next to every generated number, and refuse to compare arms whose truncation rates differ materially. Two assertions catch both halves: ```python"
     },
     {
       "confirm_criterion": "The failure signature described by trap 37 appears under matching conditions.",
@@ -886,7 +886,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "37",
-      "untrusted_published_check_text": "Score the gold answers through your own harness before you score a model. If the reference solution does not come back at or near 100%, your harness is what you are measuring. This one check catches all three cases above, and it is cheap: python"
+      "untrusted_published_check_text": "Score the gold answers through your own harness before you score a model. If the reference solution does not come back at or near 100%, your harness is what you are measuring. This one check catches all three cases above, and it is cheap: ```python"
     },
     {
       "confirm_criterion": "The failure signature described by trap 38 appears under matching conditions.",
@@ -910,7 +910,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "38",
-      "untrusted_published_check_text": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through applychattemplate with addgenerationprompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce."
+      "untrusted_published_check_text": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through apply_chat_template with add_generation_prompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce."
     },
     {
       "confirm_criterion": "The failure signature described by trap 39 appears under matching conditions.",
@@ -934,7 +934,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "39",
-      "untrusted_published_check_text": "Two lines, before any generation: python import os os.environ[\"CUDAVISIBLEDEVICES\"] = \"0,1\" set BEFORE importing torch"
+      "untrusted_published_check_text": "Two lines, before any generation: ```python import os os.environ[\"CUDAVISIBLEDEVICES\"] = \"0,1\" set BEFORE importing torch"
     },
     {
       "confirm_criterion": "The failure signature described by trap 40 appears under matching conditions.",
@@ -982,7 +982,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "41",
-      "untrusted_published_check_text": "Measure completed items per minute, end to end, before and after any batching change. Do not accept GPU utilization, power draw, or tokens/second as evidence, because all three rise when the batch is padding. python"
+      "untrusted_published_check_text": "Measure completed items per minute, end to end, before and after any batching change. Do not accept GPU utilization, power draw, or tokens/second as evidence, because all three rise when the batch is padding. ```python"
     },
     {
       "confirm_criterion": "The failure signature described by trap 42 appears under matching conditions.",
@@ -1006,7 +1006,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "42",
-      "untrusted_published_check_text": "Two checks, both cheap and both offline: 1. Conditional against pooled. Compute accuracy conditional on the sample having attempted an answer, and compare it to pooled pass@1. If conditional accuracy is flat against your no-apparatus baseline while pooled dropped, the drop is routing, not capability. A flat or nearly flat wrong-answer count with a large pooled drop is the same signal seen from the other side, and it is visible without recomputing anything. 2. Bucket on two axes, not one. A single five-way bucket list does not work, because some of its members are outcomes and others are termination states, and a sample can be both at once. Record two independent fields per sample and report the cross-tab: - Outcome: PASS / WRONG / NOEXTRACTABLE / TOOLCALL / UNPARSED - Termination: STOP / LENGTH / TOOLCALLS / ERROR / OTHER The counts in the magnitude table above are exactly why. The apparatus column happens to sum to 492, but the baseline column sums to 500 against 492 samples: a cap-hit is a termination state that can co-occur with having no extractable output, so those two rows double-count the same samples. One axis cannot express that; two can, and LENGTH crossed with PASS (a cap-hit that still produced usable code) is a real cell that a one-axis scheme has nowhere to put. A harness that cannot produce this cross-tab cannot tell you which of several different things happened, and they have different fixes. A useful secondary signal: per-problem flakiness that explodes while answers stay stable. Bucket patterns like T,P,P and P,T,P across K seeds on one problem are the route varying, not the answer varying. If your flakiness metric cannot distinguish those, it will report answer instability that is not there."
+      "untrusted_published_check_text": "Two checks, both cheap and both offline: 1. Conditional against pooled. Compute accuracy conditional on the sample having attempted an answer, and compare it to pooled pass@1. If conditional accuracy is flat against your no-apparatus baseline while pooled dropped, the drop is routing, not capability. A flat or nearly flat wrong-answer count with a large pooled drop is the same signal seen from the other side, and it is visible without recomputing anything. 2. Bucket on two axes, not one. A single five-way bucket list does not work, because some of its members are outcomes and others are termination states, and a sample can be both at once. Record two independent fields per sample and report the cross-tab: - Outcome: PASS / WRONG / NO_EXTRACTABLE / TOOL_CALL / UNPARSED - Termination: STOP / LENGTH / TOOL_CALLS / ERROR / OTHER The counts in the magnitude table above are exactly why. The apparatus column happens to sum to 492, but the baseline column sums to 500 against 492 samples: a cap-hit is a termination state that can co-occur with having no extractable output, so those two rows double-count the same samples. One axis cannot express that; two can, and LENGTH crossed with PASS (a cap-hit that still produced usable code) is a real cell that a one-axis scheme has nowhere to put. A harness that cannot produce this cross-tab cannot tell you which of several different things happened, and they have different fixes. A useful secondary signal: per-problem flakiness that explodes while answers stay stable. Bucket patterns like T,P,P and P,T,P across K seeds on one problem are the route varying, not the answer varying. If your flakiness metric cannot distinguish those, it will report answer instability that is not there."
     },
     {
       "confirm_criterion": "The failure signature described by trap 43 appears under matching conditions.",
@@ -1030,7 +1030,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "43",
-      "untrusted_published_check_text": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured toolcalls come back rather than prose or an empty call."
+      "untrusted_published_check_text": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured tool_calls come back rather than prose or an empty call."
     },
     {
       "confirm_criterion": "The failure signature described by trap 44 appears under matching conditions.",
@@ -1054,7 +1054,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "44",
-      "untrusted_published_check_text": "Three assertions, all cheap, in this order: 1. Per-row cosine in float64, not a flat cosine over the whole tensor. A flat cosine over a 1.27B-element lmhead overflows in float32 and can return > 1, which is itself the tell that your metric is broken. 2. A decimal-comparison generation probe (is 9.9 or 9.11 larger?) alongside the usual capital-of-France probe. The capital probe passes on a subtly-broken dequant; the decimal probe does not. 3. Compare against the base model's own output on the same prompts, not against your expectation."
+      "untrusted_published_check_text": "Three assertions, all cheap, in this order: 1. Per-row cosine in float64, not a flat cosine over the whole tensor. A flat cosine over a 1.27B-element lm_head overflows in float32 and can return > 1, which is itself the tell that your metric is broken. 2. A decimal-comparison generation probe (is 9.9 or 9.11 larger?) alongside the usual capital-of-France probe. The capital probe passes on a subtly-broken dequant; the decimal probe does not. 3. Compare against the base model's own output on the same prompts, not against your expectation."
     },
     {
       "confirm_criterion": "The failure signature described by trap 45 appears under matching conditions.",
@@ -1078,7 +1078,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "45",
-      "untrusted_published_check_text": "The signature itself, ~20x prefill drop with ~0.5x decode, no error, is diagnostic. Confirm by running the same model on the same binary at f16/f16 and comparing; then check how the build directory was configured. bash"
+      "untrusted_published_check_text": "The signature itself, ~20x prefill drop with ~0.5x decode, no error, is diagnostic. Confirm by running the same model on the same binary at f16/f16 and comparing; then check how the build directory was configured. ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 46 appears under matching conditions.",
@@ -1102,7 +1102,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "46",
-      "untrusted_published_check_text": "Two, in order of cheapness: 1. GPU utilization vs power draw. This is the tell, and it is architecture-agnostic: 98% utilization.gpu at ~270W of 575W (47% TDP) means compute units are busy but tensor cores are not saturated, i.e. you are on a fallback path. After the rebuild the same workload ran 95% util at ~460W (80% TDP) and 16 to 40 tok/s. Runnable: 2. Ancestry, before you assume a fix needs porting: Also confirm the feature actually compiled in, the server's startup systeminfo line reports the arch-native flag (BLACKWELLNATIVEFP4 = 1 in this case). A flag you passed is not evidence; a banner the binary printed is."
+      "untrusted_published_check_text": "Two, in order of cheapness: 1. GPU utilization vs power draw. This is the tell, and it is architecture-agnostic: 98% utilization.gpu at ~270W of 575W (47% TDP) means compute units are busy but tensor cores are not saturated, i.e. you are on a fallback path. After the rebuild the same workload ran 95% util at ~460W (80% TDP) and 16 to 40 tok/s. Runnable: 2. Ancestry, before you assume a fix needs porting: Also confirm the feature actually compiled in, the server's startup system_info line reports the arch-native flag (BLACKWELL_NATIVE_FP4 = 1 in this case). A flag you passed is not evidence; a banner the binary printed is."
     },
     {
       "confirm_criterion": "The failure signature described by trap 47 appears under matching conditions.",
@@ -1126,7 +1126,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "47",
-      "untrusted_published_check_text": "Two lines: bash"
+      "untrusted_published_check_text": "Two lines: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 48 appears under matching conditions.",
@@ -1174,7 +1174,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "49",
-      "untrusted_published_check_text": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server ntokens, usage.prompttokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a"
+      "untrusted_published_check_text": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server n_tokens, usage.prompt_tokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a"
     },
     {
       "confirm_criterion": "The failure signature described by trap 50 appears under matching conditions.",
@@ -1198,7 +1198,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "50",
-      "untrusted_published_check_text": "Three, cheapest first: 1. Count the dumps. The reference produced 53 entries for 52 layers. That mismatch alone is the tell, and it costs nothing to check. 2. Check norms against theory. RMSNorm maps any input to about ||weight||. Here ||normf.weight|| = 124.99, so every post-norm state lands at ~125 by construction. The reference's dramatic 567 to 124 \"drop\" is just the norm being applied. If a \"collapse\" lands exactly on ||weight||, it is not a collapse. 3. Apply your own final norm before comparing. Ours: raw L51 = 552.1; after applying normf = 120.7, against the reference's 123.7 (on a different prompt). After fixing the offset, the two implementations tracked within ~3% across the whole stack: | backbone layer output | reference | ours | |---|---|---| | 49 | 452.5 | 452.3 | | 50 | 566.8 | 582.3 | | post-final-norm | 123.7 | 120.7 | match, tries both index alignments, and reports which one is consistent."
+      "untrusted_published_check_text": "Three, cheapest first: 1. Count the dumps. The reference produced 53 entries for 52 layers. That mismatch alone is the tell, and it costs nothing to check. 2. Check norms against theory. RMSNorm maps any input to about ||weight||. Here ||norm_f.weight|| = 124.99, so every post-norm state lands at ~125 by construction. The reference's dramatic 567 to 124 \"drop\" is just the norm being applied. If a \"collapse\" lands exactly on ||weight||, it is not a collapse. 3. Apply your own final norm before comparing. Ours: raw L51 = 552.1; after applying norm_f = 120.7, against the reference's 123.7 (on a different prompt). After fixing the offset, the two implementations tracked within ~3% across the whole stack: | backbone layer output | reference | ours | |---|---|---| | 49 | 452.5 | 452.3 | | 50 | 566.8 | 582.3 | | post-final-norm | 123.7 | 120.7 | match, tries both index alignments, and reports which one is consistent."
     },
     {
       "confirm_criterion": "The failure signature described by trap 51 appears under matching conditions.",
@@ -1222,7 +1222,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "51",
-      "untrusted_published_check_text": "Run perplexity on every backend you have before drawing a conclusion about a quant format, and bisect by tensor group rather than by guess: bash"
+      "untrusted_published_check_text": "Run perplexity on every backend you have before drawing a conclusion about a quant format, and bisect by tensor group rather than by guess: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 52 appears under matching conditions.",
@@ -1270,7 +1270,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "53",
-      "untrusted_published_check_text": "After every restart, prove three things about the process that is answering, not about the command you ran: bash"
+      "untrusted_published_check_text": "After every restart, prove three things about the process that is answering, not about the command you ran: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 54 appears under matching conditions.",
@@ -1318,7 +1318,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "55",
-      "untrusted_published_check_text": "1. Read all three numbers before quoting a long-context result. config.json maxpositionembeddings and the rope factor; the served file's own contextlength metadata; and the model card's stated training context, which is usually in prose rather than in config. 2. Anchor with a shorter-context control. Run your battery at the model's native length as well as at the long length. A model that scores well at native and collapses at 8x native is telling you about extension, not about capability. 3. Include a model that was genuinely trained long in any long-context comparison. Without one, every result is confounded with extension quality."
+      "untrusted_published_check_text": "1. Read all three numbers before quoting a long-context result. config.json max_position_embeddings and the rope factor; the served file's own context_length metadata; and the model card's stated training context, which is usually in prose rather than in config. 2. Anchor with a shorter-context control. Run your battery at the model's native length as well as at the long length. A model that scores well at native and collapses at 8x native is telling you about extension, not about capability. 3. Include a model that was genuinely trained long in any long-context comparison. Without one, every result is confounded with extension quality."
     },
     {
       "confirm_criterion": "The failure signature described by trap 56 appears under matching conditions.",
@@ -1366,7 +1366,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "57",
-      "untrusted_published_check_text": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with returntokenstrs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent."
+      "untrusted_published_check_text": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with return_token_strs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent."
     },
     {
       "confirm_criterion": "The failure signature described by trap 58 appears under matching conditions.",
@@ -1390,7 +1390,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "58",
-      "untrusted_published_check_text": "Ask the server what it actually built, twice, once with the field and once without, and compare prompttokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoningeffort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompttokens on real completions, which cannot be faked."
+      "untrusted_published_check_text": "Ask the server what it actually built, twice, once with the field and once without, and compare prompt_tokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoning_effort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompt_tokens on real completions, which cannot be faked."
     },
     {
       "confirm_criterion": "The failure signature described by trap 59 appears under matching conditions.",
@@ -1438,7 +1438,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "60",
-      "untrusted_published_check_text": "Send one long prompt with a fact at position zero. Record the answer, the finishreason and the cache-hit delta from the server's metrics. Send the byte-identical prompt again immediately and record the same three. If the cache-hit fraction goes from roughly zero to roughly one and either the answer or the finish reason changes, you have this. Two requests, no configuration change, and it works on any server that exposes prefix-cache counters. To measure a lane honestly afterwards, make every evaluation prompt unique at the front, not just the back. A per-item nonce in the first tokens defeats prefix reuse; varying only the trailing question does not, because the shared head is what gets cached."
+      "untrusted_published_check_text": "Send one long prompt with a fact at position zero. Record the answer, the finish_reason and the cache-hit delta from the server's metrics. Send the byte-identical prompt again immediately and record the same three. If the cache-hit fraction goes from roughly zero to roughly one and either the answer or the finish reason changes, you have this. Two requests, no configuration change, and it works on any server that exposes prefix-cache counters. To measure a lane honestly afterwards, make every evaluation prompt unique at the front, not just the back. A per-item nonce in the first tokens defeats prefix reuse; varying only the trailing question does not, because the shared head is what gets cached."
     },
     {
       "confirm_criterion": "The failure signature described by trap 61 appears under matching conditions.",
@@ -1462,7 +1462,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "61",
-      "untrusted_published_check_text": "Three steps, and the first two cost nothing. 1. Read the checkpoint's config.json rope-scaling block before you trust any context number. If it carries a YaRN or similar factor over an originalmaxpositionembeddings, the advertised window is that base times that factor, and the base is the trained length. Record both numbers. 2. Check whether the serving container sets a long-context override variable. Its presence means the advertised length did not pass the engine's own sanity check. 3. Measure with a fact at position zero, unique non-repeating filler, and a decoy at the tail, laddered across orders of magnitude. Record finishreason alongside accuracy, and compare the server's prompttokens against your own tokenization at every rung. And run every rung cold, or you will measure the cache instead of the model."
+      "untrusted_published_check_text": "Three steps, and the first two cost nothing. 1. Read the checkpoint's config.json rope-scaling block before you trust any context number. If it carries a YaRN or similar factor over an original_max_position_embeddings, the advertised window is that base times that factor, and the base is the trained length. Record both numbers. 2. Check whether the serving container sets a long-context override variable. Its presence means the advertised length did not pass the engine's own sanity check. 3. Measure with a fact at position zero, unique non-repeating filler, and a decoy at the tail, laddered across orders of magnitude. Record finish_reason alongside accuracy, and compare the server's prompt_tokens against your own tokenization at every rung. And run every rung cold, or you will measure the cache instead of the model."
     },
     {
       "confirm_criterion": "The failure signature described by trap 62 appears under matching conditions.",
@@ -1510,7 +1510,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "63",
-      "untrusted_published_check_text": "Four renders, one marker, one grep. Build a two-turn history whose assistant message carries a unique marker string as its reasoning. Render it four ways: marker under reasoning and under reasoningcontent, each with the preservation kwarg at default and set. Grep each assembled prompt for the marker. Exactly one arm should contain it. If none does, the switch has another name and you need the kwarg enumeration below. On vLLM: POST /v1/chat/completions/render returns tokenids, and POST /detokenize converts them back to text. POST /tokenize with returntokenstrs: true also works and is available on builds whose route listing does not advertise it. On llama.cpp: /apply-template. Otherwise checks/preflighttemplate.py with --template-file, and doctor/minefielddoctor.py, which now tries four known gate names in both polarities against both field names and names the combination that worked."
+      "untrusted_published_check_text": "Four renders, one marker, one grep. Build a two-turn history whose assistant message carries a unique marker string as its reasoning. Render it four ways: marker under reasoning and under reasoning_content, each with the preservation kwarg at default and set. Grep each assembled prompt for the marker. Exactly one arm should contain it. If none does, the switch has another name and you need the kwarg enumeration below. On vLLM: POST /v1/chat/completions/render returns token_ids, and POST /detokenize converts them back to text. POST /tokenize with return_token_strs: true also works and is available on builds whose route listing does not advertise it. On llama.cpp: /apply-template. Otherwise checks/preflight_template.py with --template-file, and doctor/minefield_doctor.py, which now tries four known gate names in both polarities against both field names and names the combination that worked."
     },
     {
       "confirm_criterion": "The failure signature described by trap 64 appears under matching conditions.",
@@ -1534,7 +1534,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "64",
-      "untrusted_published_check_text": "Two requests. Send your normal prompt, then send it again with /nothink appended somewhere harmless, both with your usual enablethinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with finishreason: \"stop\" as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion."
+      "untrusted_published_check_text": "Two requests. Send your normal prompt, then send it again with /no_think appended somewhere harmless, both with your usual enable_thinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with `finishreason: \"stop\"` as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion."
     },
     {
       "confirm_criterion": "The failure signature described by trap 65 appears under matching conditions.",
@@ -1582,7 +1582,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "66",
-      "untrusted_published_check_text": "Send a prompt containing /think or /nothink as part of an ordinary path, with the opposite enablethinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/nothink\" chattemplate.jinja next to the weights. Any hit means your users' text is being scanned."
+      "untrusted_published_check_text": "Send a prompt containing /think or /no_think as part of an ordinary path, with the opposite enable_thinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/no_think\" chat_template.jinja next to the weights. Any hit means your users' text is being scanned."
     },
     {
       "confirm_criterion": "The failure signature described by trap 67 appears under matching conditions.",
@@ -1606,7 +1606,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "67",
-      "untrusted_published_check_text": "Render a three-turn history and look at the assembled prompt, not the response. If it contains [{'type': or 'text': you have it. On vLLM, POST /tokenize with returntokenstrs: true is the cheapest route and shows it unambiguously; POST /v1/chat/completions/render plus POST /detokenize also works. Put the system message first in the probe, because a non-first system message renders correctly and will mask the finding."
+      "untrusted_published_check_text": "Render a three-turn history and look at the assembled prompt, not the response. If it contains [{'type': or 'text': you have it. On vLLM, POST /tokenize with return_token_strs: true is the cheapest route and shows it unambiguously; POST /v1/chat/completions/render plus POST /detokenize also works. Put the system message first in the probe, because a non-first system message renders correctly and will mask the finding."
     },
     {
       "confirm_criterion": "The failure signature described by trap 68 appears under matching conditions.",
@@ -1654,7 +1654,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "69",
-      "untrusted_published_check_text": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|imstart|> against <|imend|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes."
+      "untrusted_published_check_text": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|im_start|> against <|im_end|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes."
     },
     {
       "confirm_criterion": "The failure signature described by trap 70 appears under matching conditions.",
@@ -1678,7 +1678,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "70",
-      "untrusted_published_check_text": "One request, one assertion: If content is empty and reasoning is populated, your parser is wrong or missing. Separately, grep any thinking-on content for a bare </think>; if you find one with no opener, you have no reasoning parser at all. Before downloading a checkpoint from this family, list its files and look for a reasoningparser.py. It is the cheapest possible check and it changes your serve line."
+      "untrusted_published_check_text": "One request, one assertion: If content is empty and reasoning is populated, your parser is wrong or missing. Separately, grep any thinking-on content for a bare </think>; if you find one with no opener, you have no reasoning parser at all. Before downloading a checkpoint from this family, list its files and look for a *_reasoning_parser.py. It is the cheapest possible check and it changes your serve line."
     },
     {
       "confirm_criterion": "The failure signature described by trap 71 appears under matching conditions.",
@@ -1702,7 +1702,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "71",
-      "untrusted_published_check_text": "1. Grep the config for nextn, not mtp. 2. Read the engine's startup log for the resolved draft architecture and for the maxnumscheduledtokens line. 3. Scrape the engine's speculative-decoding counters after a real workload, not after a warm-up. Acceptance is content-dependent, so a synthetic prompt gives you a number that does not transfer. 4. Record the KV cache size in both arms. It is printed at startup and it is the number nobody quotes."
+      "untrusted_published_check_text": "1. Grep the config for nextn, not mtp. 2. Read the engine's startup log for the resolved draft architecture and for the max_num_scheduled_tokens line. 3. Scrape the engine's speculative-decoding counters after a real workload, not after a warm-up. Acceptance is content-dependent, so a synthetic prompt gives you a number that does not transfer. 4. Record the KV cache size in both arms. It is printed at startup and it is the number nobody quotes."
     },
     {
       "confirm_criterion": "The failure signature described by trap 72 appears under matching conditions.",
@@ -1750,7 +1750,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "73",
-      "untrusted_published_check_text": "Send one request with no media and one with your typical media, same text, and look at prompttokensdetails. If it is null on both, you are differencing from now on. The registry doctor now reports this on any lane that accepts an image part."
+      "untrusted_published_check_text": "Send one request with no media and one with your typical media, same text, and look at prompt_tokens_details. If it is null on both, you are differencing from now on. The registry doctor now reports this on any lane that accepts an image part."
     },
     {
       "confirm_criterion": "The failure signature described by trap 74 appears under matching conditions.",
@@ -1798,7 +1798,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "75",
-      "untrusted_published_check_text": "Two lines, and they cost nothing: bash"
+      "untrusted_published_check_text": "Two lines, and they cost nothing: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 76 appears under matching conditions.",
@@ -1846,7 +1846,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "77",
-      "untrusted_published_check_text": "Two requests, and the assertion is on the response rather than the status code: bash"
+      "untrusted_published_check_text": "Two requests, and the assertion is on the response rather than the status code: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 78 appears under matching conditions.",
@@ -1870,7 +1870,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "78",
-      "untrusted_published_check_text": "Send the same tool-inviting prompt twice, once with toolchoice: \"none\", and look at what came back rather than at the status: bash"
+      "untrusted_published_check_text": "Send the same tool-inviting prompt twice, once with tool_choice: \"none\", and look at what came back rather than at the status: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 79 appears under matching conditions.",
@@ -1894,7 +1894,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "79",
-      "untrusted_published_check_text": "Read the model's declared context before you set one, then assert you are under it: bash"
+      "untrusted_published_check_text": "Read the model's declared context before you set one, then assert you are under it: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 80 appears under matching conditions.",
@@ -1918,7 +1918,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "80",
-      "untrusted_published_check_text": "Detection first, because it is one request: python"
+      "untrusted_published_check_text": "Detection first, because it is one request: ```python"
     },
     {
       "confirm_criterion": "The failure signature described by trap 81 appears under matching conditions.",
@@ -1942,7 +1942,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "81",
-      "untrusted_published_check_text": "Do not gate lane bring-up on container state, and do not gate it on a sleep. Gate it on measured free memory: bash"
+      "untrusted_published_check_text": "Do not gate lane bring-up on container state, and do not gate it on a sleep. Gate it on measured free memory: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 82 appears under matching conditions.",
@@ -1966,7 +1966,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "82",
-      "untrusted_published_check_text": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompttokensdetails.cachedtokens."
+      "untrusted_published_check_text": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompt_tokens_details.cached_tokens."
     },
     {
       "confirm_criterion": "The failure signature described by trap 83 appears under matching conditions.",
@@ -2038,7 +2038,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "85",
-      "untrusted_published_check_text": "Send the string form and the bool form of enablethinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production."
+      "untrusted_published_check_text": "Send the string form and the bool form of enable_thinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production."
     },
     {
       "confirm_criterion": "The failure signature described by trap 86 appears under matching conditions.",
@@ -2110,7 +2110,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "88",
-      "untrusted_published_check_text": "Warm a long prefix, send the same prefix with cacheprompt: false, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived."
+      "untrusted_published_check_text": "Warm a long prefix, send the same prefix with `cacheprompt: false`, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived."
     },
     {
       "confirm_criterion": "The failure signature described by trap 89 appears under matching conditions.",
@@ -2134,7 +2134,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "89",
-      "untrusted_published_check_text": "Two assertions, both runnable before any number is published. 1. Prove the copies are actually separate copies. Compare inode numbers between the edit destination and every copy you will compare against, on each node. A shared inode is the trap, present: Note the negative case explicitly: no output from the find is a pass only if the find actually ran over a populated directory. An empty or wrong path also prints nothing. Assert a non-zero shard count first, or this check is a vacuous PASS in the sense of CONTRIBUTING's shape 2. 2. Fingerprint the reference before you publish against it. Hash a fixed set of layer tensors in the stock copy at the start of a campaign and again at the end. Keys' recommendation is to fingerprint L0, L9, L10, L20, L42 and the MTP heads - chosen to straddle the edit window (an edit to layers 10-42 is invisible at L0/L9 and visible at L10/L20/L42, so the pair tells you both that the fingerprint works and whether stock moved). The two assert lines are the point. A fingerprint over an empty tensor set is a stable hash of nothing, and it will match itself run after run while telling you nothing at all. The dtype detail is not cosmetic. The obvious way to write the hash update is .cpu().numpy().tobytes(), and it works on fp32 and fails on bfloat16 and float8e4m3fn with TypeError: Got unsupported ScalarType. Those are the dtypes an FP8 or quantized checkpoint is actually stored in, so the naive version crashes on precisely the models worth fingerprinting and passes on the toy tensor you test it with. .contiguous().view(torch.uint8) hashes the raw storage and works for every dtype. Verified on torch 2.12.1: fp32 .numpy() OK, bf16 and fp8 .numpy() raise TypeError, .view(torch.uint8) succeeds for all three."
+      "untrusted_published_check_text": "Two assertions, both runnable before any number is published. 1. Prove the copies are actually separate copies. Compare inode numbers between the edit destination and every copy you will compare against, on each node. A shared inode is the trap, present: Note the negative case explicitly: no output from the find is a pass only if the find actually ran over a populated directory. An empty or wrong path also prints nothing. Assert a non-zero shard count first, or this check is a vacuous PASS in the sense of CONTRIBUTING's shape 2. 2. Fingerprint the reference before you publish against it. Hash a fixed set of layer tensors in the stock copy at the start of a campaign and again at the end. Keys' recommendation is to fingerprint L0, L9, L10, L20, L42 and the MTP heads - chosen to straddle the edit window (an edit to layers 10-42 is invisible at L0/L9 and visible at L10/L20/L42, so the pair tells you both that the fingerprint works and whether stock moved). The two assert lines are the point. A fingerprint over an empty tensor set is a stable hash of nothing, and it will match itself run after run while telling you nothing at all. The dtype detail is not cosmetic. The obvious way to write the hash update is .cpu().numpy().tobytes(), and it works on fp32 and fails on bfloat16 and float8_e4m3fn with TypeError: Got unsupported ScalarType. Those are the dtypes an FP8 or quantized checkpoint is actually stored in, so the naive version crashes on precisely the models worth fingerprinting and passes on the toy tensor you test it with. .contiguous().view(torch.uint8) hashes the raw storage and works for every dtype. Verified on torch 2.12.1: fp32 .numpy() OK, bf16 and fp8 .numpy() raise TypeError, .view(torch.uint8) succeeds for all three."
     },
     {
       "confirm_criterion": "The failure signature described by trap 90 appears under matching conditions.",
@@ -2165,7 +2165,7 @@
       "control": "Repeat with the suspected variable removed or with the known-good condition.",
       "expected_duration": "5-30 minutes unless the entry names a soak",
       "human_review_still_required": true,
-      "limitations": "llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm120 and does not hold on sm86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cacheprompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.",
+      "limitations": "llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm_120 and does not hold on sm_86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cache_prompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.",
       "prerequisites": [
         "A disposable or explicitly authorised test surface",
         "Raw output capture"
@@ -2182,7 +2182,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "91",
-      "untrusted_published_check_text": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cacheprompt: false, then hash the completions: bash"
+      "untrusted_published_check_text": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cache_prompt: false, then hash the completions: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 92 appears under matching conditions.",
@@ -2206,7 +2206,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "92",
-      "untrusted_published_check_text": "1. Run any prefix-reuse A/B twice against one long-lived server, in opposite arm orders. If the arms disagree between the two runs, the cache is carrying state. 2. Confirm the isolation is real by asserting cachedtokens == 0 on the first request after each restart. If it is not zero, the arm is contaminated and the number should not be reported."
+      "untrusted_published_check_text": "1. Run any prefix-reuse A/B twice against one long-lived server, in opposite arm orders. If the arms disagree between the two runs, the cache is carrying state. 2. Confirm the isolation is real by asserting cached_tokens == 0 on the first request after each restart. If it is not zero, the arm is contaminated and the number should not be reported."
     },
     {
       "confirm_criterion": "The failure signature described by trap 93 appears under matching conditions.",
@@ -2230,7 +2230,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "93",
-      "untrusted_published_check_text": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cachedtokens per turn, with a server restart between the arms."
+      "untrusted_published_check_text": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cached_tokens per turn, with a server restart between the arms."
     },
     {
       "confirm_criterion": "The failure signature described by trap 94 appears under matching conditions.",
@@ -2254,7 +2254,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "94",
-      "untrusted_published_check_text": "Serve the same file twice from one host, one process pinned per GPU with CUDAVISIBLEDEVICES, same flags. Run the hash sweep from trap 91 against both ports at a prompt length above the floor, at concurrency 2, with cacheprompt: false. Compare the distinct-hash counts per port, not the answers."
+      "untrusted_published_check_text": "Serve the same file twice from one host, one process pinned per GPU with CUDA_VISIBLE_DEVICES, same flags. Run the hash sweep from trap 91 against both ports at a prompt length above the floor, at concurrency 2, with cache_prompt: false. Compare the distinct-hash counts per port, not the answers."
     },
     {
       "confirm_criterion": "The failure signature described by trap 95 appears under matching conditions.",
@@ -2278,7 +2278,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "95",
-      "untrusted_published_check_text": "Serve the same model twice, one process pinned per GPU with CUDAVISIBLEDEVICES, confirm both have memory headroom, then run any throughput or determinism probe twice, once with one lane idle and once with both driven in parallel, and compare. Verify readiness with a completed generation on each lane, not with an endpoint answering."
+      "untrusted_published_check_text": "Serve the same model twice, one process pinned per GPU with CUDA_VISIBLE_DEVICES, confirm both have memory headroom, then run any throughput or determinism probe twice, once with one lane idle and once with both driven in parallel, and compare. Verify readiness with a completed generation on each lane, not with an endpoint answering."
     },
     {
       "confirm_criterion": "The failure signature described by trap 96 appears under matching conditions.",
@@ -2350,7 +2350,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "98",
-      "untrusted_published_check_text": "Before serving with speculative decoding on unified memory: bash"
+      "untrusted_published_check_text": "Before serving with speculative decoding on unified memory: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 99 appears under matching conditions.",
@@ -2398,7 +2398,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "100",
-      "untrusted_published_check_text": "bash uname -r"
+      "untrusted_published_check_text": "```bash uname -r"
     },
     {
       "confirm_criterion": "The failure signature described by trap 101 appears under matching conditions.",
@@ -2422,7 +2422,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "101",
-      "untrusted_published_check_text": "bash python3 -c \"import transformers; print(transformers.version)\""
+      "untrusted_published_check_text": "```bash python3 -c \"import transformers; print(transformers.version)\""
     },
     {
       "confirm_criterion": "The failure signature described by trap 102 appears under matching conditions.",
@@ -2446,7 +2446,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "102",
-      "untrusted_published_check_text": "Profile before optimizing: bash"
+      "untrusted_published_check_text": "Profile before optimizing: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 103 appears under matching conditions.",
@@ -2470,7 +2470,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "103",
-      "untrusted_published_check_text": "python try: import torchvision print(\"torchvision:\", torchvision.version) except ImportError as e: print(f\"torchvision unavailable: {e}\") If you are on ROCm with TheRock wheels, this is expected. Your model's AutoProcessor call will fail unless you patch it."
+      "untrusted_published_check_text": "```python try: import torchvision print(\"torchvision:\", torchvision.version) except ImportError as e: print(f\"torchvision unavailable: {e}\") If you are on ROCm with TheRock wheels, this is expected. Your model's AutoProcessor call will fail unless you patch it."
     },
     {
       "confirm_criterion": "The failure signature described by trap 104 appears under matching conditions.",
@@ -2494,7 +2494,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "104",
-      "untrusted_published_check_text": "After hardening a serve, verify that every path that can start it carries the same config: bash"
+      "untrusted_published_check_text": "After hardening a serve, verify that every path that can start it carries the same config: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 105 appears under matching conditions.",
@@ -2518,7 +2518,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "105",
-      "untrusted_published_check_text": "Compute both estimators on your own lane and report the gap. Two counters plus your own request log; no model knowledge required. Token-weighted. Subtract two snapshots. Do not divide one. vllm:specdecode are cumulative process-lifetime counters. A single scrape divided in place gives you the ratio since the server started, not the ratio over your window, and it silently includes every request anyone else sent. That is the same unscoped error this entry is about, so the check must not commit it: bash snap() { curl -s localhost:8000/metrics | awk ' /^vllm:specdecodenumacceptedtokenstotal/ {a=$2} /^vllm:specdecodenumdrafttokenstotal/ {d=$2} END {print a, d}'; } read A0 D0 < <(snap) before your workload"
+      "untrusted_published_check_text": "Compute both estimators on your own lane and report the gap. Two counters plus your own request log; no model knowledge required. Token-weighted. Subtract two snapshots. Do not divide one. vllm:spec_decode_* are cumulative process-lifetime counters. A single scrape divided in place gives you the ratio since the server started, not the ratio over your window, and it silently includes every request anyone else sent. That is the same unscoped error this entry is about, so the check must not commit it: ```bash snap() { curl -s localhost:8000/metrics | awk ' /^vllm:specdecodenumacceptedtokenstotal/ {a=$2} /^vllm:specdecodenumdrafttokenstotal/ {d=$2} END {print a, d}'; } read A0 D0 < <(snap) before your workload"
     },
     {
       "confirm_criterion": "The failure signature described by trap 106 appears under matching conditions.",
@@ -2590,7 +2590,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "108",
-      "untrusted_published_check_text": "Score the canary on the series, never on the adjacent pair. python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]"
+      "untrusted_published_check_text": "Score the canary on the series, never on the adjacent pair. ```python sigs = [row[\"sha256\"] for row in canarysamples] in-band only distinct = len(set(sigs)) trans = [i for i, (a, b) in enumerate(zip(sigs, sigs[1:])) if a != b]"
     },
     {
       "confirm_criterion": "The failure signature described by trap 109 appears under matching conditions.",
@@ -2614,7 +2614,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "109",
-      "untrusted_published_check_text": "1. Read the requant's own manifest before serving it. If hfquantconfig.json (or the stack's equivalent) excludes mtp. or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (specdecodenumacceptedtokenstotal over specdecodenumdrafttokenstotal). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan."
+      "untrusted_published_check_text": "1. Read the requant's own manifest before serving it. If hf_quant_config.json (or the stack's equivalent) excludes mtp.* or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (spec_decode_num_accepted_tokens_total over spec_decode_num_draft_tokens_total). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan."
     },
     {
       "confirm_criterion": "The failure signature described by trap 110 appears under matching conditions.",
@@ -2638,7 +2638,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "110",
-      "untrusted_published_check_text": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (numrequestsrunning or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison."
+      "untrusted_published_check_text": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (num_requests_running or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison."
     },
     {
       "confirm_criterion": "The failure signature described by trap 111 appears under matching conditions.",
@@ -2686,7 +2686,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "112",
-      "untrusted_published_check_text": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpointreadinesshierarchyprobe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE."
+      "untrusted_published_check_text": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpoint_readiness_hierarchy_probe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE."
     },
     {
       "confirm_criterion": "The failure signature described by trap 113 appears under matching conditions.",
@@ -2710,7 +2710,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "113",
-      "untrusted_published_check_text": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLEMARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDEDTOUSER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE."
+      "untrusted_published_check_text": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLE_MARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDED_TO_USER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE."
     },
     {
       "confirm_criterion": "The failure signature described by trap 114 appears under matching conditions.",
@@ -2734,7 +2734,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "114",
-      "untrusted_published_check_text": "1. On each rank host, dump the GID table for the HCA you intend to use and record which index holds the address family you need. 2. If indices differ, do not force one global number without per-host mapping. 3. Prefer automatic GID selection for bring-up unless you have a pinned, per-host, verified index map checked into the recipe. 4. Confirm success with the same collective on the same hosts after switching from forced-fail to auto (or to the correct per-host indices). Offline triage of changed transport/env paths can use checks/upstreamchangetriage.py as a prioritisation hint only; it does not replace live GID inspection."
+      "untrusted_published_check_text": "1. On each rank host, dump the GID table for the HCA you intend to use and record which index holds the address family you need. 2. If indices differ, do not force one global number without per-host mapping. 3. Prefer automatic GID selection for bring-up unless you have a pinned, per-host, verified index map checked into the recipe. 4. Confirm success with the same collective on the same hosts after switching from forced-fail to auto (or to the correct per-host indices). Offline triage of changed transport/env paths can use checks/upstream_change_triage.py as a prioritisation hint only; it does not replace live GID inspection."
     },
     {
       "confirm_criterion": "The failure signature described by trap 115 appears under matching conditions.",
@@ -2758,7 +2758,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "115",
-      "untrusted_published_check_text": "Before writing \"OOM killed\": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENTTIMEOUT / HARNESSERROR / UNKNOWNUNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN."
+      "untrusted_published_check_text": "Before writing \"OOM killed\": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENT_TIMEOUT / HARNESS_ERROR / UNKNOWN_UNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN."
     },
     {
       "confirm_criterion": "The failure signature described by trap 116 appears under matching conditions.",
@@ -2806,7 +2806,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "117",
-      "untrusted_published_check_text": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fusegemmcomms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hiddensize below the printed floor, is the cause."
+      "untrusted_published_check_text": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause."
     },
     {
       "confirm_criterion": "The failure signature described by trap 118 appears under matching conditions.",
@@ -2830,7 +2830,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "118",
-      "untrusted_published_check_text": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'"
+      "untrusted_published_check_text": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: ```bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'"
     },
     {
       "confirm_criterion": "The failure signature described by trap 119 appears under matching conditions.",
@@ -2878,7 +2878,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "120",
-      "untrusted_published_check_text": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below maxmodellen (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: bash"
+      "untrusted_published_check_text": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below max_model_len (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 121 appears under matching conditions.",
@@ -2926,7 +2926,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "122",
-      "untrusted_published_check_text": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULLANDPIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"numspeculativetokensperbatchsize\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122."
+      "untrusted_published_check_text": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULL_AND_PIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"num_speculative_tokens_per_batch_size\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122."
     },
     {
       "confirm_criterion": "The failure signature described by trap 123 appears under matching conditions.",
@@ -2950,7 +2950,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "123",
-      "untrusted_published_check_text": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: bash"
+      "untrusted_published_check_text": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: ```bash"
     },
     {
       "confirm_criterion": "The failure signature described by trap 124 appears under matching conditions.",
@@ -2998,7 +2998,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "125",
-      "untrusted_published_check_text": "First prove the limiter itself with a positive control: run a plain host allocator in an 8 GiB scope with MemorySwapMax=0, grow in 1 GiB steps, and require an exit near the limit plus an oomkill increment in memory.events. Then repeat the same growth pattern with CUDA while watching both memory.current and /proc/meminfo MemAvailable. If physical available memory falls with the CUDA allocation while memory.current remains far below the configured cap and no cgroup OOM event fires, MemoryMax is not a valid CUDA guard on that lane. Do not omit the swap control: with swap allowed, even the host control can survive and make a broken test look healthy."
+      "untrusted_published_check_text": "First prove the limiter itself with a positive control: run a plain host allocator in an 8 GiB scope with MemorySwapMax=0, grow in 1 GiB steps, and require an exit near the limit plus an oom_kill increment in memory.events. Then repeat the same growth pattern with CUDA while watching both memory.current and /proc/meminfo MemAvailable. If physical available memory falls with the CUDA allocation while memory.current remains far below the configured cap and no cgroup OOM event fires, MemoryMax is not a valid CUDA guard on that lane. Do not omit the swap control: with swap allowed, even the host control can survive and make a broken test look healthy."
     },
     {
       "confirm_criterion": "The failure signature described by trap 126 appears under matching conditions.",
@@ -3022,7 +3022,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "126",
-      "untrusted_published_check_text": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under responseformat: {\"type\": \"jsonobject\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken."
+      "untrusted_published_check_text": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under response_format: {\"type\": \"json_object\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken."
     },
     {
       "confirm_criterion": "The failure signature described by trap 127 appears under matching conditions.",
@@ -3046,7 +3046,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "127",
-      "untrusted_published_check_text": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: docker compose config and look for :ro entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it."
+      "untrusted_published_check_text": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: `docker compose config and look for :ro` entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it."
     },
     {
       "confirm_criterion": "The failure signature described by trap 128 appears under matching conditions.",
@@ -3070,7 +3070,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "128",
-      "untrusted_published_check_text": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of maxnumpartialprefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it."
+      "untrusted_published_check_text": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of max_num_partial_prefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it."
     },
     {
       "confirm_criterion": "The failure signature described by trap 129 appears under matching conditions.",
@@ -3094,7 +3094,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "129",
-      "untrusted_published_check_text": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLMPREFIXCACHERETENTIONINTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane."
+      "untrusted_published_check_text": "Do not certify the prefix cache from an aggregate hit rate. Drive the hit-rate check at context lengths at or above the sliding-window horizon, with hits split by request length, and compare group-level hit lengths if the engine exposes them. Then set the retention-interval variable (on this stack VLLM_PREFIX_CACHE_RETENTION_INTERVAL, e.g. 4096), re-measure at the same above-horizon lengths, and only then judge the fix: the coordinator hotfix alone produced zero correct results at 44K+ on the upstream lane."
     },
     {
       "confirm_criterion": "The failure signature described by trap 130 appears under matching conditions.",
@@ -3118,7 +3118,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "130",
-      "untrusted_published_check_text": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraphcapturesizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you."
+      "untrusted_published_check_text": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraph_capture_sizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you."
     },
     {
       "confirm_criterion": "The failure signature described by trap 131 appears under matching conditions.",
@@ -3142,7 +3142,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "131",
-      "untrusted_published_check_text": "1. Inspect the exact bytes of every refs/ file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not."
+      "untrusted_published_check_text": "1. Inspect the exact bytes of every refs/* file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not."
     },
     {
       "confirm_criterion": "The failure signature described by trap 132 appears under matching conditions.",
@@ -3214,7 +3214,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "134",
-      "untrusted_published_check_text": "Before recording any transport-labelled performance result, require path proof against the actual benchmark peer, not a generic gateway: 1. Route lookup to the peer: which interface / gateway is selected. 2. Source / interface bind where the OS supports it: bind to the intended address and show success; bind to the wrong source and show failure or a different path rather than silent fallback. 3. ARP / neighbour evidence where applicable. 4. Before/after TX/RX counter deltas on the intended interface during a known traffic burst. 5. Peer-side counter or path evidence when available. 6. Negative / discriminator: intentionally remove or mis-bind the intended path and prove the result changes or fails rather than silently continuing on the alternate path. A green ping alone is insufficient. Preserve pathclass, localinterface, peer path, route proof, counter proof, and fallback state beside every transport-labelled number."
+      "untrusted_published_check_text": "Before recording any transport-labelled performance result, require path proof against the actual benchmark peer, not a generic gateway: 1. Route lookup to the peer: which interface / gateway is selected. 2. Source / interface bind where the OS supports it: bind to the intended address and show success; bind to the wrong source and show failure or a different path rather than silent fallback. 3. ARP / neighbour evidence where applicable. 4. Before/after TX/RX counter deltas on the intended interface during a known traffic burst. 5. Peer-side counter or path evidence when available. 6. Negative / discriminator: intentionally remove or mis-bind the intended path and prove the result changes or fails rather than silently continuing on the alternate path. A green ping alone is insufficient. Preserve path_class, local_interface, peer path, route proof, counter proof, and fallback state beside every transport-labelled number."
     },
     {
       "confirm_criterion": "The failure signature described by trap 135 appears under matching conditions.",
@@ -3238,7 +3238,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "135",
-      "untrusted_published_check_text": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrencyexecutionproofpreflight.py."
+      "untrusted_published_check_text": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrency_execution_proof_preflight.py."
     },
     {
       "confirm_criterion": "The failure signature described by trap 136 appears under matching conditions.",
@@ -3286,7 +3286,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "137",
-      "untrusted_published_check_text": "Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatchid, kernelvariant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success."
+      "untrusted_published_check_text": "Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatch_id, kernel_variant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success."
     },
     {
       "confirm_criterion": "The failure signature described by trap 138 appears under matching conditions.",
@@ -3311,6 +3311,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "138",
       "untrusted_published_check_text": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 139 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 139 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "139",
+      "untrusted_published_check_text": "Before serving on a switchless multi-NIC cycle, run a value-checked multi-rank collective inside the exact runtime image with NCCL debug logging enabled. For every rank-to-peer relationship, map the selected network device to the physical neighbour that device can actually reach."
     }
   ],
   "schema_version": "1.0"

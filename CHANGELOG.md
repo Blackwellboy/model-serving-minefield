@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-14 - Trap 139 switchless NCCL peer/device selection
+
+- [**139**](traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md) - @btcxoomer: on the reported 3-node DGX Spark switchless lane, NCCL selected an interface that could not physically reach the intended peer; the same failure reproduced in the serving bring-up and a minimal collective. Status **contributor-measured, conditions as reported**.
+- Independent public implementation and four-node qualification evidence is credited to **Alex Ellis (@alexellisuk), OpenFaaS Ltd**, via `alexellis/switchless-nccl`. The entry keeps Alex's four-node evidence separate from @btcxoomer's exact 3-node mechanism and preserves Alex's own upstream provenance.
+- Corrected the earlier draft's GID guidance: one numeric GID index is not a portable cross-host fix; Trap 114 remains the canonical portability warning.
+- Registry count moves from 138 to 139; Doctor coverage remains 19, leaving 120 canonical entries unimplemented.
+
 ## 2026-09-07 - Trap 138 structured-output corruption
 
 - [**138**](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) - @scottleimroth: on the reported vLLM 0.28.0 aarch64 / Qwen3.8-27B BF16 lane, draftless n-gram prompt lookup produced HTTP-successful responses whose assistant `content` duplicated ordinary keys/values and became invalid JSON; the matched speculation-off control removed those malformed cases. Status **contributor-measured, conditions as reported**.

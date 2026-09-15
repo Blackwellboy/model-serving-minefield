@@ -71,7 +71,7 @@ shortlists.
 | Client concurrency vs model execution concurrency | [135](../traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) |
 | HF `trust_remote_code` custom modeling files | [50](../traps/evaluation/50-hidden-state-dump-convention.md) |
 | Process and service managers (systemd, launchd, Docker, scheduled tasks) | [53](../traps/runtime/53-config-edit-never-took-effect.md), [104](../traps/versioning/104-stale-launch-script-silently-reverts-config.md), [112](../traps/runtime/112-process-liveness-is-not-model-readiness.md), [123](../traps/runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md) |
-| Multi-host NCCL / RoCE / RDMA bring-up (GID tables, fabric env) | [114](../traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md) |
+| Multi-host NCCL / RoCE / RDMA bring-up (GID tables, fabric env) | [114](../traps/runtime/114-hardcoded-rdma-gid-index-is-not-portable.md), [139](../traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md) |
 | Failure-cause adjudication (exit codes, OOM language, UNKNOWN discipline) | [115](../traps/evaluation/115-exit-137-is-not-oom-killer-proof.md) |
 | Probe-wrapper and native-extension verdict semantics | [136](../traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md), [137](../traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md) |
 | Post-load first-forward dtype / embedding helpers | [116](../traps/runtime/116-successful-load-does-not-prove-first-forward-dtype-path.md) |

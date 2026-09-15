@@ -88,7 +88,20 @@ def _clean(text: str, limit: int = 2400) -> str:
     text = re.sub(r"```.*?```", " ", text, flags=re.S)
     text = re.sub(r"<!--.*?-->", " ", text, flags=re.S)
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
-    text = re.sub(r"[`*_#]", "", text)
+
+    # Preserve literal inline-code payloads before removing Markdown emphasis.
+    # Environment variables and other machine identifiers commonly contain
+    # underscores; stripping those characters changes the identifier itself.
+    inline_code: list[str] = []
+
+    def stash_inline_code(match: re.Match[str]) -> str:
+        inline_code.append(match.group(1))
+        return f"\uE000{len(inline_code) - 1}\uE001"
+
+    text = re.sub(r"`([^`\n]+)`", stash_inline_code, text)
+    text = re.sub(r"[*_#]", "", text)
+    for index, value in enumerate(inline_code):
+        text = text.replace(f"\uE000{index}\uE001", value)
     return re.sub(r"\s+", " ", text).strip()[:limit]
 
 
