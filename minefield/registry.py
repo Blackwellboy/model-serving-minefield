@@ -105,6 +105,18 @@ def _clean(text: str, limit: int = 2400) -> str:
     return re.sub(r"\s+", " ", text).strip()[:limit]
 
 
+def _related_trap_ids(
+    text: str,
+    canonical_ids: set[str],
+    trap_id: str,
+) -> list[str]:
+    """Extract prose trap references without treating code/index syntax as IDs."""
+    visible = re.sub(r"```.*?```", " ", text, flags=re.S)
+    visible = re.sub(r"`[^`\n]*`", " ", visible)
+    candidates = {item.zfill(2) for item in RELATED_RE.findall(visible)}
+    return sorted((candidates & canonical_ids) - {trap_id}, key=int)
+
+
 def _section(text: str, labels: Iterable[str], fallback: str = "") -> str:
     alternatives = "|".join(re.escape(label) for label in labels)
     patterns = (
@@ -239,11 +251,7 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             "known_limitations": _section(
                 text, ("Limitations", "What this does and does not say", "Scope"), ""
             ),
-            "related_traps": sorted(
-                {item.zfill(2) for item in RELATED_RE.findall(text)}
-                - {trap_id},
-                key=int,
-            ),
+            "related_traps": _related_trap_ids(text, canonical_ids, trap_id),
             "supersession": None,
         }
         entry.update(overrides.get(trap_id, {}))
