@@ -1,0 +1,44 @@
+name: regenerate-trap140-20260917
+
+on:
+  push:
+    branches: [promotion/trap140-sparse-mla-warmup-bounds-20260915]
+    paths:
+      - '.github/workflows/regenerate-trap140-20260917.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: promotion/trap140-sparse-mla-warmup-bounds-20260915
+          persist-credentials: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: regenerate and verify
+        run: |
+          set -euo pipefail
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          python -m unittest discover -s tests
+          python -m unittest discover -s integrity/tests -t integrity/tests
+          python -m unittest discover -s doctor/tests -t doctor/tests
+          git diff --check
+      - name: commit generated surfaces and remove helper
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/regenerate-trap140-20260917.yml
+          git add dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo 'No generated changes required'
+            exit 0
+          fi
+          git config user.name 'blackwellboy-ci'
+          git config user.email '76774064+Blackwellboy@users.noreply.github.com'
+          git commit -m 'Regenerate Trap 140 surfaces after review fixes'
+          git push origin HEAD:promotion/trap140-sparse-mla-warmup-bounds-20260915
