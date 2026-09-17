@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-17 - Trap 140 sparse-MLA request-row bounds during CUDA-graph warmup
+
+- [**140**](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) - Blackwellboy: on the pinned historical vLLM sparse-MLA lane, CUDA-graph warmup could produce metadata naming a request row that did not exist in the block table; the downstream mapper could turn that invalid row into either a wrong KV slot or an illegal access. Status **measured here, raw not published**.
+- Current-main source re-check is explicitly narrower: padded block-table construction appears to avoid the historical producer/cardinality mismatch at the cited revision, while independent request-row and block-column bounds remain the defensive consumer contract. No upstream known-good pin is claimed.
+- Registry count moves from 139 to 140; Doctor coverage remains 19, leaving 121 canonical entries unimplemented.
+
 ## 2026-09-14 - Trap 139 switchless NCCL peer/device selection
 
 - [**139**](traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md) - @btcxoomer: on the reported 3-node DGX Spark switchless lane, NCCL selected an interface that could not physically reach the intended peer; the same failure reproduced in the serving bring-up and a minimal collective. Status **contributor-measured, conditions as reported**.

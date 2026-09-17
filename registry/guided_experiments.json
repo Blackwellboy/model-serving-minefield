@@ -3335,6 +3335,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "139",
       "untrusted_published_check_text": "Before serving on a switchless multi-NIC cycle, run a value-checked multi-rank collective inside the exact runtime image with NCCL debug logging enabled. For every rank-to-peer relationship, map the selected network device to the physical neighbour that device can actually reach."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 140 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 140 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "140",
+      "untrusted_published_check_text": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range."
     }
   ],
   "schema_version": "1.0"

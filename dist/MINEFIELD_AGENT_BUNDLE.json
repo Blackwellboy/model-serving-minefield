@@ -5,11 +5,11 @@
     "summary": {
       "counts_overlap": true,
       "endpoint_checks_implemented": 19,
-      "guided_experiments_specified": 139,
-      "human_review_possible": 139,
+      "guided_experiments_specified": 140,
+      "human_review_possible": 140,
       "log_checks_implemented": 9,
       "static_checks_implemented": 10,
-      "total_canonical_traps": 139
+      "total_canonical_traps": 140
     },
     "traps": [
       {
@@ -10335,6 +10335,80 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "140",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 140 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied configuration files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -13674,6 +13748,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "139",
       "untrusted_published_check_text": "Before serving on a switchless multi-NIC cycle, run a value-checked multi-rank collective inside the exact runtime image with NCCL debug logging enabled. For every rank-to-peer relationship, map the selected network device to the physical neighbour that device can actually reach."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 140 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 140 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "140",
+      "untrusted_published_check_text": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range."
     }
   ],
   "possible_unverified_leads": {
@@ -15033,8 +15131,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 139,
-    "content_sha256": "b219053cf28a60486c4569e307f7d99d5a156d6c329cfac3dfbadf1e3b361fcd",
+    "canonical_trap_count": 140,
+    "content_sha256": "a108054097013172fee6c27929f568bd1903b512660f50cc9cc57398fd001650",
     "doctor_implemented_trap_count": 19,
     "entries": [
       {
@@ -24675,6 +24773,79 @@
         "supersession": null,
         "symptom": "A tensor-parallel bring-up on a switchless topology can fail during NCCL transport setup even though the destination peer is directly connected and the physical links are healthy. In the contributor's 3-node triangle, the debug channel map showed traffic for one peer assigned to the interface physically cabled to the other peer. The resulting peer/interface pairing had no physical path and the collective timed out. The same contributor failure reproduced on two independent surfaces in the same pinned image: the real serving bring-up and a minimal torch.distributed collective. That is strong evidence that the failure was below the serving engine rather than a vLLM-only fault.",
         "title": "stock NCCL can select the wrong HCA for a peer on a switchless multi-NIC cycle"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4 Flash sparse MLA under vLLM 0.25.2.dev0+g752a3a504.d20260714"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "The captured failure used DeepSeek-V4 Flash sparse MLA under vLLM 0.25.2.dev0+g752a3a504.d20260714, Triton 3.6.0, PyTorch 2.11.0+cu130, TP=2 on 2× DGX Spark / GB10. The public issue documents the same failing geometry and a standalone wrong-slot reproduction. This entry does not claim every sparse-MLA or every CUDA illegal-address failure has this cause.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4",
+            "deepseek-v4 flash sparse mla under vllm 0.25.2.dev0+g752a3a504.d20260714"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [
+            "0.25.2"
+          ],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "memory",
+        "check": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "The captured failure used DeepSeek-V4 Flash sparse MLA under vLLM 0.25.2.dev0+g752a3a504.d20260714, Triton 3.6.0, PyTorch 2.11.0+cu130, TP=2 on 2× DGX Spark / GB10. The public issue documents the same failing geometry and a standalone wrong-slot reproduction. This entry does not claim every sparse-MLA or every CUDA illegal-address failure has this cause.",
+        "id": "140",
+        "known_limitations": "",
+        "mechanism": "The consumer dereferences a block-table address derived from req_idx and block_indices. A complete safety contract therefore has two independent dimensions: The historical pinned lane also had a producer-side cardinality mismatch during synthetic CUDA-graph warmup: token_to_req_indices represented more request slots than the associated block table exposed. That producer mismatch is useful trigger evidence for the affected build, but it is not claimed as a current-main vLLM bug. A later source re-check against vLLM main at 9cc7793e32f8340e111a6c822f231aa526a8ea21 found that current model-runner construction pads the block table to num_reqs_padded and fills CUDA-graph padding rows with NULL_BLOCK_ID, so the exact historical producer/cardinality mismatch appears avoided there. The downstream mapper still lacked both the request-row bound and the logical block-column bound in that re-check. Invalid entries must map to -1 and be excluded from the effective top-k length. Do not clamp an invalid request index onto an existing row: that can convert a crash into silent cross-request KV aliasing.",
+        "mitigation": "On the affected historical build, repair the producer/consumer contract so warmup metadata cannot represent nonexistent request rows and independently harden the consumer on both dimensions. On current vLLM main, the producer-side mismatch is not presently reproduced, so the upstream fix scope should remain the defensive consumer bounds plus focused regressions unless a new producer regression proves otherwise. The bounded internal recertification exercised row-bound and column-bound regressions, CUDA-graph-padding and normal-prefill checks, shipped-path regressions, and DeepSeek V4/V4.1 GPU paths without reproducing the original illegal address after the combined hardening. Two unrelated FlashMLA tests could not run in that checkout because _C::scaled_fp4_quant was unavailable; this entry does not call that unrelated full suite green.",
+        "public_evidence_links": [
+          "https://github.com/vllm-project/vllm/issues/55636"
+        ],
+        "related_traps": [],
+        "source_path": "traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "Sparse-MLA global-top-k mapping can consume metadata whose request-row selector names a row that does not exist in block_table. Depending on geometry and runtime state, the same invalid row selection can either silently map a token to the wrong KV slot or surface cudaErrorIllegalAddress in the Triton mapper. In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index 1 while the block table had exactly one request row, so row 1 was impossible. The full serving run failed in _compute_global_topk_indices_and_lens_kernel; a tiny standalone repro could instead return a wrong slot without raising. Because CUDA errors are asynchronous, a later NCCL or synchronization point can report the sticky error even when the first invalid access happened in the sparse-MLA gather.",
+        "title": "sparse-MLA metadata can index a request row that does not exist"
       }
     ],
     "schema_version": "1.1"
