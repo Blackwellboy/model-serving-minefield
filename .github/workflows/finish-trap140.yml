@@ -71,6 +71,17 @@ jobs:
                   text=text.replace(old,new)
               p.write_text(text,encoding='utf-8')
 
+          p=Path('models/README.md'); t=p.read_text(encoding='utf-8')
+          link='[140](../traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md)'
+          if link not in t:
+              lines=t.splitlines()
+              idx=next(i for i,line in enumerate(lines) if line.startswith('| DeepSeek V4-Flash, community-abliterated FP8 + NVFP4 MLA KV'))
+              needle='[62](../traps/runtime/62-spec-decode-garble-under-wrong-drafter-config.md)'
+              if needle not in lines[idx]: raise SystemExit('MISSING DeepSeek V4 model index anchor')
+              lines[idx]=lines[idx].replace(needle, needle+', '+link)
+              t='\n'.join(lines)+'\n'
+          p.write_text(t,encoding='utf-8')
+
           p=Path('CHANGELOG.md'); t=p.read_text(encoding='utf-8')
           if trap_path not in t:
               block='''## 2026-09-17 - Trap 140 sparse-MLA request-row bounds during CUDA-graph warmup\n\n- [**140**](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) - Blackwellboy: on the pinned historical vLLM sparse-MLA lane, CUDA-graph warmup could produce metadata naming a request row that did not exist in the block table; the downstream mapper could turn that invalid row into either a wrong KV slot or an illegal access. Status **measured here, raw not published**.\n- Current-main source re-check is explicitly narrower: padded block-table construction appears to avoid the historical producer/cardinality mismatch at the cited revision, while independent request-row and block-column bounds remain the defensive consumer contract. No upstream known-good pin is claimed.\n- Registry count moves from 139 to 140; Doctor coverage remains 19, leaving 121 canonical entries unimplemented.\n\n'''
@@ -94,7 +105,7 @@ jobs:
         run: |
           set -euo pipefail
           git rm .github/workflows/finish-trap140.yml .github/workflows/pr124-regenerate-artifact.yml
-          git add -- README.md CHANGELOG.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py registry/OPEN_TRAP_ISSUES.md dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          git add -- README.md CHANGELOG.md models/README.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py registry/OPEN_TRAP_ISSUES.md dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
           git config user.name 'blackwellboy-ci'
           git config user.email '76774064+Blackwellboy@users.noreply.github.com'
           git commit -m 'maint: complete Trap 140 registry integration'
