@@ -6,7 +6,7 @@
 
 **Symptom.** Sparse-MLA global-top-k mapping can consume metadata whose request-row selector names a row that does not exist in `block_table`. Depending on geometry and runtime state, the same invalid row selection can either silently map a token to the wrong KV slot or surface `cudaErrorIllegalAddress` in the Triton mapper.
 
-In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index `1` while `block_table.shape[0] == 1`, so row `1` was impossible. The full serving run failed in `_compute_global_topk_indices_and_lens_kernel`; a tiny standalone repro could instead return a wrong slot without raising.
+In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index `1` while the block table had exactly one request row, so row `1` was impossible. The full serving run failed in `_compute_global_topk_indices_and_lens_kernel`; a tiny standalone repro could instead return a wrong slot without raising.
 
 Because CUDA errors are asynchronous, a later NCCL or synchronization point can report the sticky error even when the first invalid access happened in the sparse-MLA gather.
 
@@ -14,7 +14,7 @@ Because CUDA errors are asynchronous, a later NCCL or synchronization point can 
 
 ```text
 0 <= req_idx < block_table_rows
-0 <= block_idx < block_table_stride
+0 <= block_idx < block_table_columns
 ```
 
 The historical pinned lane also had a producer-side cardinality mismatch during synthetic CUDA-graph warmup: `token_to_req_indices` represented more request slots than the associated block table exposed. That producer mismatch is useful trigger evidence for the affected build, but it is not claimed as a current-main vLLM bug.
@@ -28,18 +28,21 @@ Invalid entries must map to `-1` and be excluded from the effective top-k length
 **The check.** Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype:
 
 ```python
-rows = block_table.shape[0]
+rows = block_table.size(0)
+columns = block_table.size(1)
 assert token_to_req_indices.numel() == 0 or token_to_req_indices.min() >= 0
 assert token_to_req_indices.numel() == 0 or token_to_req_indices.max() < rows
+assert block_indices.numel() == 0 or block_indices.min() >= 0
+assert block_indices.numel() == 0 or block_indices.max() < columns
 ```
 
-Then use a focused fixture where the block table has one request row while metadata attempts to address rows `[0, 1]`.
+Then use focused fixtures where the block table has one request row while metadata attempts to address request rows `0` and `1`, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.
 
-**TRAP PRESENT:** the invalid second request is dereferenced, maps to a wrong KV slot, or faults.
+**TRAP PRESENT:** either invalid selector is dereferenced, maps to a wrong KV slot, or faults.
 
-**TRAP ABSENT:** the invalid request is rejected/mapped to `-1`, excluded from the effective length, and the valid request still maps correctly.
+**TRAP ABSENT:** invalid request-row and block-column selectors are rejected or mapped to `-1`, excluded from the effective length, and valid selectors still map correctly.
 
-Test the block-column bound separately; row-safe code can still be unsafe on the other dimension. For historical CUDA-graph reproduction, include padded warmup metadata. For current-main validation, keep the consumer-bound fixture even if producer construction no longer emits the historical mismatch.
+Test both dimensions independently; row-safe code can still be unsafe on the column dimension. For historical CUDA-graph reproduction, include padded warmup metadata. For current-main validation, keep the consumer-bound fixtures even if producer construction no longer emits the historical mismatch.
 
 **The fix.** On the affected historical build, repair the producer/consumer contract so warmup metadata cannot represent nonexistent request rows and independently harden the consumer on both dimensions. On current vLLM main, the producer-side mismatch is not presently reproduced, so the upstream fix scope should remain the defensive consumer bounds plus focused regressions unless a new producer regression proves otherwise.
 
