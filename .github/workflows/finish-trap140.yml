@@ -1,0 +1,100 @@
+name: finish-trap140
+
+on:
+  push:
+    branches:
+      - promotion/trap140-sparse-mla-warmup-bounds-20260915
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: promotion/trap140-sparse-mla-warmup-bounds-20260915
+          persist-credentials: true
+      - name: setup python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: patch canonical registry surfaces
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          trap_path='traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md'
+
+          p=Path('README.md'); t=p.read_text(encoding='utf-8')
+          for old,new in [
+              ('All 139\nentries are too many to read','All 140\nentries are too many to read'),
+              ('all 139 entries','all 140 entries'),
+              ('All 139 entries','All 140 entries'),
+              ('for **19 of these 139 entries**','for **19 of these 140 entries**'),
+              ('about the other 120','about the other 121'),
+              ("19 of this registry's 139 entries","19 of this registry's 140 entries"),
+          ]:
+              t=t.replace(old,new)
+          if trap_path not in t:
+              lines=t.splitlines()
+              marker='traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md'
+              idx=next(i for i,line in enumerate(lines) if marker in line and line.startswith('|'))
+              lines.insert(idx+1,'| Sparse-MLA warmup metadata names a request row that the block table does not contain | An invalid request-row selector can silently map to the wrong KV slot or fault in the downstream mapper | [140](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) | measured here, raw not published |')
+              t='\n'.join(lines)+'\n'
+          p.write_text(t,encoding='utf-8')
+
+          changes={
+            'playbooks/README.md':[("19 of this registry's 139 numbered entries","19 of this registry's 140 numbered entries")],
+            'doctor/README.md':[
+                ("19 of the registry's 139 numbered entries","19 of the registry's 140 numbered entries"),
+                ('implemented 19/139','implemented 19/140'),
+                ('not implemented 120','not implemented 121'),
+                ('remaining **120** numbered traps','remaining **121** numbered traps'),
+            ],
+            'doctor/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 139','REGISTRY_TRAP_COUNT = 140')],
+            'minefield/data/minefield_doctor.py':[('REGISTRY_TRAP_COUNT = 139','REGISTRY_TRAP_COUNT = 140')],
+            'registry/OPEN_TRAP_ISSUES.md':[
+                ('**19 of 139** entries','**19 of 140** entries'),
+                ('120 uncovered entries','121 uncovered entries'),
+            ],
+          }
+          for name,pairs in changes.items():
+              p=Path(name); text=p.read_text(encoding='utf-8')
+              for old,new in pairs:
+                  if old not in text and new not in text:
+                      raise SystemExit(f'MISSING {name}: {old}')
+                  text=text.replace(old,new)
+              p.write_text(text,encoding='utf-8')
+
+          p=Path('CHANGELOG.md'); t=p.read_text(encoding='utf-8')
+          if trap_path not in t:
+              block='''## 2026-09-17 - Trap 140 sparse-MLA request-row bounds during CUDA-graph warmup\n\n- [**140**](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) - Blackwellboy: on the pinned historical vLLM sparse-MLA lane, CUDA-graph warmup could produce metadata naming a request row that did not exist in the block table; the downstream mapper could turn that invalid row into either a wrong KV slot or an illegal access. Status **measured here, raw not published**.\n- Current-main source re-check is explicitly narrower: padded block-table construction appears to avoid the historical producer/cardinality mismatch at the cited revision, while independent request-row and block-column bounds remain the defensive consumer contract. No upstream known-good pin is claimed.\n- Registry count moves from 139 to 140; Doctor coverage remains 19, leaving 121 canonical entries unimplemented.\n\n'''
+              if not t.startswith('# Changelog\n\n'): raise SystemExit('BAD CHANGELOG HEADER')
+              t='# Changelog\n\n'+block+t[len('# Changelog\n\n'):]
+          p.write_text(t,encoding='utf-8')
+          PY
+      - name: regenerate canonical artefacts
+        run: python -m minefield agent-bundle
+      - name: verify integration locally
+        run: |
+          python integrity/registry_integrity.py
+          python integrity/reference_integrity.py
+          python integrity/upstream_integrity.py
+          python -m unittest discover -s tests
+          python -m unittest discover -s integrity/tests -t integrity/tests
+          python -m unittest discover -s doctor/tests -t doctor/tests
+          python -m minefield agent-bundle --verify
+          git diff --check
+      - name: commit finished integration and remove helpers
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/finish-trap140.yml .github/workflows/pr124-regenerate-artifact.yml
+          git add -- README.md CHANGELOG.md playbooks/README.md doctor/README.md doctor/minefield_doctor.py minefield/data/minefield_doctor.py registry/OPEN_TRAP_ISSUES.md dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          git config user.name 'blackwellboy-ci'
+          git config user.email '76774064+Blackwellboy@users.noreply.github.com'
+          git commit -m 'maint: complete Trap 140 registry integration'
+          git push origin HEAD:promotion/trap140-sparse-mla-warmup-bounds-20260915
