@@ -3358,7 +3358,7 @@
       "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "140",
-      "untrusted_published_check_text": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use a focused fixture where the block table has one request row while metadata attempts to address rows [0, 1]."
+      "untrusted_published_check_text": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range."
     }
   ],
   "schema_version": "1.0"

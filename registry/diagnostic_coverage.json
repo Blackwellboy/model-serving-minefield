@@ -10339,7 +10339,7 @@
       "modalities": {
         "endpoint_probe": {
           "can_prove_clean": false,
-          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use a focused fixture where the block table has one request row while metadata attempts to address rows [0, 1].",
+          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
           "expected_duration": "under one minute",
           "implemented_checker": null,
           "limitations": "",
@@ -10380,7 +10380,7 @@
         },
         "log_scan": {
           "can_prove_clean": false,
-          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use a focused fixture where the block table has one request row while metadata attempts to address rows [0, 1].",
+          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Absence of a signature is not proof of safety.",
@@ -10394,7 +10394,7 @@
         },
         "static_config": {
           "can_prove_clean": false,
-          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use a focused fixture where the block table has one request row while metadata attempts to address rows [0, 1].",
+          "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

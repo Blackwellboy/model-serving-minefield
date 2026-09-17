@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 140,
-  "content_sha256": "3ff0fe4cf2342cc4a5269a5c056d6c02244a6a6be56c821627b49b98a7cebc25",
+  "content_sha256": "a108054097013172fee6c27929f568bd1903b512660f50cc9cc57398fd001650",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -9686,7 +9686,7 @@
         ]
       },
       "category": "memory",
-      "check": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use a focused fixture where the block table has one request row while metadata attempts to address rows [0, 1].",
+      "check": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
         "static_config",
@@ -9709,13 +9709,11 @@
       "public_evidence_links": [
         "https://github.com/vllm-project/vllm/issues/55636"
       ],
-      "related_traps": [
-        "00"
-      ],
+      "related_traps": [],
       "source_path": "traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md",
       "status": "measured here, raw not published.",
       "supersession": null,
-      "symptom": "Sparse-MLA global-top-k mapping can consume metadata whose request-row selector names a row that does not exist in block_table. Depending on geometry and runtime state, the same invalid row selection can either silently map a token to the wrong KV slot or surface cudaErrorIllegalAddress in the Triton mapper. In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index 1 while block_table.shape[0] == 1, so row 1 was impossible. The full serving run failed in _compute_global_topk_indices_and_lens_kernel; a tiny standalone repro could instead return a wrong slot without raising. Because CUDA errors are asynchronous, a later NCCL or synchronization point can report the sticky error even when the first invalid access happened in the sparse-MLA gather.",
+      "symptom": "Sparse-MLA global-top-k mapping can consume metadata whose request-row selector names a row that does not exist in block_table. Depending on geometry and runtime state, the same invalid row selection can either silently map a token to the wrong KV slot or surface cudaErrorIllegalAddress in the Triton mapper. In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index 1 while the block table had exactly one request row, so row 1 was impossible. The full serving run failed in _compute_global_topk_indices_and_lens_kernel; a tiny standalone repro could instead return a wrong slot without raising. Because CUDA errors are asynchronous, a later NCCL or synchronization point can report the sticky error even when the first invalid access happened in the sparse-MLA gather.",
       "title": "sparse-MLA metadata can index a request row that does not exist"
     }
   ],
