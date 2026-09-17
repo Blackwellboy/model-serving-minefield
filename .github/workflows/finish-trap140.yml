@@ -1,3 +1,4 @@
+# one-shot integration helper; remove after successful run
 name: finish-trap140
 
 on:
