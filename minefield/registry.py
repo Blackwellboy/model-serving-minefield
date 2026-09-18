@@ -20,7 +20,8 @@ FINDER_RE = re.compile(
     re.M | re.I,
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\((https?://[^)]+)\)")
-RELATED_TRAP_RE = re.compile(r"\btrap\s+(\d{1,3})\b", re.I)\nRELATED_LINK_RE = re.compile(r"\[(\d{1,3})\]\(")
+RELATED_TRAP_RE = re.compile(r"\btrap\s+(\d{1,3})\b", re.I)
+RELATED_LINK_RE = re.compile(r"\[(\d{1,3})\]\(")
 STACK_NAMES = (
     "vLLM", "llama.cpp", "Ollama", "mlx_lm", "SGLang", "TensorRT-LLM",
     "text-generation-inference", "TabbyAPI", "ExLlama", "LM Studio",
