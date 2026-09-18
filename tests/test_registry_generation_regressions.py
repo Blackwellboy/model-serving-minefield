@@ -10,6 +10,19 @@ class RegistryGenerationRegressionTests(unittest.TestCase):
         self.assertIn("NCCL_IB_GID_INDEX=3", cleaned)
         self.assertNotIn("NCCLIBGIDINDEX", cleaned)
 
+
+    def test_related_trap_parser_ignores_array_index_notation(self):
+        registry = compile_registry(ROOT)
+        bad = [
+            entry["id"]
+            for entry in registry["entries"]
+            if "00" in entry["related_traps"]
+        ]
+        self.assertEqual([], bad)
+
+        trap33 = next(entry for entry in registry["entries"] if entry["id"] == "33")
+        self.assertIn("35", trap33["related_traps"])
+
     def test_trap139_encodes_switchless_topology(self):
         registry = compile_registry(ROOT)
         trap = next(entry for entry in registry["entries"] if entry["id"] == "139")
