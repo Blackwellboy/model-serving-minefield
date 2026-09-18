@@ -120,6 +120,13 @@ def _section(text: str, labels: Iterable[str], fallback: str = "") -> str:
     return _clean(fallback)
 
 
+def _related_trap_ids(text: str) -> list[str]:
+    """Extract prose/Markdown trap references without treating code indexes as trap IDs."""
+    scan = re.sub(r"\`\`\`.*?\`\`\`", " ", text, flags=re.S)
+    scan = re.sub(r"\`[^\`\\n]+\`", " ", scan)
+    return sorted({item.zfill(2) for item in RELATED_RE.findall(scan)}, key=int)
+
+
 def _status_labels(raw: str) -> list[str]:
     lower = raw.lower()
     if re.search(r"\b(?:universally proven|verified everywhere|guaranteed|conclusive)\b", lower):
@@ -239,11 +246,9 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
             "known_limitations": _section(
                 text, ("Limitations", "What this does and does not say", "Scope"), ""
             ),
-            "related_traps": sorted(
-                {item.zfill(2) for item in RELATED_RE.findall(text)}
-                - {trap_id},
-                key=int,
-            ),
+            "related_traps": [
+                item for item in _related_trap_ids(text) if item != trap_id
+            ],
             "supersession": None,
         }
         entry.update(overrides.get(trap_id, {}))
