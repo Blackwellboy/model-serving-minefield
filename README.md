@@ -77,7 +77,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 140
+Four doors, and which one you want depends on why you are here. All 143
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -112,7 +112,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 140 entries, one row each, sorted by number. It is the
+  directly below, all 143 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -123,8 +123,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 140 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 121. It runs
+for **19 of these 143 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 124. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -156,7 +156,7 @@ their dispositions, so they stay closed.
 
 ## Find your symptom
 
-All 140 entries. If you know what you are running rather than what you are
+All 143 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -218,6 +218,9 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | HTTP 200 / normal finish, but assistant JSON contains duplicated ordinary keys or values | Draftless n-gram prompt lookup duplicated structured-output tokens | [138](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md) | contributor-measured, conditions as reported |
 | A direct-cable multi-NIC collective times out even though the peer link is healthy | NCCL selected an interface that cannot physically reach that peer on the switchless topology | [139](traps/runtime/139-stock-nccl-round-robins-hcas-to-the-ring-successor.md) | contributor-measured, conditions as reported |
 | Sparse-MLA warmup metadata names a request row that the block table does not contain | An invalid request-row selector can silently map to the wrong KV slot or fault in the downstream mapper | [140](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) | measured here, raw not published |
+| A chat request names model B but the SGLang server is actually serving model A, and still returns HTTP 200 content | The Python OpenAI chat route does not validate requested base-model identity before generation | [141](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md) | contributor-measured, conditions as reported |
+| A missing Docker bind source becomes a directory and the serve fails later or with a file/directory mismatch | Creating bind syntax fabricated the missing host path instead of failing closed | [142](traps/versioning/142-docker-volume-missing-bind-source-becomes-directory.md) | contributor-measured, conditions as reported |
+| A Qwen3 config visibly declares a sliding window but every reconstructed layer is full attention | `use_sliding_window` and `max_window_layers` silently resolve the effective architecture differently from the raw key | [143](traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md) | contributor-measured, conditions as reported |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -330,7 +333,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 140 entries in under a minute:
+against 19 of this registry's 143 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
