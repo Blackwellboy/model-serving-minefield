@@ -20,7 +20,7 @@ FINDER_RE = re.compile(
     re.M | re.I,
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\((https?://[^)]+)\)")
-RELATED_RE = re.compile(r"(?:\btrap\s+|(?<![\w`])\[)(\d{1,3})(?:\]|\b)", re.I)
+RELATED_TRAP_RE = re.compile(r"\btrap\s+(\d{1,3})\b", re.I)\nRELATED_LINK_RE = re.compile(r"\[(\d{1,3})\]\(")
 STACK_NAMES = (
     "vLLM", "llama.cpp", "Ollama", "mlx_lm", "SGLang", "TensorRT-LLM",
     "text-generation-inference", "TabbyAPI", "ExLlama", "LM Studio",
@@ -124,7 +124,7 @@ def _related_trap_ids(text: str) -> list[str]:
     """Extract prose/Markdown trap references without treating code indexes as trap IDs."""
     scan = re.sub(r"```.*?```", " ", text, flags=re.S)
     scan = re.sub(r"`[^`\n]+`", " ", scan)
-    return sorted({item.zfill(2) for item in RELATED_RE.findall(scan)}, key=int)
+    ids = set(RELATED_TRAP_RE.findall(scan)) | set(RELATED_LINK_RE.findall(scan))\n    return sorted({item.zfill(2) for item in ids}, key=int)
 
 
 def _status_labels(raw: str) -> list[str]:
