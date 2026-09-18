@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 140,
-  "content_sha256": "dc45f3f586e5af0d853f705e7851fe6ac12513cb32e410fb854a0c4662de4677",
+  "content_sha256": "4c606ec341d6f921e70cc186a4f711910a5f348b9cf785dac2e9cc670c4da997",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -1716,8 +1716,7 @@
       "related_traps": [
         "03",
         "04",
-        "19",
-        "21"
+        "19"
       ],
       "source_path": "traps/template/24-official-template-breaks-cpp-jinja.md",
       "status": "reported by others",
@@ -2329,7 +2328,6 @@
         "https://github.com/hikarioyama/qwen36-a6b/blob/main/reports/ALPHA_DIAL_20260712.md"
       ],
       "related_traps": [
-        "00",
         "35"
       ],
       "source_path": "traps/routing/33-moe-inference-topk-expansion-tax.md",
@@ -7176,7 +7174,6 @@
         "https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/dsv4-flash-long-soak-20260728/raw-scrubbed/"
       ],
       "related_traps": [
-        "01",
         "11",
         "28",
         "80"
@@ -8999,7 +8996,6 @@
       "mitigation": "Choose the spec depth (or max_num_seqs) so max_num_seqs x (spec_tokens + 1) lands exactly on the clamp, and verify from the log, not from the flag you set. Do not tune the two independently: capture size is their product, and a max_num_seqs change silently retrades draft depth for graph coverage.",
       "public_evidence_links": [],
       "related_traps": [
-        "01",
         "11",
         "28",
         "46",
