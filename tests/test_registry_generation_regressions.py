@@ -26,6 +26,15 @@ class RegistryGenerationRegressionTests(unittest.TestCase):
         )
         self.assertEqual(["34"], related)
 
+    def test_compiled_registry_has_no_noncanonical_trap00_relations(self):
+        registry = compile_registry(ROOT)
+        polluted = [
+            entry["id"]
+            for entry in registry["entries"]
+            if "00" in entry["related_traps"]
+        ]
+        self.assertEqual([], polluted)
+
     def test_trap140_does_not_publish_bogus_trap00_relation(self):
         registry = compile_registry(ROOT)
         trap = next(entry for entry in registry["entries"] if entry["id"] == "140")
