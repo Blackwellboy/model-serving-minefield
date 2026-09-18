@@ -168,12 +168,12 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **19 of the registry's 140 numbered entries**
+The doctor implements checks for **19 of the registry's 143 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 77, 78).
 Every run ends with a coverage line:
 
 ```
-implemented 19/140 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 121
+implemented 19/143 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 124
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
