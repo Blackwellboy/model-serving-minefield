@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 140,
-  "content_sha256": "a108054097013172fee6c27929f568bd1903b512660f50cc9cc57398fd001650",
+  "content_sha256": "f11c5cc4842192fedbce678276c22ead0969cfcb9eefbb6a9ced00a2e7c94d99",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -1059,9 +1059,7 @@
       "public_evidence_links": [
         "https://github.com/mrpmorris/sparkrun-recipes"
       ],
-      "related_traps": [
-        "00"
-      ],
+      "related_traps": [],
       "source_path": "traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md",
       "status": "reported by others",
       "supersession": null,
@@ -1478,9 +1476,7 @@
       "mechanism": "Some model repos carry no generation_config.json at all, with the recommended sampling stated only in README prose. Nothing machine-readable flows into the GGUF conversion or the server, so the server's built-in defaults win silently. The card's recommendations can differ from those built-ins on every axis at once. Measured case, Qwen3.5-9B (repo ships no generation_config.json; card README recommends per-mode sampling in prose, including top_k=20, min_p=0.0, presence_penalty=1.5, temperature 0.7 to 1.0 by mode): the serving lane's effective defaults, read live from /props, were",
       "mitigation": "Set sampling explicitly on every request (or in the serve line), taken from the card, per mode. Never describe a run as \"at model defaults\" for a checkpoint that ships no generation config; there is no such thing on that model.",
       "public_evidence_links": [],
-      "related_traps": [
-        "02"
-      ],
+      "related_traps": [],
       "source_path": "traps/versioning/21-no-generation-config-server-defaults-win.md",
       "status": "reproduced here",
       "supersession": null,
@@ -2333,7 +2329,6 @@
         "https://github.com/hikarioyama/qwen36-a6b/blob/main/reports/ALPHA_DIAL_20260712.md"
       ],
       "related_traps": [
-        "00",
         "35"
       ],
       "source_path": "traps/routing/33-moe-inference-topk-expansion-tax.md",
@@ -3408,10 +3403,7 @@
       "mechanism": "Two convention mismatches stacked, and neither is documented anywhere but the source. 1. Off-by-one layer index. The shipped custom modeling file appends hidden states at the top of the layer loop (all_hidden_states += (hidden_states,) before each block runs; the post-block append is commented out). So hs[0] is the embedding, hs[i] for i=1..51 is the input to layer i, i.e. the output of layer i-1: and hs[51] is appended after the loop. Our dump emits output-of-layer-l. Therefore ours layerL maps to reference layer(L+1). 2. Pre-norm vs post-norm. The reference's final entry is post final-norm; our last layer dump is pre final-norm. Comparing them is meaningless. The \"explosion\" was entirely an artifact of comparing a pre-norm state against a post-norm one at the wrong index.",
       "mitigation": "Fix the harness, not the model: align ours[L] to ref[L+1], and apply the final norm to your last layer before comparing it to the reference's final entry (or dump a post-norm state as an extra entry).",
       "public_evidence_links": [],
-      "related_traps": [
-        "00",
-        "51"
-      ],
+      "related_traps": [],
       "source_path": "traps/evaluation/50-hidden-state-dump-convention.md",
       "status": "contributor-measured, conditions as reported.",
       "supersession": null,
@@ -4758,7 +4750,6 @@
       "mitigation": "None client-side worth the effort, except to stop asserting things that are not true. Report upstream: all three are one-line template fixes. Related. trap 24 and trap 30, the neighbouring \"the shipped template is not what you think\" entries. Found. 2026-07-27 and 2026-07-28. Attribution. Blackwellboy.",
       "public_evidence_links": [],
       "related_traps": [
-        "00",
         "24",
         "30"
       ],
@@ -5691,9 +5682,7 @@
       "mechanism": "The template's else branch does not set the system message to empty; it assigns a literal block of prose: Because system_message is assigned in both branches, the later guard {%- if loop.last and system_message is defined %} is always true, so the injected text is always emitted. Measured on this file: omitting the system message renders 388 characters of template-supplied prose ahead of the user content, and the reply demonstrably follows it. We do not reproduce the injected text here. Its content is a property of one unlabelled checkpoint and is not the finding; the finding is that a template can inject a non-empty default at all, silently, with a 200.",
       "mitigation": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
       "public_evidence_links": [],
-      "related_traps": [
-        "00"
-      ],
+      "related_traps": [],
       "source_path": "traps/template/83-template-carries-a-baked-default-system-prompt.md",
       "status": "reproduced here",
       "supersession": null,
@@ -6069,9 +6058,7 @@
         "https://github.com/drowzeys/notes-for-DSV4F-DSpark-Abliteration",
         "https://github.com/drowzeys/notes-for-DSV4F-DSpark-Abliteration/blob/afd4137540ba5c4c2a1e96ecaf4200af74f8dfd8/TECHNICAL_REPORT.md"
       ],
-      "related_traps": [
-        "01"
-      ],
+      "related_traps": [],
       "source_path": "traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md",
       "status": "contributor-measured, conditions as reported",
       "supersession": null,
@@ -6145,8 +6132,6 @@
         "https://github.com/drowzeys/notes-for-DSV4F-DSpark-Abliteration/blob/afd4137540ba5c4c2a1e96ecaf4200af74f8dfd8/TECHNICAL_REPORT.md"
       ],
       "related_traps": [
-        "00",
-        "01",
         "10",
         "45",
         "46"
@@ -6218,7 +6203,6 @@
       "mitigation": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cacheprompt: false, then hash the completions: ```bash",
       "public_evidence_links": [],
       "related_traps": [
-        "00",
         "88",
         "92",
         "94"
@@ -6769,9 +6753,7 @@
         "https://github.com/smfworks",
         "https://github.com/smfworks/NemoKnowledgebase/tree/main/skills/gfx1151-gpu-fixes"
       ],
-      "related_traps": [
-        "00"
-      ],
+      "related_traps": [],
       "source_path": "traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md",
       "status": "contributor-measured, conditions as reported",
       "supersession": null,
@@ -6892,9 +6874,7 @@
         "https://github.com/smfworks",
         "https://github.com/smfworks/NemoKnowledgebase/tree/main/skills/gfx1151-gpu-fixes"
       ],
-      "related_traps": [
-        "01"
-      ],
+      "related_traps": [],
       "source_path": "traps/template/101-transformers-minor-version-removes-kwarg.md",
       "status": "contributor-measured, conditions as reported",
       "supersession": null,
@@ -7452,7 +7432,6 @@
         "https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/"
       ],
       "related_traps": [
-        "01",
         "35",
         "94"
       ],
@@ -8132,7 +8111,6 @@
         "https://github.com/Blackwellboy/model-serving-minefield/issues/44"
       ],
       "related_traps": [
-        "00",
         "106"
       ],
       "source_path": "traps/runtime/118-ray-log-monitor-off-hides-worker-progress.md",
@@ -8418,7 +8396,6 @@
         "https://github.com/ayayalar/Qwen3.8-27B-NVFP4-TurboQuant"
       ],
       "related_traps": [
-        "01",
         "28",
         "62"
       ],
@@ -9433,7 +9410,6 @@
       "mitigation": "Enable pipefail before the command-under-test pipeline, or avoid putting presentation filters in the verdict path. Capture and propagate the producer status immediately. Keep log trimming as a separate display step, and make the negative control above part of the wrapper test suite.",
       "public_evidence_links": [],
       "related_traps": [
-        "00",
         "52",
         "112",
         "115"
@@ -9570,7 +9546,6 @@
       "mitigation": "Disable the reported n-gram prompt-lookup speculative config on structured-output lanes unless the exact engine/model/config combination has passed a strict-parser A/B. If keeping the optimization, gate deployment on machine parsing of every structured fixture and re-run the check after engine or speculative-config changes.",
       "public_evidence_links": [],
       "related_traps": [
-        "00",
         "37",
         "52",
         "62"
