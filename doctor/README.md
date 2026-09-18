@@ -202,7 +202,7 @@ depth, and the coverage block says so every time:
   an expired key reading as a strict server. It rules out "your typo is
   silently accepted"; it does **not** rule out a known-but-unimplemented field
   being accepted and ignored, which stays with 03 and 29.
-- The remaining **121** numbered traps have no check in this tool.
+- The remaining **124** numbered traps have no check in this tool.
 
 The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
 `mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of
