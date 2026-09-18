@@ -467,7 +467,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: Documented and worked around in mrpmorris/sparkrun-recipes' benchllm.py, which (a) maintains an explicit list of loglikelihood-scored tasks, (b) probes the server before running them, and (c) requires the probe response to contain actual token_logprobs, not just a 200. His comparison grid marks such servers UNSUPPORTED rather than letting them score zero, alongside OOM, CRASH, HANG, and STARTUP as distinct death-classes; the discipline of classifying why a number is missing is itself the lesson.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": ["startup"], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/evaluation/15-no-echo-logprobs-wedges-lm-eval.md`
-- Related traps: 00
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 16: finishreason=length is not a failure signal, and stop is not a success signal
@@ -545,7 +545,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: llama.cpp b9066 serving Qwen3.5-9B Q4KM (defaults diverge); llama.cpp b9193 serving Qwen3.6-27B Q4KM (defaults match; control). The class applies to any server with built-in sampling defaults and any checkpoint that documents sampling only in prose.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen3.5-9b", "qwen3.5-9b q4km", "qwen3.6-27b", "qwen3.6-27b q4km"], "failure_stage": [], "gpu_architecture": [], "model_family": ["qwen3.5", "qwen3.6"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["llama.cpp"], "stack_version": ["b9066", "b9193"], "topology": []}`
 - Source: `traps/versioning/21-no-generation-config-server-defaults-win.md`
-- Related traps: 02
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 22: a family card is not a model card, the thinking budget floor differs by size
@@ -922,7 +922,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: HuggingFace trust_remote_code custom modeling files, where output_hidden_states semantics are set by the shipped file rather than by stock transformers. Observed on a Nemotron-H hybrid; the pattern applies to any model whose modeling file was written by hand.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["nemotron-h", "nemotron-h hybrid"], "failure_stage": [], "gpu_architecture": [], "model_family": ["nemotron"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["transformers"], "stack_version": [], "topology": []}`
 - Source: `traps/evaluation/50-hidden-state-dump-convention.md`
-- Related traps: 00, 51
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 51: single-backend NaN is a backend bug, not a quantization-quality result
@@ -1169,7 +1169,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: No narrower conditions were parsed; read the source.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["vllm"], "stack_version": [], "topology": []}`
 - Source: `traps/template/69-minor-template-defects.md`
-- Related traps: 00, 24, 30
+- Related traps: 24, 30
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 70: the reasoning parser ships inside the checkpoint and is bundled with no serving stack
@@ -1351,7 +1351,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: One Mistral-family Q80 GGUF of unstated provenance. A template is free to do this and some do; the class is "read the template's else branch before calling any arm a control".
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["mistral-family", "mistral-family q80 gguf of unstated provenance. a template is free to do this"], "failure_stage": [], "gpu_architecture": [], "model_family": ["mistral"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["gguf", "q80"], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/template/83-template-carries-a-baked-default-system-prompt.md`
-- Related traps: 00
+- Related traps: none stated
 - Unknown/limits: One Mistral-family Q80 GGUF of unstated provenance. A template is free to do this and some do; the class is "read the template's else branch before calling any arm a control".
 
 ### Trap 84: a completed tool round trip followed by a user turn is unrenderable, and the 400 blames the template rather than your message list
@@ -1429,7 +1429,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: As reported: DeepSeek-V4-Flash-DSpark (FP8 / NVFP4 serve path), dual DGX Spark GB10, TP=2, weight edits applied to FP8 attn.wo_b tensors by a first-party script. The mechanism is filesystem-level and is not specific to that model, that stack or that edit type - anything that rewrites shards in place (quantization passes, merges, LoRA folding, dtype conversion, tensor surgery) over a hardlinked tree carries it. We state the one stack it was observed on, per the evidence bar; the generality is a hypothesis, labelled as one, and kept out of the symptom and check sections.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": ["deepseek-v4-flash-dspark"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["deepseek"], "node_count": [], "operating_system": [], "parallelism": ["tp"], "quantization": ["fp8", "nvfp4"], "serving_stack": [], "stack_version": [], "topology": ["tp"]}`
 - Source: `traps/evaluation/89-hardlink-shard-pollution-invalidates-a-ladder.md`
-- Related traps: 01
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 90: a kernel library advertises a fast path your card cannot run, and the six errors on the way there each look like a fixable config bug
@@ -1442,7 +1442,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: As reported: official vLLM 0.25.0, aarch64, FlashInfer 0.6.13, DeepSeek-V4 sparse MLA path, GB10 / SM12.1. The reported conclusion is stated as a hard one: Python-level transplants alone cannot run that sparse MLA path on GB10 with that combination. Reported on one stack.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["deepseek-v4", "deepseek-v4 sparse mla path"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["deepseek"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["bf16", "fp8"], "serving_stack": ["vllm"], "stack_version": ["0.25.0"], "topology": []}`
 - Source: `traps/versioning/90-kernel-library-ships-cubins-for-one-arch-only.md`
-- Related traps: 00, 01, 10, 45, 46
+- Related traps: 10, 45, 46
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 91: multi-slot continuous batching is non-deterministic at temperature 0, and the obvious minimal reproduction is too small to show it
@@ -1455,7 +1455,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm_120 and does not hold on sm_86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cache_prompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["mistral checkpoints generally", "mistral-family", "mistral-family q80 gguf of unstated provenance. the mechanism is server-side"], "failure_stage": [], "gpu_architecture": [], "model_family": ["mistral"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["gguf", "q80"], "serving_stack": ["llama.cpp"], "stack_version": ["b9878"], "topology": []}`
 - Source: `traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md`
-- Related traps: 00, 88, 92, 94
+- Related traps: 88, 92, 94
 - Unknown/limits: llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm_120 and does not hold on sm_86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cache_prompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.
 
 ### Trap 92: the prompt cache is a second, independent source of temperature-0 divergence, and it survives long enough to invert an A/B run against it
@@ -1559,7 +1559,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: PyTorch 2.12.0+rocm7.15.0a (TheRock wheels), gfx1151 (AMD Ryzen AI MAX+ 395 / Radeon 8060S), mainline Linux kernel 7.1.4-070104-generic. Tested shapes and results: | Shape (b, h, s, d) | dtype | Causal | Result | |---|---|---|---| | (1, 8, 32, 64) | bf16 | False | OK | | (1, 8, 32, 64) | bf16 | True | FAIL | | (1, 8, 128, 128) | bf16 | True | FAIL | | (1, 16, 512, 128) | bf16 | False | FAIL | | (1, 32, 128, 128) | bf16 | False | FAIL | | (1, 8, 32, 64) | fp32 | False | FAIL | | headdim=256 | bf16 | either | FAIL | The pattern: causal always fails; non-causal fails for large head counts or headdim=256; fp32 always fails.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": ["linux"], "parallelism": [], "quantization": ["bf16"], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/runtime/99-sdpa-causal-attention-fails-gfx1151.md`
-- Related traps: 00
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 100: OEM kernel KFD rejects all gfx1151 code objects
@@ -1585,7 +1585,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: transformers==5.5.0 → transformers==5.6.0 and transformers==5.14.1, on a Qwen3-VL text encoder used in an image generation pipeline (Mage-Flow). gfx1151 (Radeon 8060S), TheRock PyTorch 2.12.0+rocm7.15.0a. The failure was 100% on 5.6.0+ and 0% on 5.5.0.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen3-vl", "qwen3-vl text encoder used in an image generation pipeline"], "failure_stage": ["load"], "gpu_architecture": [], "model_family": ["qwen3"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["transformers"], "stack_version": ["5.14.1", "5.5.0", "5.6.0"], "topology": []}`
 - Source: `traps/template/101-transformers-minor-version-removes-kwarg.md`
-- Related traps: 01
+- Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 102: NVFP4 MoE profiling says "speed up the MoE" but the bottleneck is BF16 GEMMs
@@ -1676,7 +1676,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: vLLM 0.20.0, NVIDIA Nemotron 3 Super 120B A12B NVFP4, revision 4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6, single GB10-class node, TP=1, MTP num_speculative_tokens=3, --async-scheduling, enable_prefix_caching=False. Canary sent at temperature=0, seed=20260728, max_tokens=512, thinking off, one request at a time with no other generation traffic on the lane. Two conditions worth stating because they remove the obvious explanations: prefix caching was off in this configuration, so the prefix cache is not the mechanism here; and the driver was strictly sequential, so this is
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["nemotron 3 super 120b a12b nvfp4"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["nemotron"], "node_count": [], "operating_system": [], "parallelism": ["tp"], "quantization": ["nvfp4"], "serving_stack": ["vllm"], "stack_version": ["0.20.0"], "topology": ["tp"]}`
 - Source: `traps/evaluation/108-burn-canary-is-bistable-not-degrading.md`
-- Related traps: 01, 35, 94
+- Related traps: 35, 94
 - Unknown/limits: 25 in-band samples on one prompt, one process, one node, one day. The set size of 2 is a property of this prompt on this lane and does not transfer: a different prompt has a different number of near-ties and may have one output or five. What transfers is the shape of the error, which is the pairwise comparison rule, and that is stack-independent. Related: trap 94 (temperature-0 reproducibility is architecture dependent) and trap 35 (the harness-level consequence). This entry is the monitoring-level consequence: the same nondeterminism, met by a detector rather than by a scorer.
 
 ### Trap 109: an NVFP4 requant that leaves the MTP experts in the source format serves cleanly and quietly breaks its own drafter
@@ -1806,7 +1806,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: vLLM v0.1.dev17863+ge232d2623.d20260715 with --distributed-executor-backend ray, CUDA 13.2, driver 580.159.03; GLM-5.2 W4W8 (compressed-tensors community build), 600K context, fp8_ds_mla KV, MTP k=6, TP=4 with decode-context-parallel 4, across four DGX Spark (GB10, sm121a, aarch64) nodes, weights NFS-mounted read-only from one node. Any Ray-backed vLLM deployment whose launcher passes --include-log-monitor=false is exposed. Several published DGX Spark launch scripts set it, reasonably, to cut log noise.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": ["600k context"], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": ["decode", "load"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": ["1"], "operating_system": [], "parallelism": ["tp"], "quantization": [], "serving_stack": ["vllm"], "stack_version": ["v0.1"], "topology": ["single-node", "tp"]}`
 - Source: `traps/runtime/118-ray-log-monitor-off-hides-worker-progress.md`
-- Related traps: 00, 106
+- Related traps: 106
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 119: a utilization that worked for weeks starts failing, and the loudest error names the wrong node
@@ -1858,7 +1858,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: vLLM 0.27.1; single RTX 5090 (GB202/sm120, 32 GiB; driver 610.43.02; CUDA 13.3); Python 3.13 environment with FlashInfer and nvidia-cutlass-dsl; unsloth/Qwen3.8-27B-NVFP4 (compressed-tensors mixed NVFP4+fp8, Qwen3.5-family runtime architecture, native 262144-token context). The original failing cell used turboquant_4bit_nc KV. A separate fp8-KV FULL capture control showed the same corruption signature. Version, model, hardware, and graph-mode scope matter.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["5090", "rtx 5090"], "exact_checkpoint": ["qwen3.5-family", "qwen3.5-family runtime architecture", "qwen3.8", "qwen3.8-27b-nvfp4", "unsloth qwen3.8-27b-nvfp4"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.5", "qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["fp8", "nvfp4"], "serving_stack": ["vllm"], "stack_version": ["0.27.1"], "topology": []}`
 - Source: `traps/runtime/122-full-cuda-graph-corrupts-qwen38-mtp-verification.md`
-- Related traps: 01, 28, 62
+- Related traps: 28, 62
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 123: abrupt API-server PID kill can leave vLLM V1 EngineCore orphaned with GPU memory
@@ -2040,7 +2040,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: Contributor-measured with Bash wrapping a Python probe during a DGX Spark / GB10 serving-kernel investigation. The mechanism is shell-generic and applies to any benchmark, readiness probe, profiler, or remote executor that pipes the command under test through tail, tee, grep, or another successful consumer without preserving producer status.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md`
-- Related traps: 00, 52, 112, 115
+- Related traps: 52, 112, 115
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 137: a nonzero kernel selector return is not a process failure
@@ -2066,7 +2066,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: Contributor-measured on vLLM 0.28.0, aarch64, with Qwen3.8-27B BF16 weights on NVIDIA GB10 Grace Blackwell. The contributor reported the same malformed cases on the abliterated sibling under the same serve configuration. The measured speculative configuration was: Other n-gram widths/ranges, other checkpoints, other engine versions, and speculative decoding with a draft model were not established by this report.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen3.8-27b", "qwen3.8-27b bf16 weights on nvidia gb10 grace blackwell. the contributor r"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["bf16"], "serving_stack": ["vllm"], "stack_version": ["0.28.0"], "topology": []}`
 - Source: `traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md`
-- Related traps: 00, 37, 52, 62
+- Related traps: 37, 52, 62
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 139: stock NCCL can select the wrong HCA for a peer on a switchless multi-NIC cycle
