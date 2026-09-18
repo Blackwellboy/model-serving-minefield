@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 140,
-  "content_sha256": "f11c5cc4842192fedbce678276c22ead0969cfcb9eefbb6a9ced00a2e7c94d99",
+  "canonical_trap_count": 143,
+  "content_sha256": "815bb976b220528462f8b50abd284bd890f9690bd65cd69de19b43afb0020a16",
   "doctor_implemented_trap_count": 19,
   "entries": [
     {
@@ -9690,6 +9690,210 @@
       "supersession": null,
       "symptom": "Sparse-MLA global-top-k mapping can consume metadata whose request-row selector names a row that does not exist in block_table. Depending on geometry and runtime state, the same invalid row selection can either silently map a token to the wrong KV slot or surface cudaErrorIllegalAddress in the Triton mapper. In the historical failing build, synthetic CUDA-graph warmup produced metadata with request index 1 while the block table had exactly one request row, so row 1 was impossible. The full serving run failed in _compute_global_topk_indices_and_lens_kernel; a tiny standalone repro could instead return a wrong slot without raising. Because CUDA errors are asynchronous, a later NCCL or synchronization point can report the sticky error even when the first invalid access happened in the sparse-MLA gather.",
       "title": "sparse-MLA metadata can index a request row that does not exist"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-family NVFP4 serves on NVIDIA DGX Spark / GB10. Current-source adj"
+      ],
+      "affected_stacks": [
+        "vLLM",
+        "SGLang"
+      ],
+      "affected_versions_builds": "Contributor runtime evidence: SGLang 0.0.0.dev1+g5f55db35e, Python OpenAI-compatible chat path, two separate Qwen3.8-family NVFP4 serves on NVIDIA DGX Spark / GB10. Current-source adjudication supports the same validation asymmetry on the Python chat route. A vLLM serve used by the contributor rejected the same negative-control shape correctly.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-family",
+          "qwen3.8-family nvfp4 serves on nvidia dgx spark gb10. current-source adj"
+        ],
+        "failure_stage": [
+          "load"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "sglang",
+          "vllm"
+        ],
+        "stack_version": [
+          "0.0.0"
+        ],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Contributor runtime evidence: SGLang 0.0.0.dev1+g5f55db35e, Python OpenAI-compatible chat path, two separate Qwen3.8-family NVFP4 serves on NVIDIA DGX Spark / GB10. Current-source adjudication supports the same validation asymmetry on the Python chat route. A vLLM serve used by the contributor rejected the same negative-control shape correctly.",
+      "id": "141",
+      "known_limitations": "",
+      "mechanism": "On the affected Python OpenAI chat path, request validation does not establish that request.model equals the served base-model identity before request conversion. The model string is still available to downstream request/LoRA resolution and response metadata, so accepting the request does not prove that the named base model is resident. Current SGLang has an important route split. The Rust OpenAI chat/completions path rejects a request model that differs from the served model, and the newer /v1/responses implementation has explicit known-model validation. This entry therefore does not describe every SGLang API surface.",
+      "mitigation": "Validate the requested base-model identity on the affected route before generation, consistently with sibling API paths that already enforce known/served model names. Until that contract is enforced by the server, harnesses and canaries should query resolved server identity and fail closed on a mismatch instead of trusting the request field they themselves supplied.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/71"
+      ],
+      "related_traps": [
+        "77"
+      ],
+      "source_path": "traps/evaluation/141-sglang-python-chat-model-name-not-validated.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A health check, benchmark, router or canary sends an OpenAI-compatible chat request naming model B to a server that is actually serving model A. Instead of rejecting the mismatch, the Python SGLang chat route can return HTTP 200 and ordinary assistant content from the model that is actually loaded. The dangerous part is not merely an ignored optional knob. model is the field a client normally uses to say which model it believes it is measuring. A plausible response therefore looks like identity proof even when it is only proof that some model answered.",
+      "title": "SGLang Python chat can answer a request naming a model it does not serve"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "Docker"
+      ],
+      "affected_versions_builds": "Docker on Linux hosts serving local models; the behavior is container-runtime syntax specific rather than model-engine specific. The contributor observed it in serving deployments. Vendor documentation corroborates the current -v/--volume, --mount type=bind, Compose-short and Compose-long distinction. This entry does not claim identical behavior for every historical Docker release or every container runtime.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [],
+        "failure_stage": [
+          "load"
+        ],
+        "gpu_architecture": [],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [
+          "linux"
+        ],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Docker on Linux hosts serving local models; the behavior is container-runtime syntax specific rather than model-engine specific. The contributor observed it in serving deployments. Vendor documentation corroborates the current -v/--volume, --mount type=bind, Compose-short and Compose-long distinction. This entry does not claim identical behavior for every historical Docker release or every container runtime.",
+      "id": "142",
+      "known_limitations": "",
+      "mechanism": "Bind-mount behavior depends on the Docker syntax. With -v/--volume, a missing host-side bind source is created automatically, and Docker creates it as a directory. Compose short bind syntax preserves this create-missing-source behavior for backward compatibility. By contrast, --mount type=bind rejects a missing source by default unless source creation is explicitly requested, and Compose long syntax can set create_host_path: false. The trap is therefore not \"all Docker bind mounts fabricate paths\". It is that a creating syntax can convert a typo, stale compose reference, or deleted file into a real directory, moving the visible failure away from the original missing source.",
+      "mitigation": "Prefer fail-closed bind semantics for critical model/config files: --mount type=bind without source creation, or Compose long syntax with create_host_path: false. Independently preflight source type and payload, not merely exists(). When a container dies immediately with no useful logs, inspect .State.Error before blaming the serving engine or checkpoint.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/100"
+      ],
+      "related_traps": [
+        "127"
+      ],
+      "source_path": "traps/versioning/142-docker-volume-missing-bind-source-becomes-directory.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A container launch appears to accept a bind-mounted model/config path that does not exist, then the serving stack fails later because the expected file or model payload is absent. A sharper variant occurs when a bind-mounted source file is deleted: a later launch recreates that path as a directory, and the container can then fail immediately with a file-versus-directory mount error. docker logs may be empty while the useful reason is in .State.Error.",
+      "title": "Docker volume syntax can turn a missing bind source into a directory"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-family DFlash draft. This entry promotes the Transformers config-c"
+      ],
+      "affected_stacks": [
+        "transformers"
+      ],
+      "affected_versions_builds": "Independently reproduced on the configuration-only path with transformers==5.12.1, Python 3.11 on Ubuntu 24.04, with PyTorch intentionally absent. The contributor encountered the same class while exporting a five-layer Qwen3.8-family DFlash draft. This entry promotes the Transformers config-class mechanism; a separate NVIDIA ModelOpt exporter gating observation is corroborating context, not required for this canonical claim.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "qwen3-family",
+          "qwen3.8-family",
+          "qwen3.8-family dflash draft. this entry promotes the transformers config-c"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [
+          "qwen3",
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "transformers"
+        ],
+        "stack_version": [
+          "5.12.1"
+        ],
+        "topology": []
+      },
+      "category": "memory",
+      "check": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Independently reproduced on the configuration-only path with transformers==5.12.1, Python 3.11 on Ubuntu 24.04, with PyTorch intentionally absent. The contributor encountered the same class while exporting a five-layer Qwen3.8-family DFlash draft. This entry promotes the Transformers config-class mechanism; a separate NVIDIA ModelOpt exporter gating observation is corroborating context, not required for this canonical claim.",
+      "id": "143",
+      "known_limitations": "",
+      "mechanism": "Qwen3Config has two independent gates. First, the effective numeric window is nulled unless sliding-window use is enabled: use_sliding_window defaults to false on the pinned implementation. A config that only declares sliding_window=2048 therefore loses the effective window. Second, when explicit layer_types are absent, the pinned derivation assigns sliding_attention only when the layer index is at or beyond max_window_layers. That value defaults to 28. A five-layer model has indices 0 through 4, so even with use_sliding_window=true, leaving max_window_layers=28 resolves all five layers to full_attention. A declared config key is therefore not proof of the per-layer architecture the runtime reconstructs.",
+      "mitigation": "Encode the effective architecture explicitly and assert it after reconstruction. For an all-sliding five-layer model on the pinned derivation, max_window_layers=0 works; explicit layer_types is safer when the intended architecture is known. Hybrid models should use their actual transition index or explicit per-layer list. Do not use max_window_layers=num_hidden_layers as a generic all-sliding fix. On a five-layer model, max_window_layers=5 leaves indices 0 through 4 below the threshold, so every layer still resolves to full attention.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/107"
+      ],
+      "related_traps": [],
+      "source_path": "traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md",
+      "status": "contributor-measured, conditions as reported.",
+      "supersession": null,
+      "symptom": "A Qwen3-family config.json visibly contains a numeric sliding_window, yet the effective reconstructed model configuration can resolve every layer to full_attention. Small draft models are particularly easy to hit because the default window-transition layer can sit beyond the end of the model. Nothing has to raise or warn.",
+      "title": "a Qwen3 config can declare a sliding window while every layer resolves to full attention"
     }
   ],
   "schema_version": "1.1"
