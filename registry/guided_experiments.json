@@ -3359,6 +3359,78 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "140",
       "untrusted_published_check_text": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 141 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 141 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "141",
+      "untrusted_published_check_text": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 142 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 142 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "142",
+      "untrusted_published_check_text": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 143 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 143 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "143",
+      "untrusted_published_check_text": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls."
     }
   ],
   "schema_version": "1.0"

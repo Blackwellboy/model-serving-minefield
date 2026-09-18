@@ -3,11 +3,11 @@
   "summary": {
     "counts_overlap": true,
     "endpoint_checks_implemented": 19,
-    "guided_experiments_specified": 140,
-    "human_review_possible": 140,
+    "guided_experiments_specified": 143,
+    "human_review_possible": 143,
     "log_checks_implemented": 9,
     "static_checks_implemented": 10,
-    "total_canonical_traps": 140
+    "total_canonical_traps": 143
   },
   "traps": [
     {
@@ -10395,6 +10395,228 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "141",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 141 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "142",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 142 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied configuration files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "143",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 143 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

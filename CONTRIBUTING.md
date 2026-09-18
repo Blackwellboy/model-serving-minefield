@@ -51,8 +51,9 @@ send a report:
   settled *(private evidence archived)*.
   SGLang came off this list with contributor-measured additions to traps
   [02](traps/template/02-orphaned-think-close-tag.md),
-  [12](traps/evaluation/12-empty-content-at-token-ceiling.md) and
-  [77](traps/reasoning/77-only-one-request-field-is-validated.md), plus a
+  [12](traps/evaluation/12-empty-content-at-token-ceiling.md),
+  [77](traps/reasoning/77-only-one-request-field-is-validated.md), and
+  [141](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md), plus a
   pinned field note *(private evidence archived)*.
   **Corrected 2026-07-28:** this paragraph
   previously said we had "stopped short of installing it", and that the

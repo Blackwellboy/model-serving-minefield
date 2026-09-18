@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-18 - Traps 141-143 contributor promotion batch
+
+- [**141**](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md) - @scottleimroth: the affected SGLang Python OpenAI chat route can return ordinary HTTP-200 content for a request naming a base model the server does not serve. Current source shows sibling Rust chat and Responses paths performing model validation; scope remains route-specific. Status **contributor-measured, conditions as reported**.
+- [**142**](traps/versioning/142-docker-volume-missing-bind-source-becomes-directory.md) - @scottleimroth: Docker creating bind syntax can turn a missing host source into a directory, moving the visible failure into model/config startup; fail-closed `--mount type=bind` and Compose long syntax provide controls. Status **contributor-measured, conditions as reported**.
+- [**143**](traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md) - @scottleimroth: on pinned Transformers 5.12.1, a declared Qwen3 `sliding_window` can still reconstruct as all-full-attention because `use_sliding_window` defaults false and `max_window_layers` defaults 28. Blackwellboy independently reproduced the config-only mechanism; the separate ModelOpt exporter observation remains corroborating context. Status **contributor-measured, conditions as reported**.
+- Registry count moves from 140 to 143; Doctor coverage remains 19, leaving 124 canonical entries unimplemented.
+
 ## 2026-09-17 - Trap 140 sparse-MLA request-row bounds during CUDA-graph warmup
 
 - [**140**](traps/memory/140-sparse-mla-warmup-metadata-can-index-nonexistent-request-row.md) - Blackwellboy: on the pinned historical vLLM sparse-MLA lane, CUDA-graph warmup could produce metadata naming a request row that did not exist in the block table; the downstream mapper could turn that invalid row into either a wrong KV slot or an illegal access. Status **measured here, raw not published**.

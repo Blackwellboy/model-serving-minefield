@@ -67,6 +67,17 @@ canonical owner is the graph-mode/spec-verify interaction, not "4-bit KV is
 broken". Use the three-arm FULL / PIECEWISE / no-spec check in Trap 122 before
 attributing a similar symptom to this mechanism.
 
+## Canonical Qwen3 sliding-window reconstruction trap
+
+Contributor finding [Trap 143](../traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md)
+covers a separate config-only failure that is especially relevant to small
+Qwen3-family draft models. On pinned Transformers 5.12.1, merely serializing a
+numeric `sliding_window` does not prove the reconstructed layers use sliding
+attention: `use_sliding_window` defaults false, and the default
+`max_window_layers=28` leaves a five-layer draft entirely below the sliding
+threshold. Inspect the reconstructed `layer_types` / effective window rather
+than trusting the raw JSON key.
+
 ## A useful non-result: vision
 
 The campaign repeatedly marked vision stages unsupported on text baselines.

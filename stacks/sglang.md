@@ -8,10 +8,11 @@
 
 This page began as a zero-entry page, when "no page" and "no entries" read the
 same from outside and meant different things. **That is no longer the case:
-four entries now name SGLang.** Three are contributor-measured request/template
-findings; [124](../traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
-is a first-party NVIDIA DGX Spark / GB10 platform low-power state that degraded SGLang throughput
-on the measured unit without being SGLang-specific. The zero-entry caveat is
+four entries now name SGLang.** All four are contributor-measured request/template
+findings. [124](../traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md)
+is still operationally relevant because that first-party DGX Spark / GB10 platform
+state degraded an SGLang benchmark, but the stack index does not count a passing
+body-prose mention as an SGLang evidence surface. The zero-entry caveat is
 kept below only as the reason the page was created, not as a description of the
 stack today.
 
@@ -53,11 +54,13 @@ the blocked llama.cpp candidates, adjudicated *(private evidence archived)*.
 
 ## What to check anyway, from the cross-stack classes
 
-Three of these are now SGLang findings: orphan `</think>` in the absent-kwarg
+Four of these are now SGLang findings: orphan `</think>` in the absent-kwarg
 arm ([02](../traps/template/02-orphaned-think-close-tag.md)), empty content at a
-real token ceiling ([12](../traps/evaluation/12-empty-content-at-token-ceiling.md))
-and silent acceptance of an invented top-level request field
-([77](../traps/reasoning/77-only-one-request-field-is-validated.md)). They are
+real token ceiling ([12](../traps/evaluation/12-empty-content-at-token-ceiling.md)),
+silent acceptance of an invented top-level request field
+([77](../traps/reasoning/77-only-one-request-field-is-validated.md)), and the
+Python OpenAI chat route accepting a request that names a different base model
+([141](../traps/evaluation/141-sglang-python-chat-model-name-not-validated.md)). They are
 all contributor-measured, conditions as reported. The remaining classes are
 still cross-stack checks rather than SGLang findings.
 
