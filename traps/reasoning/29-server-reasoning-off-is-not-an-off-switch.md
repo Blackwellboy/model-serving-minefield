@@ -103,3 +103,43 @@ Full scrubbed disposition is in
 private evidence archive *(private evidence archived)*.
 
 *Status of this addendum: measured here, raw not published.*
+
+---
+
+## Extension 2026-09-18 — inverse case: labelled thinking-ON can still be OFF
+
+**Adjudicated from private Minefield candidate #7** (overnight fleet / GLM TP2).
+Do **not** mint a new trap number.
+
+**Symptom.** An evaluation or client route is labelled “thinking ON” (or
+`enable_thinking` appears true in logged request params) while the rendered
+chat template actually receives `enable_thinking=false`. Structured
+`reasoning` / `reasoning_content` stays empty for the whole suite.
+
+**Mechanism (sixcat 0.5.0 / GLM TP2 TR3).** Policy field `preclose_think=true`
+is popped inside the client and forces
+`chat_template_kwargs.enable_thinking=False` even when the outer policy says
+thinking on. Hermes equivalent: omit kwargs or send
+`enable_thinking=false` for effective OFF; send `enable_thinking=true` for
+effective ON. Server default on this GLM vLLM lane is thinking ON when kwargs
+are absent.
+
+**Measured on Mia GLM-5.3 Flash EXL3 TP2** (rev `25a44fdb…`, challenge-v1):
+
+| Profile | Effective | Overall | Code |
+|---|---|---:|---:|
+| Canonical PRE (`preclose_think=true`) | OFF | 77.5 | 65 |
+| Canonical POST | OFF | 75.0 | 60 |
+| Diagnostic TRUE ON (`preclose_think=false`) | ON | 80.8 | 80 |
+
+Canonical OFF scores are **not** rewritten. Hermes aliases after adjudication:
+`glm` (effective OFF) and `glm-think` (effective ON).
+
+**Lesson.** A requested or labelled reasoning mode is not proof of the
+effective template state. Verify the rendered control **and** actual
+reasoning behavior before budgeting tokens or publishing scores.
+
+**Evidence.** `blackwellbench-lab` commit `694cf89a63fed7eaa377057bfa99613f50d3a035`
+(`campaigns/GLM53_TP2_SIXCAT_77P5_ROOT_CAUSE_20260918/THINKING_ON_FULL_SIXCAT/`).
+Private candidate:
+`model-serving-minefield-evidence-private/findings/2026-09-18-overnight-fleet-glm53-preclose/`.
