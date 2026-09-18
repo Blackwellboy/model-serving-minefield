@@ -125,7 +125,8 @@ def _related_trap_ids(text: str) -> list[str]:
     """Extract prose/Markdown trap references without treating code indexes as trap IDs."""
     scan = re.sub(r"```.*?```", " ", text, flags=re.S)
     scan = re.sub(r"`[^`\n]+`", " ", scan)
-    ids = set(RELATED_TRAP_RE.findall(scan)) | set(RELATED_LINK_RE.findall(scan))\n    return sorted({item.zfill(2) for item in ids}, key=int)
+    ids = set(RELATED_TRAP_RE.findall(scan)) | set(RELATED_LINK_RE.findall(scan))
+    return sorted({item.zfill(2) for item in ids}, key=int)
 
 
 def _status_labels(raw: str) -> list[str]:
