@@ -53,11 +53,11 @@ kwarg arm hits the ceiling with empty content while the bare arm
 completes, every caller's kwarg surface is part of your budget model.
 Grep your callers for `chat_template_kwargs`.
 
-**The fix.** Treat max_tokens sizing as conditional on the kwarg
-surface: either strip or deny thinking kwargs at the gateway for lanes
-sized for non-thinking output, or size those callers for the thinking
-distribution (which on our 27B has no safe ceiling at n=3 even at 16384;
-see [trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md)).
+**The fix.** Treat max_tokens sizing as conditional on the kwarg surface:
+either strip or deny thinking kwargs at the gateway for lanes sized for
+non-thinking output, or size those callers for the thinking distribution
+(which on our 27B has no safe ceiling at n=3 even at 16384; see
+[trap 22](../evaluation/22-family-card-budget-floors-differ-by-size.md)).
 
 **Found.** 2026-07-27, ceiling audit on the production lane trio.
 
@@ -119,10 +119,10 @@ chat template actually receives `enable_thinking=false`. Structured
 **Mechanism (sixcat 0.5.0 / GLM TP2 TR3).** Policy field `preclose_think=true`
 is popped inside the client and forces
 `chat_template_kwargs.enable_thinking=False` even when the outer policy says
-thinking on. Hermes equivalent: omit kwargs or send
+thinking on. Hermes equivalent on this lane: send
 `enable_thinking=false` for effective OFF; send `enable_thinking=true` for
-effective ON. Server default on this GLM vLLM lane is thinking ON when kwargs
-are absent.
+effective ON. **Omitting the kwarg follows this server's default and is
+effective ON**, so omission must not be used as an OFF control.
 
 **Measured on Mia GLM-5.3 Flash EXL3 TP2** (rev `25a44fdb…`, challenge-v1):
 
@@ -143,3 +143,5 @@ reasoning behavior before budgeting tokens or publishing scores.
 (`campaigns/GLM53_TP2_SIXCAT_77P5_ROOT_CAUSE_20260918/THINKING_ON_FULL_SIXCAT/`).
 Private candidate:
 `model-serving-minefield-evidence-private/findings/2026-09-18-overnight-fleet-glm53-preclose/`.
+
+*Status of this extension: measured here, raw not published.*
