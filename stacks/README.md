@@ -18,7 +18,7 @@ added to the first column.
 | Ollama | [ollama.md](ollama.md) | 9 | 5 |
 | mlx_lm | [mlx.md](mlx.md) | 9 | 1 |
 | HF transformers `generate()` | [hf-transformers.md](hf-transformers.md) | 7 | 0 |
-| SGLang | [sglang.md](sglang.md) | 3 | 3 |
+| SGLang | [sglang.md](sglang.md) | 4 | 3 |
 | TensorRT-LLM | [tensorrt-llm.md](tensorrt-llm.md) | 0 | 0 |
 | text-generation-inference | [text-generation-inference.md](text-generation-inference.md) | 0 | 0 |
 | TabbyAPI, ExLlamaV2/V3 | [tabbyapi.md](tabbyapi.md) | 0 | 0 |
@@ -64,7 +64,7 @@ Two honest limits on the numbers:
   SGLang was brought up first-party on our own hardware, and
   [CONTRIBUTING](../CONTRIBUTING.md#where-coverage-is-thin) was corrected at
   the time while this page was not. A later contributor field run now gives the
-  stack three published evidence surfaces in traps 02, 12 and 77; the count is
+  stack four published evidence surfaces in traps 02, 12, 77 and 141; the count is
   of those published entries, not of the still-unpublished first-party session.
 
 ## The rest of the map
