@@ -43,8 +43,7 @@ class SiteReach(unittest.TestCase):
     def test_depth_claim_has_site_shaped_phrasings(self):
         """The markdown-shaped phrasings do not match how the site said it.
         At least one phrasing must match the site's own wording."""
-        ledger = json.load(open(os.path.join(INTEGRITY, "claims.json"),
-                                encoding="utf-8"))
+        ledger = load_claims()
         claim = next(c for c in ledger["claims"]
                      if c["id"] == "depth-dose-suppression")
         pats = [p["pattern"] for p in claim["search_phrasings"]]
