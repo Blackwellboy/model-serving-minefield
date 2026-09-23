@@ -137,22 +137,23 @@ stop chasing a ghost somebody else already chased.
 
 **Reports we have not been able to run** are published too, in
 [upstream/](upstream/), and they are kept in their own directory rather than
-mixed in so the difference is obvious at a glance. Eleven credited reports from
-other people's issue trackers, on stacks and hardware we do not have, each
-carrying the primary source, who reported it, whether a maintainer engaged, the
+mixed in so the difference is obvious at a glance. The current credited set is
+indexed in [upstream/README.md](upstream/README.md) and
+[HALL_OF_FAME.md](HALL_OF_FAME.md); each report carries the primary source, who
+reported it, whether a maintainer engaged, the
 issue state, a plain statement that **nobody here has reproduced it**, and what
 you would run to settle it. Two of them were reproduced by a maintainer and
 then closed by a staleness bot, which is not the same as fixed. They never
 appear in [Core](CORE.md), never count toward doctor coverage, and never count
 toward the registry total; a checker asserts all three on every run.
 
-**What is still open** is published too, in
-private evidence archive *(private evidence archived)*: every unsettled question,
-with its source marked PRIMARY or secondary, the hardware and stack it needs,
-and its CONFIRM and REFUTE criteria fixed **before** anyone runs it. Several are
-things a stranger with the right hardware can close faster than we can, and one
-needs no hardware at all. Settled questions are listed there as closed, with
-their dispositions, so they stay closed.
+**Open trap-adjudication questions** are public in
+[registry/OPEN_TRAP_ISSUES.md](registry/OPEN_TRAP_ISSUES.md). Every currently
+open GitHub issue whose title begins `[trap]` must be represented there with
+CONFIRM and REFUTE criteria fixed **before** adjudication; CI compares the queue
+against live issue state. Broader raw candidate research, blocked reproductions
+and negative evidence remain in the private evidence archive rather than being
+published as if settled.
 
 ## Find your symptom
 

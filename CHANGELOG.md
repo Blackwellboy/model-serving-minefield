@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-24 - Governance and credit integrity audit
+
+- Retired promoted/closed Q71, Q100 and Q107 from the public open-trap governance queue after refreshing and merging PR #130 against current main. The remaining queue is limited to genuinely open `[trap]` issues.
+- Repaired fourth-tier credit drift: `HALL_OF_FAME.md` now covers U01-U38, and canonical contributor rows that had drifted into the fourth-tier table were moved back to the measured-contributor table.
+- Extended `integrity/upstream_integrity.py` so every published upstream id must appear exactly once in the fourth-tier Hall of Fame table, and canonical `traps/` rows are forbidden inside that unmeasured-credit section. Mutation tests prove both guards fire.
+- Removed the README's stale hard-coded upstream count and pointed public trap intake/contribution guidance at `registry/OPEN_TRAP_ISSUES.md` rather than the retired private `OPEN_QUESTIONS` wording.
+- Closed noisy file handles in integrity mutation/site tests so real CI warnings are easier to see.
+- Canonical trap count remains 143; Doctor coverage remains 19. This is maintenance/governance work, not a new trap promotion.
+
 ## 2026-09-18 - Traps 141-143 contributor promotion batch
 
 - [**141**](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md) - @scottleimroth: the affected SGLang Python OpenAI chat route can return ordinary HTTP-200 content for a request naming a base model the server does not serve. Current source shows sibling Rust chat and Responses paths performing model validation; scope remains route-specific. Status **contributor-measured, conditions as reported**.
