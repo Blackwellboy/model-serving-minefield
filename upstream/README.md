@@ -13,7 +13,8 @@ buried in a status line. The tier and its enforced requirements are defined in
 
 **These entries never appear in [Core](../CORE.md), never count toward
 [doctor](../doctor/) coverage, and never count toward the registry total.**
-Those three separations are asserted by
+Those separations, plus complete fourth-tier reporter credit in
+[HALL_OF_FAME.md](../HALL_OF_FAME.md), are asserted by
 [`integrity/upstream_integrity.py`](../integrity/upstream_integrity.py) on
 every run, not observed by convention.
 
