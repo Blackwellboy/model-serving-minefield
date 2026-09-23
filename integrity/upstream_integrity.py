@@ -49,6 +49,12 @@ measured registry:
                 cannot inflate a count by construction; this asserts the
                 construction rather than trusting it.
 
+  US-HOF-CREDIT every published upstream id appears exactly once in the fourth-
+                tier Hall of Fame credit table.
+  US-HOF-BOUNDARY the fourth-tier Hall of Fame table does not contain canonical
+                traps/ rows, which would blur measured contributors into the
+                section explicitly reserved for reports nobody here reproduced.
+
   US-GRANDFATHER
                 no NEW entry under traps/ may carry "reported by others". The
                 24 that do predate this tier and are recorded by name in
@@ -343,6 +349,37 @@ def check_separation(root, entries, cfg, findings):
                     "an upstream entry file is inside traps/, where the "
                     "registry counts are derived from"))
 
+    # US-HOF-CREDIT / US-HOF-BOUNDARY
+    hof = os.path.join(root, "HALL_OF_FAME.md")
+    if not os.path.exists(hof):
+        findings.append(Finding(
+            "US-HOF-CREDIT", "HALL_OF_FAME.md",
+            "Hall of Fame is missing; upstream reporter credit has no public surface"))
+    else:
+        htext = read(hof)
+        marker = "## Upstream reports published in the fourth tier"
+        if marker not in htext:
+            findings.append(Finding(
+                "US-HOF-CREDIT", "HALL_OF_FAME.md",
+                "fourth-tier credit section is missing"))
+        else:
+            hsection = htext.split(marker, 1)[1]
+            hsection = hsection.split("\nBeing listed here is not an endorsement", 1)[0]
+            for tid in sorted(ids):
+                count = len(re.findall(
+                    r"\[%s\]\(upstream/" % re.escape(tid), hsection))
+                if count != 1:
+                    findings.append(Finding(
+                        "US-HOF-CREDIT", "HALL_OF_FAME.md",
+                        "%s appears %d times in the fourth-tier credit table; expected exactly once"
+                        % (tid, count)))
+            for line in hsection.splitlines():
+                if line.startswith("|") and "](traps/" in line:
+                    findings.append(Finding(
+                        "US-HOF-BOUNDARY", "HALL_OF_FAME.md",
+                        "canonical trap row appears inside the fourth-tier credit table: %s"
+                        % line[:120]))
+
     # US-GRANDFATHER
     grand = set(cfg.get("upstream_tier", {}).get(
         "reported_by_others_grandfathered", []))
@@ -404,8 +441,8 @@ def main():
     print("  upstream-reported entries: %d   (never Core, never doctor "
           "coverage, never a registry count)" % n)
     if not findings:
-        print("  CLEAN: %d per-entry assertions over %d entries, plus 5 "
-              "separation assertions" % (7 * n, n))
+        print("  CLEAN: %d per-entry assertions over %d entries, plus 7 "
+              "separation/credit assertions" % (7 * n, n))
         return 0
     print("")
     by = {}
