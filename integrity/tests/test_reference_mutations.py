@@ -55,7 +55,7 @@ def copy_tree(dst):
     # added a root front door, generated dist Markdown, and docs/ links; those
     # are copied for the same reason rather than exempted from link checking.
     for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
-                 "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
+                 "registry", "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
                  "AGENT_START_HERE.md", "dist", "docs", "doctor", "checks",
                  "community", "integrity", "skills", ".github", "LICENSE"):
