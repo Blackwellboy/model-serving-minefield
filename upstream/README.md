@@ -78,6 +78,7 @@ were closed by a staleness bot while a maintainer reproduction and a
 | [U35, a resolvable dependency set can still make FA4 fail on Blackwell](U35-sglang-fa4-blackwell-resolved-deps-still-fail-compile.md) | SGLang / FA4 / Blackwell | maintainer confirmed | closed, fixed |
 | [U36, prefix caching can be configured on while the reported hit path stays at zero](U36-vllm-prefix-cache-enabled-zero-hits-kpooltailmanager.md) | vLLM / GLM-5.3-Flash / GB10 | none | open |
 | [U37, ModelOpt NVFP4 can emit invalid byte-token sequences while a compressed-tensors control stays clean](U37-vllm-modelopt-nvfp4-invalid-byte-token-output.md) | vLLM / GLM-5.3-Flash / Blackwell | none | open |
+| [U38, systemd daemon-reload can revoke GPU device access from a live Docker container](U38-docker-systemd-daemon-reload-revokes-gpu-devices.md) | Docker / NVIDIA Container Toolkit / systemd cgroups | maintainer responded | open |
 
 ## Where these came from, and what did not survive
 
@@ -125,3 +126,6 @@ settled. Neither has been reproduced by this registry.
 The procedural rule from the first pass still holds: **the mining summary is a
 lead, not the source.** Read the current tracker thread, preserve corrections
 and retractions, and record resolution state before promoting anything here.
+
+
+U38 came from a 2026-09-24 re-read of MiaAI-Lab issue #216 after **@zlylong** closed the earlier **@johnymoo** systemd-cgroup hypothesis with a controlled vulnerable-versus-mitigated `daemon-reload` A/B on 2x DGX Spark. NVIDIA Container Toolkit documentation independently describes the same failure class. The registry has not reproduced it, so it remains in the upstream-reported tier rather than receiving a canonical trap number.
