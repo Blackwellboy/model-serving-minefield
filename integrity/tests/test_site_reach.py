@@ -24,6 +24,11 @@ sys.path.insert(0, INTEGRITY)
 import claim_propagation as cp
 
 
+def load_claims():
+    with open(os.path.join(INTEGRITY, "claims.json"), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
 class SiteReach(unittest.TestCase):
     def test_html_is_scanned(self):
         self.assertIn(".html", cp.SCAN_EXTS,
@@ -31,8 +36,7 @@ class SiteReach(unittest.TestCase):
                       "ledger and any run against it a false CLEAN")
 
     def test_site_registered_as_a_repo(self):
-        ledger = json.load(open(os.path.join(INTEGRITY, "claims.json"),
-                                encoding="utf-8"))
+        ledger = load_claims()
         self.assertIn("bbio", ledger["repos"],
                       "the Pages site must stay a declared surface")
 
