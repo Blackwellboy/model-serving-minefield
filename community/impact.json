@@ -39,7 +39,7 @@
     "credit_statement": "Contributor measured the unvalidated config surface; maintainer provided diagnostic help and registry framing only.",
     "public_source": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
     "summary": "Contributor completed both halves of the control. Environment level: VLLM_FLASHINFER_MOE_BACKEND is unknown on vLLM 0.26 (absent from vllm.envs.environment_variables; validate_environ warns; serving path never reads it); absent/present log pair on vllm/vllm-openai:v0.26.0-aarch64-ubuntu2404. Engine level (2026-08-02): a real same-checkpoint engine init with the variable removed entirely (fresh docker rm -f + docker run, not a restart) still selected FLASHINFER_CUTLASS identically, with zero unknown-variable warnings; the variable is a no-op on this checkpoint/backend combo and --moe-backend is the actual engine control. Primary mitigation: --fail-on-environ-validation (default false) turns unknown VLLM_ vars into fail-fast startup errors. Same failure family as Trap 77 at the startup/configuration surface. Measured on this vLLM 0.26 build; not a general CUTLASS all-clear; no numbered trap assigned. Issue remains open pending trap promotion.",
-    "minefield_role": "Intake document mining/2026-08-01-issue-19-unvalidated-config-surface.md; trap number not yet assigned",
+    "minefield_role": "Intake document private evidence archive; trap number not yet assigned",
     "related_issue": "https://github.com/Blackwellboy/model-serving-minefield/issues/19",
     "related_traps": [
       "77"

@@ -33,6 +33,8 @@ A lead match is **never** permission to say "root cause", "confirmed", or "your 
 
 `LEADS.json` contains only public-safe summaries. Permission-limited third-party/private-share material is **not copied here**. That material remains in the private evidence holding system as a private overlay/research queue until it is independently reproduced, supported by a public primary source, or publication permission exists.
 
+A `source_refs` value of the form `private-evidence:<note-id>` names a maintainer note held in the private evidence archive. It is an identifier, not a link: it records where the lead came from without publishing the note or pointing readers at a path that does not exist in this repository. A lead whose only refs are `private-evidence:` identifiers is exactly as strong as its status says, and no stronger.
+
 The canonical trap count is unchanged by this directory.
 
 ## Search

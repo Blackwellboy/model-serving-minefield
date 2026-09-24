@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-24 - integration contract and private-path hygiene
+
+- New `minefield.api.match_symptom()`: offline symptom ranking for integrations, returning the same diagnosis contract as `minefield guide`. `tests/test_integration_contract.py` pins it and the registry's `entries` layout. The Hermes plugin's incident matcher read a `traps` key that never existed, so `/minefield wtf` returned zero trap matches on every call without an error; it should call this function instead.
+- Lead `source_refs` no longer point at `../mining/...`, a path this repository refuses by policy (39 dead links that also shipped private note filenames in every agent bundle). They are now `private-evidence:<note-id>` identifiers; a test refuses any other form and scans the shipped bundles for private paths.
+- `community/impact.json` carried a private intake path, so `community/generate_impact.py --check` failed on main. Neither that check nor `community/tests` ran anywhere; both now run in `agent-platform` CI and `make test` / `make verify-generated`.
+- `minefield --help` now describes every subcommand, and says that `guide` is the non-interactive form of `diagnose`.
+- No registry entry changed. Registry count remains 143; Doctor coverage remains 19.
+
 ## 2026-09-18 - Traps 141-143 contributor promotion batch
 
 - [**141**](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md) - @scottleimroth: the affected SGLang Python OpenAI chat route can return ordinary HTTP-200 content for a request naming a base model the server does not serve. Current source shows sibling Rust chat and Responses paths performing model validation; scope remains route-specific. Status **contributor-measured, conditions as reported**.
