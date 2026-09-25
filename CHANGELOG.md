@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-25 - 0.2.1: readable answers and a measured matcher
+
+- **`minefield <what you see>`** now works with no subcommand and no quotes, and in a terminal prints a short answer instead of 250 lines of JSON: the few traps that match, how strong each match is, the one check to run next, and a clickable link. Piped or redirected output is still the full JSON contract, so scripts and agents see no change; `--text` / `--json` force either. `--limit` and `--log EXCERPT` are new.
+- **New [symptom benchmark](benchmarks/README.md):** two plain-language user phrasings for every one of the 143 traps (a tune split and a holdout split) plus 40 off-domain questions. On holdout the matcher now ranks the right trap first 83.2% of the time (was 70.6%), in the top five 92.3% (was 86.0%), and returns a trap for 0% of off-domain questions (was 70%). `tests/test_symptom_benchmark.py` fails CI below a floor just under these numbers.
+- Matcher changes behind those numbers: a real stop-word list (so "how do I" is not two concepts), rarity-weighted and stemmed matching, an on-topic gate that also covers the unverified-lead tier, title weighting, and a symmetric gibberish/garbage/nonsense synonym set.
+- Each match carries a new additive `evidence_weight` field; the CLI's strong / possible / weak labels are calibrated thresholds on it. No existing field changed. Version 0.2.1 stays inside the `>=0.2,<0.3` pin integrations use.
+- No registry entry changed. Registry count remains 143; Doctor coverage remains 19.
+
 ## 2026-09-24 - integration contract and private-path hygiene
 
 - Package version moves to **0.2.0** because this release adds the supported public integration contract. Downstream adapters should pin `model-serving-minefield>=0.2,<0.3` rather than depending on registry internals.

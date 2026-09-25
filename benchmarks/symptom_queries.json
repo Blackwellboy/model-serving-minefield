@@ -1,0 +1,1481 @@
+{
+ "about": "Plain-language symptom queries, one per trap per split, written from the user's side rather than copied from entry text. Tune matcher changes on the 'tune' split only; report the 'holdout' split. Negatives (also split tune/holdout) are off-domain and must return NOT_DOCUMENTED.",
+ "cases": [
+  {
+   "trap": "01",
+   "split": "tune",
+   "query": "thinking rate shows 0% but I can see the model reasoning in the output"
+  },
+  {
+   "trap": "01",
+   "split": "holdout",
+   "query": "my harness says the model never thinks, reasoning length is always zero"
+  },
+  {
+   "trap": "02",
+   "split": "tune",
+   "query": "every reply starts with a stray </think> tag in the content"
+  },
+  {
+   "trap": "02",
+   "split": "holdout",
+   "query": "closing think tag at the beginning of every answer breaks my json parsing"
+  },
+  {
+   "trap": "03",
+   "split": "tune",
+   "query": "two people testing the same model get different behaviour, thinking on for one and off for the other"
+  },
+  {
+   "trap": "03",
+   "split": "holdout",
+   "query": "after updating the model revision thinking is suddenly enabled by default"
+  },
+  {
+   "trap": "04",
+   "split": "tune",
+   "query": "thinking dies as the conversation gets longer, fine on the first turn"
+  },
+  {
+   "trap": "04",
+   "split": "holdout",
+   "query": "reasoning collapses to zero in multi-turn chats but works single turn"
+  },
+  {
+   "trap": "05",
+   "split": "tune",
+   "query": "my refusal classifier scores change when I hand read the transcripts"
+  },
+  {
+   "trap": "05",
+   "split": "holdout",
+   "query": "judge verdicts flip because of whitespace or normalization in the scorer"
+  },
+  {
+   "trap": "06",
+   "split": "tune",
+   "query": "model stops thinking whenever I add a system prompt"
+  },
+  {
+   "trap": "06",
+   "split": "holdout",
+   "query": "any real system prompt kills reasoning, telling it to always think does nothing"
+  },
+  {
+   "trap": "07",
+   "split": "tune",
+   "query": "reasoning_effort low medium high all give the same output length"
+  },
+  {
+   "trap": "07",
+   "split": "holdout",
+   "query": "changing effort level has no effect on how much the model reasons"
+  },
+  {
+   "trap": "08",
+   "split": "tune",
+   "query": "container loads weights then dies with cudaErrorUnsupportedPtxVersion"
+  },
+  {
+   "trap": "08",
+   "split": "holdout",
+   "query": "serve crashes at kernel jit compile, driver older than the cuda in the docker image"
+  },
+  {
+   "trap": "09",
+   "split": "tune",
+   "query": "same model is fast in one docker image and broken in another"
+  },
+  {
+   "trap": "09",
+   "split": "holdout",
+   "query": "results change completely depending on which container image I use"
+  },
+  {
+   "trap": "10",
+   "split": "tune",
+   "query": "nvfp4 checkpoint is way slower than expected"
+  },
+  {
+   "trap": "10",
+   "split": "holdout",
+   "query": "two models with the same quant label run totally different speeds"
+  },
+  {
+   "trap": "11",
+   "split": "tune",
+   "query": "raising speculative draft tokens made decoding slower"
+  },
+  {
+   "trap": "11",
+   "split": "holdout",
+   "query": "autotuner picked a num speculative tokens setting that is worse than my manual one"
+  },
+  {
+   "trap": "12",
+   "split": "tune",
+   "query": "reasoning model returns http 200 with empty content on hard questions"
+  },
+  {
+   "trap": "12",
+   "split": "holdout",
+   "query": "empty answer when the model hits max_tokens, finish reason length and no content"
+  },
+  {
+   "trap": "13",
+   "split": "tune",
+   "query": "gpu-memory-utilization on dgx spark eats all the memory and the os starts swapping"
+  },
+  {
+   "trap": "13",
+   "split": "holdout",
+   "query": "unified memory box runs out of ram with vllm memory fraction"
+  },
+  {
+   "trap": "14",
+   "split": "tune",
+   "query": "swapped in an abliterated finetune and speculative decoding behaves differently"
+  },
+  {
+   "trap": "14",
+   "split": "holdout",
+   "query": "re-uploaded finetuned model is not a drop in replacement for the base"
+  },
+  {
+   "trap": "15",
+   "split": "tune",
+   "query": "lm-eval multiple choice mmlu hangs or scores near zero but generation tasks work"
+  },
+  {
+   "trap": "15",
+   "split": "holdout",
+   "query": "loglikelihood tasks break because the server has no echo logprobs"
+  },
+  {
+   "trap": "16",
+   "split": "tune",
+   "query": "benchmark counts every length finish as a failure"
+  },
+  {
+   "trap": "16",
+   "split": "holdout",
+   "query": "should finish_reason length count as wrong answer in my eval"
+  },
+  {
+   "trap": "17",
+   "split": "tune",
+   "query": "thinking on beats thinking off but the result does not replicate"
+  },
+  {
+   "trap": "17",
+   "split": "holdout",
+   "query": "each arm used its own recommended sampling settings and the comparison is confounded"
+  },
+  {
+   "trap": "18",
+   "split": "tune",
+   "query": "decode speed drops a lot at long context, much worse than expected"
+  },
+  {
+   "trap": "18",
+   "split": "holdout",
+   "query": "tokens per second halves as context grows, flash attention was off"
+  },
+  {
+   "trap": "19",
+   "split": "tune",
+   "query": "model writes the tool call as prose instead of structured tool_calls"
+  },
+  {
+   "trap": "19",
+   "split": "holdout",
+   "query": "tool calling returns text describing the function call instead of a tool_calls array"
+  },
+  {
+   "trap": "20",
+   "split": "tune",
+   "query": "I resend reasoning in history but the template still renders empty think blocks"
+  },
+  {
+   "trap": "20",
+   "split": "holdout",
+   "query": "which field name does the server read for prior assistant reasoning, reasoning_content or reasoning"
+  },
+  {
+   "trap": "21",
+   "split": "tune",
+   "query": "my scores differ from everyone else running at defaults"
+  },
+  {
+   "trap": "21",
+   "split": "holdout",
+   "query": "model has no generation_config so the server uses its own default temperature and top_p"
+  },
+  {
+   "trap": "22",
+   "split": "tune",
+   "query": "max_tokens that worked on the big model gives empty answers on the smaller sibling"
+  },
+  {
+   "trap": "22",
+   "split": "holdout",
+   "query": "smaller model in the family needs more thinking budget and returns empty content"
+  },
+  {
+   "trap": "23",
+   "split": "tune",
+   "query": "streaming shows blank replies, all text arrives in delta.reasoning"
+  },
+  {
+   "trap": "23",
+   "split": "holdout",
+   "query": "stream true puts the answer in reasoning channel, content empty, non streaming works fine"
+  },
+  {
+   "trap": "24",
+   "split": "tune",
+   "query": "tool calling broken on llama.cpp with the official chat template but works on vllm"
+  },
+  {
+   "trap": "24",
+   "split": "holdout",
+   "query": "jinja template errors in lm studio, tool schemas never render"
+  },
+  {
+   "trap": "25",
+   "split": "tune",
+   "query": "prefix cache hit rate drops in multi turn agent sessions with empty think tags in history"
+  },
+  {
+   "trap": "25",
+   "split": "holdout",
+   "query": "empty <think></think> pairs accumulate on assistant turns and waste prefill"
+  },
+  {
+   "trap": "26",
+   "split": "tune",
+   "query": "agent turn ends with stop and no tool call but the raw output has a tool_call inside the thinking"
+  },
+  {
+   "trap": "26",
+   "split": "holdout",
+   "query": "tool call emitted inside unclosed think block gets swallowed by the parser"
+  },
+  {
+   "trap": "27",
+   "split": "tune",
+   "query": "nvfp4 model is fast but answers are garbage and fails simple questions"
+  },
+  {
+   "trap": "27",
+   "split": "holdout",
+   "query": "quantized mxfp4 checkpoint loses accuracy, gsm8k collapses"
+  },
+  {
+   "trap": "28",
+   "split": "tune",
+   "query": "mtp speculative decoding hangs when concurrency is above 1"
+  },
+  {
+   "trap": "28",
+   "split": "holdout",
+   "query": "server crashes with keyerror at temperature 0.7 only with mtp enabled"
+  },
+  {
+   "trap": "29",
+   "split": "tune",
+   "query": "one client gets blank turns with finish length and a huge reasoning field even with reasoning disabled"
+  },
+  {
+   "trap": "29",
+   "split": "holdout",
+   "query": "server flag to turn reasoning off does not stop reasoning for some requests"
+  },
+  {
+   "trap": "30",
+   "split": "tune",
+   "query": "model behaves weird as soon as I send any system prompt, fine without one"
+  },
+  {
+   "trap": "30",
+   "split": "holdout",
+   "query": "sending my own system message removes the template default system prompt"
+  },
+  {
+   "trap": "31",
+   "split": "tune",
+   "query": "eval score in the metrics file cannot be reproduced by the current code"
+  },
+  {
+   "trap": "31",
+   "split": "holdout",
+   "query": "retrieval eval inflated by a leftover reranker that uses the gold answer"
+  },
+  {
+   "trap": "32",
+   "split": "tune",
+   "query": "mlx_lm server --max-tokens does not cap requests"
+  },
+  {
+   "trap": "32",
+   "split": "holdout",
+   "query": "client requests run past the max tokens I set on the mlx server"
+  },
+  {
+   "trap": "33",
+   "split": "tune",
+   "query": "increasing moe experts per token made the model worse"
+  },
+  {
+   "trap": "33",
+   "split": "holdout",
+   "query": "raising top-k active experts lowered benchmark accuracy with no error"
+  },
+  {
+   "trap": "34",
+   "split": "tune",
+   "query": "my improvement is only significant against a baseline I misconfigured"
+  },
+  {
+   "trap": "34",
+   "split": "holdout",
+   "query": "a/b win disappears when the baseline is set up properly"
+  },
+  {
+   "trap": "35",
+   "split": "tune",
+   "query": "rerunning the same benchmark on another machine gives a different score"
+  },
+  {
+   "trap": "35",
+   "split": "holdout",
+   "query": "identical weights and settings but the number moves by half a point"
+  },
+  {
+   "trap": "36",
+   "split": "tune",
+   "query": "multiple choice on a reasoning model never outputs the answer letter within the token cap"
+  },
+  {
+   "trap": "36",
+   "split": "holdout",
+   "query": "one arm gets truncated much more than the other because it thinks longer"
+  },
+  {
+   "trap": "37",
+   "split": "tune",
+   "query": "benchmark returns zero for every model and no errors"
+  },
+  {
+   "trap": "37",
+   "split": "holdout",
+   "query": "score is 0 across all arms, run exited cleanly, looks like the model cannot do it"
+  },
+  {
+   "trap": "38",
+   "split": "tune",
+   "query": "raw rollouts outside the chat endpoint have no opening think tag and pass rate is low"
+  },
+  {
+   "trap": "38",
+   "split": "holdout",
+   "query": "offline scorer builds its own prompt and the reasoning is missing its opening <think>"
+  },
+  {
+   "trap": "39",
+   "split": "tune",
+   "query": "device_map auto returns complete nonsense output"
+  },
+  {
+   "trap": "39",
+   "split": "holdout",
+   "query": "transformers put layers on the gpu I excluded and generation is gibberish"
+  },
+  {
+   "trap": "40",
+   "split": "tune",
+   "query": "decontamination ngram check says a third of my data is contaminated"
+  },
+  {
+   "trap": "40",
+   "split": "holdout",
+   "query": "contamination screen fires on boilerplate text"
+  },
+  {
+   "trap": "41",
+   "split": "tune",
+   "query": "batching increased gpu utilization and power but not throughput"
+  },
+  {
+   "trap": "41",
+   "split": "holdout",
+   "query": "gpu at 100% and 300 w after batching yet the job takes the same time"
+  },
+  {
+   "trap": "42",
+   "split": "tune",
+   "query": "adding tool schemas and agent system prompt drops my benchmark score"
+  },
+  {
+   "trap": "42",
+   "split": "holdout",
+   "query": "single turn harness counts tool calls as wrong answers"
+  },
+  {
+   "trap": "43",
+   "split": "tune",
+   "query": "agent emits a tool call with an empty parameter body and loops retrying"
+  },
+  {
+   "trap": "43",
+   "split": "holdout",
+   "query": "tool arguments disappear on replayed tool calls when arguments are a json string"
+  },
+  {
+   "trap": "44",
+   "split": "tune",
+   "query": "dequantized fp4 weights have cosine 0.92 and the model outputs eos immediately"
+  },
+  {
+   "trap": "44",
+   "split": "holdout",
+   "query": "offline fp4 dequant looks close but model says 9.11 is bigger than 9.9"
+  },
+  {
+   "trap": "45",
+   "split": "tune",
+   "query": "llama-bench prefill is 20x slower with some kv cache quant types"
+  },
+  {
+   "trap": "45",
+   "split": "holdout",
+   "query": "quantized kv cache combination silently runs on cpu"
+  },
+  {
+   "trap": "46",
+   "split": "tune",
+   "query": "27b 4bit model decodes at 16 tok/s on a card that should do 60"
+  },
+  {
+   "trap": "46",
+   "split": "holdout",
+   "query": "slow decode and low power draw, old binary missing the native arch kernel"
+  },
+  {
+   "trap": "47",
+   "split": "tune",
+   "query": "prefix caching does nothing on a hybrid mamba model, every turn re-prefills"
+  },
+  {
+   "trap": "47",
+   "split": "holdout",
+   "query": "time to first token does not drop on later turns even though prefix caching is on"
+  },
+  {
+   "trap": "48",
+   "split": "tune",
+   "query": "every request takes 30 seconds from the agent but curl is instant"
+  },
+  {
+   "trap": "48",
+   "split": "holdout",
+   "query": "constant 30 second delay on a .local hostname, server logs show fast compute"
+  },
+  {
+   "trap": "49",
+   "split": "tune",
+   "query": "my benchmark prompt is not the length I think it is in tokens"
+  },
+  {
+   "trap": "49",
+   "split": "holdout",
+   "query": "huge speedup claim shrinks once the prompt is tokenized to the target length"
+  },
+  {
+   "trap": "50",
+   "split": "tune",
+   "query": "final layer norm looks 4x off compared to reference in a hidden state parity test"
+  },
+  {
+   "trap": "50",
+   "split": "holdout",
+   "query": "layer parity harness says last layer cosine 0.74, is my implementation broken"
+  },
+  {
+   "trap": "51",
+   "split": "tune",
+   "query": "perplexity is nan on one backend but fine on others with the same gguf"
+  },
+  {
+   "trap": "51",
+   "split": "holdout",
+   "query": "4bit quant gives nan only on one inference backend"
+  },
+  {
+   "trap": "52",
+   "split": "tune",
+   "query": "config hit amazing throughput but it was skipping work"
+  },
+  {
+   "trap": "52",
+   "split": "holdout",
+   "query": "fast result turned out to be a broken configuration"
+  },
+  {
+   "trap": "53",
+   "split": "tune",
+   "query": "I changed a flag and restarted but nothing changed"
+  },
+  {
+   "trap": "53",
+   "split": "holdout",
+   "query": "old server process still holds the port after restart so config edit had no effect"
+  },
+  {
+   "trap": "54",
+   "split": "tune",
+   "query": "prefill speedup also shows up on the branch without my change"
+  },
+  {
+   "trap": "54",
+   "split": "holdout",
+   "query": "benchmark improvement was warm cache and run order"
+  },
+  {
+   "trap": "55",
+   "split": "tune",
+   "query": "model does badly on long context retrieval even though it supports that length"
+  },
+  {
+   "trap": "55",
+   "split": "holdout",
+   "query": "advertised context length is longer than what the model was trained on"
+  },
+  {
+   "trap": "56",
+   "split": "tune",
+   "query": "checkpoint has no chat template file to inspect"
+  },
+  {
+   "trap": "56",
+   "split": "holdout",
+   "query": "cannot extract chat_template from the model repo, template is in python code"
+  },
+  {
+   "trap": "57",
+   "split": "tune",
+   "query": "sending thinking false actually turns thinking on"
+  },
+  {
+   "trap": "57",
+   "split": "holdout",
+   "query": "string \"false\" in chat template kwargs is treated as true"
+  },
+  {
+   "trap": "58",
+   "split": "tune",
+   "query": "reasoning_effort high edits my prompt and turns thinking back on"
+  },
+  {
+   "trap": "58",
+   "split": "holdout",
+   "query": "setting reasoning effort injects a hidden preamble into the prompt"
+  },
+  {
+   "trap": "59",
+   "split": "tune",
+   "query": "model quotes its earlier reasoning that should have been deleted"
+  },
+  {
+   "trap": "59",
+   "split": "holdout",
+   "query": "model claims to remember reasoning that was stripped from history"
+  },
+  {
+   "trap": "60",
+   "split": "tune",
+   "query": "long context test fails cold but passes on rerun"
+  },
+  {
+   "trap": "60",
+   "split": "holdout",
+   "query": "answer differs between cold prefill and prefix cache hit"
+  },
+  {
+   "trap": "61",
+   "split": "tune",
+   "query": "server advertises a 1 million token context but answers garbage at 250k without error"
+  },
+  {
+   "trap": "61",
+   "split": "holdout",
+   "query": "long request returns 200 but the model ignores most of the context"
+  },
+  {
+   "trap": "62",
+   "split": "tune",
+   "query": "speculative decoding output has corrupted special tokens in the visible text"
+  },
+  {
+   "trap": "62",
+   "split": "holdout",
+   "query": "garbled token frames leak into content with the draft model enabled"
+  },
+  {
+   "trap": "63",
+   "split": "tune",
+   "query": "multi turn quality drops when I append the assistant message back into history"
+  },
+  {
+   "trap": "63",
+   "split": "holdout",
+   "query": "what shape should reasoning take when I send the assistant turn back"
+  },
+  {
+   "trap": "64",
+   "split": "tune",
+   "query": "response has finish reason stop and content null, the answer is in reasoning"
+  },
+  {
+   "trap": "64",
+   "split": "holdout",
+   "query": "content is null but reasoning_content has the full answer"
+  },
+  {
+   "trap": "65",
+   "split": "tune",
+   "query": "how do I fix empty content at the token ceiling, model card says nothing"
+  },
+  {
+   "trap": "65",
+   "split": "holdout",
+   "query": "template kwarg that is supposed to fix empty content is never read"
+  },
+  {
+   "trap": "66",
+   "split": "tune",
+   "query": "a file path in my prompt comes back changed"
+  },
+  {
+   "trap": "66",
+   "split": "holdout",
+   "query": "template deletes a /think or /no_think string from my user message"
+  },
+  {
+   "trap": "67",
+   "split": "tune",
+   "query": "model answers in an odd style in multi turn, history looks like python objects"
+  },
+  {
+   "trap": "67",
+   "split": "holdout",
+   "query": "server turns message content into a list and the template prints the list repr"
+  },
+  {
+   "trap": "68",
+   "split": "tune",
+   "query": "instruction after the image is ignored, text parts get merged together"
+  },
+  {
+   "trap": "68",
+   "split": "holdout",
+   "query": "multimodal content part order is lost"
+  },
+  {
+   "trap": "69",
+   "split": "tune",
+   "query": "rendered prompt has extra whitespace and roles I did not send"
+  },
+  {
+   "trap": "69",
+   "split": "holdout",
+   "query": "small template defects break my assertions on the rendered output"
+  },
+  {
+   "trap": "70",
+   "split": "tune",
+   "query": "reasoning parser for this hybrid model is not in vllm or sglang"
+  },
+  {
+   "trap": "70",
+   "split": "holdout",
+   "query": "checkpoint ships its own reasoning parser python file that the server does not load"
+  },
+  {
+   "trap": "71",
+   "split": "tune",
+   "query": "cannot find the speculative config key for mtp in config.json"
+  },
+  {
+   "trap": "71",
+   "split": "holdout",
+   "query": "mtp layer count does not tell me how many draft tokens to use"
+  },
+  {
+   "trap": "72",
+   "split": "tune",
+   "query": "bad image url from the client returns a 500 server error"
+  },
+  {
+   "trap": "72",
+   "split": "holdout",
+   "query": "retry logic loops on 5xx caused by a missing media file"
+  },
+  {
+   "trap": "73",
+   "split": "tune",
+   "query": "image token cost is null in the usage block"
+  },
+  {
+   "trap": "73",
+   "split": "holdout",
+   "query": "cannot see how many tokens an image used from usage details"
+  },
+  {
+   "trap": "74",
+   "split": "tune",
+   "query": "audio model gives confident captions for random noise"
+  },
+  {
+   "trap": "74",
+   "split": "holdout",
+   "query": "fabricated descriptions for non speech audio clips"
+  },
+  {
+   "trap": "75",
+   "split": "tune",
+   "query": "pinned download url for a release suddenly returns 404"
+  },
+  {
+   "trap": "75",
+   "split": "holdout",
+   "query": "install script fails because the release asset was renamed"
+  },
+  {
+   "trap": "76",
+   "split": "tune",
+   "query": "startup log says skipping gpu because compute capability is not supported"
+  },
+  {
+   "trap": "76",
+   "split": "holdout",
+   "query": "scary warning about device rejected but the server works"
+  },
+  {
+   "trap": "77",
+   "split": "tune",
+   "query": "server accepts any unknown request field without warning"
+  },
+  {
+   "trap": "77",
+   "split": "holdout",
+   "query": "invented request parameters return 200 and do nothing"
+  },
+  {
+   "trap": "78",
+   "split": "tune",
+   "query": "tool_choice none is ignored and the model still calls tools"
+  },
+  {
+   "trap": "78",
+   "split": "holdout",
+   "query": "server accepts tool_choice but does not enforce it"
+  },
+  {
+   "trap": "79",
+   "split": "tune",
+   "query": "requested a context size bigger than the model supports and got 200 with empty content"
+  },
+  {
+   "trap": "79",
+   "split": "holdout",
+   "query": "num_ctx out of range is accepted silently, done reason length"
+  },
+  {
+   "trap": "80",
+   "split": "tune",
+   "query": "streaming timings impossible, tokens arrive in bursts"
+  },
+  {
+   "trap": "80",
+   "split": "holdout",
+   "query": "time per token from the stream is wrong because the parser batches deltas"
+  },
+  {
+   "trap": "81",
+   "split": "tune",
+   "query": "stopped the container but the next model fails with out of memory"
+  },
+  {
+   "trap": "81",
+   "split": "holdout",
+   "query": "docker says exited but gpu memory is not freed yet"
+  },
+  {
+   "trap": "82",
+   "split": "tune",
+   "query": "prefix cache reuse is near zero in multi turn chat"
+  },
+  {
+   "trap": "82",
+   "split": "holdout",
+   "query": "system prompt gets moved to the last user message so the prefix changes every turn"
+  },
+  {
+   "trap": "83",
+   "split": "tune",
+   "query": "model acts like it has a system prompt when I send none"
+  },
+  {
+   "trap": "83",
+   "split": "holdout",
+   "query": "template injects a hidden default system prompt"
+  },
+  {
+   "trap": "84",
+   "split": "tune",
+   "query": "agent dies with 400 after one tool call then a user message"
+  },
+  {
+   "trap": "84",
+   "split": "holdout",
+   "query": "template cannot render tool result followed by a user turn"
+  },
+  {
+   "trap": "85",
+   "split": "tune",
+   "query": "sending enable_thinking as a string now returns 400"
+  },
+  {
+   "trap": "85",
+   "split": "holdout",
+   "query": "server rejects string enable_thinking even though the template ignores it"
+  },
+  {
+   "trap": "86",
+   "split": "tune",
+   "query": "assistant prefill behaves differently from the same text mid conversation"
+  },
+  {
+   "trap": "86",
+   "split": "holdout",
+   "query": "last assistant message is not rendered through the template assistant branch"
+  },
+  {
+   "trap": "87",
+   "split": "tune",
+   "query": "llama.cpp /props shows a smaller context than I set"
+  },
+  {
+   "trap": "87",
+   "split": "holdout",
+   "query": "n_ctx reported per slot not total, props says disabled"
+  },
+  {
+   "trap": "88",
+   "split": "tune",
+   "query": "does cache_prompt false really isolate a request on llama.cpp"
+  },
+  {
+   "trap": "88",
+   "split": "holdout",
+   "query": "want to disable prompt caching per request to get clean measurements"
+  },
+  {
+   "trap": "89",
+   "split": "tune",
+   "query": "my stock model copy changed after editing weights in place"
+  },
+  {
+   "trap": "89",
+   "split": "holdout",
+   "query": "hardlinked shards got modified and every comparison is wrong"
+  },
+  {
+   "trap": "90",
+   "split": "tune",
+   "query": "moving to the official release to get faster attention hits error after error"
+  },
+  {
+   "trap": "90",
+   "split": "holdout",
+   "query": "kernel library only has cubins for another gpu architecture"
+  },
+  {
+   "trap": "91",
+   "split": "tune",
+   "query": "temperature 0 gives different outputs with multiple slots"
+  },
+  {
+   "trap": "91",
+   "split": "holdout",
+   "query": "non deterministic greedy output under continuous batching"
+  },
+  {
+   "trap": "92",
+   "split": "tune",
+   "query": "prompt cache makes temperature 0 results differ between runs"
+  },
+  {
+   "trap": "92",
+   "split": "holdout",
+   "query": "a/b run inverted because of cached prompts"
+  },
+  {
+   "trap": "93",
+   "split": "tune",
+   "query": "putting the current time in the system prompt ruins prefix caching"
+  },
+  {
+   "trap": "93",
+   "split": "holdout",
+   "query": "moving the date out of the system prompt made cache reuse worse"
+  },
+  {
+   "trap": "94",
+   "split": "tune",
+   "query": "deterministic output works on my 3090 but not on the 5090"
+  },
+  {
+   "trap": "94",
+   "split": "holdout",
+   "query": "temperature 0 reproducibility differs between gpu generations"
+  },
+  {
+   "trap": "95",
+   "split": "tune",
+   "query": "does running two models on two gpus in one host slow each other down"
+  },
+  {
+   "trap": "95",
+   "split": "holdout",
+   "query": "co-tenancy of llama.cpp lanes on one machine"
+  },
+  {
+   "trap": "96",
+   "split": "tune",
+   "query": "llama.cpp list devices shows more free memory than the card has"
+  },
+  {
+   "trap": "96",
+   "split": "holdout",
+   "query": "device free memory is actually host ram"
+  },
+  {
+   "trap": "97",
+   "split": "tune",
+   "query": "model is very slow and nothing says why, some layers are on cpu"
+  },
+  {
+   "trap": "97",
+   "split": "holdout",
+   "query": "partial offload kills decode speed and the log does not show the split"
+  },
+  {
+   "trap": "98",
+   "split": "tune",
+   "query": "vllm with dflash speculative decoding runs out of memory on spark"
+  },
+  {
+   "trap": "98",
+   "split": "holdout",
+   "query": "oom with default max num seqs 256 on unified memory"
+  },
+  {
+   "trap": "99",
+   "split": "tune",
+   "query": "scaled_dot_product_attention is_causal fails on strix halo"
+  },
+  {
+   "trap": "99",
+   "split": "holdout",
+   "query": "hipErrorInvalidValue with sdpa on gfx1151"
+  },
+  {
+   "trap": "100",
+   "split": "tune",
+   "query": "every kernel fails with hipErrorInvalidImage on radeon 8060s"
+  },
+  {
+   "trap": "100",
+   "split": "holdout",
+   "query": "oem kernel rejects gfx1151 code objects, allocation works"
+  },
+  {
+   "trap": "101",
+   "split": "tune",
+   "query": "model broke after upgrading transformers minor version"
+  },
+  {
+   "trap": "101",
+   "split": "holdout",
+   "query": "transformers 5.6 removed an argument and the model fails after loading"
+  },
+  {
+   "trap": "102",
+   "split": "tune",
+   "query": "profiling nvfp4 moe shows bf16 gemms are the bottleneck"
+  },
+  {
+   "trap": "102",
+   "split": "holdout",
+   "query": "optimizing the moe kernel did not speed up the quantized model"
+  },
+  {
+   "trap": "103",
+   "split": "tune",
+   "query": "AutoProcessor fails with torchvision import error on rocm"
+  },
+  {
+   "trap": "103",
+   "split": "holdout",
+   "query": "multimodal processor cannot load because torchvision binary does not match torch"
+  },
+  {
+   "trap": "104",
+   "split": "tune",
+   "query": "after restart the server lost my pinned revision and thinking settings"
+  },
+  {
+   "trap": "104",
+   "split": "holdout",
+   "query": "old launch script reverted the config when the service restarted"
+  },
+  {
+   "trap": "105",
+   "split": "tune",
+   "query": "our speculative acceptance rate does not match theirs"
+  },
+  {
+   "trap": "105",
+   "split": "holdout",
+   "query": "acceptance rate numbers are not comparable across papers"
+  },
+  {
+   "trap": "106",
+   "split": "tune",
+   "query": "kv cache usage keeps climbing and never goes down, is it a leak"
+  },
+  {
+   "trap": "106",
+   "split": "holdout",
+   "query": "vllm kv_cache_usage_perc stays at max"
+  },
+  {
+   "trap": "107",
+   "split": "tune",
+   "query": "memory rises during a short soak test, looks like a leak"
+  },
+  {
+   "trap": "107",
+   "split": "holdout",
+   "query": "short soak shows throughput decline that disappears in a long run"
+  },
+  {
+   "trap": "108",
+   "split": "tune",
+   "query": "burn canary alternates between two outputs and reports degradation"
+  },
+  {
+   "trap": "108",
+   "split": "holdout",
+   "query": "fixed seed temperature 0 check flips back and forth"
+  },
+  {
+   "trap": "109",
+   "split": "tune",
+   "query": "mtp drafter acceptance collapsed after nvfp4 requantization"
+  },
+  {
+   "trap": "109",
+   "split": "holdout",
+   "query": "requant skipped the draft layer experts"
+  },
+  {
+   "trap": "110",
+   "split": "tune",
+   "query": "single stream benchmark numbers vary wildly on a shared server"
+  },
+  {
+   "trap": "110",
+   "split": "holdout",
+   "query": "other users traffic is polluting my tokens per second measurement"
+  },
+  {
+   "trap": "111",
+   "split": "tune",
+   "query": "same speculative decoding benchmark twice gives medians 20% apart"
+  },
+  {
+   "trap": "111",
+   "split": "holdout",
+   "query": "greedy spec decode speed depends on the content generated"
+  },
+  {
+   "trap": "112",
+   "split": "tune",
+   "query": "container is up and health check passes but the model is not ready"
+  },
+  {
+   "trap": "112",
+   "split": "holdout",
+   "query": "process alive does not mean the model can serve requests"
+  },
+  {
+   "trap": "113",
+   "split": "tune",
+   "query": "system message in the middle of the conversation is dropped by one model"
+  },
+  {
+   "trap": "113",
+   "split": "holdout",
+   "query": "inline system role renders differently between checkpoints"
+  },
+  {
+   "trap": "114",
+   "split": "tune",
+   "query": "nccl fails with gid errors when every node uses the same NCCL_IB_GID_INDEX"
+  },
+  {
+   "trap": "114",
+   "split": "holdout",
+   "query": "rdma bring up breaks on one host with a hard coded gid index"
+  },
+  {
+   "trap": "115",
+   "split": "tune",
+   "query": "process exited with 137, was it the oom killer"
+  },
+  {
+   "trap": "115",
+   "split": "holdout",
+   "query": "exit code 137 assumed to be out of memory"
+  },
+  {
+   "trap": "116",
+   "split": "tune",
+   "query": "all ranks loaded ok then the first forward fails on the embedding dtype"
+  },
+  {
+   "trap": "116",
+   "split": "holdout",
+   "query": "model load succeeded but first inference crashes with a dtype error"
+  },
+  {
+   "trap": "117",
+   "split": "tune",
+   "query": "fuse_gemm_comms shows true at startup but gets disabled later"
+  },
+  {
+   "trap": "117",
+   "split": "holdout",
+   "query": "compilation config flag echoed enabled but not actually used"
+  },
+  {
+   "trap": "118",
+   "split": "tune",
+   "query": "multi node boot looks stuck with no log output for ten minutes"
+  },
+  {
+   "trap": "118",
+   "split": "holdout",
+   "query": "ray worker logs hidden so a healthy boot looks deadlocked"
+  },
+  {
+   "trap": "119",
+   "split": "tune",
+   "query": "gpu memory utilization that worked for weeks now fails to boot"
+  },
+  {
+   "trap": "119",
+   "split": "holdout",
+   "query": "free memory went down over time and the error blames the wrong node"
+  },
+  {
+   "trap": "120",
+   "split": "tune",
+   "query": "server works with two concurrent requests but crashes at three"
+  },
+  {
+   "trap": "120",
+   "split": "holdout",
+   "query": "engine dies at concurrency three with no memory pressure"
+  },
+  {
+   "trap": "121",
+   "split": "tune",
+   "query": "multi node launcher says success but a worker never joins"
+  },
+  {
+   "trap": "121",
+   "split": "holdout",
+   "query": "json arguments get mangled when passed over ssh"
+  },
+  {
+   "trap": "122",
+   "split": "tune",
+   "query": "qwen3.8 mtp gives wrong output with full cuda graphs"
+  },
+  {
+   "trap": "122",
+   "split": "holdout",
+   "query": "cuda graph mode corrupts speculative verification without errors"
+  },
+  {
+   "trap": "123",
+   "split": "tune",
+   "query": "killed the vllm api server and gpu memory is still used"
+  },
+  {
+   "trap": "123",
+   "split": "holdout",
+   "query": "orphaned enginecore process keeps holding vram"
+  },
+  {
+   "trap": "124",
+   "split": "tune",
+   "query": "dgx spark suddenly much slower but shows p0 and high utilization"
+  },
+  {
+   "trap": "124",
+   "split": "holdout",
+   "query": "gb10 stuck in low power state under load"
+  },
+  {
+   "trap": "125",
+   "split": "tune",
+   "query": "systemd MemoryMax does not stop the model server using more memory"
+  },
+  {
+   "trap": "125",
+   "split": "holdout",
+   "query": "cgroup memory limit ignores cuda unified memory on spark"
+  },
+  {
+   "trap": "126",
+   "split": "tune",
+   "query": "ling thinking false still reasons and puts the trace in content"
+  },
+  {
+   "trap": "126",
+   "split": "holdout",
+   "query": "disabling thinking on ling puts reasoning text in the answer"
+  },
+  {
+   "trap": "127",
+   "split": "tune",
+   "query": "gateway returns 502 for hours after an image update"
+  },
+  {
+   "trap": "127",
+   "split": "holdout",
+   "query": "bind mounted file hides a module inside the container and it crash loops"
+  },
+  {
+   "trap": "128",
+   "split": "tune",
+   "query": "decode stalls when several requests are prefilling at once"
+  },
+  {
+   "trap": "128",
+   "split": "holdout",
+   "query": "inter token latency spikes under concurrent prefill, preemptions zero"
+  },
+  {
+   "trap": "129",
+   "split": "tune",
+   "query": "long requests suddenly get zero prefix cache hits"
+  },
+  {
+   "trap": "129",
+   "split": "holdout",
+   "query": "cache hits collapse beyond the sliding window"
+  },
+  {
+   "trap": "130",
+   "split": "tune",
+   "query": "largest decode batch runs eager even though cuda graphs are captured"
+  },
+  {
+   "trap": "130",
+   "split": "holdout",
+   "query": "max batch size slower than expected, capture size clamp"
+  },
+  {
+   "trap": "131",
+   "split": "tune",
+   "query": "pinned model revision fails to resolve offline on some nodes"
+  },
+  {
+   "trap": "131",
+   "split": "holdout",
+   "query": "huggingface refs file has an extra byte and offline mode breaks"
+  },
+  {
+   "trap": "132",
+   "split": "tune",
+   "query": "agent sessions produce corrupted output only on cold long prompts"
+  },
+  {
+   "trap": "132",
+   "split": "holdout",
+   "query": "prompt tail garbled with speculative decoding on chunked prefill"
+  },
+  {
+   "trap": "133",
+   "split": "tune",
+   "query": "speculative decoding acceptance is half what it should be with dspark"
+  },
+  {
+   "trap": "133",
+   "split": "holdout",
+   "query": "draft loader drops shared expert weights silently"
+  },
+  {
+   "trap": "134",
+   "split": "tune",
+   "query": "network link shows up but the benchmark used a different interface"
+  },
+  {
+   "trap": "134",
+   "split": "holdout",
+   "query": "link up does not prove traffic went over that nic"
+  },
+  {
+   "trap": "135",
+   "split": "tune",
+   "query": "concurrency 4 benchmark but the requests run one after another"
+  },
+  {
+   "trap": "135",
+   "split": "holdout",
+   "query": "server accepts concurrent requests but executes them serially"
+  },
+  {
+   "trap": "136",
+   "split": "tune",
+   "query": "probe crashed but the pipeline reported success"
+  },
+  {
+   "trap": "136",
+   "split": "holdout",
+   "query": "wrapper summary says pass even though the script threw an exception"
+  },
+  {
+   "trap": "137",
+   "split": "tune",
+   "query": "kernel probe output is correct but harness marks it failed"
+  },
+  {
+   "trap": "137",
+   "split": "holdout",
+   "query": "nonzero return code from a kernel selector is not an error"
+  },
+  {
+   "trap": "138",
+   "split": "tune",
+   "query": "structured json output has duplicated keys with ngram speculation"
+  },
+  {
+   "trap": "138",
+   "split": "holdout",
+   "query": "prompt lookup decoding produces invalid json"
+  },
+  {
+   "trap": "139",
+   "split": "tune",
+   "query": "nccl picks the wrong network card on a switchless ring"
+  },
+  {
+   "trap": "139",
+   "split": "holdout",
+   "query": "tensor parallel setup fails on direct connected nodes with multiple nics"
+  },
+  {
+   "trap": "140",
+   "split": "tune",
+   "query": "illegal memory access during cuda graph warmup with sparse mla"
+  },
+  {
+   "trap": "140",
+   "split": "holdout",
+   "query": "deepseek sparse attention indexes a request row that does not exist"
+  },
+  {
+   "trap": "141",
+   "split": "tune",
+   "query": "server answers a request for a model it is not serving"
+  },
+  {
+   "trap": "141",
+   "split": "holdout",
+   "query": "sglang returns 200 even when the model name is wrong"
+  },
+  {
+   "trap": "142",
+   "split": "tune",
+   "query": "docker created an empty directory instead of mounting my config file"
+  },
+  {
+   "trap": "142",
+   "split": "holdout",
+   "query": "missing bind mount source becomes a folder and the server fails later"
+  },
+  {
+   "trap": "143",
+   "split": "tune",
+   "query": "qwen3 config has sliding_window but every layer uses full attention"
+  },
+  {
+   "trap": "143",
+   "split": "holdout",
+   "query": "sliding window is ignored because use_sliding_window defaults to false"
+  }
+ ],
+ "negatives": {
+  "tune": [
+   "how do I bake sourdough bread",
+   "my laptop battery drains too fast",
+   "what is the capital of australia",
+   "recommend a good sci-fi novel",
+   "how do I center a div in css",
+   "my cat keeps scratching the couch",
+   "best running shoes for flat feet",
+   "how do I file my taxes online",
+   "git merge conflict in package-lock.json",
+   "write a haiku about autumn leaves",
+   "convert celsius to fahrenheit",
+   "how to change a flat tyre",
+   "python list comprehension syntax",
+   "what time zone is tokyo in",
+   "explain the offside rule in football",
+   "wifi keeps disconnecting on my phone",
+   "how much water should I drink daily",
+   "excel vlookup returns na",
+   "best way to learn guitar chords",
+   "my react component rerenders too often"
+  ],
+  "holdout": [
+   "my sourdough starter smells like acetone",
+   "how do I cancel my gym membership",
+   "what is the best pizza topping",
+   "my car makes a clicking noise when turning",
+   "how to grow tomatoes on a balcony",
+   "dog food recommendations for puppies",
+   "how long to boil an egg",
+   "javascript array sort is not numeric",
+   "printer says paper jam but there is no paper",
+   "how to get red wine out of carpet",
+   "what is the tallest mountain in europe",
+   "my houseplant leaves are turning yellow",
+   "how to write a cover letter",
+   "translate hello into spanish",
+   "why is the sky blue",
+   "my bike chain keeps falling off",
+   "how many calories in a banana",
+   "bluetooth headphones will not pair with my laptop",
+   "sql join returns duplicate rows",
+   "how do I reset my router password"
+  ]
+ }
+}

@@ -49,6 +49,16 @@ applicability, but cannot turn a one-word resemblance into a canonical candidate
 Common phrasings such as "empty response", "garbage output" and "thinking leaked"
 use bounded synonym concepts without making one word count twice.
 
+Since 0.2.1 each match also carries `evidence_weight`: shared words weighted by
+how specific they are to that entry (a word found in one entry weighs 1.0; one
+found in most entries weighs little), with words that match the entry's title
+counting 1.5x. Two further admission rules apply: the question must mention
+something about model serving (a stack, hardware, tokens, templates, and so on,
+or an identifier such as `max_tokens` or `gfx1151`), and the rarity-weighted
+evidence must reach a minimum. Off-domain questions therefore return
+`NOT_DOCUMENTED` with no leads. The CLI's strong / possible / weak labels are
+`evidence_weight` thresholds calibrated in `benchmarks/`.
+
 Integrations should call `match_symptom` instead of walking `load_registry()`
 themselves. The compiled registry's internal layout (its entries live under
 `entries`) is covered by `tests/test_integration_contract.py`, but a consumer
