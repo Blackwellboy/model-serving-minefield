@@ -1,0 +1,68 @@
+name: Confirm an existing trap on my stack
+description: Add a new stack/build reproduction to an existing Minefield trap without writing a new entry.
+title: "[corroboration] trap "
+labels: ["trap-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when a **published trap already matches what you tested** and you have a trap-specific result on another stack/build.
+
+        This is not an up-vote button. A corroboration should name the exact trap, conditions, check, control, and observed result. It keeps the original evidence status intact until a maintainer adjudicates the new evidence.
+
+        **Public issue:** scrub hostnames, IPs, paths, usernames, credentials, tokens and internal URLs before posting.
+  - type: checkboxes
+    id: scrubbed
+    attributes:
+      label: Privacy check
+      options:
+        - label: I reviewed everything below for private infrastructure details and secrets.
+          required: true
+  - type: input
+    id: trap-id
+    attributes:
+      label: Existing trap ID
+      description: The canonical numbered trap you tested.
+      placeholder: "23"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Exact environment
+      description: Model/revision, quantization, serving stack/build, hardware, node/parallelism, context and concurrency where relevant.
+      placeholder: "Model ..., revision ..., NVFP4, vLLM ..., 2x GB10 TP2, context ..., concurrency ..."
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: Check you ran
+      description: Copy the trap-specific confirmation/refutation procedure or describe your equivalent paired control.
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Reproduced the published failure signature
+        - Refuted it under my exact conditions
+        - Inconclusive / mixed
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Scrubbed evidence
+      description: Minimal logs, response fields, counters, hashes, or public evidence link needed to verify the result.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor-json
+    attributes:
+      label: Doctor JSON
+      description: Optional. If supplied, the repository automation will add the same normalized routing summary used by the Doctor intake form.
+      render: json
+    validations:
+      required: false
