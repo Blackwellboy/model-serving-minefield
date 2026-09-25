@@ -422,6 +422,52 @@ class TestRequestValidation(DoctorVerdictCase):
         self.assertIn("VALIDATION_NO_BASELINE", codes(doc))
 
 
+class TestModelIdentity(DoctorVerdictCase):
+    """Trap 141. Only SGLang is in the published scope, and every verdict is
+    paired against a correctly named request on the same fixture lane.
+    """
+
+    def test_sglang_wrong_model_acceptance_is_a_problem(self):
+        with FixtureLane(sglang=True, validates_model_name=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "WRONG_MODEL_ACCEPTED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertEqual(f["traps"], ["141"])
+        self.assertIn("141", md.coverage(doc)["problems"])
+
+    def test_sglang_wrong_model_rejection_is_clean(self):
+        with FixtureLane(sglang=True, validates_model_name=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "WRONG_MODEL_REJECTED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertEqual(f["traps"], ["141"])
+        assertions = {a["assert"]: a["result"] for a in f["assertions"]}
+        self.assertEqual(assertions["correctly named control request succeeds"], "held")
+        self.assertEqual(assertions["deliberately unserved model name is rejected"], "held")
+
+    def test_broken_baseline_cannot_earn_a_clean(self):
+        with FixtureLane(sglang=True, reject_everything=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "141")
+        f = find(doc, "MODEL_IDENTITY_NO_BASELINE")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+
+    def test_other_stack_cannot_clear_sglang_specific_trap(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "141")
+        f = find(doc, "MODEL_IDENTITY_SCOPE_NOT_SGLANG")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "UNKNOWN")
+
+
 class TestToolProbe(DoctorVerdictCase):
 
     def test_non_tool_calling_model_with_forced_control_is_a_problem(self):

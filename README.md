@@ -123,8 +123,8 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **19 of these 143 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 124. It runs
+for **20 of these 143 entries**, weighted toward reasoning fields, templates and
+tool parsing, and a clean run from it says nothing about the other 123. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -333,7 +333,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 19 of this registry's 143 entries in under a minute:
+against 20 of this registry's 143 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
