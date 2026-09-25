@@ -1,0 +1,51 @@
+name: Paste Minefield Doctor JSON
+description: Ran Minefield Doctor? Paste its JSON and the issue will get a normalized stack/model/coverage summary.
+title: "[doctor] "
+labels: ["trap-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when you already ran Minefield Doctor and want the fastest route into triage.
+
+        **This issue is public.** Review the JSON before submitting it. Remove private hostnames, IPs, absolute paths, usernames, credentials, tokens, cookies, internal URLs, or anything else you would not publish.
+
+        The automation only **extracts routing metadata** from your JSON. It does not promote a Doctor finding to confirmed evidence.
+  - type: checkboxes
+    id: scrubbed
+    attributes:
+      label: Privacy check
+      options:
+        - label: I reviewed the JSON and removed private infrastructure details and secrets.
+          required: true
+  - type: textarea
+    id: what-broke
+    attributes:
+      label: What broke
+      description: One or two sentences in your own words.
+      placeholder: "Streaming replies put the answer in reasoning_content and my client showed a blank message."
+    validations:
+      required: true
+  - type: textarea
+    id: doctor-json
+    attributes:
+      label: Doctor JSON
+      description: Paste the complete JSON object produced by Minefield Doctor. Fenced JSON is fine.
+      render: json
+      placeholder: |
+        {
+          "stack": "vllm",
+          "model": "example/model",
+          "requests_made": 8,
+          "coverage": {},
+          "findings": []
+        }
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything the Doctor could not see
+      description: Exact stack/build, checkpoint revision, quantization, topology, context/concurrency regime, or a paired confirm/refute result.
+    validations:
+      required: false
