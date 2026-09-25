@@ -2,6 +2,11 @@
 
 Stable in-process surface for integrations that must not shell out to the CLI.
 
+**Compatibility:** the supported integration contract, including `match_symptom()`,
+is versioned from **model-serving-minefield 0.2.0**. Downstream plugins should
+pin a compatible minor series (for example `>=0.2,<0.3`) rather than reading
+compiled registry internals.
+
 ```python
 from minefield.api import plan_checks, run_checks, summarize, result_to_doctor_json
 
