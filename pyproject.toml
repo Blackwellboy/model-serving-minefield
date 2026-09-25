@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "model-serving-minefield"
-version = "0.1.0"
+version = "0.2.0"
 description = "Read-only diagnostics for model-serving failures"
 requires-python = ">=3.10"
 license = "MIT"
