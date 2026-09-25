@@ -41,3 +41,35 @@ jobs:
             --exclude-files '(^|/)(\.git|build|model_serving_minefield\.egg-info)/|^checks/fixtures/qwen38_nvfp4_52d1adc/' \
             --exclude-lines 'content_sha256' > "$RUNNER_TEMP/detect-secrets.json"
           python -c 'import json,sys; d=json.load(open(sys.argv[1])); n=sum(map(len,d.get("results",{}).values())); print(f"secret findings: {n}"); raise SystemExit(bool(n))' "$RUNNER_TEMP/detect-secrets.json"
+
+  hermes-downstream-contract:
+    name: hermes downstream contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out candidate Minefield
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Check out compatible Hermes adapter
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: Blackwellboy/hermes-minefield
+          ref: 48277779f18d6ea5efb285392c7eb43f0efd9474
+          path: _deps/hermes-minefield
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install candidate and adapter test dependencies
+        run: |
+          python -m pip install .
+          python -m pip install pytest PyYAML
+          python -m pip install -e ./_deps/hermes-minefield --no-deps
+
+      - name: Run full Hermes adapter suite against this Minefield candidate
+        working-directory: _deps/hermes-minefield
+        run: pytest -q
