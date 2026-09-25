@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 17 generation requests, each capped at 512 output
+    completions (at most 19 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -76,6 +76,7 @@ TRAP_PATHS = {
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
     "77": "reasoning/77-only-one-request-field-is-validated.md",
+    "141": "evaluation/141-sglang-python-chat-model-name-not-validated.md",
 }
 
 # The registry's Core tier (../CORE.md): the twelve entries selected on
@@ -1530,6 +1531,127 @@ def check_request_validation(doc, base, key):
                     "body": str(probe_txt)[:160]}, held=False)])
 
 
+def check_model_identity(doc, base, key):
+    """Trap 141: does SGLang reject a deliberately wrong served-model name?
+
+    Scope matters. Trap 141 is specifically the SGLang Python OpenAI chat
+    route, so another stack cannot clear it. On SGLang the check is paired:
+    the correctly named request must succeed first, then the same request is
+    repeated with a model name that /v1/models did not advertise.
+    """
+    if doc.stack != "sglang":
+        doc.skip(
+            ["141"],
+            "served-model identity validation",
+            f"trap 141 is scoped to the SGLang Python OpenAI chat route; "
+            f"detected stack={doc.stack!r}, so this run cannot clear or "
+            f"confirm that SGLang-specific entry",
+            code="MODEL_IDENTITY_SCOPE_NOT_SGLANG",
+            asserts=[A("detected stack is SGLang",
+                       {"stack": doc.stack}, held=False)])
+        return
+
+    msgs = [{"role": "user", "content": "Reply with OK."}]
+    served_model = doc.model
+    base_st, base_choice, base_raw = chat(
+        doc, base, key, served_model, msgs, max_tokens=16)
+
+    if base_st != 200 or base_choice is None:
+        doc.inconclusive(
+            ["141"],
+            "served-model identity validation",
+            f"the correctly named control request did not complete normally "
+            f"(http {base_st}), so rejection of a wrong model name would not "
+            f"be attributable to model-identity validation. Fix the lane and "
+            f"re-run.",
+            code="MODEL_IDENTITY_NO_BASELINE",
+            asserts=[A("correctly named control request succeeds",
+                       {"model": served_model, "status": base_st,
+                        "body": str(base_raw)[:160]}, held=False)])
+        return
+
+    wrong_model = "__minefield_not_served_model__"
+    wrong_st, wrong_choice, wrong_raw = chat(
+        doc, base, key, wrong_model, msgs, max_tokens=16)
+    doc.evidence["model_identity_probe"] = {
+        "served_model": served_model,
+        "wrong_model": wrong_model,
+        "baseline_status": base_st,
+        "wrong_model_status": wrong_st,
+    }
+
+    if wrong_st != 200:
+        doc.ok(
+            ["141"],
+            f"SGLang rejected a deliberately wrong model name (http "
+            f"{wrong_st}) while the correctly named control returned 200",
+            code="WRONG_MODEL_REJECTED",
+            asserts=[
+                A("correctly named control request succeeds",
+                  {"model": served_model, "status": base_st}),
+                A("deliberately unserved model name is rejected",
+                  {"model": wrong_model, "status": wrong_st}),
+            ])
+        return
+
+    if wrong_choice is None:
+        doc.inconclusive(
+            ["141"],
+            "wrong model name returned HTTP 200 but no parseable assistant choice",
+            "HTTP 200 alone is not enough to claim the trap fired. Preserve "
+            "the raw response and inspect the route before assigning the "
+            "ordinary-content signature.",
+            code="WRONG_MODEL_HTTP200_UNPARSEABLE",
+            asserts=[
+                A("correctly named control request succeeds",
+                  {"model": served_model, "status": base_st}),
+                A("wrong-name response contains a parseable assistant choice",
+                  {"model": wrong_model, "status": wrong_st,
+                   "body": str(wrong_raw)[:160]}, held=False),
+            ])
+        return
+
+    content, reasoning_content, reasoning, tool_calls, _msg = msg_fields(wrong_choice)
+    ordinary = bool(content.strip() or reasoning_content.strip()
+                    or reasoning.strip() or tool_calls)
+    if ordinary:
+        doc.problem(
+            ["141"],
+            "SGLang answered a request naming a model it does not serve",
+            "Do not trust the request model field as identity proof on this "
+            "route. Resolve the served identity independently and fail closed "
+            "on mismatches; upgrade/use a route that validates known model "
+            "names before generation.",
+            code="WRONG_MODEL_ACCEPTED",
+            asserts=[
+                A("correctly named control request succeeds",
+                  {"model": served_model, "status": base_st}),
+                A("deliberately unserved model name is rejected",
+                  {"model": wrong_model, "status": wrong_st}, held=False),
+                A("wrong-name request returned ordinary assistant output",
+                  {"content_len": len(content),
+                   "reasoning_len": len(reasoning_content) + len(reasoning),
+                   "tool_calls": len(tool_calls)}),
+            ])
+        return
+
+    doc.inconclusive(
+        ["141"],
+        "wrong model name returned HTTP 200 without ordinary assistant output",
+        "The route accepted the wrong name at HTTP level, but this response "
+        "does not reproduce Trap 141's ordinary-assistant-content signature. "
+        "Inspect the raw response before assigning the trap.",
+        code="WRONG_MODEL_ACCEPTANCE_INCONCLUSIVE",
+        asserts=[
+            A("correctly named control request succeeds",
+              {"model": served_model, "status": base_st}),
+            A("wrong-name request returned ordinary assistant output",
+              {"status": wrong_st, "content_len": len(content),
+               "reasoning_len": len(reasoning_content) + len(reasoning),
+               "tool_calls": len(tool_calls)}, held=False),
+        ])
+
+
 def check_tool_choice_gate(doc, base, key):
     """Trap 78: tool_choice accepted and ignored, which fails OPEN.
 
@@ -2213,6 +2335,10 @@ def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
 
+def _probe_model_identity(doc, base, root, args):
+    check_model_identity(doc, base, args.api_key)
+
+
 def _probe_reasoning_fields(doc, base, root, args):
     check_reasoning_fields(doc, base, args.api_key)
 
@@ -2255,6 +2381,11 @@ PROBE_SPECS = (
         "request_validation", ("77",), 2, True, 100, (),
         _probe_request_validation,
         "request-field validation (unknown field acceptance)",
+    ),
+    ProbeSpec(
+        "model_identity", ("141",), 2, False, 95, (),
+        _probe_model_identity,
+        "SGLang served-model identity validation",
     ),
     ProbeSpec(
         "reasoning_fields", ("01", "02", "03", "29"), 2, True, 80, (),
