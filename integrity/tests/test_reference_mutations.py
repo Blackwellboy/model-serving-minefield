@@ -70,6 +70,16 @@ def run_checker(root):
     return p.returncode, p.stdout + p.stderr
 
 
+def read_text(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def write_text(path, content):
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(content)
+
+
 def find_entry(root, tid):
     traps = os.path.join(root, "traps")
     for d in sorted(os.listdir(traps)):
@@ -108,11 +118,11 @@ class ReferenceMutations(unittest.TestCase):
         not this one. This checker owns the reverse direction. If someone
         later makes this fire here, the residual list is wrong."""
         p = os.path.join(self.repo, "models", "README.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace(
             "[93](../traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md)",
             "")
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 0, "reverse-direction checker must stay quiet "
                                 "on a missing index row:\n" + out)
@@ -120,27 +130,27 @@ class ReferenceMutations(unittest.TestCase):
     def test_03_dangling_link_on_a_stack_page(self):
         """stacks/ is outside registry_integrity's nine-file link list."""
         p = os.path.join(self.repo, "stacks", "llama-cpp.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("../traps/runtime/91-", "../traps/runtime/9001-", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("REF-EXISTS", out)
 
     def test_04_dangling_link_in_a_playbook(self):
         p = os.path.join(self.repo, "playbooks", "before-you-publish-an-ab.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("../traps/evaluation/35-", "../traps/evaluation/350-", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("REF-EXISTS", out)
 
     def test_05_dangling_link_in_CORE(self):
         p = os.path.join(self.repo, "CORE.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("traps/template/04-", "traps/template/404-", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("REF-EXISTS", out)
@@ -149,10 +159,10 @@ class ReferenceMutations(unittest.TestCase):
         """The text says [42], the href goes to 43. Both resolve, so a link
         checker alone never sees it."""
         p = os.path.join(self.repo, "CORE.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t += ("\n- [42](traps/evaluation/"
               "31-leftover-oracle-reranker.md) renumber artifact\n")
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("REF-NUMBER", out)
@@ -161,24 +171,24 @@ class ReferenceMutations(unittest.TestCase):
         """The exact drift found on the live tip: a surface row dropping the
         entry's leading label, which erases a contributor's credit."""
         p = os.path.join(self.repo, "README.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace(
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | reproduced here |",
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | reported by others |",
             1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("STATUS-LEAD", out)
 
     def test_08_status_drifts_on_CORE(self):
         p = os.path.join(self.repo, "CORE.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace(
             "traps/template/04-history-reasoning-stripping.md) | reproduced here |",
             "traps/template/04-history-reasoning-stripping.md) | under test |",
             1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("STATUS-LEAD", out)
@@ -188,13 +198,13 @@ class ReferenceMutations(unittest.TestCase):
         entries because it matched negated mentions inside status prose. A
         qualifier after the leading stem must stay silent."""
         p = os.path.join(self.repo, "README.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace(
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | reproduced here |",
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | "
             "reproduced here on three stacks, and explicitly not "
             "contributor-measured |", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 0, "a trailing qualifier must not fire:\n" + out)
 
@@ -210,10 +220,12 @@ class ReferenceMutations(unittest.TestCase):
     def test_11_pr_template_teaching_a_partial_slash_list(self):
         """The exact historical defect: a slash-joined subset."""
         p = os.path.join(self.repo, ".github", "PULL_REQUEST_TEMPLATE.md")
-        open(p, "w", encoding="utf-8").write(
+        write_text(
+            p,
             "# Adding a trap entry\n\n"
             "- [ ] Status line up top: reproduced here / reported by others / "
-            "under test\n")
+            "under test\n",
+        )
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-SLASH", out)
@@ -223,19 +235,19 @@ class ReferenceMutations(unittest.TestCase):
         """A surface may enumerate with slashes; it may not enumerate a
         SUBSET. Without this the check would just ban a punctuation mark."""
         p = os.path.join(self.repo, ".github", "PULL_REQUEST_TEMPLATE.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t += ("\n\nStatus: reproduced here / contributor-measured, conditions "
               "as reported / reported by others / measured here, raw not "
               "published / under test\n")
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 0, "a complete slash list must not fire:\n" + out)
 
     def test_13_marked_surface_dropping_a_label(self):
         p = os.path.join(self.repo, "MAINTAINING.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("**measured here, raw not published**,", "", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-FULL", out)
@@ -247,10 +259,10 @@ class ReferenceMutations(unittest.TestCase):
         substring test and reported that present, correct label as missing.
         A guard that fires on an honest surface gets waved through."""
         p = os.path.join(self.repo, "README.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("**contributor-measured,\nconditions as reported**",
                       "**contributor-measured,\n   conditions   as\nreported**", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 0, "wrapped labels must not fire:\n" + out)
 
@@ -259,19 +271,19 @@ class ReferenceMutations(unittest.TestCase):
         CONTRIBUTING's table disagree, one of them is lying to a
         contributor."""
         p = os.path.join(self.repo, "integrity", "contradiction_gate.py")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace('    "under test",\n', "", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-GATE", out)
 
     def test_16_gate_carrying_a_label_nobody_published(self):
         p = os.path.join(self.repo, "integrity", "contradiction_gate.py")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace('    "under test",\n',
                       '    "under test",\n    "measured on our fleet",\n', 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-GATE", out)
@@ -282,12 +294,12 @@ class ReferenceMutations(unittest.TestCase):
         rather than diverge from them silently. This is the direction the
         original defect ran in."""
         p = os.path.join(self.repo, "CONTRIBUTING.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace(
             "| **under test** |",
             "| **vendor-confirmed** | the vendor acknowledged it | a vendor |\n"
             "| **under test** |", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB", out)
@@ -295,20 +307,20 @@ class ReferenceMutations(unittest.TestCase):
     def test_18_canonical_table_going_missing(self):
         """No parsable table is reported, not treated as nothing to check."""
         p = os.path.join(self.repo, "CONTRIBUTING.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         t = t.replace("## Status vocabulary", "## Statuses", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-DEFN", out)
 
     def test_19_public_surface_citing_a_dead_id(self):
         p = os.path.join(self.repo, "README.md")
-        t = open(p, encoding="utf-8").read()
+        t = read_text(p)
         needle = "traps/runtime/60-cold-prefill-and-cache-hit-disagree.md"
         self.assertIn(needle, t, "fixture drift: canonical trap 60 README link missing")
         t = t.replace(needle, "traps/runtime/600-cold-prefill-and-cache-hit-disagree.md", 1)
-        open(p, "w", encoding="utf-8").write(t)
+        write_text(p, t)
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("REF-EXISTS", out)
