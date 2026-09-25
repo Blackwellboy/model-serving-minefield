@@ -61,6 +61,43 @@ class MatchSymptomContract(unittest.TestCase):
         result = api.match_symptom("reasoning template tool parser", limit=2)
         self.assertLessEqual(len(result["matches"]), 2)
 
+
+    def test_one_shared_word_is_not_enough_for_canonical_candidate(self):
+        # Regression for the pre-0.2 matcher: an ordinary shared word could
+        # create a plausible-looking candidate by itself.
+        result = api.match_symptom("unrelated")
+        self.assertEqual(result["matches"], [])
+        self.assertEqual(result["diagnosis_level"], "NOT_DOCUMENTED")
+
+    def test_context_does_not_rescue_one_weak_symptom_word(self):
+        result = api.match_symptom("unrelated", stack="vllm")
+        self.assertEqual(result["matches"], [])
+
+    def test_common_phrasings_use_synonyms_without_inflating_one_word(self):
+        cases = (
+            ("empty response at token ceiling", "12"),
+            ("garbage output after device map auto", "39"),
+            ("thinking leaked into content with thinking false", "126"),
+            ("tool choice ignored despite tool call request", "78"),
+        )
+        for symptom, expected in cases:
+            with self.subTest(symptom=symptom):
+                result = api.match_symptom(symptom, limit=5)
+                ids = {m["trap_ids"][0] for m in result["matches"]}
+                self.assertIn(expected, ids)
+
+    def test_log_excerpt_can_supply_additional_matching_evidence(self):
+        without_log = api.match_symptom("streamed")
+        self.assertEqual(without_log["matches"], [])
+
+        with_log = api.match_symptom(
+            "streamed",
+            log_excerpt="answer lands in reasoning channel while content stays empty",
+            limit=5,
+        )
+        ids = {m["trap_ids"][0] for m in with_log["matches"]}
+        self.assertIn("23", ids)
+
     def test_miss_is_not_a_safe_verdict(self):
         result = api.match_symptom("zzqxv qqzzw")
         self.assertEqual(result["matches"], [])

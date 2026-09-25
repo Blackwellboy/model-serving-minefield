@@ -15,10 +15,51 @@ STOPWORDS = {
     "have", "under", "over", "after", "before",
 }
 
+# User phrasing may vary, but one concept still counts as one concept:
+# aliases broaden vocabulary without manufacturing extra overlap.
+TOKEN_ALIASES: dict[str, set[str]] = {
+    "response": {"content", "reply"},
+    "reply": {"content", "response"},
+    "blank": {"empty"},
+    "garbage": {"gibberish", "garbled"},
+    "garbled": {"gibberish", "garbage"},
+    "thinking": {"reasoning"},
+    "reasoning": {"thinking"},
+    "leak": {"spill", "spills", "spilled", "leaked", "leaking"},
+    "leaked": {"spill", "spills", "spilled", "leak", "leaking"},
+    "leaking": {"spill", "spills", "spilled", "leak", "leaked"},
+    "ignored": {"inert"},
+    "ignore": {"inert"},
+}
+
 
 def _tokens(value: str) -> set[str]:
-    return {token.lower() for token in TOKEN_RE.findall(value)
-            if token.lower() not in STOPWORDS}
+    return {
+        token.lower()
+        for token in TOKEN_RE.findall(value)
+        if token.lower() not in STOPWORDS
+    }
+
+
+def _concepts(value: str) -> list[set[str]]:
+    """Return one alias-set per original meaningful token.
+
+    Counting concepts rather than expanded tokens is deliberate: the word
+    thinking may expand to reasoning, but that still contributes only one
+    overlap. This prevents a synonym table from recreating the old
+    one-shared-word false-positive bug.
+    """
+    out: list[set[str]] = []
+    for token in TOKEN_RE.findall(value):
+        token = token.lower()
+        if token in STOPWORDS:
+            continue
+        out.append({token, *TOKEN_ALIASES.get(token, set())})
+    return out
+
+
+def _concept_overlap(concepts: list[set[str]], searchable: set[str]) -> int:
+    return sum(1 for concept in concepts if concept & searchable)
 
 
 def search(
@@ -28,6 +69,7 @@ def search(
     stack: str | None = None,
     model: str | None = None,
     version: str | None = None,
+    log_excerpt: str | None = None,
     conditions: dict[str, Any] | None = None,
     direct_probe_trap_ids: list[str] | None = None,
     direct_probe_results: dict[str, str] | None = None,
@@ -57,34 +99,60 @@ def search(
     }
     explicit_ids = direct_ids | set(probe_results)
     mechanism_ids = {str(item).zfill(2) for item in (mechanism_probe_trap_ids or [])}
-    query = _tokens(" ".join(filter(None, (symptom, stack, model, version))))
+
+    # Candidate admission is symptom-first. Stack/model/version may improve
+    # ranking and applicability, but cannot turn one ordinary shared word into
+    # a candidate by themselves.
+    symptom_text_for_match = " ".join(
+        part for part in (symptom, log_excerpt or "") if part
+    )
+    symptom_concepts = _concepts(symptom_text_for_match)
+    context_concepts = _concepts(" ".join(filter(None, (stack, model, version))))
+
     results: list[dict[str, Any]] = []
     for entry in registry["entries"]:
         if evidence_status and evidence_status not in entry["evidence_strength"]:
             continue
-        symptom_text = entry["symptom"] + " " + entry["title"] + " " + entry["check"]
-        symptom_tokens = _tokens(symptom_text)
-        context_tokens = _tokens(
+        searchable_symptom = (
+            entry["symptom"] + " " + entry["title"] + " " + entry["check"]
+        )
+        searchable_symptom_tokens = _tokens(searchable_symptom)
+        searchable_context_tokens = _tokens(
             " ".join(entry["affected_stacks"])
             + " " + entry["affected_versions_builds"]
             + " " + entry["mechanism"]
         )
-        direct = len(query & symptom_tokens)
-        context = len(query & context_tokens)
+        direct = _concept_overlap(symptom_concepts, searchable_symptom_tokens)
+        context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
-        if not direct and not context and not is_explicit:
+
+        # Two independently supplied meaningful symptom/log concepts are the
+        # minimum for ordinary textual admission. Direct-probe IDs bypass this
+        # because the caller explicitly named the trap under test.
+        if direct < 2 and not is_explicit:
             continue
+
         score = direct * 4 + context
-        if symptom.strip().lower() in symptom_text.lower():
+        normalized_symptom = symptom.strip().lower()
+        if (
+            normalized_symptom
+            and len(_concepts(symptom)) >= 2
+            and normalized_symptom in searchable_symptom.lower()
+        ):
             score += 30
         if stack:
             target = stack.lower()
-            if any(target in item.lower() or item.lower() in target for item in entry["affected_stacks"]):
+            if any(
+                target in item.lower() or item.lower() in target
+                for item in entry["affected_stacks"]
+            ):
                 score += 5
         if model:
             target = model.lower()
-            if any(target in item.lower() or item.lower() in target
-                   for item in entry["affected_models"]):
+            if any(
+                target in item.lower() or item.lower() in target
+                for item in entry["affected_models"]
+            ):
                 score += 5
         if version:
             if version.lower() in entry["affected_versions_builds"].lower():
@@ -128,12 +196,15 @@ def diagnose(
 ) -> dict[str, Any]:
     """Return canonical candidates plus a clearly separate weaker lead layer.
 
-    Canonical traps are always searched first.  L-series leads remain
-    non-canonical and are never allowed to turn resemblance into confirmation.
+    Canonical traps are always searched first. L-series leads remain
+    non-canonical and never turn resemblance into confirmation.
     """
     matches = search(registry, symptom, **kwargs)
+    lead_text = " ".join(
+        part for part in (symptom, kwargs.get("log_excerpt") or "") if part
+    )
     lead_matches = search_leads(
-        symptom,
+        lead_text,
         stack=kwargs.get("stack"),
         model=kwargs.get("model"),
         version=kwargs.get("version"),

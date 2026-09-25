@@ -32,11 +32,22 @@ Budget: when `max_requests` is set, chat completions cannot exceed it
 ```python
 from minefield.api import match_symptom
 
-result = match_symptom("answer lands in reasoning_content when streaming", stack="vllm", limit=5)
+result = match_symptom(
+    "streamed reply is blank",
+    stack="vllm",
+    log_excerpt="answer lands in reasoning channel while content stays empty",
+    limit=5,
+)
 result["diagnosis_level"]           # NOT_DOCUMENTED on a miss; never CONFIRMED from text alone
 result["matches"]                   # ranked canonical candidates, each with trap_ids / title / confirmation_check
 result["possible_unverified_leads"] # strictly weaker L-series tier
 ```
+
+Ordinary textual candidates require at least two independently supplied meaningful
+symptom/log concepts. Stack/model/version metadata can improve ranking and
+applicability, but cannot turn a one-word resemblance into a canonical candidate.
+Common phrasings such as "empty response", "garbage output" and "thinking leaked"
+use bounded synonym concepts without making one word count twice.
 
 Integrations should call `match_symptom` instead of walking `load_registry()`
 themselves. The compiled registry's internal layout (its entries live under
