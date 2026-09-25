@@ -14100,7 +14100,7 @@
         "scope": "tools_harness",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "Fresh structured tool calls work, but a resumed/persisted session later fails or behaves differently around prior tool results.",
@@ -14127,7 +14127,7 @@
         "scope": "runtime_memory",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "Startup dies during cold CUDA/FlashInfer compilation after large weights are already resident; it can look like an engine or GPU OOM.",
@@ -14155,8 +14155,8 @@
         "scope": "memory_scheduling",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md",
-          "../mining/2026-08-17-qwen38-offlabel-reconciliation.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit",
+          "private-evidence:2026-08-17-qwen38-offlabel-reconciliation"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A request below configured/displayed context remains waiting before prefill without a normal OOM or immediate validation error.",
@@ -14182,7 +14182,7 @@
         "scope": "evaluation",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "The UI shows endpoint/model B selected but benchmark results still look like endpoint/model A.",
@@ -14207,7 +14207,7 @@
         "scope": "agent_harness",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "An agent answers with an old deployment/configuration even though the live provider config is correct.",
@@ -14232,7 +14232,7 @@
         "scope": "api_compatibility",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A response_format=json_schema request returns HTTP success and valid-looking JSON, but schema-specific constraints may not affect generation.",
@@ -14257,7 +14257,7 @@
         "scope": "measurement",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "Bulk H2D/D2D bandwidth looks healthy, but real model loading remains slow or rank-skewed.",
@@ -14284,7 +14284,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "Cable/seating state may masquerade as cable-identity/EEPROM failure",
@@ -14311,7 +14311,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "L2 MTU / PMTU mismatch may black-hole the high-speed path",
@@ -14338,7 +14338,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "TCP jumbo/MSS may fail while small or RDMA traffic still looks healthy",
@@ -14365,7 +14365,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "Mixed distributed runtime/container images across ranks may mimic fabric failure",
@@ -14392,7 +14392,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "Wrong HCA/interface selection may break an otherwise healthy distributed run",
@@ -14419,7 +14419,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "Out-of-band/default-route traffic may escape over the wrong network",
@@ -14446,7 +14446,7 @@
         "scope": "network_fabric",
         "source_class": "historical_first_party",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HISTORICAL_FIRST_PARTY_NEEDS_RECONCILIATION",
         "symptom": "Directional host-to-NIC/DMA impairment may be hidden by symmetric-looking tests",
@@ -14472,7 +14472,7 @@
         "scope": "runtime_lifecycle",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "A second GPU process appears or reappears outside the expected service manager and the target serve becomes unstable or loses memory.",
@@ -14500,7 +14500,7 @@
         "scope": "quantization",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "Hardware advertises FP4/NVFP4 capability and checkpoint is labelled FP4, but performance/accuracy suggest a fallback or different kernel path.",
@@ -14526,7 +14526,7 @@
         "scope": "memory_speculation",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "Baseline reaches READY but enabling native MTP K=1 changes the footprint enough that KV allocation fails at the same memory-utilization setting.",
@@ -14552,7 +14552,7 @@
         "scope": "runtime_lifecycle",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "A server starts and works, then disappears when the launching shell/session/automation ends, looking like an engine crash.",
@@ -14577,7 +14577,7 @@
         "scope": "memory",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "A forced block/capacity value lets configuration pass but the runtime later stalls/OOMs or cannot admit work.",
@@ -14603,7 +14603,7 @@
         "scope": "measurement",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HYPOTHESIS_ONLY",
         "symptom": "Memory accounting leaves a large unexplained residual and one loader/runtime component is blamed by subtraction.",
@@ -14629,7 +14629,7 @@
         "scope": "performance",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "Throughput is unexpectedly low while correctness looks fine, or two supposedly identical runs differ sharply.",
@@ -14655,7 +14655,7 @@
         "scope": "reasoning_harness",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "A UI/profile says reasoning is on/off but the provider request does not reflect that setting or a different nested precedence wins.",
@@ -14680,7 +14680,7 @@
         "scope": "tools_evaluation",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "EXISTING_TRAP_EXTENSION",
         "symptom": "A guard safely refuses malformed native tool markup, but aggregate reporting treats the contained turn as a tool success.",
@@ -14706,7 +14706,7 @@
         "scope": "tools_harness",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "REPLAY_DID_NOT_REPRODUCE",
         "symptom": "A historical post-tool turn emitted unexpected native markup, but a reconstructed exact replay later passed repeatedly.",
@@ -14732,7 +14732,7 @@
         "scope": "agent_harness",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "BLOCKED_PENDING_CONTROL",
         "symptom": "A long continuous session still produces occasional garbled turns after the known tool-history issue is repaired.",
@@ -14758,7 +14758,7 @@
         "scope": "evaluation",
         "source_class": "first_party_private_evidence",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "BLOCKED_PENDING_CONTROL",
         "symptom": "Long-context or multi-turn benchmark items fail at the client timeout while the endpoint remains alive.",
@@ -15073,7 +15073,7 @@
         "source_class": "public_source_inspection",
         "source_refs": [
           "https://github.com/vllm-project/vllm",
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "PUBLIC_SOURCE_VERIFIED_RUNTIME_UNTESTED",
         "symptom": "Logs/configuration say an all-reduce fusion is enabled, but the world-size/topology selects a different path or disables that optimization.",
@@ -15097,7 +15097,7 @@
         "scope": "evaluation",
         "source_class": "historical_external_candidate",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HYPOTHESIS_ONLY",
         "symptom": "A model/harness produces plausible compliant-looking output while task capability has degraded, and a superficial classifier still passes it.",
@@ -15122,7 +15122,7 @@
         "scope": "evaluation",
         "source_class": "historical_external_candidate",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HYPOTHESIS_ONLY",
         "symptom": "Scores plateau, invert or become noisy on difficult outputs even though stronger independent grading disagrees.",
@@ -15147,7 +15147,7 @@
         "scope": "evaluation",
         "source_class": "historical_external_candidate",
         "source_refs": [
-          "../mining/2026-08-14-first-party-promotion-audit.md"
+          "private-evidence:2026-08-14-first-party-promotion-audit"
         ],
         "status": "HYPOTHESIS_ONLY",
         "symptom": "Benchmark accuracy changes because diagnostic/probe rows are counted as normal task rows.",
@@ -15203,7 +15203,7 @@
         "scope": "runtime",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A Qwen3.8-27B lane reports MTP unsupported, leading the operator to conclude the checkpoint or model family cannot use MTP.",
@@ -15233,7 +15233,7 @@
         "scope": "evaluation_runtime",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A benchmark or helper container on DGX Spark dies immediately with exec format error and the run appears to be a model or benchmark failure.",
@@ -15260,7 +15260,7 @@
         "scope": "runtime_versioning",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A transferred serving image is rejected as the wrong build because its local Docker .Id does not equal the registry digest pinned before docker save/load.",
@@ -15288,7 +15288,7 @@
         "scope": "runtime_launch",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A vLLM-derived container exits before model load with 'Usage: serve ...' and 'No such command /model'.",
@@ -15316,7 +15316,7 @@
         "scope": "evaluation_harness",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A long model soak serves requests, then the worker crashes during thread join/teardown and the run is mistaken for serving instability.",
@@ -15345,7 +15345,7 @@
         "scope": "evaluation_correctness",
         "source_class": "first_party_campaign",
         "source_refs": [
-          "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+          "private-evidence:2026-08-15-qwen38-27b-5090-spark"
         ],
         "status": "FIRST_PARTY_OBSERVED_UNPROMOTED",
         "symptom": "A simple decimal-comparison canary on a Qwen3.8 Q4_K_M llama.cpp lane returns the wrong number once and is immediately labelled quantization corruption.",
@@ -15374,7 +15374,7 @@
         "scope": "quantization_runtime",
         "source_class": "community_public_source",
         "source_refs": [
-          "../mining/2026-08-17-qwen38-offlabel-reconciliation.md",
+          "private-evidence:2026-08-17-qwen38-offlabel-reconciliation",
           "https://github.com/Blackwellboy/model-serving-minefield/issues/40"
         ],
         "status": "PUBLIC_SOURCE_UNREPRODUCED",
@@ -15404,7 +15404,7 @@
         "scope": "reasoning_runtime",
         "source_class": "community_public_source",
         "source_refs": [
-          "../mining/2026-08-20-jschmied-qwen38-fixed-template-reconciliation.md",
+          "private-evidence:2026-08-20-jschmied-qwen38-fixed-template-reconciliation",
           "https://github.com/jschmied/Qwen-Fixed-Chat-Templates",
           "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/v1/sample/thinking_budget_state.py",
           "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/entrypoints/openai/chat_completion/protocol.py"

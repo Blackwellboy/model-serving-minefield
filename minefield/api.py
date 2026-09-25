@@ -5,6 +5,7 @@ Agent-/framework-neutral. Public surface:
   plan_checks(...)
   run_checks(...)
   summarize(...)
+  match_symptom(...)
 
 ``plan_checks`` issues zero chat completions.
 ``run_checks`` enforces a hard request budget when provided.
@@ -36,6 +37,7 @@ __all__ = [
     "run_checks",
     "summarize",
     "result_to_doctor_json",
+    "match_symptom",
 ]
 
 
@@ -571,3 +573,33 @@ def result_to_doctor_json(result: RunResult) -> dict[str, Any]:
 
 def summary_to_dict(summary: Summary) -> dict[str, Any]:
     return asdict(summary)
+
+
+def match_symptom(
+    symptom: str,
+    *,
+    stack: Optional[str] = None,
+    model: Optional[str] = None,
+    version: Optional[str] = None,
+    limit: int = 5,
+) -> dict[str, Any]:
+    """Rank registry entries against a free-text symptom, offline.
+
+    Integrations (for example the Hermes plugin) should call this rather than
+    walking ``load_registry()`` themselves: the compiled registry's layout is
+    an internal detail, and a consumer that guessed the wrong key used to get
+    zero matches with no error. Returns the same diagnosis contract as
+    ``minefield guide``: ranked candidates, never confirmations, plus a
+    separate weaker tier of unverified leads.
+    """
+    from .matching import diagnose
+    from .registry import load_registry
+
+    return diagnose(
+        load_registry(),
+        symptom,
+        stack=stack,
+        model=model,
+        version=version,
+        limit=max(1, int(limit)),
+    )

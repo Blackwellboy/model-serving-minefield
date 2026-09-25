@@ -11,8 +11,10 @@ test:
 	python -m unittest discover -s tests
 	python -m unittest discover -s integrity/tests -t integrity/tests
 	python -m unittest discover -s doctor/tests -t doctor/tests
+	python -m unittest discover -s community/tests -t .
 
 verify-generated:
 	python -m minefield agent-bundle
 	python -m minefield agent-bundle --verify
+	python community/generate_impact.py --check
 	git diff --exit-code -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md

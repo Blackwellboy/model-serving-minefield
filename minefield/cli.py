@@ -39,13 +39,19 @@ def parser() -> argparse.ArgumentParser:
     quick = sub.add_parser("quick", help="run the existing read-only endpoint doctor")
     quick.add_argument("doctor_args", nargs=argparse.REMAINDER)
     for name in ("inspect-config", "inspect-logs"):
-        cmd = sub.add_parser(name)
+        cmd = sub.add_parser(
+            name,
+            help="offline read of explicitly named files under an approved root",
+        )
         cmd.add_argument("paths", nargs="+")
         cmd.add_argument(
             "--allowed-root", action="append", required=True,
             help="approved filesystem root; repeat for additional roots",
         )
-    guide = sub.add_parser("guide")
+    guide = sub.add_parser(
+        "guide",
+        help="rank traps for a symptom (non-interactive; use this from scripts and agents)",
+    )
     guide.add_argument("symptom")
     guide.add_argument("--stack")
     guide.add_argument("--model")
@@ -58,12 +64,12 @@ def parser() -> argparse.ArgumentParser:
         help="record confirmed, refuted, or inconclusive for an explicit trap probe",
     )
     guide.add_argument("--mechanism-probe-trap", action="append", default=[])
-    sub.add_parser("diagnose")
-    coverage = sub.add_parser("coverage")
+    sub.add_parser("diagnose", help="interactive symptom prompt; scripts should use guide")
+    coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
-    agent = sub.add_parser("agent-bundle")
+    agent = sub.add_parser("agent-bundle", help="regenerate (or --verify) the shipped registry and agent bundles")
     agent.add_argument("--verify", action="store_true")
-    bundle = sub.add_parser("bundle")
+    bundle = sub.add_parser("bundle", help="build a redacted support bundle from configs, logs and a doctor report")
     bundle.add_argument("--config", action="append", default=[])
     bundle.add_argument("--log", action="append", default=[])
     bundle.add_argument("--doctor-report")

@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .coverage import build_coverage
 from .diagnosis_contract import CONDITION_FIELDS
 from .guided_experiments import specifications
@@ -241,7 +242,7 @@ def serve(
                 value = {
                     "protocolVersion": "2025-06-18",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "model-serving-minefield", "version": "0.1.0"},
+                    "serverInfo": {"name": "model-serving-minefield", "version": __version__},
                 }
             elif method == "tools/list":
                 value = {"tools": [{

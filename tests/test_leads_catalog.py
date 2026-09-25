@@ -50,6 +50,36 @@ class LeadCatalogueTests(unittest.TestCase):
         for lead in self.leads:
             self.assertNotIn(lead["source_class"], banned, lead["id"])
 
+    def test_source_refs_are_links_or_private_identifiers_never_dead_paths(self):
+        # mining/ is refused from this repository by no-public-mining.yml, so a
+        # relative ../mining/ ref is a dead link that also leaks a private
+        # note's filename into every shipped bundle.
+        for lead in self.leads:
+            for ref in lead["source_refs"]:
+                self.assertTrue(
+                    ref.startswith(("https://", "private-evidence:")),
+                    f"{lead['id']}: {ref}",
+                )
+
+
+class ShippedSurfacesCarryNoPrivatePaths(unittest.TestCase):
+    SURFACES = (
+        "leads/LEADS.json",
+        "minefield/data/UNVERIFIED_LEADS.json",
+        "community/impact.json",
+        "community/COMMUNITY_IMPACT.md",
+        "dist/MINEFIELD_AGENT_BUNDLE.json",
+        "dist/MINEFIELD_AGENT_BUNDLE.md",
+        "dist/MINEFIELD_AGENT_BUNDLE_LITE.md",
+    )
+
+    def test_no_private_mining_paths(self):
+        pattern = re.compile(r"(^|[\s\"'(/])mining/\d{4}-\d{2}-\d{2}-")
+        for rel in self.SURFACES:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            match = pattern.search(text)
+            self.assertIsNone(match, f"{rel}: {match and text[match.start():match.start() + 80]}")
+
 
 if __name__ == "__main__":
     unittest.main()

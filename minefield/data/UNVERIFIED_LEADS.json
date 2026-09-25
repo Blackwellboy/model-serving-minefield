@@ -39,7 +39,7 @@
         "OpenAI-compatible agent harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -66,7 +66,7 @@
         "vLLM"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -94,8 +94,8 @@
         "hybrid KV"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md",
-        "../mining/2026-08-17-qwen38-offlabel-reconciliation.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit",
+        "private-evidence:2026-08-17-qwen38-offlabel-reconciliation"
       ],
       "confidence": "high",
       "notes": "Qwen3.8 speculative-launch admission is a build/config-scoped extension: resource admission failure must not be generalized into a model-wide MTP unsupported claim."
@@ -121,7 +121,7 @@
         "HTTP proxies"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -146,7 +146,7 @@
         "retrieval/bootstrap layers"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -171,7 +171,7 @@
         "OpenAI-compatible APIs"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -196,7 +196,7 @@
         "distributed loaders"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -223,7 +223,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -250,7 +250,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -277,7 +277,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -304,7 +304,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -331,7 +331,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -358,7 +358,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -385,7 +385,7 @@
         "multi-node"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": "Historical summary said MEASURED, later consolidation retained reproduction/sanitization gates; use as a lead until raw packet is reconciled."
@@ -411,7 +411,7 @@
         "service managers"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -439,7 +439,7 @@
         "SM120"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -465,7 +465,7 @@
         "MTP"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -491,7 +491,7 @@
         "automation"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -516,7 +516,7 @@
         "vLLM"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -542,7 +542,7 @@
         "model loaders"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -568,7 +568,7 @@
         "vLLM"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -594,7 +594,7 @@
         "OpenAI-compatible APIs"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -619,7 +619,7 @@
         "agent harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": ""
@@ -645,7 +645,7 @@
         "agent harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "low",
       "notes": ""
@@ -671,7 +671,7 @@
         "serving endpoints"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "low",
       "notes": ""
@@ -697,7 +697,7 @@
         "benchmark clients"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -1012,7 +1012,7 @@
       ],
       "source_refs": [
         "https://github.com/vllm-project/vllm",
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "high",
       "notes": "Earlier 'silent odd-world-size fallback' framing was refuted/narrowed: warnings exist; the useful lead is configured-versus-effective reporting drift."
@@ -1036,7 +1036,7 @@
         "evaluation harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "low",
       "notes": ""
@@ -1061,7 +1061,7 @@
         "evaluation harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "low",
       "notes": ""
@@ -1086,7 +1086,7 @@
         "evaluation harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-14-first-party-promotion-audit.md"
+        "private-evidence:2026-08-14-first-party-promotion-audit"
       ],
       "confidence": "medium",
       "notes": ""
@@ -1142,7 +1142,7 @@
         "MTP"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "high",
       "notes": "Aeon NVFP4 stage reported MTP_UNSUPPORTED; Drowzeys vLLM development image exposed Qwen-family MTP support and passed MTP1 on the same NVFP4 revision. Later depths were not claimed from the early checkpoint."
@@ -1172,7 +1172,7 @@
         "evaluation harnesses"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "high",
       "notes": "Observed with an amd64 task_cleanroom_v6 image on an aarch64 Spark host; native run returned exec format error and the campaign held the benchmark."
@@ -1199,7 +1199,7 @@
         "aeon-vllm"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "high",
       "notes": "The campaign correctly rejected LOCAL_ID == source RepoDigest as an identity predicate and initially used a 46-layer fingerprint plus selected config labels. This public Minefield lead strengthens the reusable check: selected config fields are insufficient; compare the complete executable image configuration (or its config digest/pre-transfer image ID) as well as ordered filesystem identity."
@@ -1227,7 +1227,7 @@
         "Qwen3.8-27B"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "high",
       "notes": "The same pinned image/checkpoint later returned BLACKWELL38_READY after launch construction was corrected. A separate truendocker shell-concatenation typo is not merged into this mechanism."
@@ -1255,7 +1255,7 @@
         "DGX Spark"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "high",
       "notes": "After _stop was renamed to _stop_event, the recovered Qwen3.8 BF16 Spark soak completed about two hours with 512/512 successful requests and zero server restarts."
@@ -1284,7 +1284,7 @@
         "RTX 5090"
       ],
       "source_refs": [
-        "../mining/2026-08-15-qwen38-27b-5090-spark.md"
+        "private-evidence:2026-08-15-qwen38-27b-5090-spark"
       ],
       "confidence": "medium",
       "notes": "Pinned campaign first returned 9.11 on the decimal canary and held; the immediate rerun returned 9.9 and passed. Cause was not isolated."
@@ -1313,7 +1313,7 @@
         "NVFP4"
       ],
       "source_refs": [
-        "../mining/2026-08-17-qwen38-offlabel-reconciliation.md",
+        "private-evidence:2026-08-17-qwen38-offlabel-reconciliation",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/40"
       ],
       "confidence": "medium",
@@ -1343,7 +1343,7 @@
         "DGX Spark GB10"
       ],
       "source_refs": [
-        "../mining/2026-08-20-jschmied-qwen38-fixed-template-reconciliation.md",
+        "private-evidence:2026-08-20-jschmied-qwen38-fixed-template-reconciliation",
         "https://github.com/jschmied/Qwen-Fixed-Chat-Templates",
         "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/v1/sample/thinking_budget_state.py",
         "https://github.com/vllm-project/vllm/blob/v0.27.1/vllm/entrypoints/openai/chat_completion/protocol.py"
