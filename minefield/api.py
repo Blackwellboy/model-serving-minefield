@@ -581,6 +581,7 @@ def match_symptom(
     stack: Optional[str] = None,
     model: Optional[str] = None,
     version: Optional[str] = None,
+    log_excerpt: Optional[str] = None,
     limit: int = 5,
 ) -> dict[str, Any]:
     """Rank registry entries against a free-text symptom, offline.
@@ -601,5 +602,6 @@ def match_symptom(
         stack=stack,
         model=model,
         version=version,
+        log_excerpt=log_excerpt,
         limit=max(1, int(limit)),
     )
