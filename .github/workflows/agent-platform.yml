@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           repository: Blackwellboy/hermes-minefield
-          ref: 48277779f18d6ea5efb285392c7eb43f0efd9474
+          ref: 48277779f18d6ea5efb285392c7eb43f0efd9474 # pragma: allowlist secret — public Git commit SHA
           path: _deps/hermes-minefield
           persist-credentials: false
 
