@@ -2,6 +2,7 @@
 
 ## 2026-09-24 - integration contract and private-path hygiene
 
+- Package version moves to **0.2.0** because this release adds the supported public integration contract. Downstream adapters should pin `model-serving-minefield>=0.2,<0.3` rather than depending on registry internals.
 - New `minefield.api.match_symptom()`: offline symptom ranking for integrations, returning the same diagnosis contract as `minefield guide`. `tests/test_integration_contract.py` pins it and the registry's `entries` layout. The Hermes plugin's incident matcher read a `traps` key that never existed, so `/minefield wtf` returned zero trap matches on every call without an error; it should call this function instead.
 - Lead `source_refs` no longer point at `../mining/...`, a path this repository refuses by policy (39 dead links that also shipped private note filenames in every agent bundle). They are now `private-evidence:<note-id>` identifiers; a test refuses any other form and scans the shipped bundles for private paths.
 - `community/impact.json` carried a private intake path, so `community/generate_impact.py --check` failed on main. Neither that check nor `community/tests` ran anywhere; both now run in `agent-platform` CI and `make test` / `make verify-generated`.
