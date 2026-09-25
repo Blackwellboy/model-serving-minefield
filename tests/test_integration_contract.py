@@ -87,11 +87,11 @@ class MatchSymptomContract(unittest.TestCase):
                 self.assertIn(expected, ids)
 
     def test_log_excerpt_can_supply_additional_matching_evidence(self):
-        without_log = api.match_symptom("streamed reply")
+        without_log = api.match_symptom("streamed")
         self.assertEqual(without_log["matches"], [])
 
         with_log = api.match_symptom(
-            "streamed reply",
+            "streamed",
             log_excerpt="answer lands in reasoning channel while content stays empty",
             limit=5,
         )
