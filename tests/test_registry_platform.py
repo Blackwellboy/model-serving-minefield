@@ -41,7 +41,7 @@ class RegistryPlatformTests(unittest.TestCase):
         mapped = [entry for entry in self.registry["entries"]
                   if entry["doctor_coverage"]["implemented"]]
         self.assertEqual(len(mapped), self.registry["doctor_implemented_trap_count"])
-        self.assertEqual(19, len(mapped))
+        self.assertEqual(20, len(mapped))
 
     def test_coverage_declares_every_modality_for_every_trap(self):
         coverage = build_coverage(self.registry)

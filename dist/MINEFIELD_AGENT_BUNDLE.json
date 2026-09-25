@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "summary": {
       "counts_overlap": true,
-      "endpoint_checks_implemented": 19,
+      "endpoint_checks_implemented": 20,
       "guided_experiments_specified": 143,
       "human_review_possible": 143,
       "log_checks_implemented": 9,
@@ -10414,16 +10414,18 @@
         "id": "141",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -15426,8 +15428,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 143,
-    "content_sha256": "815bb976b220528462f8b50abd284bd890f9690bd65cd69de19b43afb0020a16",
-    "doctor_implemented_trap_count": 19,
+    "content_sha256": "cb626f2ee85121286e3b9ac2b0b2bf0793a2e05649f15afcb8f1b4a6b4b62d3a",
+    "doctor_implemented_trap_count": 20,
     "entries": [
       {
         "affected_models": [
@@ -25164,14 +25166,15 @@
         "check": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/evaluation/141-sglang-python-chat-model-name-not-validated.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"

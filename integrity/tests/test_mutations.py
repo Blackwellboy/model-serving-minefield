@@ -17,6 +17,7 @@ The peer repo (laguna-s21-lab) is found next to this one, or via
 MINEFIELD_PEER_REPO. Tests that need it skip loudly when it is absent rather
 than passing without it.
 """
+import ast
 import json
 import os
 import re
@@ -73,6 +74,18 @@ def entry_numbers(root):
 
 def entry_count(root):
     return len(entry_numbers(root))
+
+
+def doctor_count(root):
+    """Derive Doctor coverage from TRAP_PATHS; never hard-code the count."""
+    source = read(os.path.join(root, "doctor", "minefield_doctor.py"))
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            if any(isinstance(t, ast.Name) and t.id == "TRAP_PATHS"
+                   for t in node.targets):
+                return len(ast.literal_eval(node.value))
+    raise AssertionError("doctor TRAP_PATHS not found")
 
 
 def next_free(root):
@@ -484,8 +497,10 @@ class RegistryMutations(unittest.TestCase):
     def test_58_stale_registry_total_fails(self):
         """NEGATIVE: 107 -> 97 fails, and names the TOTAL assertion."""
         n = entry_count(self.root)
+        d = doctor_count(self.root)
         t = read(self._oq())
-        after = t.replace("**19 of %d** entries" % n, "**19 of %d** entries" % (n - 10), 1)
+        after = t.replace("**%d of %d** entries" % (d, n),
+                          "**%d of %d** entries" % (d, n - 10), 1)
         self.assertNotEqual(t, after, "fixture drift: coverage sentence")
         write(self._oq(), after)
         rc, out = run_registry(self.root)
@@ -498,9 +513,10 @@ class RegistryMutations(unittest.TestCase):
         """NEGATIVE: 88 -> 78 fails, and names the not-implemented assertion,
         with the registry total left correct so the two cannot be confused."""
         n = entry_count(self.root)
+        d = doctor_count(self.root)
         t = read(self._oq())
-        after = t.replace("  %d uncovered entries" % (n - 19),
-                          "  %d uncovered entries" % (n - 29), 1)
+        after = t.replace("  %d uncovered entries" % (n - d),
+                          "  %d uncovered entries" % (n - d - 10), 1)
         self.assertNotEqual(t, after, "fixture drift: uncovered sentence")
         write(self._oq(), after)
         rc, out = run_registry(self.root)
@@ -513,10 +529,12 @@ class RegistryMutations(unittest.TestCase):
         self.assertEqual(totals, [], "must NOT also fire the total assertion")
 
     def test_60_stale_doctor_coverage_fails(self):
-        """NEGATIVE: 19 -> 18 fails on the doctor-coverage half."""
+        """NEGATIVE: current Doctor coverage - 1 fails on the coverage half."""
         n = entry_count(self.root)
+        d = doctor_count(self.root)
         t = read(self._oq())
-        after = t.replace("**19 of %d** entries" % n, "**18 of %d** entries" % n, 1)
+        after = t.replace("**%d of %d** entries" % (d, n),
+                          "**%d of %d** entries" % (d - 1, n), 1)
         self.assertNotEqual(t, after, "fixture drift")
         write(self._oq(), after)
         rc, out = run_registry(self.root)

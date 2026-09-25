@@ -69,6 +69,9 @@ Scenario flags (all default to the well-behaved value):
                         a lane that validated exactly one field and accepted
                         every other name at either level. Default False, which
                         is the trap-77 lane and also the common real one.
+  validates_model_name  bool. Whether /v1/chat/completions rejects a model
+                        name not advertised by /v1/models. False reproduces
+                        Trap 141's SGLang Python chat behavior.
   accepts_images        bool.
   image_reject_names_modality  bool.
   ceiling               "content" | "content_at_cap" | "empty_at_cap"
@@ -113,6 +116,7 @@ DEFAULTS = {
     "preserve_history": True,
     "kwarg_rejection": None,
     "validates_top_level": False,
+    "validates_model_name": True,
     "reject_everything": False,
     "accepts_images": True,
     "image_reject_names_modality": True,
@@ -301,6 +305,10 @@ def _make_lane_handler(cfg):
             if cfg["reject_everything"]:
                 return self._send(400, {"error": {
                     "message": "model not found or not yet loaded"}})
+
+            if cfg["validates_model_name"] and body.get("model") not in (None, MODEL):
+                return self._send(400, {"error": {
+                    "message": "requested model is not served"}})
 
             # Top-level field strictness (trap 77). Whitelist rather than
             # blacklist: a blacklist that only knows the doctor's own probe
