@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 143,
-  "content_sha256": "815bb976b220528462f8b50abd284bd890f9690bd65cd69de19b43afb0020a16",
-  "doctor_implemented_trap_count": 19,
+  "content_sha256": "cb626f2ee85121286e3b9ac2b0b2bf0793a2e05649f15afcb8f1b4a6b4b62d3a",
+  "doctor_implemented_trap_count": 20,
   "entries": [
     {
       "affected_models": [
@@ -9739,14 +9739,15 @@
       "check": "First establish resolved server identity independently of the client request, for example from the server's own model listing/info or resolved launch state. Then send a chat request whose model value is deliberately not one of the served model names.",
       "contributor": "@scottleimroth",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/141-sglang-python-chat-model-name-not-validated.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"

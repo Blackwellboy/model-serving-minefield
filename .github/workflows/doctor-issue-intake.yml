@@ -1,0 +1,64 @@
+name: doctor-issue-intake
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Extract issue body without shell interpolation
+        id: issue
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+          OUT_PATH: ${{ runner.temp }}/minefield-issue-body.md
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+
+          with open(os.environ["EVENT_PATH"], encoding="utf-8") as fh:
+              event = json.load(fh)
+          body = str((event.get("issue") or {}).get("body") or "")
+          pattern = r"^###\s+Doctor JSON\s*$\n+(.*?)(?=^###\s+|\Z)"
+          match = re.search(pattern, body, flags=re.MULTILINE | re.DOTALL | re.IGNORECASE)
+          value = match.group(1).strip() if match else ""
+          has_json = bool(value and value.lower() not in {"_no response_", "no response"})
+          if has_json:
+              with open(os.environ["OUT_PATH"], "w", encoding="utf-8") as fh:
+                  fh.write(body)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"has_json={'true' if has_json else 'false'}\n")
+          PY
+
+      - name: Normalize Doctor JSON
+        if: steps.issue.outputs.has_json == 'true'
+        env:
+          ISSUE_BODY: ${{ runner.temp }}/minefield-issue-body.md
+          NORMALIZED: ${{ runner.temp }}/minefield-doctor-normalized.md
+        run: |
+          python community/doctor_issue_intake.py \
+            --issue-body "$ISSUE_BODY" \
+            --output "$NORMALIZED"
+
+      - name: Upsert normalized routing comment
+        if: steps.issue.outputs.has_json == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          NORMALIZED_COMMENT: ${{ runner.temp }}/minefield-doctor-normalized.md
+        run: python community/github_issue_comment.py
