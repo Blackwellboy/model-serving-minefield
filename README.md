@@ -34,6 +34,18 @@ protects is your ability to tell them apart at a glance.
 [![integrity](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml)
 [![surfaces](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml)
 
+## Diagnose it yourself in ten seconds
+
+```bash
+python -m pip install .
+minefield streaming shows blank replies --stack vllm
+```
+
+Describe what you see in plain words. You get the few traps that match, how
+strong each match is, the one check to run next, and a link to the entry.
+Matching quality is measured, not asserted: see the
+[symptom benchmark](benchmarks/README.md).
+
 ## Diagnose with an AI agent
 
 **Agent can access GitHub:** give it
