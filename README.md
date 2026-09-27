@@ -43,6 +43,18 @@ minefield streaming shows blank replies --stack vllm
 
 Describe what you see in plain words. You get the few traps that match, how
 strong each match is, the one check to run next, and a link to the entry.
+
+Or let it read your setup and find the traps for you, offline:
+
+```bash
+minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
+```
+
+It checks launch flags, compose mounts, the model's `config.json`, the chat
+template (rendered in Jinja's sandbox against probe conversations), server logs
+and eval result files. Between `scan`, the log checks and the live doctor,
+87 of the 143 traps now have an automatic check
+(`minefield coverage`).
 Matching quality is measured, not asserted: see the
 [symptom benchmark](benchmarks/README.md).
 
@@ -135,8 +147,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **20 of these 143 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 123. It runs
+for **24 of these 143 entries**, weighted toward reasoning fields, templates,
+tool parsing and multimodal handling, and a clean run from it says nothing about
+the other 119. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -345,7 +358,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 20 of this registry's 143 entries in under a minute:
+against 24 of this registry's 143 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

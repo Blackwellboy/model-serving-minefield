@@ -15,7 +15,8 @@ from .inline_system import EvidenceError, classify_manifest, inspect_template, l
 from .log_inspector import inspect_logs
 from .matching import diagnose
 from .registry import load_registry
-from .render import render_diagnosis
+from .render import render_diagnosis, render_scan
+from .scan import scan
 from .static_inspector import inspect_files
 from .support_bundle import plan, write_bundle
 
@@ -70,6 +71,14 @@ def parser() -> argparse.ArgumentParser:
         help="record confirmed, refuted, or inconclusive for an explicit trap probe",
     )
     guide.add_argument("--mechanism-probe-trap", action="append", default=[])
+    scan_cmd = sub.add_parser(
+        "scan",
+        help="check config files, launch scripts, model folders, logs and eval results for known traps",
+    )
+    scan_cmd.add_argument("paths", nargs="+", help="files or folders to read (only these are read)")
+    scan_fmt = scan_cmd.add_mutually_exclusive_group()
+    scan_fmt.add_argument("--json", action="store_true", help="full report as JSON (default when piped)")
+    scan_fmt.add_argument("--text", action="store_true", help="readable report (default in a terminal)")
     sub.add_parser("diagnose", help="interactive symptom prompt; scripts should use guide")
     coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
@@ -174,6 +183,14 @@ def main(argv: list[str] | None = None) -> int:
             print(render_diagnosis(result, limit=max(1, args.limit)))
         else:
             _emit(result)
+    elif args.command == "scan":
+        report = scan(args.paths)
+        if args.text or (not args.json and sys.stdout.isatty()):
+            titles = {e["id"]: {"title": e["title"], "source_path": e["source_path"]}
+                      for e in registry["entries"]}
+            print(render_scan(report, titles))
+        else:
+            _emit(report)
     elif args.command == "diagnose":
         if not sys.stdin.isatty():
             raise SystemExit("diagnose requires an interactive terminal")

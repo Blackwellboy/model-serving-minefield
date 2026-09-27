@@ -25,7 +25,7 @@ Streaming answer vanished.
     "inconclusive": [],
     "not_implemented": ["53"]
   },
-  "coverage_line": "implemented 20/143 | executed on this stack 2",
+  "coverage_line": "implemented 24/143 | executed on this stack 2",
   "findings": [
     {"level": "PROBLEM", "traps": ["12"]},
     {"level": "OK", "traps": ["141"]}

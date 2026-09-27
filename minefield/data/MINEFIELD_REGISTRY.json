@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 143,
-  "content_sha256": "cb626f2ee85121286e3b9ac2b0b2bf0793a2e05649f15afcb8f1b4a6b4b62d3a",
-  "doctor_implemented_trap_count": 20,
+  "content_sha256": "b601e1144e87b525e277bba612ee0b21dd3b95eb39d29ddb94cc62dafe65f0df",
+  "doctor_implemented_trap_count": 24,
   "entries": [
     {
       "affected_models": [
@@ -1039,14 +1039,15 @@
       "check": "One cheap request before any multiple-choice eval: If ok is false, do not run loglikelihood tasks on this server, and do not report their absence as a model score.",
       "contributor": "@mrpmorris",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/15-no-echo-logprobs-wedges-lm-eval.md"
       },
       "evidence_strength": [
         "reported by others"
@@ -4676,14 +4677,15 @@
       "check": "Render [text A, image, text B] and [image, text A, text B] and compare the assembled prompts. If they are identical, order is discarded. Then look for AB with no separator between them, which is the concatenation half. The registry doctor now performs both checks on any lane that accepts an image part.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/68-multimodal-part-order-discarded.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -4946,14 +4948,15 @@
       "check": "One request with a media reference to a path that does not exist. If the status is 5xx, you have it. The registry doctor now runs this on any lane that accepts an image part.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/72-media-fetch-errors-are-5xx.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -5015,14 +5018,15 @@
       "check": "Send one request with no media and one with your typical media, same text, and look at prompt_tokens_details. If it is null on both, you are differencing from now on. The registry doctor now reports this on any lane that accepts an image part.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/73-multimodal-token-cost-not-attributable.md"
       },
       "evidence_strength": [
         "measured here, raw not published"

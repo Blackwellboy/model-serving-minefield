@@ -138,3 +138,63 @@ def render_diagnosis(result: dict[str, Any], *, limit: int = 5, stream: TextIO |
 
     out += ["", style.dim("Full detail for scripts and agents: add --json")]
     return "\n".join(out)
+
+
+# How sure a scan rule is, in words a reader can act on. The keys are the
+# certainty values the detectors already emit.
+_CERTAINTY = {
+    "suspicious": "warning",
+    "possible": "possible",
+    "requiring-runtime-confirmation": "confirm at runtime",
+    "configuration-only": "heads-up",
+    "low": "minor",
+}
+_CERTAINTY_COLOR = {"warning": "33", "possible": "33", "confirm at runtime": "36"}
+
+
+def render_scan(report: dict[str, Any], titles: dict[str, dict[str, str]], *,
+                stream: TextIO | None = None) -> str:
+    """Findings grouped by file: trap, how sure, what to check, where to read."""
+    stream = stream or sys.stdout
+    style = _Style(_use_color(stream))
+    width = max(60, min(100, shutil.get_terminal_size((88, 20)).columns))
+    findings = report.get("findings") or []
+    scanned = report.get("scanned") or []
+    out = [style.bold(
+        f"Scanned {len(scanned)} item{'s' if len(scanned) != 1 else ''}: "
+        + (f"{len(findings)} possible trap{'s' if len(findings) != 1 else ''} "
+           f"({len(report.get('traps') or [])} distinct)" if findings else "no checks fired")
+    )]
+    if not findings:
+        out += ["", style.dim("That means none of the implemented checks matched, not that the setup is safe."),
+                style.dim("Describe a symptom instead:  minefield <what you see>")]
+    current = None
+    for item in findings:
+        if item["file"] != current:
+            current = item["file"]
+            kind = next((s["kind"] for s in scanned if s["path"] == current), "")
+            out += ["", style.bold(f"{current}") + style.dim(f"  ({kind})" if kind else "")]
+        trap = item["trap_id"]
+        meta = titles.get(trap, {})
+        label = _CERTAINTY.get(item.get("certainty") or "", "possible")
+        where = f"line {item['line']}" if item.get("line") else ""
+        repeat = f" x{item['count']}" if item.get("count", 1) > 1 else ""
+        out.append(
+            f"  {style.bold('Trap ' + trap)}  {_clip(meta.get('title', ''), width - 16)}"
+        )
+        out.append(
+            "     " + style._wrap(_CERTAINTY_COLOR.get(label, "2"), label)
+            + style.dim(f"  ·  {where}{repeat}" if where or repeat else "")
+        )
+        for line in textwrap.wrap(_clip(item.get("message") or "", 320), width - 7):
+            out.append(f"     {line}")
+        if meta.get("source_path"):
+            out.append(f"     {style.dim('read:  ')}{REPO_URL + meta['source_path']}")
+    notes = report.get("notes") or []
+    if notes:
+        out += ["", style.dim("Notes:")] + [style.dim(f"  - {_clip(n, width - 6)}") for n in notes[:12]]
+    if findings:
+        out += ["", style.bold("Next step: ") + "open each linked entry and run its check on your setup "
+                "before changing anything."]
+    out += ["", style.dim("Full detail for scripts and agents: add --json")]
+    return "\n".join(out)

@@ -81,6 +81,9 @@ Scenario flags (all default to the well-behaved value):
                         anyway, which is the only one of the four that rules
                         the trap-12 failure mode out.
   stream_channel        "content" | "reasoning" | None.
+  echo_logprobs         "ok" | "reject" | "empty". How /v1/completions answers
+                        echo=true plus logprobs (trap 15). "empty" is the lane
+                        that returns HTTP 200 with no token_logprobs.
 """
 import json
 import threading
@@ -124,6 +127,7 @@ DEFAULTS = {
     "usage_details": {"image_tokens": 256},
     "ceiling": "content",
     "stream_channel": "content",
+    "echo_logprobs": "ok",
 }
 
 
@@ -298,6 +302,17 @@ def _make_lane_handler(cfg):
                 if not (cfg["render"] and cfg["props"]):
                     return self._send(404, {"error": "not found"})
                 return self._send(200, {"prompt": render_prompt(cfg, msgs, kw)})
+
+            if path == "/v1/completions":
+                mode = cfg["echo_logprobs"]
+                if mode == "reject" and body.get("echo") and body.get("logprobs") is not None:
+                    return self._send(400, {"error": {
+                        "message": "echo is not supported with logprobs"}})
+                logprobs = None if mode == "empty" else {
+                    "tokens": ["hi", "!"], "token_logprobs": [None, -0.4]}
+                return self._send(200, {"choices": [{
+                    "index": 0, "text": "hi!", "finish_reason": "length",
+                    "logprobs": logprobs}]})
 
             if path != "/v1/chat/completions":
                 return self._send(404, {"error": "not found"})

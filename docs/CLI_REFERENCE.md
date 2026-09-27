@@ -5,6 +5,7 @@ minefield quick --base-url URL [doctor options]
 minefield inspect-config FILE... --allowed-root ROOT [--allowed-root ROOT...]
 minefield inspect-logs FILE... --allowed-root ROOT [--allowed-root ROOT...]
 minefield SYMPTOM...                      (shorthand for `minefield guide`)
+minefield scan PATH... [--text | --json]  (offline: configs, model folders, templates, logs, results)
 minefield guide SYMPTOM... [--stack STACK] [--model MODEL] [--version VERSION]
                            [--log EXCERPT] [--limit N] [--text | --json]
 minefield diagnose
@@ -46,6 +47,28 @@ strength label calibrated on the [symptom benchmark](../benchmarks/README.md):
 **possible** about half, **weak** less. None of them is a diagnosis; run the
 check. A question with nothing to do with model serving returns no match at
 all rather than a stretch.
+
+## Checking your files for known traps
+
+`minefield scan` reads what you point it at and runs every offline check:
+
+```text
+$ minefield scan docker-compose.yml start-vllm.sh ./models/Qwen3.8-27B ./logs/
+```
+
+| you give it | what it checks |
+|---|---|
+| launch scripts, compose files, systemd units, `.env` | risky flags and mounts: memory fraction on unified memory, flash attention off, partial GPU offload, mismatched KV quant types, MTP with full CUDA graphs, fixed RDMA GID index, short Docker bind syntax, `.local` endpoints, ... |
+| a model folder | `config.json`, quant config and cache refs: sliding window that never activates, advertised vs trained context, quant excludes that skip the MTP drafter, hard-linked shards, broken HF cache refs, missing `generation_config.json` |
+| a chat template (`chat_template.jinja` or `tokenizer_config.json`) | renders it in Jinja's sandbox against probe conversations: injected default system prompt, string `"false"` turning thinking on, tool arguments dropped as strings, system prompt moving turns, empty think blocks, glued text parts, ... |
+| server logs | concrete failure lines: exit 137, orphaned EngineCore holding memory, first-forward dtype crashes, NaN perplexity, media errors reported as 5xx, ... |
+| eval results (JSON / JSONL) | empty answers at the token cap, cap-hits scored as wrong, arms truncated at different rates, all-zero arms, tool calls scored as wrong |
+
+Output is grouped by file, with the trap, how sure the rule is (warning,
+confirm at runtime, heads-up), what to check, and a link. Piped output is JSON.
+Only the paths you name are read, symlinks are never followed, and nothing runs
+except chat templates inside Jinja's sandbox. Every finding is a lead; an empty
+scan means no implemented check fired, not that the setup is safe.
 
 Each file inspection requires at least one explicit allowed root and refuses
 paths outside it. Machine-readable JSON is the default for inspection, generation, and bundle

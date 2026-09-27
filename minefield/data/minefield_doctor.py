@@ -77,6 +77,13 @@ TRAP_PATHS = {
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
     "77": "reasoning/77-only-one-request-field-is-validated.md",
     "141": "evaluation/141-sglang-python-chat-model-name-not-validated.md",
+    # The multimodal checks below ran under advisory ids (mm-order, mm-errors,
+    # mm-usage) until these entries were published; each entry now names this
+    # doctor as its check, so they report under their trap numbers.
+    "68": "template/68-multimodal-part-order-discarded.md",
+    "72": "runtime/72-media-fetch-errors-are-5xx.md",
+    "73": "evaluation/73-multimodal-token-cost-not-attributable.md",
+    "15": "evaluation/15-no-echo-logprobs-wedges-lm-eval.md",
 }
 
 # The registry's Core tier (../CORE.md): the twelve entries selected on
@@ -105,7 +112,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -113,9 +120,6 @@ TRAPS_NEED_RENDER_PATH = {"04", "20", "25"}
 # without saying so invites the reader to look up a trap that does not exist.
 ADVISORY_IDS = {
     "mm-surface": "multimodal surface (does this lane accept media at all)",
-    "mm-usage": "media token attribution in the usage block",
-    "mm-order": "content-part ordering in the assembled prompt",
-    "mm-errors": "how media-fetch failures are classified",
     "mm-audio-video": "audio and video channels, which this tool never probes",
 }
 
@@ -1020,7 +1024,7 @@ def check_multimodal(doc, base, root, key):
     usage = (body or {}).get("usage") if isinstance(body, dict) else None
     if isinstance(usage, dict):
         if usage.get("prompt_tokens_details") in (None, {}):
-            doc.problem(["mm-usage"], "prompt_tokens_details is null on a request "
+            doc.problem(["73"], "prompt_tokens_details is null on a request "
                         "that carried an image: media token cost is not "
                         "attributable from the API, and neither are cache hits",
                         "measure media cost by differencing prompt_tokens against "
@@ -1030,13 +1034,13 @@ def check_multimodal(doc, base, root, key):
                         asserts=[A("usage.prompt_tokens_details is populated",
                                    usage.get("prompt_tokens_details"), held=False)])
         else:
-            doc.ok(["mm-usage"], "prompt_tokens_details is populated: media token "
+            doc.ok(["73"], "prompt_tokens_details is populated: media token "
                    "cost is attributable from the usage block",
                    code="MM_USAGE_ATTRIBUTABLE",
                    asserts=[A("usage.prompt_tokens_details is populated",
                               usage.get("prompt_tokens_details"))])
     else:
-        doc.skip(["mm-usage"], "media token attribution",
+        doc.skip(["73"], "media token attribution",
                  "the response carried no usage block at all, so whether media "
                  "cost is attributable could not be determined",
                  code="MM_USAGE_NO_BLOCK",
@@ -1057,14 +1061,14 @@ def check_multimodal(doc, base, root, key):
                             {"type": "text", "text": "OMEGAMARKERZQX"}]}],
                         {"enable_thinking": True})
     if a is None or b is None:
-        doc.skip(["mm-order"], "multimodal content-part ordering",
+        doc.skip(["68"], "multimodal content-part ordering",
                  "no render path available for the ordering comparison",
                  code="MM_ORDER_NO_RENDER_PATH",
                  asserts=[A("both orderings render", {"a": a is not None,
                                                       "b": b is not None},
                             held=False)])
     elif a == b:
-        doc.problem(["mm-order"], "the assembled prompt is byte-identical whether "
+        doc.problem(["68"], "the assembled prompt is byte-identical whether "
                     "the image is sent before or after the text: content-part "
                     "ORDER IS DISCARDED, so prompts that place instructions "
                     "around an image do not reach the model that way",
@@ -1075,14 +1079,14 @@ def check_multimodal(doc, base, root, key):
                     asserts=[A("the two part orderings render differently",
                                "byte-identical", held=False)])
     else:
-        doc.ok(["mm-order"], "content-part order is preserved in the assembled "
+        doc.ok(["68"], "content-part order is preserved in the assembled "
                f"prompt (the two orderings render differently, via {how_a})",
                code="MM_ORDER_PRESERVED",
                asserts=[A("the two part orderings render differently",
                           {"a_chars": len(a), "b_chars": len(b),
                            "identical": False})])
         if "ALPHAMARKERZQXOMEGAMARKERZQX" in a.replace(" ", ""):
-            doc.problem(["mm-order"], "adjacent text parts are concatenated with "
+            doc.problem(["68"], "adjacent text parts are concatenated with "
                         "no separator in the assembled prompt: words run together",
                         "insert your own whitespace between adjacent text parts",
                         code="MM_TEXT_PARTS_GLUED",
@@ -1097,12 +1101,12 @@ def check_multimodal(doc, base, root, key):
                                  "url": "file:///nonexistent/zqx-doctor-probe.png"}}]}],
                          max_tokens=16)
     if st2 is None:
-        doc.skip(["mm-errors"], "media error classification", "probe request failed",
+        doc.skip(["72"], "media error classification", "probe request failed",
                  code="MM_ERROR_PROBE_FAILED",
                  asserts=[A("bad-media-path probe returned a status", st2,
                             held=False)])
     elif 500 <= st2 < 600:
-        doc.problem(["mm-errors"], f"a media path that does not exist is reported "
+        doc.problem(["72"], f"a media path that does not exist is reported "
                     f"as http {st2}, a server fault, not a 4xx caller error",
                     "retry logic keyed on 5xx will retry forever against a "
                     "permanently bad path; classify media-fetch failures "
@@ -1110,12 +1114,12 @@ def check_multimodal(doc, base, root, key):
                     code="MM_ERROR_MISCLASSIFIED_5XX",
                     asserts=[A("a bad media path returns 4xx", st2, held=False)])
     elif 400 <= st2 < 500:
-        doc.ok(["mm-errors"], f"a bad media path is correctly reported as http "
+        doc.ok(["72"], f"a bad media path is correctly reported as http "
                f"{st2}, a caller error",
                code="MM_ERROR_CLASSIFIED_4XX",
                asserts=[A("a bad media path returns 4xx", st2)])
     else:
-        doc.problem(["mm-errors"], f"a media path that does not exist returned "
+        doc.problem(["72"], f"a media path that does not exist returned "
                     f"http {st2} rather than an error at all",
                     "assert on media resolution client-side; this lane will "
                     "answer a prompt whose media never loaded",
@@ -1650,6 +1654,60 @@ def check_model_identity(doc, base, key):
                "reasoning_len": len(reasoning_content) + len(reasoning),
                "tool_calls": len(tool_calls)}, held=False),
         ])
+
+
+def check_echo_logprobs(doc, base, key):
+    """Trap 15: can this lane serve loglikelihood (multiple-choice) scoring?
+
+    lm-eval scores multiple choice by sending echo=true plus logprobs to
+    /v1/completions and reading per-token logprobs of each option. A lane that
+    rejects the pair wedges the run; a lane that answers HTTP 200 with empty
+    logprobs wedges it while looking healthy. This is the one request the
+    entry itself names, and the verdict requires actual token_logprobs, not a
+    200.
+    """
+    body = {"model": doc.model or "default", "prompt": "hi", "max_tokens": 1,
+            "echo": True, "logprobs": 1, "temperature": 0}
+    doc.consume_request()
+    st, txt = post(base + "/completions", body, key)
+    doc.evidence["echo_logprobs_probe"] = {"status": st, "body": str(txt)[:200]}
+    probe = A("POST /completions with echo=true, logprobs=1",
+              {"status": st, "body": str(txt)[:160]}, held=st == 200)
+    if st != 200:
+        doc.problem(
+            ["15"],
+            f"this lane does not serve echo+logprobs completions (http {st}); "
+            f"loglikelihood-scored multiple-choice tasks cannot run here",
+            "Do not run lm-eval multiple-choice (loglikelihood) tasks against "
+            "this lane, and never report their absence as a model score: mark "
+            "them UNSUPPORTED and keep generative tasks separate.",
+            code="ECHO_LOGPROBS_REJECTED", asserts=[probe])
+        return
+    try:
+        choice = json.loads(txt)["choices"][0]
+        token_logprobs = (choice.get("logprobs") or {}).get("token_logprobs")
+    except Exception as exc:
+        doc.inconclusive(
+            ["15"], "echo+logprobs response could not be parsed",
+            f"HTTP 200 but the body is not a completions response ({exc}); "
+            f"inspect it before running loglikelihood tasks.",
+            code="ECHO_LOGPROBS_UNPARSEABLE", asserts=[probe])
+        return
+    has = A("response carries non-empty token_logprobs",
+            {"token_logprobs": str(token_logprobs)[:80]}, held=bool(token_logprobs))
+    if not token_logprobs:
+        doc.problem(
+            ["15"],
+            "echo+logprobs returned HTTP 200 with empty token_logprobs; "
+            "lm-eval multiple choice will wedge or score zero while the lane "
+            "looks healthy",
+            "Treat loglikelihood tasks as UNSUPPORTED on this lane; a status-"
+            "code check alone would have passed it.",
+            code="ECHO_LOGPROBS_EMPTY_200", asserts=[probe, has])
+        return
+    doc.ok(["15"], "echo+logprobs completions return per-token logprobs; "
+           "loglikelihood multiple-choice scoring is supported",
+           code="ECHO_LOGPROBS_SUPPORTED", asserts=[probe, has])
 
 
 def check_tool_choice_gate(doc, base, key):
@@ -2371,6 +2429,10 @@ def _probe_ceiling(doc, base, root, args):
     check_ceiling(doc, base, args.api_key)
 
 
+def _probe_echo_logprobs(doc, base, root, args):
+    check_echo_logprobs(doc, base, args.api_key)
+
+
 def _probe_configs(doc, base, root, args):
     check_configs(doc, args.hf_repo, args.hf_revision)
 
@@ -2408,9 +2470,9 @@ PROBE_SPECS = (
         "thinking kwarg acceptance vs behavioural effect",
     ),
     ProbeSpec(
-        "multimodal", (), 2, False, 20, ("multimodal",),
+        "multimodal", ("68", "72", "73"), 2, False, 20, ("multimodal",),
         _probe_multimodal,
-        "multimodal image probe (advisory)",
+        "multimodal image probe (traps 68, 72, 73)",
     ),
     ProbeSpec(
         "tools", ("19", "26"), 2, True, 50, ("tools",),
@@ -2426,6 +2488,11 @@ PROBE_SPECS = (
         "ceiling", ("12", "16", "22"), 1, True, 60, (),
         _probe_ceiling,
         "output ceiling / empty content at cap",
+    ),
+    ProbeSpec(
+        "echo_logprobs", ("15",), 1, False, 45, (),
+        _probe_echo_logprobs,
+        "echo+logprobs completions (lm-eval multiple choice)",
     ),
     ProbeSpec(
         "configs", ("10", "17", "21"), 0, False, 10, ("hf_repo",),
