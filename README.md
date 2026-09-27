@@ -56,7 +56,8 @@ It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
 87 of the 143 traps have at least one automatic check
-(`any_automated_check` in `minefield coverage`).
+(`any_automated_check` in `minefield coverage`). To run it on your own pull
+requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
 [symptom benchmark](benchmarks/README.md).
 
