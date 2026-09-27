@@ -1,5 +1,5 @@
 {
- "about": "Plain-language symptom queries. Written cases: one per trap per split, written from the user's side rather than copied from entry text. Reported cases carry a 'source' issue and use the reporter's own words from that issue, trimmed to the symptom. Tune matcher changes on the 'tune' split only; report the 'holdout' split. Negatives (also split tune/holdout) are off-domain and must return NOT_DOCUMENTED.",
+ "about": "Plain-language symptom queries. Written cases: one per trap per split, written from the user's side rather than copied from entry text. Reported cases carry a 'source' issue and use the reporter's own words from that issue, trimmed to the symptom. Tune matcher changes on the 'tune' split only; report the 'holdout' split. Negatives (also split tune/holdout) are off-domain and must return NOT_DOCUMENTED. Pasted lines are log or error text copied verbatim from reports (wrapping kept), scored separately and not split.",
  "cases": [
   {
    "trap": "01",
@@ -1627,5 +1627,37 @@
    "sql join returns duplicate rows",
    "how do I reset my router password"
   ]
- }
+ },
+ "pasted_lines": [
+  {
+   "trap": "77",
+   "query": "Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND",
+   "source": "issue #19"
+  },
+  {
+   "trap": "117",
+   "query": "Initializing a V1 LLM engine ... compilation_config={...\n  'pass_config': {'fuse_norm_quant': False, ..., 'enable_sp': False,\n                  'fuse_gemm_comms': False, ...} ...}",
+   "source": "issue #43"
+  },
+  {
+   "trap": "118",
+   "query": "INFO ... [shm_broadcast.py:705] No available shared memory broadcast block\nfound in 60 seconds",
+   "source": "issue #44"
+  },
+  {
+   "trap": "119",
+   "query": "ValueError: Free memory on device cuda:0 (109.53/121.69 GiB) on startup is\nless than desired GPU memory utilization (0.91, 110.74 GiB)",
+   "source": "issue #45"
+  },
+  {
+   "trap": "119",
+   "query": "max_total_tokens=200000 is larger than the profiled value 163089. Use the profiled value instead.",
+   "source": "issue #109"
+  },
+  {
+   "trap": "19",
+   "query": "auto tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set",
+   "source": "issue #149"
+  }
+ ]
 }

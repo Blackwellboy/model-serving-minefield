@@ -27,6 +27,10 @@ _FENCE = re.compile(r"```[a-zA-Z]*")
 
 
 def strength(match: dict[str, Any]) -> str:
+    # A pasted line carrying the trap's own signature is not a word-overlap
+    # match, so the overlap scale does not describe it.
+    if match.get("log_signature"):
+        return "log line match"
     weight = float(match.get("evidence_weight") or 0.0)
     if weight >= STRONG:
         return "strong match"
@@ -74,7 +78,7 @@ class _Style:
         return self._wrap("2", text)
 
     def strength(self, label: str) -> str:
-        code = {"strong match": "32", "possible match": "33"}.get(label, "2")
+        code = {"strong match": "32", "log line match": "32", "possible match": "33"}.get(label, "2")
         return self._wrap(code, label)
 
 
@@ -115,6 +119,8 @@ def render_diagnosis(result: dict[str, Any], *, limit: int = 5, stream: TextIO |
                 f"     {style.strength(strength(match))}"
                 + style.dim(f"  ·  evidence: {_clip(str(match.get('evidence_status') or 'unstated'), 50).rstrip('.')}")
             )
+            if match.get("log_signature"):
+                out += wrap("why:   ", _clip(match["log_signature"], 260))
             out += wrap("check: ", _check_text(match.get("confirmation_check", ""), 260))
             if match.get("source_path"):
                 # Never wrap a URL: a wrapped link is not clickable.

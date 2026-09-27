@@ -61,6 +61,22 @@ RULES = (
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
 
+def signatures_in_text(text: str) -> dict[str, str]:
+    """{trap_id: rationale} for every signature present in pasted text.
+
+    The same rules as a log file scan, applied to what a person pasted into a
+    question, so `minefield <error line>` finds the trap the line belongs to.
+    Pasted lines arrive wrapped by terminals and issue editors ("on startup
+    is" / "less than desired"), which breaks single-line signatures, so a copy
+    with the whitespace joined is checked too.
+    """
+    if not text:
+        return {}
+    joined = " ".join(text.split())
+    return {trap_id: rationale for trap_id, pattern, rationale in RULES
+            if re.search(pattern, text, re.I | re.M) or re.search(pattern, joined, re.I)}
+
+
 def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []

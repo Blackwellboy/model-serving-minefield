@@ -74,8 +74,22 @@ def evaluate(limit: int = 10) -> dict:
             for name, s in sorted(tally.items())
         }
 
+    pasted: dict[str, dict] = {}
+    for case in data.get("pasted_lines", []):
+        rank = _rank(registry, case["query"], case["trap"], limit)
+        s = pasted.setdefault("all", {"n": 0, "top1": 0, "top5": 0, "found": 0, "rr": 0.0})
+        s["n"] += 1
+        if rank:
+            s["found"] += 1
+            s["rr"] += 1.0 / rank
+            s["top1"] += rank == 1
+            s["top5"] += rank <= 5
+        if not rank or rank > 5:
+            misses.append({**case, "split": "pasted", "rank": rank})
+
     return {
         "splits": rates(splits),
+        "pasted_lines": rates(pasted),  # log lines copied from reports, not split
         "reported": rates(reported),  # the subset in reporters' own words, also counted in splits
         "negatives": negatives,
         "misses": misses,
@@ -97,6 +111,9 @@ def main(argv: list[str] | None = None) -> int:
     print("reported cases only (reporters' own words, included above):")
     for name, s in report["reported"].items():
         print(f"{name:<8} {s['n']:>4} {s['top1']:>6.1%} {s['top5']:>6.1%} {s['found']:>6.1%} {s['mrr']:>6.3f}")
+    for name, s in report["pasted_lines"].items():
+        print(f"{'pasted':<8} {s['n']:>4} {s['top1']:>6.1%} {s['top5']:>6.1%} {s['found']:>6.1%} {s['mrr']:>6.3f}"
+              "   (log lines copied from reports)")
     for name, neg in report["negatives"].items():
         print(f"off-domain false alarms [{name}]: {neg['false_alarm']:.1%} of {neg['n']}")
     if args.misses:

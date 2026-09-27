@@ -8,6 +8,7 @@ from typing import Any
 
 from .diagnosis_contract import contract_for_match, miss_contract
 from .leads import search_leads
+from .log_inspector import signatures_in_text
 
 TOKEN_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
 # Function words and conversational filler. Without these, "how do I ..."
@@ -208,6 +209,14 @@ _DOMAIN_ANCHOR_STEMS = {_stem(term) for term in DOMAIN_ANCHORS}
 
 _INDEX_CACHE: dict[str, tuple[list[tuple[set[str], set[str], set[str]]], dict[str, float]]] = {}
 
+# A pasted log line that carries a trap's concrete signature is stronger
+# evidence of which entry to read than any word overlap, so it is admitted
+# without the two-concept minimum and ranked above textual resemblance. It is
+# still a lead: the signature says the line is present, not that the trap is
+# the cause, and no score reaches a confirmed level without a direct probe.
+LOG_SIGNATURE_BOOST = 40
+MAX_PASTE_CHARS = 64 * 1024
+
 # A word that matches the trap's title counts for more than one buried in the
 # symptom paragraph: the title is the entry's own one-line summary.
 TITLE_BOOST = 1.5
@@ -311,6 +320,7 @@ def search(
     on_topic = any(_is_anchor(token) for concept in symptom_concepts for token in concept)
     context_concepts = _concepts(" ".join(filter(None, (stack, model, version))))
 
+    signatures = signatures_in_text(symptom_text_for_match[:MAX_PASTE_CHARS])
     per_entry, idf = _index(registry)
     results: list[dict[str, Any]] = []
     for entry, (searchable_symptom_tokens, searchable_context_tokens, title_tokens) in zip(
@@ -324,20 +334,22 @@ def search(
         direct = _concept_overlap(symptom_concepts, searchable_symptom_tokens)
         context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
+        signature = signatures.get(entry["id"])
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
-        # because the caller explicitly named the trap under test.
-        if (direct < 2 or not on_topic) and not is_explicit:
+        # because the caller explicitly named the trap under test, and a
+        # trap's own log signature bypasses it because the line is concrete.
+        if (direct < 2 or not on_topic) and not is_explicit and not signature:
             continue
         weight = _concept_weight(symptom_concepts, searchable_symptom_tokens, idf, title_tokens)
-        if weight < MIN_EVIDENCE and not is_explicit:
+        if weight < MIN_EVIDENCE and not is_explicit and not signature:
             continue
 
         # Rarity-weighted: two specific shared words outrank four generic
         # ones. Scaled so a typical shared word is worth about 4 points, the
         # same order as the previous flat per-concept score.
-        score = round(weight * 7) + context
+        score = round(weight * 7) + context + (LOG_SIGNATURE_BOOST if signature else 0)
         normalized_symptom = symptom.strip().lower()
         if (
             normalized_symptom
@@ -381,6 +393,7 @@ def search(
             "match_confidence": contract["diagnosis_level"],
             "score": score,
             "evidence_weight": round(weight, 2),
+            "log_signature": signature,  # why a pasted line matched this trap's signature, else None
             "source_path": entry["source_path"],
             **contract,
         })

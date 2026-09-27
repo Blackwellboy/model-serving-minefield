@@ -69,6 +69,12 @@ class SymptomBenchmarkFloor(unittest.TestCase):
         self.assertGreaterEqual(tune["top1"], 0.45, tune)
         self.assertGreaterEqual(tune["top5"], 0.60, tune)
 
+    def test_pasted_lines_floor(self):
+        # Log lines copied verbatim from reports. Small n: one case below measured.
+        pasted = self.report["pasted_lines"]["all"]
+        self.assertGreaterEqual(pasted["top1"], 0.30, pasted)
+        self.assertGreaterEqual(pasted["top5"], 0.45, pasted)
+
     def test_off_domain_questions_never_nominate_a_trap(self):
         for name, negatives in self.report["negatives"].items():
             self.assertEqual(negatives["hits"], [], name)
@@ -87,6 +93,61 @@ class MatcherTokens(unittest.TestCase):
     def test_compound_identifier_is_still_one_concept(self):
         concepts = _concepts("--tool-call-parser")
         self.assertEqual(len(concepts), 1, concepts)
+
+
+class PastedLogLines(unittest.TestCase):
+    """A pasted error line goes through the same signatures as a log scan."""
+
+    @classmethod
+    def setUpClass(cls):
+        import re
+
+        from minefield.log_inspector import RULES
+        from minefield.registry import load_registry
+
+        sys.path.insert(0, str(ROOT / "tests"))
+        from test_offline_detectors import BAD_LOG, CLEAN_LOG
+
+        cls.registry = load_registry()
+        cls.bad = [(line, trap) for line in BAD_LOG.splitlines()
+                   for trap, pattern, _ in RULES if re.search(pattern, line, re.I | re.M)]
+        cls.clean = CLEAN_LOG.splitlines()
+
+    def search(self, text, **kwargs):
+        from minefield.matching import search
+
+        return search(self.registry, text, limit=10, **kwargs)
+
+    def test_each_signature_line_ranks_its_trap_first(self):
+        self.assertGreaterEqual(len(self.bad), 10)
+        for line, trap in self.bad:
+            results = self.search(line)
+            self.assertTrue(results, line)
+            self.assertEqual(results[0]["trap_ids"][0], trap, line)
+            self.assertTrue(results[0]["log_signature"], line)
+
+    def test_harmless_lines_carry_no_signature(self):
+        for line in self.clean:
+            self.assertFalse([r for r in self.search(line) if r["log_signature"]], line)
+
+    def test_a_wrapped_paste_still_matches(self):
+        # Issue #45, as pasted: the terminal wrapped the line mid-sentence.
+        wrapped = ("ValueError: Free memory on device cuda:0 (109.53/121.69 GiB) on startup is\n"
+                   "less than desired GPU memory utilization (0.91, 110.74 GiB)")
+        results = self.search("vllm will not start", log_excerpt=wrapped)
+        self.assertEqual(results[0]["trap_ids"][0], "119")
+        self.assertTrue(results[0]["log_signature"])
+
+    def test_a_signature_match_stays_a_lead(self):
+        line, _ = self.bad[0]
+        top = self.search(line)[0]
+        self.assertNotIn("CONFIRMED", top["diagnosis_level"])
+
+    def test_cli_labels_it_by_what_matched(self):
+        from minefield.render import strength
+
+        line, _ = self.bad[0]
+        self.assertEqual(strength(self.search(line)[0]), "log line match")
 
 
 if __name__ == "__main__":

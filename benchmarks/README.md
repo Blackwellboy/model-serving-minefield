@@ -86,6 +86,38 @@ What changed, in order of effect:
 4. **Title weighting.** A word matching the entry's own one-line title counts
    1.5x.
 
+### Pasted error lines
+
+People paste error text more often than they describe it. A question or
+`--log` excerpt is now checked against the same log signatures `minefield
+scan` uses, and a trap whose signature is present is admitted and ranked
+first, labelled `log line match` with the reason. It stays a lead: a
+signature says the line is there, not that the trap caused it. Pasted text is
+also checked with its line breaks joined, because terminals and issue editors
+wrap long lines.
+
+`pasted_lines` holds 6 log lines copied verbatim from reports (wrapping kept),
+scored on their own and not split. 2 are ranked first and 3 are in the top
+five, the same as before signatures were used: the two lines that have a
+signature (traps 117 and 119) were already found by their words, and the other
+four have no signature at all, so the gap there is missing signatures, not
+routing. On the 12 signature lines in the detector fixtures the right trap is
+now first 12 times, up from 8; those lines were written with the rules, so
+that shows the routing works, not how often a real paste will match.
+
+### Tried and not kept: indexing reporters' phrasings
+
+We indexed each trap's issue titles and report sentences beside its entry
+text (48 phrasings from 26 issues) and scored it leave-one-out, so no report
+was matched against its own words. Reported holdout did not move, tune gained
+one case and lost one, and three written tune queries fell from first to
+second as neighbouring traps picked up shared words ("memory", "decode
+speed"). Halving the weight of phrasing-only words kept the losses and lost
+the gain. Most traps have one report, and leave-one-out removes it, so this
+benchmark cannot show a benefit until more traps have two or more reports. It
+may still help when a second person pastes the same error line, but that is
+not measured, so it is not shipped.
+
 `tests/test_symptom_benchmark.py` fails CI if the numbers fall below a floor
 just under the current results, including a separate floor on the reported
 cases. Raise the floor when the matcher improves.
