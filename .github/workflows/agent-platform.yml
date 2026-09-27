@@ -17,6 +17,9 @@ jobs:
           python-version: "3.12"
       - name: compile and unit test
         run: |
+          # Runtime dependency declared in pyproject.toml; the template analyzer
+          # renders templates with it, so its tests need it before install.
+          python -m pip install "jinja2>=3.1"
           python -m compileall -q minefield tests
           python -m unittest discover -s tests
           python -m unittest discover -s community/tests -t .

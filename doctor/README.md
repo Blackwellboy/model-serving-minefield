@@ -21,13 +21,13 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 20 checks cluster almost entirely on one region of the registry: reasoning
+Its 24 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
-tool parsing, and token ceilings. That is not an accident of what got built
+tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
 minute. The regions it says **nothing** about include quantisation kernel
 paths, container toolchains and driver mismatches, memory allocation and KV
-sizing, MoE routing, every eval-harness confound, and long-context behaviour.
+sizing, MoE routing, almost every eval-harness confound, and long-context behaviour.
 Those are most of this registry, and they are where several of the
 [Core 12](../CORE.md) live.
 
@@ -168,16 +168,17 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **20 of the registry's 143 numbered entries**
-(01, 02, 03, 04, 07, 10, 12, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 77, 78, 141).
+The doctor implements checks for **24 of the registry's 143 numbered entries**
+(01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 68, 72,
+73, 77, 78, 141).
 Every run ends with a coverage line:
 
 ```
-implemented 20/143 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 123
+implemented 24/143 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 119
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
-verdict on that run, which on a real lane is well under 17. Even 17 overstates
+verdict on that run, which on a real lane is well under 24. Even 24 overstates
 depth, and the coverage block says so every time:
 
 - **25** shares the trap-04 history-render heuristic. It is not a separate
@@ -191,7 +192,7 @@ depth, and the coverage block says so every time:
   this tool sends one request at one budget, so it is linked from the ceiling
   check purely so you can find the entry, and is never given a verdict by it.
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
-- **04, 20, 25** need a render path. On a stack that exposes none they cannot
+- **04, 20, 25, 68** need a render path. On a stack that exposes none they cannot
   run at all.
 - **77** is the newest and the cheapest: one baseline request and one request
   carrying an invented top-level field. It runs first, because it decides
@@ -202,11 +203,23 @@ depth, and the coverage block says so every time:
   an expired key reading as a strict server. It rules out "your typo is
   silently accepted"; it does **not** rule out a known-but-unimplemented field
   being accepted and ignored, which stays with 03 and 29.
-- The remaining **123** numbered traps have no check in this tool.
+- **15** is one request: `echo=true` plus `logprobs` against `/v1/completions`,
+  the pair lm-eval multiple-choice scoring sends. Its CLEAN needs non-empty
+  `token_logprobs` in the response; an HTTP 200 with empty logprobs is the
+  PROBLEM the entry warns about, not a pass.
+- **68, 72, 73** run inside the multimodal probe and only on a lane that
+  accepts image parts: content-part order and glued text parts (68), a bad
+  media path reported as 5xx rather than 4xx (72), and a null
+  `prompt_tokens_details` that makes media token cost unattributable (73).
+  They ran under advisory ids until those entries were published.
+- The remaining **119** numbered traps have no check in this tool. Many are
+  reachable offline instead: `minefield scan` reads configs, launch scripts,
+  model folders, chat templates, logs and eval results.
 
-The multimodal checks (`mm-surface`, `mm-usage`, `mm-order`, `mm-errors`,
-`mm-audio-video`) are **advisory**: they can report a PROBLEM or a CLEAN of
-their own, and there is no trap file and no README row behind any of them.
+Two multimodal checks remain **advisory** (`mm-surface`, whether the lane
+accepts media at all, and `mm-audio-video`, which this tool never probes):
+they can report a PROBLEM or a CLEAN of their own, and there is no trap file
+and no README row behind either of them.
 Every run labels them as such on the finding line and lists them in the
 coverage block, and they are counted nowhere in the trap-id arithmetic above.
 

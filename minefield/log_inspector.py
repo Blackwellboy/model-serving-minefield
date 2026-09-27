@@ -27,8 +27,54 @@ RULES = (
      "KFD rejection names the code-object or target architecture."),
     ("103", r"(?:torchvision|AutoProcessor)[^\n]{0,160}(?:undefined symbol|operator .* does not exist|ABI)",
      "The processor failure carries a concrete torchvision ABI signature."),
+    # 0.2.1 additions. Each signature is the concrete line the trap entry
+    # names, so a keyword mention on its own does not fire.
+    ("51", r"(?:perplexity|\bppl\b)[^\n]{0,60}[=:\s]\s*[-+]?nan\b",
+     "Perplexity is NaN. If other backends are clean on the same file, suspect the backend, not the quant."),
+    ("72", r"(?:\b5\d\d\b|Internal Server Error)[^\n]{0,200}(?:image_url|audio_url|video_url|media|No such file)",
+     "A media-fetch problem is reported as a 5xx server error; retries and alerts will treat a client error as an outage."),
+    ("85", r"enable_thinking[^\n]{0,160}(?:valid boolean|bool_parsing|must be a bool)",
+     "The server rejected enable_thinking sent as a string; it type-checks the kwarg even when the template ignores it."),
+    ("98", r"(?:dflash|speculative|num_speculative_tokens)[\s\S]{0,4000}?(?:CUDA out of memory|OutOfMemoryError)",
+     "An out-of-memory error follows speculative-decoding setup; sequence capacity x draft depth can exceed unified memory."),
+    ("101", r"TypeError:[^\n]{0,200}got an unexpected keyword argument",
+     "A keyword argument was rejected at call time; a library minor-version bump may have removed it."),
+    ("112", r"device-side assert triggered",
+     "A CUDA device-side assert fired; the engine may be dead while the container still reports Up."),
+    ("115", r"(?:exit(?:ed)?(?: with)?(?: code| status)?\s*[:=]?\s*137\b|\bOOMKilled\b)",
+     "Exit 137 is SIGKILL. Do not record it as the OOM killer without a kernel or cgroup OOM event for that PID."),
+    ("116", r"embed_?tok(?:en)?s?[^\n]{0,120}(?:failed|error)",
+     "The first forward failed in the embedding path; a successful load does not prove the first-forward dtype path."),
+    ("117", r"[\"']fuse_gemm_comms[\"']\s*:\s*False",
+     "The resolved engine config shows fuse_gemm_comms False; the flag was accepted and then disabled."),
+    ("119", r"Free memory on device[^\n]{0,160}less than desired GPU memory utilization",
+     "Startup refused the memory fraction. Find this first error before blaming NCCL errors from other ranks."),
+    ("123", r"VLLM::EngineCore[^\n]{0,160}\d+\s*MiB",
+     "A vLLM EngineCore process still holds GPU memory; an orphan from a killed API server blocks the next launch."),
+    ("131", r"(?:RevisionNotFoundError|LocalEntryNotFoundError|Cannot find an appropriate cached snapshot)",
+     "Offline revision resolution failed; inspect the HF cache refs/* files for stray bytes."),
+    ("140", r"(?:sparse[_ ]?mla|indexer|FlashMLA)[\s\S]{0,2000}?(?:illegal memory access|cudaErrorIllegalAddress)",
+     "An illegal address follows sparse-MLA/indexer activity; metadata may name a request row that does not exist."),
+    ("142", r"(?:IsADirectoryError|Is a directory)[^\n]{0,200}(?:\.json|\.gguf|\.safetensors|\.jinja|config|model|tokenizer)",
+     "A model or config path turned out to be a directory; Docker may have created it from a missing bind source."),
 )
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
+
+
+def signatures_in_text(text: str) -> dict[str, str]:
+    """{trap_id: rationale} for every signature present in pasted text.
+
+    The same rules as a log file scan, applied to what a person pasted into a
+    question, so `minefield <error line>` finds the trap the line belongs to.
+    Pasted lines arrive wrapped by terminals and issue editors ("on startup
+    is" / "less than desired"), which breaks single-line signatures, so a copy
+    with the whitespace joined is checked too.
+    """
+    if not text:
+        return {}
+    joined = " ".join(text.split())
+    return {trap_id: rationale for trap_id, pattern, rationale in RULES
+            if re.search(pattern, text, re.I | re.M) or re.search(pattern, joined, re.I)}
 
 
 def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:

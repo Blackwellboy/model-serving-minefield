@@ -13,6 +13,7 @@ from .coverage import build_coverage
 from .diagnosis_contract import CONDITION_FIELDS
 from .guided_experiments import specifications
 from .log_inspector import inspect_logs
+from .scan import scan
 from .matching import diagnose, search
 from .registry import load_registry
 from .static_inspector import inspect_files
@@ -28,6 +29,8 @@ TOOLS = {
     "prepare_issue_report": "Prepare a scrubbed Markdown issue draft from supplied text.",
     "inspect_config": "Inspect explicit files within configured allowed roots.",
     "inspect_logs": "Inspect explicit logs within configured allowed roots.",
+    "scan_files": "Scan configs, launch scripts, model folders, chat templates, logs and eval "
+                  "results within configured allowed roots; returns possible traps, never verdicts.",
 }
 MAX_REQUEST_BYTES = 1024 * 1024
 MAX_TEXT_ARGUMENT = 256 * 1024
@@ -76,6 +79,9 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
         "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
     }},
     "inspect_logs": {"required": ["paths"], "properties": {
+        "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
+    }},
+    "scan_files": {"required": ["paths"], "properties": {
         "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
     }},
 }
@@ -218,6 +224,18 @@ def call_tool(
         if not allowed_roots:
             raise ValueError("inspect_logs is disabled until MINEFIELD_ALLOWED_ROOTS is configured")
         return inspect_logs(args["paths"], allowed_roots)
+    if name == "scan_files":
+        if not allowed_roots:
+            raise ValueError("scan_files is disabled until MINEFIELD_ALLOWED_ROOTS is configured")
+        roots = [Path(root).resolve() for root in allowed_roots]
+        for raw in args["paths"]:
+            candidate = Path(raw)
+            if candidate.is_symlink():
+                raise ValueError(f"symlink input is refused: {raw}")
+            resolved = candidate.resolve(strict=True)
+            if not any(resolved == root or root in resolved.parents for root in roots):
+                raise ValueError(f"path is outside allowed roots: {raw}")
+        return scan(args["paths"])
     raise ValueError(f"unknown tool: {name}")
 
 

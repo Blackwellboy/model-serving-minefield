@@ -27,6 +27,8 @@ And repo-wide:
   COUNT            every declared registry total agrees with the number of
                    entries in the tree, and every declared doctor-coverage
                    numerator agrees with len(TRAP_PATHS) in the doctor
+  AUTOMATED-COUNT  every "N of the T traps have an automatic check" claim
+                   agrees with build_coverage()'s any_automated_check
 
 Counting rule, stated once because getting it wrong is itself a historical
 failure: an ENTRY is a file matching traps/<category>/NN-*.md. The seven flat
@@ -63,6 +65,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import contradiction_gate as _contradiction
@@ -527,6 +530,69 @@ def check_llms_txt(root, findings):
             "one rots the same way with nobody re-reading it" % m.group(0)))
 
 
+# "87 of the 143 traps have an automatic check". The first version of this
+# sentence was typed by hand into the README when `minefield scan` landed, and
+# its number is not a doctor count or a registry total, so no pattern above
+# could see it go stale. It is build_coverage()'s any_automated_check (doctor,
+# offline file checks and log signatures, overlap counted once), so it is
+# computed from this tree's own package and compared. Matched over the whole
+# text, not per line, so a reflow cannot split the sentence out of reach.
+AUTOMATED_CLAIM_RE = re.compile(
+    r"(\d+)\s+of\s+the\s+(\d+)\s+traps\W{0,4}\s*(?:now\s+)?have\s+"
+    r"(?:at\s+least\s+one|an)\s+automatic\s+check")
+
+
+def automated_check_count(root):
+    """any_automated_check for the tree at root, or an error string.
+
+    Run in a subprocess so the package imported is the one under root, not
+    whichever minefield is already loaded or installed.
+    """
+    code = ("import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); "
+            "from minefield.coverage import build_coverage; "
+            "from minefield.registry import load_registry; "
+            "print(build_coverage(load_registry(Path(sys.argv[1])))"
+            "['summary']['any_automated_check'])")
+    r = subprocess.run([sys.executable, "-c", code, root], capture_output=True,
+                       text=True, cwd=root)
+    out = r.stdout.strip()
+    if r.returncode != 0 or not out.isdigit():
+        tail = (r.stderr.strip().splitlines() or ["no output"])[-1]
+        return "build_coverage() did not run (%s)" % tail[:160]
+    return int(out)
+
+
+def check_automated_claim(root, n_entries, findings):
+    actual = None
+    for dp, dns, fns in os.walk(root):
+        dns[:] = [d for d in dns
+                  if d not in COUNT_SKIP_DIRS and d != "dist"
+                  and not os.path.exists(os.path.join(dp, d, ".git"))]
+        for fn in sorted(fns):
+            if not fn.endswith(".md") or fn in COUNT_SKIP_FILES:
+                continue
+            rel = os.path.relpath(os.path.join(dp, fn), root).replace("\\", "/")
+            text = read(os.path.join(dp, fn))
+            for m in AUTOMATED_CLAIM_RE.finditer(text):
+                where = "%s:%d" % (rel, text.count("\n", 0, m.start()) + 1)
+                claim = " ".join(m.group(0).split())
+                if int(m.group(2)) != n_entries:
+                    findings.append(Finding(
+                        "COUNT", where, "declares registry total %s, tree has %d "
+                        "entries (%s)" % (m.group(2), n_entries, claim)))
+                if actual is None:
+                    actual = automated_check_count(root)
+                if isinstance(actual, str):
+                    findings.append(Finding(
+                        "AUTOMATED-COUNT", where, "cannot verify %r: %s" % (claim, actual)))
+                elif int(m.group(1)) != actual:
+                    findings.append(Finding(
+                        "AUTOMATED-COUNT", where,
+                        "declares %s traps with an automatic check, "
+                        "build_coverage() any_automated_check is %d (%s)"
+                        % (m.group(1), actual, claim)))
+
+
 def check_counts(root, n_entries, findings):
     implemented = doctor_implemented_count(root)
     for dp, dns, fns in os.walk(root):
@@ -726,6 +792,7 @@ def run(root):
 
     implemented = check_counts(root, len(entries), findings)
     check_word_counts(root, len(entries), findings)
+    check_automated_claim(root, len(entries), findings)
     check_doctor_prose(root, findings)
     check_llms_txt(root, findings)
     return findings, len(entries), len(stubs), implemented
