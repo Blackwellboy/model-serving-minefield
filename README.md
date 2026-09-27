@@ -37,9 +37,11 @@ protects is your ability to tell them apart at a glance.
 ## Diagnose it yourself in ten seconds
 
 ```bash
-python -m pip install .
+pipx install model-serving-minefield
 minefield streaming shows blank replies --stack vllm
 ```
+
+(From a clone instead: `python -m pip install .`)
 
 Describe what you see in plain words. You get the few traps that match, how
 strong each match is, the one check to run next, and a link to the entry.
@@ -75,7 +77,7 @@ configuration:
 read-only doctor:
 
 ```bash
-python -m pip install .
+pipx install model-serving-minefield
 minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
 ```
 

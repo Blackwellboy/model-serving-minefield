@@ -9,6 +9,9 @@
 - 16 new launch/compose rules (13, 18, 32, 33, 45, 48, 97, 98, 114, 117, 118, 122, 127, 130, 138, 142), with optional same-file `requires`/`excludes` context so a rule stays quiet when the risky setting is already handled. 14 new log signatures (51, 72, 85, 98, 101, 112, 115, 116, 117, 119, 123, 131, 140, 142).
 - **Doctor:** new trap-15 probe (one `echo`+`logprobs` request; CLEAN requires non-empty `token_logprobs`, not an HTTP 200). The multimodal checks that ran under advisory ids now report under their published entries 68, 72 and 73. Doctor coverage 20 -> 24; README, doctor README, playbooks and open-issue counts updated.
 - Every new rule has a positive fixture and a matched safe control in `tests/test_offline_detectors.py`; coverage has a regression floor.
+- **Template renders time out after 3 seconds.** The sandbox caps `range()` but not nested loops, so a crafted template could hang `scan`. After one timeout the remaining probes are skipped at once, and the notes say those checks did not run, not that the template is clean.
+- The README's automatic-coverage sentence is now checked: `registry_integrity` recomputes `any_automated_check` from the tree's own package and fails `AUTOMATED-COUNT` on a stale number (mutation tests 62-66).
+- **PyPI-ready, not yet published.** `pyproject.toml` gains a PyPI description, URLs and classifiers; the README installs with `pipx install model-serving-minefield`. The tag-triggered release workflow now checks the tag against the package version, runs `twine check --strict`, smoke-tests the installed wheel outside the checkout, and has a `publish-pypi` job using trusted publishing (no stored token) behind a `pypi` environment. It also installs jinja2 before the unit tests, which it previously did not. `tests/test_packaging.py` checks every `minefield/data` file is shipped and that the release runs only on a tag.
 
 ## 2026-09-25 - 0.2.1 (part 1): readable answers and a measured matcher
 
