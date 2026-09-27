@@ -1,5 +1,5 @@
 {
- "about": "Plain-language symptom queries, one per trap per split, written from the user's side rather than copied from entry text. Tune matcher changes on the 'tune' split only; report the 'holdout' split. Negatives (also split tune/holdout) are off-domain and must return NOT_DOCUMENTED.",
+ "about": "Plain-language symptom queries. Written cases: one per trap per split, written from the user's side rather than copied from entry text. Reported cases carry a 'source' issue and use the reporter's own words from that issue, trimmed to the symptom. Tune matcher changes on the 'tune' split only; report the 'holdout' split. Negatives (also split tune/holdout) are off-domain and must return NOT_DOCUMENTED.",
  "cases": [
   {
    "trap": "01",
@@ -1430,6 +1430,156 @@
    "trap": "143",
    "split": "holdout",
    "query": "sliding window is ignored because use_sliding_window defaults to false"
+  },
+  {
+   "trap": "77",
+   "split": "tune",
+   "query": "Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND",
+   "source": "issue #19"
+  },
+  {
+   "trap": "112",
+   "split": "holdout",
+   "query": "Every completion failed while the container looked completely healthy by every ordinary signal",
+   "source": "issue #21"
+  },
+  {
+   "trap": "132",
+   "split": "tune",
+   "query": "a freshly booted server passes every smoke test then produces garbage at the start of real agent sessions",
+   "source": "issue #36"
+  },
+  {
+   "trap": "54",
+   "split": "holdout",
+   "query": "Benchmark numbers taken shortly after startup or after the server has been idle are about 30% below the same server's steady state",
+   "source": "issue #37"
+  },
+  {
+   "trap": "133",
+   "split": "tune",
+   "query": "speculative-decoding lane served perfectly and ran at roughly half the decode speed it should have, nothing logged above debug",
+   "source": "issue #38"
+  },
+  {
+   "trap": "117",
+   "split": "holdout",
+   "query": "vLLM echoed it back as enabled in its own startup summary, and the engine then ran with it disabled",
+   "source": "issue #43"
+  },
+  {
+   "trap": "118",
+   "split": "tune",
+   "query": "Ray-backed vLLM deploy went completely silent mid-boot and looked deadlocked",
+   "source": "issue #44"
+  },
+  {
+   "trap": "119",
+   "split": "tune",
+   "query": "A gpu-memory-utilization value that had served fine for weeks started refusing to boot, with nothing changed in the config",
+   "source": "issue #45"
+  },
+  {
+   "trap": "120",
+   "split": "tune",
+   "query": "The server is completely stable single-stream and at 2 concurrent requests. At 3 or more, the engine dies.",
+   "source": "issue #46"
+  },
+  {
+   "trap": "125",
+   "split": "holdout",
+   "query": "A systemd/cgroup v2 MemoryMax guard around a vLLM serve looks armed and never fires",
+   "source": "issue #57"
+  },
+  {
+   "trap": "126",
+   "split": "tune",
+   "query": "the full chain-of-thought sits at the front of content, terminated by a stray </think>, followed by the actual answer",
+   "source": "issue #58"
+  },
+  {
+   "trap": "141",
+   "split": "holdout",
+   "query": "The server answers a request for a model name it does not serve, using whatever model is actually loaded",
+   "source": "issue #71"
+  },
+  {
+   "trap": "35",
+   "split": "tune",
+   "query": "We nearly rejected a checkpoint for being irreproducible: same model, same weights, same serve command, across cold reloads",
+   "source": "issue #73"
+  },
+  {
+   "trap": "12",
+   "split": "holdout",
+   "query": "A documented failure would not reproduce: a model thinking for 403 seconds and returning no answer",
+   "source": "issue #74"
+  },
+  {
+   "trap": "36",
+   "split": "tune",
+   "query": "Five serving configurations scored on a 175-item agent-task suite return 155, 152, 149, 148 and 145. Those look like a ranking.",
+   "source": "issue #75"
+  },
+  {
+   "trap": "29",
+   "split": "holdout",
+   "query": "enable_thinking:false and thinking:false both fail to suppress reasoning, they redirect it into content rather than stopping it",
+   "source": "issue #83"
+  },
+  {
+   "trap": "37",
+   "split": "tune",
+   "query": "the harness exited cleanly and printed a sentence about the model's capability that was generated from something that never reached the model",
+   "source": "issue #90"
+  },
+  {
+   "trap": "138",
+   "split": "holdout",
+   "query": "at temperature 0 the bodies were not valid JSON: a token had been duplicated at a point where the same string appeared earlier",
+   "source": "issue #94"
+  },
+  {
+   "trap": "142",
+   "split": "tune",
+   "query": "Typos in a model or drafter path surface as bad checkpoint symptoms minutes into a load",
+   "source": "issue #100"
+  },
+  {
+   "trap": "143",
+   "split": "holdout",
+   "query": "A Qwen3-family config that plainly declares sliding_window can produce a model whose every layer runs full attention",
+   "source": "issue #107"
+  },
+  {
+   "trap": "119",
+   "split": "holdout",
+   "query": "Two arms launched with a byte-identical --max-total-tokens flag ran with pools 20% apart",
+   "source": "issue #109"
+  },
+  {
+   "trap": "70",
+   "split": "holdout",
+   "query": "think markers present in the plain content field the whole time; the smoke test alone gave no indication",
+   "source": "issue #148"
+  },
+  {
+   "trap": "19",
+   "split": "tune",
+   "query": "the request was rejected with an HTTP 400: auto tool choice requires --enable-auto-tool-choice and --tool-call-parser",
+   "source": "issue #149"
+  },
+  {
+   "trap": "12",
+   "split": "tune",
+   "query": "14 of 63 items recorded as empty at max_tokens=512, and the serving stack reported reasoning_tokens=0",
+   "source": "issue #151"
+  },
+  {
+   "trap": "14",
+   "split": "holdout",
+   "query": "The stock drafter does behave differently on the edited model: acceptance fell 24% on the refusal battery",
+   "source": "issue #153"
   }
  ],
  "negatives": {

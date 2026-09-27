@@ -78,12 +78,40 @@ def _stem(token: str) -> str:
     return token
 
 
+def _words(value: str) -> list[str]:
+    """Lower-cased tokens with sentence punctuation trimmed from the edges.
+
+    TOKEN_RE keeps "." and "-" so that llama.cpp, 0.26 and --flag-names stay
+    whole, which also glued a full stop to the last word of a sentence:
+    "ranking." never met "ranking". Only the edges are trimmed.
+    """
+    out = []
+    for token in TOKEN_RE.findall(value):
+        token = token.lower().strip(".-")
+        if len(token) >= 2 and token not in STOPWORDS:
+            out.append(token)
+    return out
+
+
+def _parts(token: str) -> list[str]:
+    """The pieces of a compound identifier: reasoning_tokens -> reasoning, token.
+
+    Users paste flags and field names (--tool-call-parser, max_tokens) where an
+    entry says "tool-call parser" or "token budget", and the other way round.
+    Parts join the identifier's own concept, so a compound still counts as one
+    concept, never several.
+    """
+    if "_" not in token and "-" not in token:
+        return []
+    return [_stem(p) for p in re.split(r"[_-]+", token) if len(p) >= 2 and p not in STOPWORDS]
+
+
 def _tokens(value: str) -> set[str]:
-    return {
-        _stem(token.lower())
-        for token in TOKEN_RE.findall(value)
-        if token.lower() not in STOPWORDS
-    }
+    out: set[str] = set()
+    for token in _words(value):
+        out.add(_stem(token))
+        out.update(_parts(token))
+    return out
 
 
 def _concepts(value: str) -> list[set[str]]:
@@ -96,15 +124,12 @@ def _concepts(value: str) -> list[set[str]]:
     """
     out: list[set[str]] = []
     seen: set[str] = set()
-    for token in TOKEN_RE.findall(value):
-        token = token.lower()
-        if token in STOPWORDS:
-            continue
+    for token in _words(value):
         stemmed = _stem(token)
         if stemmed in seen:
             continue  # "cache ... cached" is one concept, not two
         seen.add(stemmed)
-        out.append({stemmed, *(_stem(a) for a in TOKEN_ALIASES.get(token, ()))})
+        out.append({stemmed, *(_stem(a) for a in TOKEN_ALIASES.get(token, ())), *_parts(token)})
     return out
 
 

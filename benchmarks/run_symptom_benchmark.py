@@ -42,34 +42,41 @@ def evaluate(limit: int = 10) -> dict:
     registry = load_registry(ROOT)
     data = json.loads(DATA.read_text(encoding="utf-8"))
     splits: dict[str, dict] = {}
+    reported: dict[str, dict] = {}
     misses: list[dict] = []
     for case in data["cases"]:
         rank = _rank(registry, case["query"], case["trap"], limit)
-        s = splits.setdefault(case["split"], {"n": 0, "top1": 0, "top5": 0, "found": 0, "rr": 0.0})
-        s["n"] += 1
-        if rank:
-            s["found"] += 1
-            s["rr"] += 1.0 / rank
-            s["top1"] += rank == 1
-            s["top5"] += rank <= 5
+        tallies = [splits.setdefault(case["split"], {"n": 0, "top1": 0, "top5": 0, "found": 0, "rr": 0.0})]
+        if case.get("source"):
+            tallies.append(reported.setdefault(case["split"], {"n": 0, "top1": 0, "top5": 0, "found": 0, "rr": 0.0}))
+        for s in tallies:
+            s["n"] += 1
+            if rank:
+                s["found"] += 1
+                s["rr"] += 1.0 / rank
+                s["top1"] += rank == 1
+                s["top5"] += rank <= 5
         if not rank or rank > 5:
             misses.append({**case, "rank": rank})
     negatives = {}
     for name, queries in sorted(data["negatives"].items()):
         hits = [q for q in queries if search(registry, q, limit=1)]
         negatives[name] = {"n": len(queries), "false_alarm": round(len(hits) / len(queries), 3), "hits": hits}
-    summary = {
-        name: {
-            "n": s["n"],
-            "top1": round(s["top1"] / s["n"], 3),
-            "top5": round(s["top5"] / s["n"], 3),
-            "found": round(s["found"] / s["n"], 3),
-            "mrr": round(s["rr"] / s["n"], 3),
+    def rates(tally: dict[str, dict]) -> dict[str, dict]:
+        return {
+            name: {
+                "n": s["n"],
+                "top1": round(s["top1"] / s["n"], 3),
+                "top5": round(s["top5"] / s["n"], 3),
+                "found": round(s["found"] / s["n"], 3),
+                "mrr": round(s["rr"] / s["n"], 3),
+            }
+            for name, s in sorted(tally.items())
         }
-        for name, s in sorted(splits.items())
-    }
+
     return {
-        "splits": summary,
+        "splits": rates(splits),
+        "reported": rates(reported),  # the subset in reporters' own words, also counted in splits
         "negatives": negatives,
         "misses": misses,
     }
@@ -87,11 +94,15 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{'split':<8} {'n':>4} {'top1':>6} {'top5':>6} {'found':>6} {'mrr':>6}")
     for name, s in report["splits"].items():
         print(f"{name:<8} {s['n']:>4} {s['top1']:>6.1%} {s['top5']:>6.1%} {s['found']:>6.1%} {s['mrr']:>6.3f}")
+    print("reported cases only (reporters' own words, included above):")
+    for name, s in report["reported"].items():
+        print(f"{name:<8} {s['n']:>4} {s['top1']:>6.1%} {s['top5']:>6.1%} {s['found']:>6.1%} {s['mrr']:>6.3f}")
     for name, neg in report["negatives"].items():
         print(f"off-domain false alarms [{name}]: {neg['false_alarm']:.1%} of {neg['n']}")
     if args.misses:
         for m in report["misses"]:
-            print(f"  [{m['split']}] trap {m['trap']} rank={m['rank']}: {m['query']}")
+            source = f" ({m['source']})" if m.get("source") else ""
+            print(f"  [{m['split']}] trap {m['trap']} rank={m['rank']}{source}: {m['query']}")
     return 0
 
 
