@@ -194,6 +194,14 @@ class TemplateAnalyzer(TempDirCase):
         # that fail to render, and string "false" turning thinking on.
         self.assertTrue({"25", "38", "43", "57", "68", "83"} <= found, found)
 
+    def test_missing_jinja2_is_said_plainly_not_reported_clean(self):
+        from unittest import mock
+
+        with mock.patch("minefield.template_inspector._jinja_available", return_value=False):
+            report = self.template(DEFECTIVE_TEMPLATE)
+        self.assertTrue(any("jinja2 is not installed" in n for n in report["notes"]), report)
+        self.assertEqual(_ids(report), {"24"})
+
     def test_missing_template_is_reported(self):
         self.write("config.json", "{}")
         self.write("tokenizer_config.json", json.dumps({"bos_token": "<s>"}))

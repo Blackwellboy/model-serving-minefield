@@ -51,6 +51,14 @@ class TemplateNotFound(ValueError):
     pass
 
 
+def _jinja_available() -> bool:
+    try:
+        import jinja2  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def _tojson(value: Any, ensure_ascii: bool = False, indent: Any = None,
             separators: Any = None, sort_keys: bool = False) -> str:
     return json.dumps(value, ensure_ascii=ensure_ascii, indent=indent,
@@ -435,6 +443,16 @@ def inspect_template(path: str | Path) -> dict[str, Any]:
             + (" A Python encoder ships instead, so the prompt is built by code: ask the server what it "
                "renders." if info["python_encoder"] else " The server will use its own fallback template."),
             certainty="configuration-only"))
+        return report
+    if not _jinja_available():
+        # Say so plainly: an empty findings list here would read as a clean template.
+        report["notes"].append("jinja2 is not installed, so the template could not be rendered and no "
+                               "render checks ran (pip install 'jinja2>=3.1').")
+        if re.search(r"\|\s*items\b", info["source"]):
+            report["findings"].append(_finding(
+                "24", "The template uses the |items filter, a Python-Jinja construct that C++ Jinja "
+                "engines (llama.cpp, LM Studio) have mis-rendered. Compare a render from your engine.",
+                certainty="configuration-only"))
         return report
     try:
         render = _Renderer(info["source"], info["bos_token"], info["eos_token"])
