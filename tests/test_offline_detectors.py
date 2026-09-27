@@ -213,6 +213,75 @@ class TemplateAnalyzer(TempDirCase):
         self.assertTrue(any("does not render" in n for n in report["notes"]))
 
 
+# 10^10 loop iterations: the sandbox caps each range(), not the nesting.
+HANGING_TEMPLATE = (
+    "{% for i in range(100000) %}{% for j in range(100000) %}{% endfor %}{% endfor %}"
+    "{% for m in messages %}{{ m.content }}{% endfor %}"
+)
+# Renders a plain conversation at once and hangs only when tools are passed,
+# so the early probes run and the tool probes hit the timeout.
+HANGS_ON_TOOLS_TEMPLATE = (
+    "{% if tools %}{% for i in range(100000) %}{% for j in range(100000) %}{% endfor %}{% endfor %}{% endif %}"
+    "{% for m in messages %}<|im_start|>{{ m.role }}\n{{ m.content }}<|im_end|>\n{% endfor %}"
+)
+
+
+class TemplateRenderTimeout(TempDirCase):
+    GUARD_S = 20  # without the timeout these renders run for hours; fail instead of hanging the suite
+
+    def bounded(self, fn):
+        import threading
+        from unittest import mock
+
+        out: dict = {}
+        with mock.patch("minefield.template_inspector.RENDER_TIMEOUT_S", 0.5):
+            worker = threading.Thread(target=lambda: out.setdefault("report", fn()), daemon=True)
+            worker.start()
+            worker.join(self.GUARD_S)
+        self.assertFalse(worker.is_alive(), "template render did not time out")
+        return out["report"]
+
+    def test_hanging_template_is_cut_off_and_said_not_clean(self):
+        path = self.write("chat_template.jinja", HANGING_TEMPLATE)
+        report = self.bounded(lambda: inspect_template(path))
+        self.assertEqual(report["findings"], [])
+        self.assertTrue(any("longer than 0.5s" in n and "not a clean result" in n
+                            for n in report["notes"]), report["notes"])
+
+    def test_one_timeout_skips_the_remaining_probes(self):
+        import time
+
+        path = self.write("chat_template.jinja", HANGS_ON_TOOLS_TEMPLATE)
+        start = time.monotonic()
+        report = self.bounded(lambda: inspect_template(path))
+        # Every probe after the first tool render would otherwise wait out its own timeout.
+        self.assertLess(time.monotonic() - start, 3.0)
+        self.assertIn("not a clean result", report["notes"][0])
+        skipped = {n.split(":")[0] for n in report["notes"] if "not checked (RenderTimeout" in n}
+        # The probes before the first tool render ran; everything from it on was skipped.
+        self.assertTrue({"tool arguments", "list content", "history reasoning"} <= skipped, skipped)
+        self.assertFalse({"default system prompt", "generation prompt"} & skipped, skipped)
+
+    def test_scan_finishes_on_a_hanging_template(self):
+        self.write("model/config.json", "{}")
+        self.write("model/chat_template.jinja", HANGING_TEMPLATE)
+        report = self.bounded(lambda: scan([str(self.dir / "model")]))
+        self.assertTrue(any("not a clean result" in n for n in report["notes"]), report["notes"])
+
+    def test_existing_trace_function_is_restored(self):
+        def tracer(frame, event, arg):
+            return None
+
+        path = self.write("chat_template.jinja", CLEAN_TEMPLATE)
+        previous = sys.gettrace()
+        sys.settrace(tracer)
+        try:
+            inspect_template(path)
+            self.assertIs(sys.gettrace(), tracer)
+        finally:
+            sys.settrace(previous)
+
+
 class ModelFolder(TempDirCase):
     def test_risky_config_and_files(self):
         folder = self.dir / "Qwen3-8B-NVFP4"

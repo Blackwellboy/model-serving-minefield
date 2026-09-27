@@ -21,12 +21,15 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
 MAX_TEMPLATE_BYTES = 512 * 1024
 MAX_TOKENIZER_CONFIG_BYTES = 8 * 1024 * 1024
+RENDER_TIMEOUT_S = 3.0
 
 # Probe markers: plain words that no real template contains.
 USER1, USER2 = "PROBEUSERONE", "PROBEUSERTWO"
@@ -143,17 +146,47 @@ def load_template(path: str | Path) -> dict[str, Any]:
     return result
 
 
+class RenderTimeout(Exception):
+    pass
+
+
 class _Renderer:
+    """Renders the template, giving up on any single render after RENDER_TIMEOUT_S.
+
+    The sandbox caps range() but not nested loops or recursive macros, so a
+    template can take hours to render. A trace function checks the clock on
+    every Python call and every line of the compiled template and raises
+    RenderTimeout past the deadline. One built-in operation (a huge string
+    repeat, say) is not interrupted mid-call. After one timeout every later
+    render fails at once, so a slow template costs one timeout, not one per probe.
+    """
+
     def __init__(self, source: str, bos: str, eos: str) -> None:
         self.template = _environment().from_string(source)
         self.bos, self.eos = bos, eos
+        self.timed_out = False
 
     def __call__(self, messages: list[dict[str, Any]], *, gen: bool = True,
                  tools: list[dict[str, Any]] | None = None, **kwargs: Any) -> str:
-        return self.template.render(
-            messages=messages, tools=tools, add_generation_prompt=gen,
-            bos_token=self.bos, eos_token=self.eos, **kwargs,
-        )
+        if self.timed_out:
+            raise RenderTimeout(f"an earlier render exceeded {RENDER_TIMEOUT_S:g}s")
+        deadline = time.monotonic() + RENDER_TIMEOUT_S
+
+        def check(frame: Any, event: str, arg: Any) -> Any:
+            if time.monotonic() > deadline:
+                self.timed_out = True
+                raise RenderTimeout(f"render exceeded {RENDER_TIMEOUT_S:g}s")
+            return check if frame.f_code.co_filename == "<template>" else None
+
+        previous = sys.gettrace()
+        sys.settrace(check)
+        try:
+            return self.template.render(
+                messages=messages, tools=tools, add_generation_prompt=gen,
+                bos_token=self.bos, eos_token=self.eos, **kwargs,
+            )
+        finally:
+            sys.settrace(previous)
 
 
 def _u(text: str) -> dict[str, Any]:
@@ -390,6 +423,10 @@ def _checks(render: _Renderer, source: str) -> tuple[list[dict[str, Any]], list[
 
     try:
         render([_u(USER1)])
+    except RenderTimeout:
+        notes.append(f"rendering a one-message conversation took longer than {RENDER_TIMEOUT_S:g}s, so "
+                     "no probe could run. The template was not checked; that is not a clean result.")
+        return findings, notes
     except Exception as exc:
         notes.append("the template does not render a one-message conversation, so no probe could run "
                      f"({type(exc).__name__}: {str(exc)[:120]})")
@@ -404,6 +441,9 @@ def _checks(render: _Renderer, source: str) -> tuple[list[dict[str, Any]], list[
         ("thinking truthiness", truthiness), ("history reasoning", history_reasoning),
     ):
         attempt(name, fn)
+    if render.timed_out:
+        notes.insert(0, f"a render took longer than {RENDER_TIMEOUT_S:g}s, so every probe from that "
+                     "point on was skipped. Those checks did not run; that is not a clean result.")
     return findings, notes
 
 
