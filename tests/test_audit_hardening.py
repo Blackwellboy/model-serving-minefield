@@ -1,0 +1,122 @@
+"""Regression tests for the security and malformed-input findings from audit."""
+
+from __future__ import annotations
+
+import json
+import os
+import tempfile
+import time
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from minefield.mcp_server import call_tool
+from minefield.model_inspector import inspect_model_folder
+from minefield.registry import load_registry
+from minefield.results_inspector import inspect_results
+from minefield.scan import scan
+
+
+class AuditHardeningTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def write(self, relative: str, content: str) -> Path:
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def model(self, relative: str = "model") -> Path:
+        folder = self.root / relative
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "config.json").write_text(
+            json.dumps({"model_type": "llama", "max_position_embeddings": 8192}),
+            encoding="utf-8",
+        )
+        (folder / "generation_config.json").write_text("{}", encoding="utf-8")
+        return folder
+
+    def test_mcp_scan_does_not_read_cache_refs_above_allowed_root(self) -> None:
+        cache = self.root / "models--org--model"
+        snapshot = cache / "snapshots" / "abc"
+        snapshot.mkdir(parents=True)
+        (snapshot / "config.json").write_text(
+            json.dumps({"model_type": "llama"}), encoding="utf-8"
+        )
+        (snapshot / "generation_config.json").write_text("{}", encoding="utf-8")
+        (cache / "refs").mkdir(parents=True)
+        (cache / "refs" / "main").write_text("bad-ref\n", encoding="utf-8")
+
+        report = call_tool(
+            "scan_files",
+            {"paths": [str(snapshot)]},
+            load_registry(),
+            allowed_roots=[str(snapshot)],
+        )
+        self.assertNotIn("131", report["traps"], report)
+
+        # The same cache root is intentionally visible when it itself is allowed.
+        direct = inspect_model_folder(snapshot, allowed_roots=[str(cache)])
+        self.assertIn("131", {item["trap_id"] for item in direct["findings"]})
+
+    def test_scalar_json_is_rejected_without_a_type_error(self) -> None:
+        path = self.write("scalar.json", "42")
+        with self.assertRaisesRegex(ValueError, "must be an object"):
+            inspect_results(path)
+        report = scan([str(path)])
+        self.assertEqual(report["findings"], [])
+        self.assertTrue(any("not parsed as eval results" in note for note in report["notes"]), report)
+
+    def test_malformed_openai_envelopes_do_not_crash(self) -> None:
+        path = self.write("bad-envelope.json", json.dumps({
+            "results": [
+                {"response": {"choices": ["not-an-object"]}},
+                {"response": {"choices": [{
+                    "finish_reason": "stop", "message": "not-an-object",
+                }]}, "score": 0},
+            ]
+        }))
+        report = inspect_results(path)
+        self.assertEqual(report["records"], 2)
+        self.assertIsInstance(report["findings"], list)
+
+    def test_malformed_quantization_config_is_bounded(self) -> None:
+        folder = self.root / "Qwen-NVFP4"
+        folder.mkdir()
+        (folder / "config.json").write_text(json.dumps({
+            "model_type": "qwen3_next",
+            "quantization_config": ["not", "an", "object"],
+        }), encoding="utf-8")
+        report = inspect_model_folder(folder)
+        self.assertIn("10", {item["trap_id"] for item in report["findings"]})
+        self.assertTrue(any("not an object" in note for note in report["notes"]), report)
+
+    @unittest.skipUnless(os.name == "posix", "hard memory isolation is POSIX-only")
+    def test_recursive_scan_survives_a_single_operation_memory_bomb(self) -> None:
+        folder = self.model("bomb")
+        (folder / "chat_template.jinja").write_text(
+            '{{ "x" * 1000000000 }}', encoding="utf-8"
+        )
+        started = time.monotonic()
+        report = scan([str(folder)])
+        self.assertLess(time.monotonic() - started, 20.0)
+        joined = "\n".join(report["notes"])
+        self.assertRegex(joined, r"MemoryError|not checked|not a clean result|memory limit")
+
+    def test_global_file_limit_applies_across_multiple_roots(self) -> None:
+        for directory in ("a", "b"):
+            for number in range(3):
+                self.write(f"{directory}/launch-{number}.sh", "echo ok\n")
+        with mock.patch("minefield.scan.MAX_FILES", 2):
+            report = scan([str(self.root / "a"), str(self.root / "b")])
+        self.assertLessEqual(len(report["scanned"]), 2, report["scanned"])
+        self.assertTrue(any("global 2-file limit" in note for note in report["notes"]), report)
+
+
+if __name__ == "__main__":
+    unittest.main()
