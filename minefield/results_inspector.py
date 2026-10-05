@@ -1,16 +1,17 @@
 """Offline checks on eval/benchmark result files.
 
-Reads per-item records from JSON or JSONL and looks for the measurement traps
-that are visible in the numbers themselves: empty answers at the token cap,
+Reads bounded per-item records from JSON or JSONL and looks for measurement
+traps visible in the numbers themselves: empty answers at the token cap,
 cap-hits scored as wrong, arms truncated at different rates, all-zero arms,
 and tool calls scored as wrong answers. Field names vary by harness, so each
-record is read through a small set of common aliases; a file whose records
-carry none of them is reported as not understood rather than as clean.
+record is read through common aliases; a file whose records carry none of them
+is reported as not understood rather than as clean.
 """
 
 from __future__ import annotations
 
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -29,35 +30,74 @@ _LIST_KEYS = ("results", "samples", "items", "records", "data", "predictions", "
 
 
 def _records(path: Path) -> list[dict[str, Any]]:
-    if path.stat().st_size > MAX_RESULTS_BYTES:
-        raise ValueError(f"results file exceeds {MAX_RESULTS_BYTES} bytes: {path}")
-    text = path.read_text(encoding="utf-8")
     try:
-        value = json.loads(text)
-    except ValueError:
-        value = [json.loads(line) for line in text.splitlines() if line.strip().startswith("{")]
+        size = path.stat().st_size
+    except OSError as exc:
+        raise ValueError(f"results file is not readable: {path}") from exc
+    if size > MAX_RESULTS_BYTES:
+        raise ValueError(f"results file exceeds {MAX_RESULTS_BYTES} bytes: {path}")
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError(f"results file is not valid readable UTF-8: {path}") from exc
+    if not text.strip():
+        raise ValueError(f"results file is empty: {path}")
+
+    try:
+        value: Any = json.loads(text)
+    except json.JSONDecodeError:
+        records: list[dict[str, Any]] = []
+        saw_line = False
+        for number, line in enumerate(text.splitlines(), 1):
+            if not line.strip():
+                continue
+            saw_line = True
+            if len(records) >= MAX_RECORDS:
+                break
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"invalid JSONL at line {number}: {exc.msg}") from exc
+            if isinstance(item, dict):
+                records.append(item)
+        if not saw_line:
+            raise ValueError(f"results file has no JSON records: {path}")
+        return records
+
     if isinstance(value, dict):
         for key in _LIST_KEYS:
-            if isinstance(value.get(key), list):
-                value = value[key]
+            candidate = value.get(key)
+            if isinstance(candidate, list):
+                value = candidate
                 break
         else:
             value = [value]
+    elif not isinstance(value, list):
+        raise ValueError(
+            f"results JSON must be an object, an array of objects, or JSONL objects: {path}"
+        )
     return [item for item in value[:MAX_RECORDS] if isinstance(item, dict)]
 
 
 def _choice(record: dict[str, Any]) -> dict[str, Any]:
-    """Unwrap an OpenAI-shaped envelope when present."""
-    for holder in (record, record.get("response") if isinstance(record.get("response"), dict) else None):
-        if holder and isinstance(holder.get("choices"), list) and holder["choices"]:
-            choice = holder["choices"][0]
-            message = choice.get("message") or {}
-            return {
-                "finish_reason": choice.get("finish_reason"),
-                "content": message.get("content"),
-                "reasoning_content": message.get("reasoning_content") or message.get("reasoning"),
-                "tool_calls": message.get("tool_calls"),
-            }
+    """Unwrap an OpenAI-shaped envelope when it has the expected object shape."""
+    nested = record.get("response")
+    holders = (record, nested if isinstance(nested, dict) else None)
+    for holder in holders:
+        if not isinstance(holder, dict):
+            continue
+        choices = holder.get("choices")
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+            continue
+        choice = choices[0]
+        raw_message = choice.get("message")
+        message = raw_message if isinstance(raw_message, dict) else {}
+        return {
+            "finish_reason": choice.get("finish_reason"),
+            "content": message.get("content") if message else choice.get("text"),
+            "reasoning_content": message.get("reasoning_content") or message.get("reasoning"),
+            "tool_calls": message.get("tool_calls"),
+        }
     return {}
 
 
@@ -65,6 +105,14 @@ def _get(record: dict[str, Any], names: tuple[str, ...]) -> Any:
     for name in names:
         if name in record:
             return record[name]
+    return None
+
+
+def _short_scalar(value: Any, limit: int = 200) -> str | None:
+    if isinstance(value, str):
+        return value[:limit]
+    if isinstance(value, (int, float, bool)) and not isinstance(value, complex):
+        return str(value)[:limit]
     return None
 
 
@@ -76,15 +124,20 @@ def _normalise(record: dict[str, Any]) -> dict[str, Any]:
     score = _get(record, _SCORE)
     if isinstance(score, bool):
         score = float(score)
-    elif not isinstance(score, (int, float)):
+    elif isinstance(score, (int, float)) and not isinstance(score, bool):
+        score = float(score) if math.isfinite(float(score)) else None
+    else:
         score = None
+    finish_value = envelope.get("finish_reason") or _get(record, _FINISH)
+    finish = _short_scalar(finish_value)
+    arm_value = _get(record, _ARM)
     return {
-        "finish": str(envelope.get("finish_reason") or _get(record, _FINISH) or "").lower() or None,
+        "finish": finish.lower() if finish else None,
         "content": content,
         "reasoning": envelope.get("reasoning_content") or _get(record, _REASONING),
         "tool_calls": envelope.get("tool_calls") or record.get("tool_calls"),
         "score": score,
-        "arm": str(_get(record, _ARM)) if _get(record, _ARM) is not None else None,
+        "arm": _short_scalar(arm_value),
     }
 
 
@@ -104,38 +157,51 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
     target = Path(path)
     if target.is_symlink():
         raise ValueError(f"symlink input is refused: {path}")
-    rows = [_normalise(r) for r in _records(target)]
-    report: dict[str, Any] = {"kind": "eval_results", "path": str(target), "records": len(rows),
-                              "findings": [], "notes": []}
+    rows = [_normalise(record) for record in _records(target)]
+    report: dict[str, Any] = {
+        "kind": "eval_results",
+        "path": str(target),
+        "records": len(rows),
+        "findings": [],
+        "notes": [],
+    }
     findings = report["findings"]
-    understood = [r for r in rows if r["finish"] or r["score"] is not None or r["content"] is not None]
+    understood = [
+        row for row in rows
+        if row["finish"] or row["score"] is not None or row["content"] is not None
+    ]
     if not understood:
-        report["notes"].append("no per-item finish_reason, content or score fields recognised; nothing checked")
+        report["notes"].append(
+            "no per-item finish_reason, content or score fields recognised; nothing checked"
+        )
         return report
 
-    capped = [r for r in understood if r["finish"] in ("length", "max_tokens")]
-    empty_capped = [r for r in capped if _empty(r["content"])]
+    capped = [row for row in understood if row["finish"] in ("length", "max_tokens")]
+    empty_capped = [row for row in capped if _empty(row["content"])]
     if len(empty_capped) >= max(1, len(understood) // 50):
         findings.append(_finding(
             "12", f"{len(empty_capped)} of {len(understood)} items stopped at the token cap with empty "
             "content. These score as wrong but are a budget problem; re-run them with a larger max_tokens "
             "before concluding anything about capability."))
 
-    scored = [r for r in understood if r["score"] is not None]
-    wrong = [r for r in scored if r["score"] == 0]
-    wrong_capped = [r for r in wrong if r["finish"] in ("length", "max_tokens")]
+    scored = [row for row in understood if row["score"] is not None]
+    wrong = [row for row in scored if row["score"] == 0]
+    wrong_capped = [row for row in wrong if row["finish"] in ("length", "max_tokens")]
     if wrong and len(wrong_capped) >= max(2, len(wrong) // 5):
         findings.append(_finding(
             "16", f"{len(wrong_capped)} of {len(wrong)} wrong answers hit the token cap. Report truncation "
             "separately; a cap-hit is not the same failure as a wrong answer."))
 
-    null_stop = [r for r in understood if r["finish"] == "stop" and r["content"] is None and not _empty(r["reasoning"])]
+    null_stop = [
+        row for row in understood
+        if row["finish"] == "stop" and row["content"] is None and not _empty(row["reasoning"])
+    ]
     if null_stop:
         findings.append(_finding(
             "64", f"{_items(len(null_stop))} finished with 'stop' and null content while the reasoning field "
             "holds text; the answer was delivered as reasoning and scored as empty."))
 
-    tool_wrong = [r for r in wrong if r["tool_calls"] and _empty(r["content"])]
+    tool_wrong = [row for row in wrong if row["tool_calls"] and _empty(row["content"])]
     if tool_wrong:
         findings.append(_finding(
             "42", f"{_items(len(tool_wrong))} answered with a tool call and were scored wrong; a single-turn "
@@ -146,19 +212,24 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
         if row["arm"] is not None:
             arms[row["arm"]].append(row)
     if len(arms) >= 2:
-        rates = {arm: sum(r["finish"] in ("length", "max_tokens") for r in items) / len(items)
-                 for arm, items in arms.items() if len(items) >= 10}
+        rates = {
+            arm: sum(row["finish"] in ("length", "max_tokens") for row in items) / len(items)
+            for arm, items in arms.items() if len(items) >= 10
+        }
         if len(rates) >= 2:
-            low, high = min(rates.items(), key=lambda kv: kv[1]), max(rates.items(), key=lambda kv: kv[1])
+            low = min(rates.items(), key=lambda item: item[1])
+            high = max(rates.items(), key=lambda item: item[1])
             if high[1] - low[1] >= 0.05 and high[1] >= 2 * max(low[1], 0.01):
                 findings.append(_finding(
                     "36", f"Truncation differs by arm: {high[0]} {high[1]:.0%} vs {low[0]} {low[1]:.0%}. The "
                     "same token cap handicaps the arm that reasons longer; compare arms only at matched "
                     "truncation or report it beside every score."))
-    zero_arms = [arm for arm, items in arms.items()
-                 if len([r for r in items if r["score"] is not None]) >= 10
-                 and all(r["score"] == 0 for r in items if r["score"] is not None)]
-    all_scored_zero = len(scored) >= 10 and all(r["score"] == 0 for r in scored)
+    zero_arms = [
+        arm for arm, items in arms.items()
+        if len([row for row in items if row["score"] is not None]) >= 10
+        and all(row["score"] == 0 for row in items if row["score"] is not None)
+    ]
+    all_scored_zero = len(scored) >= 10 and all(row["score"] == 0 for row in scored)
     if zero_arms or all_scored_zero:
         who = ", ".join(zero_arms) if zero_arms else "every item"
         findings.append(_finding(
