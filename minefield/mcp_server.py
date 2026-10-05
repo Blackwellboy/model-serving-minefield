@@ -13,9 +13,9 @@ from .coverage import build_coverage
 from .diagnosis_contract import CONDITION_FIELDS
 from .guided_experiments import specifications
 from .log_inspector import inspect_logs
-from .scan import scan
 from .matching import diagnose, search
 from .registry import load_registry
+from .scan import scan
 from .static_inspector import inspect_files
 
 TOOLS = {
@@ -235,7 +235,7 @@ def call_tool(
             resolved = candidate.resolve(strict=True)
             if not any(resolved == root or root in resolved.parents for root in roots):
                 raise ValueError(f"path is outside allowed roots: {raw}")
-        return scan(args["paths"])
+        return scan(args["paths"], allowed_roots)
     raise ValueError(f"unknown tool: {name}")
 
 
