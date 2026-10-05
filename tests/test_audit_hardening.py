@@ -64,6 +64,25 @@ class AuditHardeningTests(unittest.TestCase):
         direct = inspect_model_folder(snapshot, allowed_roots=[str(cache)])
         self.assertIn("131", {item["trap_id"] for item in direct["findings"]})
 
+    def test_single_token_stack_lookup_uses_declared_context(self) -> None:
+        matches = call_tool(
+            "get_stack_checks", {"stack": "vllm"}, load_registry()
+        )
+        self.assertTrue(matches)
+        self.assertTrue(all(item["match_type"] == "declared-context-only" for item in matches))
+        self.assertTrue(any("vllm" in item["matched_context"].lower() for item in matches))
+
+    def test_single_token_model_lookup_uses_declared_context(self) -> None:
+        report = call_tool(
+            "get_model_risks", {"model": "Qwen"}, load_registry()
+        )
+        self.assertTrue(report["matches"])
+        self.assertTrue(any(
+            "qwen" in item["matched_context"].lower()
+            for item in report["matches"]
+        ))
+        self.assertIn("not diagnoses", report["warning"])
+
     def test_scalar_json_is_rejected_without_a_type_error(self) -> None:
         path = self.write("scalar.json", "42")
         with self.assertRaisesRegex(ValueError, "must be an object"):
