@@ -71,6 +71,15 @@ class ConfigRules(TempDirCase):
     def test_safe_launch_fires_nothing(self):
         self.assertEqual(_ids(inspect_files([str(self.write("safe.sh", SAFE_LAUNCH))])), set())
 
+    def test_repeated_static_signature_is_bounded_and_reported(self):
+        path = self.write("repeat.sh", ("reasoning_effort=x\n" * 100))
+        report = inspect_files([str(path)])
+        self.assertEqual(len(report["findings"]), 8)
+        self.assertIn(
+            {"code": "RULE_MATCH_LIMIT", "file": str(path.resolve()), "trap_id": "07", "limit": 8},
+            report["truncations"],
+        )
+
     def test_whole_file_mount_over_a_package_module(self):
         compose = self.write("compose.yml", "services:\n  gw:\n    volumes:\n"
                              "      - ./patched.py:/usr/lib/python3.12/site-packages/pkg/mod.py:ro\n")
@@ -111,6 +120,16 @@ class LogRules(TempDirCase):
 
     def test_harmless_keyword_mentions_do_not_fire(self):
         self.assertEqual(_ids(inspect_logs([str(self.write("clean.log", CLEAN_LOG))])), set())
+
+    def test_repeated_log_signature_is_bounded_and_reported(self):
+        path = self.write("repeat.log", ("worker exited with code 137\n" * 100))
+        report = inspect_logs([str(path)])
+        self.assertLessEqual(len(report["findings"]), 8)
+        self.assertTrue(
+            any(item["code"] == "RULE_MATCH_LIMIT" and item.get("trap_id") == "115"
+                for item in report["truncations"]),
+            report["truncations"],
+        )
 
 
 DEFECTIVE_TEMPLATE = """\
@@ -312,6 +331,39 @@ class ModelFolder(TempDirCase):
         (snap / "generation_config.json").write_text("{}")
         self.assertEqual(_ids(inspect_model_folder(snap)), {"131"})
 
+    def test_cache_ref_directory_visit_budget_counts_empty_directories(self):
+        from unittest import mock
+
+        root = self.dir / "models--org--m"
+        for i in range(6):
+            (root / "refs" / f"empty-{i}").mkdir(parents=True)
+        snap = root / "snapshots" / "abc"
+        snap.mkdir(parents=True)
+        (snap / "config.json").write_text(json.dumps({"model_type": "llama"}))
+        with mock.patch("minefield.model_inspector.MAX_CACHE_REF_VISITS", 3):
+            report = inspect_model_folder(snap)
+        self.assertTrue(
+            any("cache-ref inspection stopped after 3 directory entries" in note
+                for note in report["notes"]),
+            report["notes"],
+        )
+
+    def test_model_folder_entry_listing_is_bounded(self):
+        from unittest import mock
+
+        folder = self.dir / "model"
+        folder.mkdir()
+        (folder / "config.json").write_text(json.dumps({"model_type": "llama"}))
+        for i in range(5):
+            (folder / f"extra-{i}.bin").write_text("x")
+        with mock.patch("minefield.model_inspector.MAX_MODEL_DIR_ENTRIES", 2):
+            report = inspect_model_folder(folder)
+        self.assertTrue(
+            any("model-folder entry inspection stopped after 2 entries" in note
+                for note in report["notes"]),
+            report["notes"],
+        )
+
 
 class EvalResults(TempDirCase):
     def test_measurement_traps_in_results(self):
@@ -364,6 +416,41 @@ class ScanCommand(TempDirCase):
         report = scan([str(link)])
         self.assertEqual(report["findings"], [])
         self.assertTrue(any("symlink" in n for n in report["notes"]))
+
+    def test_entry_visit_budget_counts_empty_directories(self):
+        from unittest import mock
+
+        for i in range(12):
+            (self.dir / f"empty-{i}").mkdir()
+        with mock.patch("minefield.scan.MAX_ENTRY_VISITS", 5):
+            report = scan([str(self.dir)])
+        self.assertIn(
+            {"code": "ENTRY_VISIT_LIMIT", "limit": 5},
+            report["truncations"],
+        )
+        self.assertTrue(any("5-entry visit limit" in note for note in report["notes"]))
+
+    def test_scan_propagates_detector_truncation_metadata(self):
+        path = self.write("repeat.sh", ("reasoning_effort=x\n" * 100))
+        report = scan([str(path)])
+        self.assertTrue(
+            any(item["code"] == "RULE_MATCH_LIMIT" and item.get("detector") == "config"
+                for item in report["truncations"]),
+            report["truncations"],
+        )
+
+    def test_scan_finding_output_has_a_global_cap(self):
+        from unittest import mock
+
+        path = self.write("launch.sh", RISKY_LAUNCH)
+        with mock.patch("minefield.scan.MAX_SCAN_FINDINGS", 1):
+            report = scan([str(path)])
+        self.assertEqual(len(report["findings"]), 1)
+        self.assertTrue(
+            any(item["code"] == "SCAN_FINDING_LIMIT" and item["limit"] == 1
+                for item in report["truncations"]),
+            report["truncations"],
+        )
 
     def test_cli_json_when_piped_and_text_on_request(self):
         self.write("launch.sh", RISKY_LAUNCH)
