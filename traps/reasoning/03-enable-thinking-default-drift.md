@@ -133,3 +133,14 @@ what omitted effort means on the exact template revision.**
 *Status of this addendum: measured here; raw retained privately, with the
 render/template behavior independently inspectable from the pinned public
 artifact.*
+
+
+## Added 2026-10-07: a server default is not the mode a harness actually ran
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #163](https://github.com/Blackwellboy/model-serving-minefield/issues/163).**
+
+A later cross-engine qualification made the same identity error at a different layer. The baseline SGLang server was launched with a default chat-template kwarg selecting medium reasoning, but the benchmark request itself carried `chat_template_kwargs: {"enable_thinking": false}`. On the pinned SGLang path, request kwargs win and server defaults only fill missing keys. The comparison engine's request carried medium reasoning instead. The supposed engine regression was therefore a thinking-OFF arm compared with a thinking-ON arm.
+
+The negative control was decisive: replaying the new engine with thinking disabled produced zero item flips across the matched sets, while replaying the baseline with the thinking-on request reproduced most of the long runaways.
+
+**Extra check.** Store the resolved request-level thinking kwargs with every scored row. A launch-time default describes requests that omit the field; it is not provenance for requests that override it. Before an engine A/B, diff the actual request bodies, not only the launch lines.

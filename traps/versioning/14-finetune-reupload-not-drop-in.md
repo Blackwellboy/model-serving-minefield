@@ -53,3 +53,14 @@ acceptance battery on the swap.
 
 **Attribution.** Blackwellboy (shard and drafter mechanics); TheTom
 (behavioral non-superset pattern).
+
+
+## Added 2026-10-07: a stock drafter can change acceptance only on the behavior a weight edit changed
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #153](https://github.com/Blackwellboy/model-serving-minefield/issues/153).**
+
+A refusal-edited derivative was served against the base model's unchanged stock speculative drafter. On agent/tool workloads, accepted length was similar or slightly better than stock. On the harmful-request battery, accepted length fell materially after the target stopped producing the short refusal patterns the drafter had learned.
+
+This is a useful boundary on "drop-in": changing target weights can alter the target/drafter relationship selectively, even when the drafter itself is byte-identical and ordinary agent behavior still looks compatible.
+
+**Extra check.** If a fine-tune or post-hoc edit will retain the base model's drafter, measure acceptance on both ordinary production work and the behavior the edit intentionally changed. Do not infer drafter compatibility from one workload.

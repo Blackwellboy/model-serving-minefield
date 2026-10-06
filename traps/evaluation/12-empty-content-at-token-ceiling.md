@@ -298,3 +298,20 @@ rather than an exception. Single serve, no baseline arm.
 Also: request/server "reasoning budget" knobs present on the build were **not** shown to prevent empty finals on a hard high-reasoning task when exercised naively - presence of a budget field is not proof it bounds this path ([trap 77](../reasoning/77-only-one-request-field-is-validated.md) class).
 
 *Status of this addendum: measured here, raw not published; n=30 budget cells are secondary evidence only.* See private evidence archive *(private evidence archived)*.
+
+
+## Added 2026-10-07: long agent context can turn a harmless short-answer cap into a false refusal signal
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #151](https://github.com/Blackwellboy/model-serving-minefield/issues/151).**
+
+On a 63-item in-context compliance set, a 512-token ceiling produced 14 empty rows that initially looked like compliance failures. Re-running the same items at 4096 yielded 61 completed answers, 2 genuine refusals and zero empties. Two other model lanes showed the same shape and converted at 2048. The important condition was the added agent/system/history prefix: a token budget inherited from a short bare-prompt block was not safe for the wrapped measurement.
+
+The serving parser on one lane reported zero reasoning tokens, so usage accounting alone did not reveal where the budget went. The robust signal remained the pair of `finish_reason` and completion-token count, followed by a same-item wider-budget control.
+
+## Added 2026-10-07: raising max_tokens can fail, while a bounded thinking control converts the runaway
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #165](https://github.com/Blackwellboy/model-serving-minefield/issues/165).**
+
+A later TensorFold run captured the other branch already described by this trap: 7 of 63 long agent-context prompts ran to an 8192 ceiling with no answer; at 16384, 6 of the 7 still ran to the larger cap. One response was an exact repeated cycle and another progressively revisited earlier reasoning. Disabling drafting produced the same token stream on the loop witness, and a baseline engine reproduced most affected prompts when given the same thinking-on request, ruling out the speculative drafter as the general owner.
+
+A server-side `thinking_budget` converted all seven at bounded reasoning budgets, whereas merely doubling `max_tokens` converted one. This does **not** make a thinking budget a universal fix: it changes generation by design and needs answer headroom. It does strengthen the procedure above: inspect the tail, distinguish honest truncation from degeneration, and use a control that actually changes the runaway mechanism instead of blindly moving the ceiling.

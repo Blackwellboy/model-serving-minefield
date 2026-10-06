@@ -142,3 +142,24 @@ one.
 [#45](https://github.com/Blackwellboy/model-serving-minefield/issues/45).
 2026-08-17 boot-to-boot KV-pool corroboration: the same contributor,
 [issue #37](https://github.com/Blackwellboy/model-serving-minefield/issues/37).
+
+
+## Added 2026-10-07: `MemAvailable` can hide a huge page-cache swing
+
+**Status of this diagnostic addendum: contributor-measured, conditions as reported. Reported by @scottleimroth in [issue #113](https://github.com/Blackwellboy/model-serving-minefield/issues/113).**
+
+On one GB10 calibration lane, dropping roughly 81 GB of page cache moved `MemFree` from about 41.6 GB to 124.0 GB while `MemAvailable` changed only about 0.3%. That is expected from the Linux meaning of `MemAvailable`: reclaimable cache can already count as available. Therefore this entry's earlier advice to diagnose the condition from `MemAvailable` relative to a reboot baseline was too weak.
+
+For UMA work, record at least **MemFree, Cached, MemAvailable, and GPU-visible free memory together**. Do not declare page-cache pressure absent because `MemAvailable` looks healthy.
+
+The issue also reports a 62% throughput difference between one hot-cache run and cold-cache controls. That performance claim is **not incorporated here yet** because it was not counterbalanced and remains confounded by Trap 54. Issue #113 stays open for the preregistered repeated hot/cold test.
+
+## Added 2026-10-07: a startup fit is an estimate from current free memory, not a reservation
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issues #157](https://github.com/Blackwellboy/model-serving-minefield/issues/157) and [#159](https://github.com/Blackwellboy/model-serving-minefield/issues/159).**
+
+TensorFold's UMA capacity gate sizes its budget from host `MemAvailable` at launch. Starting a fixed-size co-tenant first reduced the engine's reported budget by roughly the co-tenant's footprint and shortened the admitted window. The engine then grew lazily under long prompts, so its idle footprint was not its operational ceiling.
+
+A second experiment showed that the capacity gate's own "largest fitting" context was not always a fixed point. Relaunching at the exact number it had just named could be refused again by a smaller amount because the next process observed slightly different free memory. The source implementation matches that interpretation: the number is recomputed from current availability, not reserved for the retry.
+
+**Operational rule.** Start fixed-size co-tenants before variable-capacity services when you want the latter to size around them, record the realized capacity rather than the requested one, and leave explicit retry margin. Do not turn the stronger unmeasured claim from #157 ("starting the co-tenant second will definitely squeeze it") into a canonical fact; that order was not run.

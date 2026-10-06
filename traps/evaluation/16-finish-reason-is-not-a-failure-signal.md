@@ -67,3 +67,12 @@ content-first scoring rule above. Source/reconciliation context:
 making it in public); Blackwellboy (the stop-but-empty complement). The
 2026-08-17 total-context addendum is credited to TheTom/Offlabel as a public
 source observation pending first-party reproduction.
+
+
+## Added 2026-10-07: source paths can mask a token-cap hit as `tool_calls`
+
+**Status of this addendum: source-inspected / contributor-reported, not a live reproduced masking case. Found by @scottleimroth in [issue #167](https://github.com/Blackwellboy/model-serving-minefield/issues/167).**
+
+Pinned TensorFold source builds the final reason as `tool_calls` whenever parsed calls exist, before falling back to `length`. Current vLLM source also has paths where auto-tool parsing can rewrite the outward reason. The contributor's stored TensorFold rows did **not** contain a live example where a cap-hit and parsed tool call coincided, so this is a counting hazard rather than a promoted runtime claim.
+
+The conservative counting rule is still useful: when `max_tokens` is explicit, count a cap hit from completion-token usage **or** a `length` reason, and record prompt/window state separately. Never assume `finish_reason != length` proves the generation did not reach the requested output ceiling.

@@ -95,3 +95,21 @@ python3 -m minefield upstream-triage --changes changed-paths.txt
 Schema: `docs/evidence-packet.schema.json`.
 No trap number is promised for a contribution; dispositions include
 corroboration, extension, check, mining, draft, upstream-tier, reject.
+
+
+## LLM-judge base rates: a stress test, a classifier and production history are different estimands
+
+A contributor audit in [issue #155](https://github.com/Blackwellboy/model-serving-minefield/issues/155) produced three superficially comparable rates for unrequested agent actions: 71% in an intentionally impossible stress probe, 3.9% from a small-model judge over production history, and 0.08% after every flag was re-read plus an orthogonal operator-objection search.
+
+The gap was not model drift. The three instruments were answering different questions, and the cheap judge also produced structural false positives: empty final replies, interrupted turns, compaction/system notes, scheduled-job sentinels, and batches where it repeated the same rationale without reading the row. It also missed real incidents when the action and the user's objection occurred in different turns.
+
+For agent-history measurement:
+
+- label a stress-test rate as a **stress rate**, never a production base rate;
+- hand-review every positive from a cheap judge before publishing a prevalence number;
+- explicitly bucket interrupted, empty-final, compaction and sentinel turns rather than forcing them into behavioral labels;
+- treat long runs of identical judge rationales as an instrument failure;
+- add an orthogonal detector that spans turns, such as operator corrections/objections;
+- sample judge-negative rows too, so a clean positive review does not hide false negatives.
+
+An LLM judge is evidence-producing code. Its labels are not ground truth merely because they are structured.

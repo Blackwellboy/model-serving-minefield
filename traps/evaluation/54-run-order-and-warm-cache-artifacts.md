@@ -137,3 +137,14 @@ amortization measurements: @tonyd2wild. 2026-08-25 cold-boot JIT signature and
 measurement: @sethforprivacy. 2026-08-25 322,672-token GLM cold/warm pair:
 Blackwellboy.
 
+
+
+## Added 2026-10-07: a probe can poison the cache state of the probe that follows it
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #170](https://github.com/Blackwellboy/model-serving-minefield/issues/170).**
+
+A shared-prefix reuse probe initially measured zero reuse on two TensorFold versions and was diagnosed as an engine gap. The hidden variable was the immediately preceding identity probe: it had already consumed the engine's small set of retained prompt states. The cache experiment was therefore not starting from the state its conclusion assumed.
+
+This is the same run-order trap at a server-state level. A probe that looks read-only to the researcher can populate or evict exactly the cache/prefix state the next probe is trying to measure.
+
+**Extra check.** For cache and prefix-reuse experiments, record or reset retained state before the first measured request. Either use a fresh server, an explicit cache reset, or a counterbalanced order. "Same boot" is not a neutral control when earlier probes mutate server residency.

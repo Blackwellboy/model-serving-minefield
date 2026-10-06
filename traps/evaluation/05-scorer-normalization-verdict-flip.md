@@ -53,3 +53,14 @@ standing hand-read sample in the scoring protocol.
 **Attribution.** Caught and corrected by the checker's own author upstream;
 documented here with the fix pattern. Related raw data:
 [spine-probes/](https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes).
+
+
+## Added 2026-10-07: refusal phrase lists can measure wording instead of refusal
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #173](https://github.com/Blackwellboy/model-serving-minefield/issues/173).**
+
+A refusal-removal study exposed a broader version of this scorer trap. A fixed list of refusal openers undercounted refusals by roughly a third in some edited arms and badly understated the unedited baseline too. Typographic apostrophes and unlisted but ordinary openings such as "I'm sorry, but" or "I won't" moved the count while the behavioral disposition remained a refusal.
+
+A wider counter, checked against harmless controls, recovered many of the misses. One weak edit appeared to reduce refusals under the narrow counter while the wider counter was unchanged, demonstrating that the apparent improvement was rewording.
+
+**Extra check.** For behavioral labels such as refusal, run at least two independent detectors and preserve per-item outputs or flags so disagreements can be hand-read. A detector that keys on a fixed surface phrase is a wording detector until proven otherwise. Normalize punctuation as above, but do not mistake a longer phrase list for ground truth.

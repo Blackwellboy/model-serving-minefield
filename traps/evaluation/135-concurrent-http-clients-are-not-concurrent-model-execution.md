@@ -117,3 +117,14 @@ client-concurrency-versus-execution-concurrency measurement identity.
 work metrics.
 
 **Attribution.** Blackwellboy.
+
+
+## Added 2026-10-07: summing per-stream decode rates can double-count queued waves
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #164](https://github.com/Blackwellboy/model-serving-minefield/issues/164).**
+
+A custom concurrency probe summed each stream's decode rate after subtracting that stream's own TTFT. On a two-slot server with four requests, the second pair waited for the first pair, but that queue time vanished from each per-stream denominator. Four roughly 34 tok/s stream rates were summed to 136.6 tok/s even though completed work was about 67 tok/s.
+
+The repository's own Trap 135 preflight had the same blind spot in a different form: it compared every level only with C1, so a server that genuinely scaled C1→C2 and then saturated C2→C4 could pass. PR #182 changed the checker to compare every usable concurrency-level pair and added the issue's measured C1/C2/C4 shape as a regression.
+
+**Extra rule.** Aggregate throughput is total completed tokens divided by the batch wall-clock span. Never define it as a sum of per-request rates that omit queue wait.

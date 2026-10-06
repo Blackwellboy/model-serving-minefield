@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-07 - Scott corroboration and research-integrity sweep
+
+- Folded Scott's open corroborations into the canonical entries they actually strengthen instead of allocating duplicate trap IDs: 03, 05, 12, 14, 16, 19, 54, 70, 111, 119 and 135.
+- Recorded the request-level thinking override that invalidated an engine A/B (#163), refusal-detector wording sensitivity (#173), long-context token-ceiling false failures and bounded-thinking controls (#151/#165), stock-drafter behavior after a refusal edit (#153), finish-reason masking hazards (#167), the loud missing-tool-parser variant (#149), cache-state probe contamination (#170), reasoning-parser symptom corroboration (#148), speculative-path provenance/counterexamples (#133), UMA page-cache/capacity diagnostics (#113/#157/#159), and completed-work concurrency arithmetic (#164).
+- Added an agentic-research-integrity rule from #155: stress-test rates, LLM-judge labels and production base rates are different estimands; review judge positives and use an orthogonal cross-turn detector.
+- Contributor credit for @scottleimroth is expanded in the Hall of Fame. Canonical trap count is unchanged at 143.
+
 ## 2026-09-27 - 0.2.1: `minefield scan` and 53 more traps with an automatic check
 
 - **`minefield scan PATH...`** reads the files you name (launch scripts, compose files, a model folder, a chat template, server logs, eval results), routes each to the matching offline detector, and prints findings grouped by file with the trap, how sure the rule is, what to check and a link. Piped output is JSON. Also exposed to agents as the MCP `scan_files` tool, confined to `MINEFIELD_ALLOWED_ROOTS`.
