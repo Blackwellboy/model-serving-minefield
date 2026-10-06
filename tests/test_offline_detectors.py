@@ -438,6 +438,12 @@ class ScanCommand(TempDirCase):
                 for item in report["truncations"]),
             report["truncations"],
         )
+        # The text view prints notes, not truncations: a capped count must be
+        # flagged there too, or "x8" reads as the real number of matches.
+        self.assertTrue(
+            any("count shown is a lower bound" in note for note in report["notes"]),
+            report["notes"],
+        )
 
     def test_scan_finding_output_has_a_global_cap(self):
         from unittest import mock
