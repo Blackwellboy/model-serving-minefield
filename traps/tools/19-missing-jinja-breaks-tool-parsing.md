@@ -56,3 +56,12 @@ template for a tool-calling model.
 
 **Attribution.** TheTom (flag and template measurements); Blackwellboy
 (vLLM-side corroboration).
+
+
+## Added 2026-10-07: the missing parser can fail loud instead of degrading to prose
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #149](https://github.com/Blackwellboy/model-serving-minefield/issues/149).**
+
+A newly onboarded vLLM Qwen-family lane was launched with auto tool choice enabled but without a tool-call parser. On that build the failure did not silently fall back to prose: the request was rejected with HTTP 400 and an error explicitly requiring both auto tool choice and a parser.
+
+That is the same configuration class with a different surface. A loud 400 naming the missing parser is not a separate model capability failure. Treat it as the favorable version of this trap: fix the serving parser configuration, then re-run the tool-use control before scoring the model.
