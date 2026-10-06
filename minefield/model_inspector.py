@@ -9,13 +9,17 @@ engine resolved.
 from __future__ import annotations
 
 import json
+import os
 import re
+from itertools import islice
 from pathlib import Path
 from typing import Any
 
 MAX_JSON_BYTES = 8 * 1024 * 1024
 MAX_CACHE_REF_FILES = 1_000
+MAX_CACHE_REF_VISITS = 4_000
 MAX_CACHE_REF_DEPTH = 4
+MAX_MODEL_DIR_ENTRIES = 4_000
 WEIGHT_SUFFIXES = (".safetensors", ".gguf", ".bin", ".pt")
 
 IMPLEMENTED_TRAPS = frozenset({"10", "21", "27", "55", "61", "71", "89", "109", "131", "143"})
@@ -96,20 +100,43 @@ def _find_cache_root(folder: Path, roots: list[Path] | None) -> Path | None:
     return None
 
 
-def _cache_ref_files(root: Path, roots: list[Path] | None) -> tuple[list[Path], bool]:
-    """Return a bounded, symlink-free list of cache ref files."""
+def _bounded_children(folder: Path, limit: int) -> tuple[list[Path], bool]:
+    """List at most limit directory entries without materialising an unbounded folder."""
+    if limit <= 0:
+        return [], True
+    try:
+        with os.scandir(folder) as stream:
+            entries = list(islice(stream, limit + 1))
+    except OSError:
+        return [], False
+    truncated = len(entries) > limit
+    children = [Path(entry.path) for entry in entries[:limit]]
+    children.sort(key=lambda path: path.name)
+    return children, truncated
+
+
+def _cache_ref_files(
+    root: Path, roots: list[Path] | None,
+) -> tuple[list[Path], bool, bool]:
+    """Return a bounded, symlink-free list of cache ref files.
+
+    Both files and directories spend the visit budget, so a tree made mostly
+    of empty directories cannot evade the bound.
+    """
     base = root / "refs"
     files: list[Path] = []
+    visited = 0
     stack = [(base, 0)]
     while stack:
         folder, depth = stack.pop()
-        try:
-            entries = sorted(folder.iterdir())
-        except OSError:
-            continue
+        remaining = MAX_CACHE_REF_VISITS - visited
+        if remaining <= 0:
+            return files, False, True
+        entries, entry_truncated = _bounded_children(folder, remaining)
+        visited += len(entries)
         for entry in entries:
             if len(files) >= MAX_CACHE_REF_FILES:
-                return files, True
+                return files, True, entry_truncated
             try:
                 if entry.is_symlink():
                     continue
@@ -123,7 +150,9 @@ def _cache_ref_files(root: Path, roots: list[Path] | None) -> tuple[list[Path], 
                     files.append(resolved)
             except OSError:
                 continue
-    return files, False
+        if entry_truncated:
+            return files, False, True
+    return files, False, False
 
 
 def inspect_model_folder(
@@ -265,15 +294,22 @@ def inspect_model_folder(
                     certainty="configuration-only"))
 
     # 89: weight shards that share an inode with another path.
-    try:
-        shared = [] if file_only else [
-            item.name
-            for item in sorted(folder.iterdir())
-            if item.suffix in WEIGHT_SUFFIXES and not item.is_symlink() and item.is_file()
-            and item.lstat().st_nlink > 1
-        ]
-    except OSError:
-        shared = []
+    weight_entries, weight_entries_truncated = (
+        ([], False) if file_only else _bounded_children(folder, MAX_MODEL_DIR_ENTRIES)
+    )
+    shared = []
+    for item in weight_entries:
+        try:
+            if (item.suffix in WEIGHT_SUFFIXES and not item.is_symlink() and item.is_file()
+                    and item.lstat().st_nlink > 1):
+                shared.append(item.name)
+        except OSError:
+            continue
+    if weight_entries_truncated:
+        report["notes"].append(
+            f"model-folder entry inspection stopped after {MAX_MODEL_DIR_ENTRIES} entries; "
+            "remaining files were not checked for hard-link sharing"
+        )
     if shared:
         findings.append(_finding(
             "89", f"{len(shared)} weight file(s) are hard links shared with another path. An in-place "
@@ -283,10 +319,15 @@ def inspect_model_folder(
     # 131: HF cache refs files must hold exactly a 40-hex commit id.
     root = _find_cache_root(folder, roots)
     if root is not None:
-        refs, truncated = _cache_ref_files(root, roots)
-        if truncated:
+        refs, file_truncated, visit_truncated = _cache_ref_files(root, roots)
+        if file_truncated:
             report["notes"].append(
                 f"cache-ref inspection stopped after {MAX_CACHE_REF_FILES} files; remaining refs were not checked"
+            )
+        if visit_truncated:
+            report["notes"].append(
+                f"cache-ref inspection stopped after {MAX_CACHE_REF_VISITS} directory entries; "
+                "remaining refs were not checked"
             )
         for ref in refs:
             try:
