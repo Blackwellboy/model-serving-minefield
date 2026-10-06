@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 143,
-  "content_sha256": "b601e1144e87b525e277bba612ee0b21dd3b95eb39d29ddb94cc62dafe65f0df",
+  "content_sha256": "128a703abafa3bc95a66907bbd549f94527e17e1eaaf85984d30748fd3f088db",
   "doctor_implemented_trap_count": 24,
   "entries": [
     {
@@ -218,7 +218,8 @@
       "mechanism": "The same model family ships templates whose default for the thinking kwarg differs by revision and by upload. One checkpoint defaults it to true; another tester's pin documents false. Separately, some servers supply the kwarg themselves, so the template's | default(...) branch never runs and omitting the kwarg is not the same as passing its default. On one llama.cpp path, absent renders byte-identical to true; on a vLLM path with a different revision, absent lands wherever the template default points.",
       "mitigation": "Send the kwarg explicitly on every request, both in production and in every measurement arm. Pin the revision and state it.",
       "public_evidence_links": [
-        "https://github.com/Blackwellboy/laguna-s21-lab#cross-validation--related-work"
+        "https://github.com/Blackwellboy/laguna-s21-lab#cross-validation--related-work",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/163"
       ],
       "related_traps": [
         "07",
@@ -357,7 +358,8 @@
       "mechanism": "A scoring or parsing detail that normalizes differently from the text it is scoring. Unicode punctuation is the common one: a matcher written with a straight apostrophe (') does not match a model that emitted a curly one. Same class: smart quotes, non-breaking spaces, collapsed whitespace, dash variants, and any regex assuming ASCII against a model that emits typographic characters.",
       "mitigation": "Normalization applied on both sides of every matcher, plus a standing hand-read sample in the scoring protocol.",
       "public_evidence_links": [
-        "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes"
+        "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/spine-probes",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/173"
       ],
       "related_traps": [
         "04"
@@ -867,6 +869,8 @@
         "https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/README.md",
         "https://github.com/Blackwellboy/model-serving-minefield-evidence/blob/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/verify.py",
         "https://github.com/Blackwellboy/model-serving-minefield-evidence/tree/b9220ae572c2f578e1fe85710350501997963381/nemotron-super-120b-soak-20260728/raw-scrubbed/",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/151",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/165",
         "https://github.com/Blackwellboy/model-serving-minefield/pull/1",
         "https://github.com/TheTom/offlabel/blob/main/patterns.md",
         "https://github.com/newageinvestments25-byte"
@@ -1004,6 +1008,7 @@
       "mechanism": "Community re-uploads live in separate repos with their own gating, their own shard sets, and sometimes changed auxiliary-head behavior. Our measured case, migrating a large MoE lane from v1.0 to a v1.1 abliterated re-upload: authenticated per-shard sha256 comparison found",
       "mitigation": "Treat re-uploads as new models with a shared ancestor. Pin both revisions, state which one every number came from, and rerun your acceptance battery on the swap.",
       "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/153",
         "https://github.com/TheTom/offlabel/blob/main/patterns.md"
       ],
       "related_traps": [],
@@ -1124,6 +1129,7 @@
       "mitigation": "Score content, use finishreason only as a diagnostic dimension, and when cap-hits appear, re-run the solvable subset at a larger budget before publishing (the discriminating experiment @apollo-mg then specified: only truncations on otherwise-solvable problems separate \"needs budget\" from \"degenerates\").",
       "public_evidence_links": [
         "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/167",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/40",
         "https://github.com/TheTom/offlabel/pull/10#issuecomment-5084128736"
       ],
@@ -1329,6 +1335,7 @@
       "mitigation": "Serve with the model's native template and tool parser enabled (--jinja on llama.cpp; the model-specific --tool-call-parser on vLLM), and never fall back to a generic chat template for a tool-calling model.",
       "public_evidence_links": [
         "https://github.com/Blackwellboy/laguna-s21-lab/blob/main/LAGUNA_OPERATORS_GUIDE.md",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/149",
         "https://github.com/TheTom/offlabel/blob/main/models/laguna-s-2.1.md",
         "https://github.com/tfriedel/qwen3.6-rtx3090-lab/blob/main/TOOL_CALLING_ISSUES.md",
         "https://github.com/vllm-project/vllm/pull/40785",
@@ -3629,6 +3636,7 @@
       "mitigation": "Treat any unpaired, un-counterbalanced measurement as a hypothesis. A result is a result when it survives order reversal, a fresh baseline in the same session, and a null-build run. Practical framing that has saved us repeatedly: an outsized improvement is a bug report until proven otherwise. If the number moved more than the change plausibly explains, the likely explanations are, in order: a measurement artifact (this trap), a correctness regression that removed work (trap 52), and only then a real win.",
       "public_evidence_links": [
         "https://github.com/Blackwellboy/laguna-s21-lab/tree/main/pr10-replication",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/170",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/37",
         "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099416581",
         "https://github.com/TheTom/offlabel/pull/10#issuecomment-5099697368"
@@ -4823,7 +4831,9 @@
       "known_limitations": "",
       "mechanism": "These checkpoints ship a custom reasoning parser as a file in the model repository: nano_v3_reasoning_parser.py (18 lines) and super_v3_reasoning_parser.py (1909 bytes). Neither is bundled with the serving stack. You must fetch the file, mount it, and pass both --reasoning-parser-plugin <path> and --reasoning-parser <name>. Why the custom parser exists, in its own words: the DeepSeek-R1 parser it subclasses puts everything into reasoning when it cannot parse a reasoning block. That is correct for a model that always thinks. These models have a thinking-off mode, so without the override, thinking-off responses land entirely in the reasoning field and content is empty. The subclass exists specifically to fix that. And if you serve with no reasoning parser at all, content carries the reasoning text, then a bare </think>, then the answer, with no opening <think>, because the template pre-opens the block in the prompt and the model only ever emits the closer. Client-side regexes that strip matched <think>...</think> pairs find nothing to strip and the reasoning leaks into user-visible output.",
       "mitigation": "Fetch the file at your pinned revision, mount it into the serving process, and pass both flags: Then read the parser source, because it is short and because its kwargs are part of your lane's kwarg surface and appear in no card and no template. See the parser-only rescue kwarg draft for a worked example of a kwarg that exists only there.",
-      "public_evidence_links": [],
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/148"
+      ],
       "related_traps": [
         "01",
         "02",
@@ -7663,6 +7673,7 @@
       "mechanism": "Both suites ran on our lane on 2026-08-03, interference-screened per trap 110, and the raw is not shipped. The mechanism rests on two things a stranger can verify independently: greedy non-reproducibility across sessions (documented with shipped raw in the agreement-floor note (private evidence archived)) and the acceptance-throughput coupling below, which any speculative lane's own /metrics will reproduce in an afternoon. Symptom. A speculative-decoding lane benchmarked twice in one day, same checkpoint, same launch line, same twelve prompts, both suites clean under interference screening, returns median 242.5 / mean 232.7 tok/s in one session and median 199.9 / mean 220.2 in the other. Neither run is wrong and nothing changed. If the two had been different configs, the 20% gap would have been read as a real effect and published. Mechanism, in two coupled halves. First, temperature-0 decode is not reproducible across sessions. Greedy tie-breaks land differently between server restarts and even between batches, the divergence compounds token by token, and two sessions generate genuinely different text from the same prompts. That much is general (see the agreement-floor note, and trap 94 for how architecture-dependent the guarantee is). Second, on a speculative lane, throughput is a function of the text being generated. Draft acceptance depends on how predictable the content is, and decode speed tracks acceptance nearly linearly: on this lane, a prompt whose generation accepts 2.8 tokens per step decodes at about 168 tok/s and one that accepts 5.6 decodes at about 302, a 1.8x spread inside one clean suite (per-position acceptance 0.85 / 0.6",
       "mitigation": "Three rules, all cheap: 1. Publish the range and the acceptance profile next to any speculative median. \"199.9 median, 167 to 302 observed, mean acceptance 3.85 of 6\" is a reproducible claim; \"199.9 tok/s\" alone is a coin flip. 2. A/B configurations inside one session on fixed prompts, never across sessions. Cross-session deltas below about 20% on this lane are noise. 3. Treat suite size as a variance decision: twelve prompts was enough to see the 167 to 302 spread but not enough to pin the median tighter than about 20%.",
       "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/133",
         "https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4"
       ],
       "related_traps": [
@@ -8184,11 +8195,15 @@
       "mechanism": "On unified memory the GPU and CPU share one physical pool, so host-side pressure and CUDA-visible free memory are not independent quantities. On the reported GB10 lane, MemAvailable and the free-memory value seen by the runtime moved together as model-download page cache, orphaned GPU contexts, pinned buffers and swap consumed or released the shared pool. That observation should not be read as a universal identity between Linux MemAvailable and cudaMemGetInfo on every UMA stack; the useful diagnostic is that pressure in one shared pool can reduce both. Measured spread on an idle-but-churned node was about 8 GiB — 109.53 GiB while failing against 117.7 GiB after reclaim. That is far more than the margin a razor-tuned utilization leaves. Two things then conspire to misdirect the diagnosis: Rank 0 fails first, everyone else is louder. Rank 0 dies on the memory check; the peers lose it and emit NCCL heartbeat and send errors. Those are secondary and there are many more of them. Reading the loudest error points you at the interconnect, which is healthy. Auto-retry makes it worse. On this lane, repeated failed boots left the reported free-memory value slightly lower on each attempt. An auto-retry loop therefore made the input condition worse while hiding the original primary exception under secondary distributed errors. This is the temporal sibling of 13, which covers the static semantics — a fraction reserved against the pool the OS also needs. Trap 13 explains why the headroom is thin; this entry is about the headroom moving underneath a config that was already tuned, and about the error that surfaces belonging to the wrong rank. See also 96 for the device-listing version of host memory being reported as device free memory.",
       "mitigation": "Stop known serving/model-download processes cleanly and reclaim transient pressure before boot. Do not immediately lower gpu-memory-utilization: that can trade a permanent reduction in KV pool for a transient condition. On a dedicated node only, during a maintenance window, the contributor used this destructive reclaim sequence after confirming no wanted GPU process would be killed: Do not run that blindly on a shared workstation or multi-tenant host. Prefer identifying and stopping the owning processes first; use cache/swap reclaim only when you understand the operational impact. On the reported node this restored 109.53 -> ~117.7 GiB and the original utilization booted unchanged. Also disable blind auto-retry for this specific startup failure. Repeated retries can obscure the first useful exception and, on the measured lane, coincided with progressively lower available memory.",
       "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/113",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/157",
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/159",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/37",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/45"
       ],
       "related_traps": [
         "13",
+        "54",
         "96"
       ],
       "source_path": "traps/memory/119-free-memory-drifts-down-after-churn.md",
@@ -9353,7 +9368,9 @@
       "known_limitations": "",
       "mechanism": "Distinguish four different quantities: 1. HTTP / client concurrency - simultaneous sockets or in-flight requests, 2. queued request concurrency - accepted but waiting work, 3. active model sequences - sequences the engine believes are live, 4. simultaneous model execution - work actually progressing together. A front end may accept N requests while a downstream lock, worker, single-flight queue, slot count, or execution policy serializes the actual model work. Therefore a client-side concurrency setting or N simultaneous sockets is not proof that the model ran N sequences concurrently.",
       "mitigation": "Benchmark and report at least two quantities separately: 1. client / request concurrency, 2. actual execution concurrency / completed-work throughput. Do not label C4 as \"4-way model concurrency\" unless execution evidence supports it. Prefer publishing time-to-finished-batch, aggregate completed tok/s, and active sequence count / actual worker concurrency beside per-request tok/s.",
-      "public_evidence_links": [],
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/164"
+      ],
       "related_traps": [
         "41",
         "46",

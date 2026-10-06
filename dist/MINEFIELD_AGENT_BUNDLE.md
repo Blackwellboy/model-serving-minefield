@@ -1822,7 +1822,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: vLLM v0.23.1rc1.dev190+gab6660699 and v0.1.dev17863+ge232d2623.d20260715; GLM-5.2 as QuantTrio/GLM-5.2-Int4-Int8Mix and as a W4W8 community build; 200K-600K context, fp8_ds_mla KV, TP=4 over four DGX Spark (GB10, sm121a, aarch64, 121.69 GiB unified per node), driver 580.142. The general risk applies to unified-memory systems where the serving runtime and the operating system compete for the same physical pool. The exact relationship between OS counters and CUDA-visible free memory remains platform/driver specific.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": ["600k context"], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": ["tp"], "quantization": ["int4"], "serving_stack": ["vllm"], "stack_version": ["v0.23"], "topology": ["tp"]}`
 - Source: `traps/memory/119-free-memory-drifts-down-after-churn.md`
-- Related traps: 13, 96
+- Related traps: 13, 54, 96
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 120: stable at two concurrent, dead at three, with no memory or fabric involvement
