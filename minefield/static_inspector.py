@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 MAX_FILE_BYTES = 2 * 1024 * 1024
+MAX_MATCHES_PER_RULE = 8
+MAX_FINDINGS_PER_FILE = 256
 class Rule(NamedTuple):
     trap_id: str
     pattern: str
@@ -128,15 +130,37 @@ def _read_text_file(path: Path, allowed_roots: list[Path] | None) -> tuple[Path,
 def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []
+    truncations = []
     for raw_path in paths:
         path, data = _read_text_file(Path(raw_path), roots)
+        file_findings = 0
+        file_capped = False
         for rule in RULES:
+            if file_capped:
+                break
             trap_id, pattern, certainty, explanation = rule[:4]
             if rule.requires and not re.search(rule.requires, data, re.I | re.M):
                 continue
             if rule.excludes and re.search(rule.excludes, data, re.I | re.M):
                 continue
+            rule_matches = 0
             for match in re.finditer(pattern, data, re.I | re.M):
+                if rule_matches >= MAX_MATCHES_PER_RULE:
+                    truncations.append({
+                        "code": "RULE_MATCH_LIMIT",
+                        "file": str(path),
+                        "trap_id": trap_id,
+                        "limit": MAX_MATCHES_PER_RULE,
+                    })
+                    break
+                if file_findings >= MAX_FINDINGS_PER_FILE:
+                    truncations.append({
+                        "code": "FILE_FINDING_LIMIT",
+                        "file": str(path),
+                        "limit": MAX_FINDINGS_PER_FILE,
+                    })
+                    file_capped = True
+                    break
                 line = data.count("\n", 0, match.start()) + 1
                 findings.append({
                     "trap_ids": [trap_id],
@@ -165,4 +189,11 @@ def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> d
                     "matched_signature": match.group(0)[:240],
                     "certainty": certainty,
                 })
-    return {"kind": "static_config", "files": len(paths), "findings": findings}
+                rule_matches += 1
+                file_findings += 1
+    return {
+        "kind": "static_config",
+        "files": len(paths),
+        "findings": findings,
+        "truncations": truncations,
+    }
