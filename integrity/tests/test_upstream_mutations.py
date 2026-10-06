@@ -319,6 +319,26 @@ class UpstreamMutations(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("US-HOF-BOUNDARY", out)
 
+    def test_upstream_hof_credit_link_in_prose_does_not_mask_missing_row(self):
+        hof = os.path.join(self.root, "HALL_OF_FAME.md")
+        target = "[U01](upstream/U01-ollama-toolcalls-missing-on-openai-route.md)"
+        marker = "Being listed here is not an endorsement"
+        with open(hof, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn(target, text)
+        self.assertIn(marker, text)
+        text = text.replace(target, "U01 credit removed", 1)
+        text = text.replace(
+            marker,
+            "Stray prose link outside the credit table: %s\n\n%s" % (target, marker),
+            1,
+        )
+        with open(hof, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        rc, out = run_checker(self.root)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("US-HOF-CREDIT", out)
+
     # --- US-GRANDFATHER: the boundary that stops the tier being decorative
 
     def test_new_reported_by_others_entry_in_traps_fires(self):
