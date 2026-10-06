@@ -217,6 +217,16 @@ def _norm_report(report: dict[str, Any], detector: str, file: str) -> list[dict[
     return out
 
 
+def _record_detector_truncations(
+    report: dict[str, Any],
+    truncations: list[dict[str, Any]],
+    detector: str,
+) -> None:
+    for item in report.get("truncations", []):
+        if isinstance(item, dict):
+            truncations.append({"detector": detector, **item})
+
+
 def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = _normalise_roots(allowed_roots)
     root_strings = [str(root) for root in roots] if roots else None
@@ -361,9 +371,11 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 notes += [f"{file.name}: {note}" for note in report.get("notes", [])]
             elif kind == "log":
                 scanned.append({"path": str(file), "kind": "log"})
+                detector_report = inspect_logs([str(file)], root_strings)
+                _record_detector_truncations(detector_report, truncations, "log")
                 findings += [
                     _norm_static(item, "log")
-                    for item in inspect_logs([str(file)], root_strings)["findings"]
+                    for item in detector_report["findings"]
                 ]
             elif kind == "json":
                 try:
@@ -385,23 +397,29 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                         continue
                     bytes_read += file_size
                     scanned.append({"path": str(file), "kind": "config"})
+                    detector_report = inspect_files([str(file)], root_strings)
+                    _record_detector_truncations(detector_report, truncations, "config")
                     findings += [
                         _norm_static(item, "config")
-                        for item in inspect_files([str(file)], root_strings)["findings"]
+                        for item in detector_report["findings"]
                     ]
             else:
                 scanned.append({
                     "path": str(file),
                     "kind": "config" if file.suffix != ".txt" else "config/log",
                 })
+                config_report = inspect_files([str(file)], root_strings)
+                _record_detector_truncations(config_report, truncations, "config")
                 findings += [
                     _norm_static(item, "config")
-                    for item in inspect_files([str(file)], root_strings)["findings"]
+                    for item in config_report["findings"]
                 ]
                 if file.suffix == ".txt":
+                    log_report = inspect_logs([str(file)], root_strings)
+                    _record_detector_truncations(log_report, truncations, "log")
                     findings += [
                         _norm_static(item, "log")
-                        for item in inspect_logs([str(file)], root_strings)["findings"]
+                        for item in log_report["findings"]
                     ]
         except Exception as exc:
             notes.append(f"{file}: {type(exc).__name__}: {str(exc)[:160]}")
