@@ -180,6 +180,51 @@ class AuditHardeningTests(unittest.TestCase):
         )
         self.assertNotIn("SIDECAR-SECRET", json.dumps(report))
 
+    def test_non_canonical_template_beside_model_metadata_is_checked(self) -> None:
+        folder = self.model("deploy")
+        self.write("deploy/chat_template.jinja", "{% for m in messages %}{{ m['content'] }}{% endfor %}")
+        self.write("deploy/alternate_template.jinja", "{% for m in messages %}{{ m['content'] }}{% endfor %}")
+        report = scan([str(folder)])
+        names = {Path(item["path"]).name: item["kind"] for item in report["scanned"]}
+        self.assertEqual(names.get("alternate_template.jinja"), "chat template", report["scanned"])
+        # The canonical template is read through the model folder, not twice.
+        self.assertNotIn("chat_template.jinja", names, report["scanned"])
+
+    def test_loose_template_budget_includes_its_tokenizer_sidecar(self) -> None:
+        self.write("tpl/tokenizer_config.json", json.dumps({"pad": "x" * 500}))
+        self.write("tpl/alt.jinja", "{{ messages }}")
+        with mock.patch("minefield.scan.MAX_TOTAL_BYTES", 100):
+            report = scan([str(self.root / "tpl" / "alt.jinja")])
+        self.assertEqual(report["scanned"], [], report)
+        self.assertTrue(any("scan budget reached" in note for note in report["notes"]), report)
+
+    def test_cache_ref_reads_count_toward_the_global_byte_budget(self) -> None:
+        cache = self.root / "models--org--model"
+        for name in ("a", "b", "c"):
+            snapshot = cache / "snapshots" / name
+            snapshot.mkdir(parents=True)
+            (snapshot / "config.json").write_text("{}", encoding="utf-8")
+        (cache / "refs").mkdir()
+        for number in range(3):
+            (cache / "refs" / f"r{number}").write_text("0" * 40, encoding="utf-8")
+        report = inspect_model_folder(cache / "snapshots" / "a")
+        self.assertEqual(report["cache_ref_bytes"], 120, report)
+        with mock.patch("minefield.scan.MAX_TOTAL_BYTES", 130):
+            report = scan([str(cache / "snapshots")])
+        # Each folder costs 2 bytes of config plus 120 bytes of refs, charged
+        # after the read; without the refs all three would fit in 130 bytes.
+        folders = [item for item in report["scanned"] if item["kind"] == "model folder"]
+        self.assertEqual(len(folders), 2, report["scanned"])
+        self.assertTrue(any("model folder skipped" in note for note in report["notes"]), report)
+
+    def test_unreadable_named_path_is_not_counted_as_accepted(self) -> None:
+        folder = self.root / "locked"
+        folder.mkdir()
+        with mock.patch("minefield.scan.os.scandir", side_effect=PermissionError("denied")):
+            report = scan([str(folder)])
+        self.assertEqual(report["accepted_paths"], 0, report)
+        self.assertTrue(any("cannot be read or listed" in note for note in report["notes"]), report)
+
     def test_scan_with_no_readable_path_exits_nonzero(self) -> None:
         from minefield.cli import main
 

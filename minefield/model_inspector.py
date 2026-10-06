@@ -148,6 +148,7 @@ def inspect_model_folder(
         "path": str(folder),
         "findings": [],
         "notes": [],
+        "cache_ref_bytes": 0,
     }
     findings = report["findings"]
     config = _load_json(folder / "config.json")
@@ -284,6 +285,7 @@ def inspect_model_folder(
                 raw = ref.read_bytes()
             except OSError:
                 continue
+            report["cache_ref_bytes"] += len(raw)
             if not re.fullmatch(rb"[0-9a-f]{40}", raw):
                 findings.append(_finding(
                     "131", f"Cache ref {ref.relative_to(root)} is not exactly a 40-character commit id "

@@ -13,6 +13,7 @@ is safe.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -38,10 +39,11 @@ CONFIG_SUFFIXES = {
 }
 CONFIG_NAMES = {"dockerfile", "makefile", "containerfile", "compose", ".env"}
 # Files the model-folder and template inspectors read from each model folder;
-# their sizes count toward the global byte budget.
+# their sizes count toward the global byte budget.  Only the canonical
+# chat_template.jinja is read through the folder; any other .jinja beside it is
+# checked as a loose template.
 MODEL_FOLDER_READS = (
-    "config.json", "hf_quant_config.json", "generation_config.json",
-    "tokenizer_config.json", "chat_template.jinja",
+    "config.json", "hf_quant_config.json", "tokenizer_config.json", "chat_template.jinja",
 )
 
 
@@ -62,6 +64,36 @@ def _resolve(path: Path, roots: list[Path] | None) -> Path:
     if not _inside(resolved, roots):
         raise ValueError(f"path is outside allowed roots: {path}")
     return resolved
+
+
+def _regular_size(path: Path, roots: list[Path] | None) -> int:
+    """Size of a regular, non-symlink file inside the roots, else 0."""
+    try:
+        if path.is_symlink() or not path.is_file() or not _inside(path.resolve(), roots):
+            return 0
+        return path.stat().st_size
+    except OSError:
+        return 0
+
+
+def _readable(path: Path) -> bool:
+    """True when a named regular file can be opened or a named folder listed.
+
+    Anything else (a FIFO, socket or device) is refused: opening a FIFO would
+    block the scan.
+    """
+    try:
+        if path.is_dir():
+            with os.scandir(path) as entries:
+                next(entries, None)
+        elif path.is_file():
+            with open(path, "rb"):
+                pass
+        else:
+            return False
+        return True
+    except OSError:
+        return False
 
 
 def _is_model_folder(folder: Path) -> bool:
@@ -180,6 +212,9 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
         except (OSError, ValueError) as exc:
             notes.append(f"{raw}: {str(exc)[:160]}")
             continue
+        if not _readable(path):
+            notes.append(f"{raw}: cannot be read or listed; not checked")
+            continue
         accepted += 1
         if path.is_dir():
             if _is_model_folder(path):
@@ -199,7 +234,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                     # The folder inspectors read the model metadata and template;
                     # anything else beside them (launch scripts, logs, results)
                     # still goes to the loose-file detectors.
-                    if file.name.lower().endswith(".jinja"):
+                    if file.name == "chat_template.jinja":
                         continue
                 loose.add(file)
         elif path.name in MODEL_MARKERS or path.name == "hf_quant_config.json":
@@ -219,14 +254,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
 
     bytes_read = 0
     for folder in sorted(model_folders):
-        folder_bytes = 0
-        for name in MODEL_FOLDER_READS:
-            try:
-                item = folder / name
-                if not item.is_symlink() and item.is_file():
-                    folder_bytes += item.stat().st_size
-            except OSError:
-                continue
+        folder_bytes = sum(_regular_size(folder / name, roots) for name in MODEL_FOLDER_READS)
         if bytes_read + folder_bytes > MAX_TOTAL_BYTES:
             notes.append(
                 f"{folder}: global {MAX_TOTAL_BYTES // (1024 * 1024)} MB scan budget reached; "
@@ -236,11 +264,11 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
         bytes_read += folder_bytes
         scanned.append({"path": str(folder), "kind": "model folder"})
         try:
-            findings += _norm_report(
-                inspect_model_folder(folder, allowed_roots=root_strings),
-                "model folder",
-                str(folder),
-            )
+            model_report = inspect_model_folder(folder, allowed_roots=root_strings)
+            # Cache refs are bounded per folder (1000 files of at most 256 bytes)
+            # and are charged after the read.
+            bytes_read += int(model_report.get("cache_ref_bytes") or 0)
+            findings += _norm_report(model_report, "model folder", str(folder))
             template = inspect_template_isolated(folder, root_strings)
             findings += _norm_report(template, "chat template", str(folder))
             notes += [f"{folder.name}: {note}" for note in template.get("notes", [])]
@@ -253,6 +281,9 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             continue
         try:
             size = file.stat().st_size
+            if kind == "template":
+                # The template worker also reads the sibling tokenizer_config.json.
+                size += _regular_size(file.parent / "tokenizer_config.json", roots)
             if bytes_read + size > MAX_TOTAL_BYTES:
                 notes.append(
                     f"{file}: global {MAX_TOTAL_BYTES // (1024 * 1024)} MB scan budget reached; skipped"
