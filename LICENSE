@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Note on model weights: Laguna S 2.1 model weights are NOT included in or
-covered by this repository. They remain under poolside's own license terms.
-Files under originality/raw/r0b0tlab/ are third-party material reproduced for
-independent verification and retain their upstream MIT license (included in
-that directory).
