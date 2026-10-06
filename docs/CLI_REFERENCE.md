@@ -70,6 +70,11 @@ Only the paths you name are read, symlinks are never followed, and nothing runs
 except chat templates inside Jinja's sandbox. Every finding is a lead; an empty
 scan means no implemented check fired, not that the setup is safe.
 
+Files beside a model's metadata (a launch script, server log or results file in
+the model folder) are still checked by their own detectors. If none of the
+paths you name can be read (missing, a symlink, or outside the allowed roots),
+`scan` prints the report and exits with status 2 instead of 0.
+
 Each file inspection requires at least one explicit allowed root and refuses
 paths outside it. Machine-readable JSON is the default for inspection, generation, and bundle
 operations, and for `guide` whenever stdout is not a terminal.

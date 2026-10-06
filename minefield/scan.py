@@ -37,6 +37,12 @@ CONFIG_SUFFIXES = {
     ".ps1", ".bat",
 }
 CONFIG_NAMES = {"dockerfile", "makefile", "containerfile", "compose", ".env"}
+# Files the model-folder and template inspectors read from each model folder;
+# their sizes count toward the global byte budget.
+MODEL_FOLDER_READS = (
+    "config.json", "hf_quant_config.json", "generation_config.json",
+    "tokenizer_config.json", "chat_template.jinja",
+)
 
 
 def _normalise_roots(allowed_roots: list[str] | None) -> list[Path] | None:
@@ -109,6 +115,8 @@ def _kind(path: Path) -> str | None:
     if name in (
         "tokenizer.json", "tokenizer_config.json", "config.json",
         "generation_config.json", "hf_quant_config.json",
+        "special_tokens_map.json", "added_tokens.json", "vocab.json", "vocab.txt",
+        "merges.txt", "preprocessor_config.json", "processor_config.json",
     ) or name.endswith(".safetensors.index.json"):
         return None  # read through the model-folder path, not as a loose file
     if path.suffix.lower() in LOG_SUFFIXES:
@@ -164,6 +172,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
     loose: set[Path] = set()
     discovered: set[Path] = set()
     truncated = False
+    accepted = 0
 
     for raw in paths:
         try:
@@ -171,6 +180,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
         except (OSError, ValueError) as exc:
             notes.append(f"{raw}: {str(exc)[:160]}")
             continue
+        accepted += 1
         if path.is_dir():
             if _is_model_folder(path):
                 model_folders.add(path)
@@ -186,8 +196,12 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 discovered.add(file)
                 if _is_model_folder(file.parent):
                     model_folders.add(file.parent)
-                else:
-                    loose.add(file)
+                    # The folder inspectors read the model metadata and template;
+                    # anything else beside them (launch scripts, logs, results)
+                    # still goes to the loose-file detectors.
+                    if file.name.lower().endswith(".jinja"):
+                        continue
+                loose.add(file)
         elif path.name in MODEL_MARKERS or path.name == "hf_quant_config.json":
             discovered.add(path)
             model_folders.add(path.parent)
@@ -203,7 +217,23 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             f"scan stopped after the global {MAX_FILES}-file limit; remaining files were not checked"
         )
 
+    bytes_read = 0
     for folder in sorted(model_folders):
+        folder_bytes = 0
+        for name in MODEL_FOLDER_READS:
+            try:
+                item = folder / name
+                if not item.is_symlink() and item.is_file():
+                    folder_bytes += item.stat().st_size
+            except OSError:
+                continue
+        if bytes_read + folder_bytes > MAX_TOTAL_BYTES:
+            notes.append(
+                f"{folder}: global {MAX_TOTAL_BYTES // (1024 * 1024)} MB scan budget reached; "
+                "model folder skipped"
+            )
+            continue
+        bytes_read += folder_bytes
         scanned.append({"path": str(folder), "kind": "model folder"})
         try:
             findings += _norm_report(
@@ -211,13 +241,12 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 "model folder",
                 str(folder),
             )
-            template = inspect_template_isolated(folder)
+            template = inspect_template_isolated(folder, root_strings)
             findings += _norm_report(template, "chat template", str(folder))
             notes += [f"{folder.name}: {note}" for note in template.get("notes", [])]
         except Exception as exc:
             notes.append(f"{folder}: {type(exc).__name__}: {str(exc)[:160]}")
 
-    bytes_read = 0
     for file in sorted(loose):
         kind = _kind(file)
         if kind is None:
@@ -237,7 +266,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 continue
             if kind == "template":
                 scanned.append({"path": str(file), "kind": "chat template"})
-                report = inspect_template_isolated(file)
+                report = inspect_template_isolated(file, root_strings)
                 findings += _norm_report(report, "chat template", str(file))
                 notes += [f"{file.name}: {note}" for note in report.get("notes", [])]
             elif kind == "log":
@@ -293,6 +322,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
     ordered = sorted(merged.values(), key=lambda item: (str(item["file"]), int(item["trap_id"])))
     return {
         "kind": "scan",
+        "accepted_paths": accepted,
         "scanned": scanned,
         "findings": ordered,
         "traps": sorted({item["trap_id"] for item in ordered}, key=int),

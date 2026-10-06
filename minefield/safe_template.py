@@ -54,7 +54,9 @@ def _apply_limits() -> None:
         resource.setrlimit(resource.RLIMIT_NOFILE, (min(soft, cap), cap))
 
 
-def inspect_template_isolated(path: str | Path) -> dict[str, Any]:
+def inspect_template_isolated(
+    path: str | Path, allowed_roots: list[str] | None = None
+) -> dict[str, Any]:
     """Inspect one template/model folder in a bounded child process.
 
     This is the entry point used by ``minefield scan`` and the MCP ``scan_files``
@@ -84,7 +86,8 @@ def inspect_template_isolated(path: str | Path) -> dict[str, Any]:
     }
     try:
         completed = subprocess.run(
-            [sys.executable, "-m", "minefield.safe_template", "--worker", str(target)],
+            [sys.executable, "-m", "minefield.safe_template", "--worker", str(target),
+             *[arg for root in (allowed_roots or []) for arg in ("--root", str(root))]],
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -142,12 +145,12 @@ def inspect_template_isolated(path: str | Path) -> dict[str, Any]:
     return value
 
 
-def _worker(path: str) -> int:
+def _worker(path: str, allowed_roots: list[str] | None = None) -> int:
     _apply_limits()
     try:
         from .template_inspector import inspect_template
 
-        report = inspect_template(path)
+        report = inspect_template(path, allowed_roots)
     except BaseException as exc:  # child boundary: return a bounded failure report
         report = _empty_report(
             path,
@@ -169,7 +172,9 @@ def _worker(path: str) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    if len(argv) != 2 or argv[0] != "--worker":
+    roots = argv[2:][1::2]
+    if (len(argv) < 2 or argv[0] != "--worker" or len(argv) % 2
+            or any(flag != "--root" for flag in argv[2:][0::2])):
         sys.stderr.write("safe_template is an internal worker\n")
         return 2
     if os.name != "posix":
@@ -179,7 +184,7 @@ def main(argv: list[str] | None = None) -> int:
             "the template was not checked and that is not a clean result",
         ), separators=(",", ":")))
         return 0
-    return _worker(argv[1])
+    return _worker(argv[1], roots or None)
 
 
 if __name__ == "__main__":

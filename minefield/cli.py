@@ -191,6 +191,10 @@ def main(argv: list[str] | None = None) -> int:
             print(render_scan(report, titles))
         else:
             _emit(report)
+        if not report["accepted_paths"]:
+            # Nothing named could be read: a typo or missing path is an error,
+            # not a clean scan of zero files.
+            return 2
     elif args.command == "diagnose":
         if not sys.stdin.isatty():
             raise SystemExit("diagnose requires an interactive terminal")

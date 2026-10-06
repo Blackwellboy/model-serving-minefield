@@ -136,6 +136,58 @@ class AuditHardeningTests(unittest.TestCase):
         self.assertLessEqual(len(report["scanned"]), 2, report["scanned"])
         self.assertTrue(any("global 2-file limit" in note for note in report["notes"]), report)
 
+    def test_files_beside_model_metadata_still_reach_their_detectors(self) -> None:
+        folder = self.model("deploy")
+        self.write("deploy/server.log", "Killed\nexit code 137\n")
+        self.write("deploy/merges.txt", "#version: 0.2\nt h\n")
+        self.write("deploy/special_tokens_map.json", "{}")
+        report = scan([str(folder)])
+        kinds = {(Path(item["path"]).name, item["kind"]) for item in report["scanned"]}
+        self.assertIn(("server.log", "log"), kinds, report["scanned"])
+        self.assertIn(("deploy", "model folder"), kinds, report["scanned"])
+        # Tokenizer files are model metadata, not configs or logs.
+        names = {name for name, _ in kinds}
+        self.assertNotIn("merges.txt", names, report["scanned"])
+        self.assertNotIn("special_tokens_map.json", names, report["scanned"])
+
+    def test_model_folder_reads_count_toward_the_global_byte_budget(self) -> None:
+        self.model("a")
+        self.model("b")
+        with mock.patch("minefield.scan.MAX_TOTAL_BYTES", 100):
+            report = scan([str(self.root)])
+        folders = [item for item in report["scanned"] if item["kind"] == "model folder"]
+        self.assertEqual(len(folders), 1, report["scanned"])
+        self.assertTrue(any("model folder skipped" in note for note in report["notes"]), report)
+
+    def test_isolated_template_does_not_read_sidecar_outside_allowed_roots(self) -> None:
+        folder = self.root / "tpl"
+        folder.mkdir()
+        (folder / "tokenizer_config.json").write_text(
+            json.dumps({"bos_token": "SIDECAR-SECRET"}), encoding="utf-8"
+        )
+        template = folder / "chat_template.jinja"
+        template.write_text(
+            "{{ bos_token }}{% for m in messages %}{{ m['content'] }}{% endfor %}",
+            encoding="utf-8",
+        )
+        from minefield.template_inspector import load_template
+
+        self.assertEqual(load_template(template, [str(template)])["bos_token"], "")
+        self.assertEqual(load_template(template)["bos_token"], "SIDECAR-SECRET")
+        report = call_tool(
+            "scan_files", {"paths": [str(template)]}, load_registry(),
+            allowed_roots=[str(template)],
+        )
+        self.assertNotIn("SIDECAR-SECRET", json.dumps(report))
+
+    def test_scan_with_no_readable_path_exits_nonzero(self) -> None:
+        from minefield.cli import main
+
+        with mock.patch("sys.stdout"):
+            self.assertEqual(main(["scan", "--json", str(self.root / "missing.sh")]), 2)
+            self.write("ok.sh", "echo ok\n")
+            self.assertIn(main(["scan", "--json", str(self.root / "ok.sh")]), (0, None))
+
 
 if __name__ == "__main__":
     unittest.main()

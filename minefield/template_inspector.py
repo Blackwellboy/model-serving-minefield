@@ -94,12 +94,21 @@ def _token_text(value: Any) -> str:
     return str(value or "")
 
 
-def load_template(path: str | Path) -> dict[str, Any]:
+def _within(path: Path, allowed_roots: list[str] | None) -> bool:
+    if not allowed_roots:
+        return True
+    resolved = path.resolve()
+    roots = [Path(root).resolve() for root in allowed_roots]
+    return any(resolved == root or root in resolved.parents for root in roots)
+
+
+def load_template(path: str | Path, allowed_roots: list[str] | None = None) -> dict[str, Any]:
     """Find the chat template for a file or model folder.
 
     Returns {"source": str|None, "origin": str, "bos_token", "eos_token",
     "python_encoder": bool}. ``source`` is None when the checkpoint ships no
-    Jinja template (trap 56).
+    Jinja template (trap 56). With ``allowed_roots``, the sibling
+    ``tokenizer_config.json`` is read only when it lies inside those roots.
     """
     target = Path(path)
     if target.is_symlink():
@@ -107,7 +116,7 @@ def load_template(path: str | Path) -> dict[str, Any]:
     folder = target if target.is_dir() else target.parent
     tok_cfg: dict[str, Any] = {}
     cfg_path = folder / "tokenizer_config.json"
-    if cfg_path.is_file() and not cfg_path.is_symlink() and cfg_path.stat().st_size <= MAX_TOKENIZER_CONFIG_BYTES:
+    if _within(cfg_path, allowed_roots) and cfg_path.is_file() and not cfg_path.is_symlink() and cfg_path.stat().st_size <= MAX_TOKENIZER_CONFIG_BYTES:
         try:
             tok_cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
         except (ValueError, UnicodeDecodeError):
@@ -466,8 +475,8 @@ IMPLEMENTED_TRAPS = frozenset({
 })
 
 
-def inspect_template(path: str | Path) -> dict[str, Any]:
-    info = load_template(path)
+def inspect_template(path: str | Path, allowed_roots: list[str] | None = None) -> dict[str, Any]:
+    info = load_template(path, allowed_roots)
     report: dict[str, Any] = {
         "kind": "chat_template",
         "path": str(path),
