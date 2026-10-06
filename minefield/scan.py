@@ -221,10 +221,24 @@ def _record_detector_truncations(
     report: dict[str, Any],
     truncations: list[dict[str, Any]],
     detector: str,
+    notes: list[str],
 ) -> None:
     for item in report.get("truncations", []):
         if isinstance(item, dict):
             truncations.append({"detector": detector, **item})
+            # The text view shows notes, not the truncations list, so say it
+            # there too: a capped count is a lower bound, not the real number.
+            name = Path(str(item.get("file", ""))).name
+            if item.get("code") == "RULE_MATCH_LIMIT":
+                notes.append(
+                    f"{name}: {detector} matches for trap {item.get('trap_id')} stopped at "
+                    f"{item.get('limit')}; the count shown is a lower bound"
+                )
+            elif item.get("code") == "FILE_FINDING_LIMIT":
+                notes.append(
+                    f"{name}: {detector} findings stopped at {item.get('limit')}; "
+                    "later matches in this file were not reported"
+                )
 
 
 def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
@@ -372,7 +386,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             elif kind == "log":
                 scanned.append({"path": str(file), "kind": "log"})
                 detector_report = inspect_logs([str(file)], root_strings)
-                _record_detector_truncations(detector_report, truncations, "log")
+                _record_detector_truncations(detector_report, truncations, "log", notes)
                 findings += [
                     _norm_static(item, "log")
                     for item in detector_report["findings"]
@@ -398,7 +412,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                     bytes_read += file_size
                     scanned.append({"path": str(file), "kind": "config"})
                     detector_report = inspect_files([str(file)], root_strings)
-                    _record_detector_truncations(detector_report, truncations, "config")
+                    _record_detector_truncations(detector_report, truncations, "config", notes)
                     findings += [
                         _norm_static(item, "config")
                         for item in detector_report["findings"]
@@ -409,14 +423,14 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                     "kind": "config" if file.suffix != ".txt" else "config/log",
                 })
                 config_report = inspect_files([str(file)], root_strings)
-                _record_detector_truncations(config_report, truncations, "config")
+                _record_detector_truncations(config_report, truncations, "config", notes)
                 findings += [
                     _norm_static(item, "config")
                     for item in config_report["findings"]
                 ]
                 if file.suffix == ".txt":
                     log_report = inspect_logs([str(file)], root_strings)
-                    _record_detector_truncations(log_report, truncations, "log")
+                    _record_detector_truncations(log_report, truncations, "log", notes)
                     findings += [
                         _norm_static(item, "log")
                         for item in log_report["findings"]
