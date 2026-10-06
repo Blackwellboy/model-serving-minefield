@@ -132,66 +132,73 @@ def evaluate(doc):
     flags = []
     notes = []
     comparable_pairs = 0
-    base_c = levels[0]
-    base = by_c[base_c][0]
+    zero_lower_pairs = 0
 
-    if base["aggregate_tps"] <= 0:
-        # Cannot form a flatness ratio from a zero baseline.
-        positives = [c for c in levels[1:] if by_c[c][0]["aggregate_tps"] > 0]
-        if positives:
-            return NOTHING, [
-                f"baseline C{base_c} aggregate_tps is 0 while later levels are positive; "
-                f"refusing a fake ratio from a zero baseline"
-            ], []
-        return NOTHING, [
-            f"baseline C{base_c} aggregate_tps is 0; no completed-work baseline to compare"
-        ], []
+    # Compare every usable ladder segment, not only each level against Cmin.
+    # A server can scale from C1 to its real slot count (for example C2), then
+    # saturate from C2 to C4. A baseline-only comparison misses that plateau.
+    for lower_i, lower_c in enumerate(levels[:-1]):
+        lower = by_c[lower_c][0]
+        for c in levels[lower_i + 1:]:
+            row = by_c[c][0]
+            c_ratio = c / lower_c
+            if c_ratio < 1.5:
+                continue
+            if lower["aggregate_tps"] <= 0:
+                zero_lower_pairs += 1
+                continue
 
-    for c in levels[1:]:
-        row = by_c[c][0]
-        c_ratio = c / base_c
-        if c_ratio < 1.5:
-            continue
-        if row["aggregate_tps"] < 0:
-            return BLOCKING, [f"row C{c} has negative aggregate_tps"], []
-        comparable_pairs += 1
-        wall_ratio = row["batch_wall"] / base["batch_wall"]
-        tps_ratio = row["aggregate_tps"] / base["aggregate_tps"]
-        wall_scales = wall_ratio >= WALL_SCALE_MIN * c_ratio
-        tps_flat = abs(tps_ratio - 1.0) <= FLAT_TPS_TOL
+            comparable_pairs += 1
+            wall_ratio = row["batch_wall"] / lower["batch_wall"]
+            tps_ratio = row["aggregate_tps"] / lower["aggregate_tps"]
+            wall_scales = wall_ratio >= WALL_SCALE_MIN * c_ratio
+            tps_flat = abs(tps_ratio - 1.0) <= FLAT_TPS_TOL
 
-        active_note = ""
-        if row.get("active_sequences") is not None and base.get("active_sequences") is not None:
-            try:
-                active_ratio = float(row["active_sequences"]) / float(base["active_sequences"]) \
-                    if float(base["active_sequences"]) > 0 else None
-            except (TypeError, ValueError, ZeroDivisionError):
-                active_ratio = None
-            if active_ratio is not None and active_ratio >= 1.5:
-                active_note = (
-                    " reported active_sequences rose with client concurrency, but "
-                    "completed-work scaling still does not prove simultaneous execution;"
+            active_note = ""
+            if row.get("active_sequences") is not None and lower.get("active_sequences") is not None:
+                try:
+                    active_ratio = float(row["active_sequences"]) / float(lower["active_sequences"]) \
+                        if float(lower["active_sequences"]) > 0 else None
+                except (TypeError, ValueError, ZeroDivisionError):
+                    active_ratio = None
+                if active_ratio is not None and active_ratio >= 1.5:
+                    active_note = (
+                        " reported active_sequences rose with client concurrency, but "
+                        "completed-work scaling still does not prove simultaneous execution;"
+                    )
+                elif active_ratio is not None and active_ratio <= 1.25:
+                    active_note = (
+                        " reported active_sequences stayed ~flat, consistent with "
+                        "serialized execution;"
+                    )
+
+            if wall_scales and tps_flat:
+                flags.append("CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF")
+                findings.append(
+                    f"C{lower_c}->C{c}: batch_wall x{wall_ratio:.2f} (C x{c_ratio:.2f}) while "
+                    f"aggregate_tps x{tps_ratio:.2f} stays ~flat -{active_note} "
+                    f"client concurrency is not execution-concurrency proof (trap 135)."
                 )
-            elif active_ratio is not None and active_ratio <= 1.25:
-                active_note = (
-                    " reported active_sequences stayed ~flat, consistent with "
-                    "serialized execution;"
+            elif wall_scales and not tps_flat:
+                notes.append(
+                    f"C{lower_c}->C{c}: wall scaled (x{wall_ratio:.2f}) but aggregate_tps "
+                    f"moved (x{tps_ratio:.2f}); not flagged as serialization-shaped."
                 )
-
-        if wall_scales and tps_flat:
-            flags.append("CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF")
-            findings.append(
-                f"C{base_c}->C{c}: batch_wall x{wall_ratio:.2f} (C x{c_ratio:.2f}) while "
-                f"aggregate_tps x{tps_ratio:.2f} stays ~flat -{active_note} "
-                f"client concurrency is not execution-concurrency proof (trap 135)."
-            )
-        elif wall_scales and not tps_flat:
-            notes.append(
-                f"C{base_c}->C{c}: wall scaled (x{wall_ratio:.2f}) but aggregate_tps "
-                f"moved (x{tps_ratio:.2f}); not flagged as serialization-shaped."
-            )
 
     if comparable_pairs == 0:
+        base_c = levels[0]
+        if by_c[base_c][0]["aggregate_tps"] <= 0 and any(
+            by_c[c][0]["aggregate_tps"] > 0 for c in levels[1:]
+        ):
+            return NOTHING, [
+                f"zero baseline C{base_c} has no later positive-throughput pair usable "
+                f"for a scaling ratio"
+            ], []
+        if zero_lower_pairs:
+            return NOTHING, [
+                "all otherwise-comparable pairs have zero aggregate_tps at the lower level; "
+                "no completed-work baseline to compare"
+            ], []
         return NOTHING, [
             "no concurrency pairs with C rising by >=1.5x; nothing useful to compare"
         ], []
@@ -274,6 +281,17 @@ REGRESSION_ASSERTS = [
                 {"concurrency": 4, "batch_wall": 8.0, "aggregate_tps": 15.0, "active_sequences": 4},
             ]})
         )
+    )),
+    ("post-slot-saturation_adjacent_pair_flags", lambda: (
+        (lambda code, findings, flags: (
+            code == BLOCKING
+            and "CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF" in flags
+            and any("C2->C4" in line for line in findings)
+        ))(*evaluate({"rows": [
+            {"concurrency": 1, "batch_wall": 13.4, "aggregate_tps": 38.2},
+            {"concurrency": 2, "batch_wall": 15.5, "aggregate_tps": 66.1},
+            {"concurrency": 4, "batch_wall": 30.7, "aggregate_tps": 66.7},
+        ]}))
     )),
     ("zero_throughput_is_not_ok", lambda: evaluate({"rows": [
         {"concurrency": 1, "batch_wall": 2.0, "aggregate_tps": 0},
