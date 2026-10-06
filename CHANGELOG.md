@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-07 - Scott promotion batch: traps 144-159
+
+- Promoted **16 contributor-measured/source-bounded findings** from @scottleimroth as canonical traps 144-159: historical deterministic FlashInfer workspace hard-cap (#87), implicit Docker image pull inside launch timeout (#132), downstream context-retry stall (#147), NVIDIA hook collision with read-only `/run` (#150), tool-JSON Unicode escaping changing prompt identity (#156), thinking-on strict JSON-schema runaway (#158), sender-side `docker save` staging (#160), pip patch-file survival across upgrades (#161), cold JIT/weight-load UMA overlap (#162), wrong hard-coded thinking marker IDs (#166), NVFP4 default-arithmetic drift across TensorFold versions (#168), prefix-slot long-conversation thrash (#169), ExLlamaV3 requeue token undercount (#171), n-gram concurrency regression (#174), empty Gemma thought-marker accounting (#175), and vision-alias admission undercount (#178).
+- Folded #134 into Trap 125 (watchdog policy is part of the serving configuration), corrected #146 into Trap 14 (bare compliance does not certify an edited model in real agent context), and folded #154 into Trap 53 (live production config must prove performance-critical features actually took effect).
+- Registry count moves **143 -> 159**. Doctor coverage remains **24**, leaving **135** canonical entries without Doctor checks. Existing automatic checks remain 87; this batch does not claim new automation coverage.
+- Deliberately still open: #89 (needs fresh distributed-runtime replay with loaded NCCL binary identity), #105 (needs exact custom SGLang pin plus tensor-layout instrumentation), #113 (62% page-cache performance claim needs counterbalanced repeated arms), and #172 (two Whisper mechanisms need their missing controls/split adjudication).
+
 ## 2026-10-07 - Scott corroboration and research-integrity sweep
 
 - Folded Scott's open corroborations into the canonical entries they actually strengthen instead of allocating duplicate trap IDs: 03, 05, 12, 14, 16, 19, 54, 70, 111, 119 and 135.
