@@ -61,8 +61,8 @@ send a report:
   person could settle. SGLang has since been brought up first-party on our
   hardware and that report was tested. The contributor field run independently
   closes the NVFP4 generation and doctor-portability questions. What remains
-  open on this stack, with criteria, is in
-  OPEN_QUESTIONS.md *(private evidence archived)*, including a
+  open on this stack, with preregistered criteria, is in the
+  [public open-trap queue](registry/OPEN_TRAP_ISSUES.md), including a
   template-less-checkpoint test that is **blocked on naming an ungated
   checkpoint and needs no hardware to help with**.
 - **Model families beyond Laguna S 2.1 and the Qwen 3.5/3.6 line.** Most of
