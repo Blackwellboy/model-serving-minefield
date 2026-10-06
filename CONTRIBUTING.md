@@ -218,7 +218,7 @@ Every one of these is checked. An entry missing any of them fails the build.
 | **Whether a maintainer engaged**, from a closed vocabulary: `maintainer confirmed`, `maintainer reproduced`, `maintainer responded`, `maintainer disputed`, `none` | A bug a maintainer reproduced in-thread and a report nobody answered are different claims and must not read alike. `maintainer reproduced` is the strongest thing this tier says |
 | **The issue state**, from a closed vocabulary: `open`, `closed, fixed`, `closed, not fixed`, `closed, resolved as usage`, `closed, not planned`, `disputed` | A closed-as-fixed issue is a different claim from an open one, and **closed-as-stale is not closed-as-fixed**. A stale bot closing a bug with a maintainer reproduction still attached changes nothing about whether the bug is there |
 | **A sentence saying plainly that nobody here has reproduced it** | The label implies it. Readers arrive by search, land mid-page, and quote a paragraph. The sentence has to be in the entry |
-| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, per the rule in OPEN_QUESTIONS *(private evidence archived)*. An entry a reader cannot act on is an observation |
+| **An invitation**: what a reader with that stack would actually run, with `CONFIRM` and `REFUTE` criteria | Written before anyone runs it, following the same preregistration rule used by [the public open-trap queue](registry/OPEN_TRAP_ISSUES.md). An entry a reader cannot act on is an observation |
 
 ### What the tier is not, and cannot become
 

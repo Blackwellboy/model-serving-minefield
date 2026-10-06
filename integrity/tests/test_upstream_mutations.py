@@ -30,7 +30,7 @@ CHECKER = os.path.join(INTEGRITY, "upstream_integrity.py")
 
 def copy_tree(dst):
     for name in ("upstream", "traps", "README.md", "CORE.md", "CONTRIBUTING.md",
-                 "doctor", "integrity"):
+                 "HALL_OF_FAME.md", "doctor", "integrity"):
         src = os.path.join(ROOT, name)
         if not os.path.exists(src):
             continue
@@ -293,6 +293,31 @@ class UpstreamMutations(unittest.TestCase):
         rc, out = run_checker(self.root)
         self.assertEqual(rc, 1, out)
         self.assertIn("US-NOT-COUNTED", out)
+
+    # --- US-HOF-CREDIT / US-HOF-BOUNDARY -------------------------------
+
+    def test_missing_upstream_hof_credit_fires(self):
+        hof = os.path.join(self.root, "HALL_OF_FAME.md")
+        edit(hof,
+             "[U01](upstream/U01-ollama-toolcalls-missing-on-openai-route.md)",
+             "U01 credit removed")
+        rc, out = run_checker(self.root)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("US-HOF-CREDIT", out)
+
+    def test_canonical_row_inside_upstream_hof_fires(self):
+        hof = os.path.join(self.root, "HALL_OF_FAME.md")
+        marker = "Being listed here is not an endorsement"
+        with open(hof, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn(marker, text)
+        bad = ("| **@example** | measured canonical work | "
+               "[01](traps/reasoning/01-reasoning-field-two-names.md) |\n\n")
+        with open(hof, "w", encoding="utf-8") as fh:
+            fh.write(text.replace(marker, bad + marker, 1))
+        rc, out = run_checker(self.root)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("US-HOF-BOUNDARY", out)
 
     # --- US-GRANDFATHER: the boundary that stops the tier being decorative
 
