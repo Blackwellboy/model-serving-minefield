@@ -165,7 +165,7 @@ stop chasing a ghost somebody else already chased.
 
 **Reports we have not been able to run** are published too, in
 [upstream/](upstream/), and they are kept in their own directory rather than
-mixed in so the difference is obvious at a glance. Eleven credited reports from
+mixed in so the difference is obvious at a glance. Credited reports from
 other people's issue trackers, on stacks and hardware we do not have, each
 carrying the primary source, who reported it, whether a maintainer engaged, the
 issue state, a plain statement that **nobody here has reproduced it**, and what
