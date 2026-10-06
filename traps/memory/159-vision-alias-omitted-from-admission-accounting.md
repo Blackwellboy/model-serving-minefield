@@ -2,7 +2,7 @@
 
 **Found by @scottleimroth.**
 
-**Status: contributor-measured/source-inspected, conditions as reported** ([issue #178](https://github.com/Blackwellboy/model-serving-minefield/issues/178)). The missing-byte behavior is reproducible with a CPU/synthetic control; no live OOM or image-quality claim is made.
+**Status: contributor-measured, conditions as reported** ([issue #178](https://github.com/Blackwellboy/model-serving-minefield/issues/178)). The missing-byte behavior is reproducible with a CPU/synthetic control; no live OOM or image-quality claim is made.
 
 **Symptom.** A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.
 
