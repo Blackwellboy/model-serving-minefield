@@ -106,7 +106,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 143
+Four doors, and which one you want depends on why you are here. All 159
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -379,7 +379,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 24 of this registry's 143 entries in under a minute:
+against 24 of this registry's 159 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
