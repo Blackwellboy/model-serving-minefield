@@ -17,3 +17,14 @@
 **Found.** 2026-08-23 while testing a safety guard motivated by DGX Spark unified-memory over-allocation risk.
 
 **Attribution.** @scottleimroth. Original measured report and controls: [issue #57](https://github.com/Blackwellboy/model-serving-minefield/issues/57). Related: [Trap 13](13-utilization-fraction-on-unified-memory.md), [Trap 96](96-list-devices-reports-host-memory-as-device-free-memory.md), [Trap 115](../evaluation/115-exit-137-is-not-oom-killer-proof.md), [Trap 123](../runtime/123-vllm-v1-enginecore-orphan-holds-gpu-memory.md).
+
+
+## Added 2026-10-07: a watchdog mitigation has its own configuration contract
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #134](https://github.com/Blackwellboy/model-serving-minefield/issues/134).**
+
+The userspace-watchdog mitigation recommended above can itself become a hidden dependency of the serving configuration. On one GB10 lane, an earlyoom rule had an absolute available-memory floor **and** a swap-free gate. The model's steady-state `MemAvailable` had always been below the memory floor, but it survived because swap stayed almost entirely free and the old rule required both conditions. Removing the swap gate was a deliberate hardening of the watchdog, but it immediately made the unchanged serving argv receive SIGTERM on three matched starts.
+
+The useful identity check is kill provenance. Docker reported `OOMKilled=false`, the engine's own memory accounting showed the requested allocation succeeding, and the watchdog log named the low-memory decision and the target process. This was not kernel/cgroup OOM and not a model allocation failure.
+
+**Extra rule.** A serving recipe is not qualified merely because it clears the engine's own admission check. If an external watchdog enforces a floor, record its exact rule as part of the runtime configuration and leave enough headroom to satisfy **both** the watchdog floor and the engine's minimum KV/workspace requirement. Revalidate after any watchdog-policy change; a safety rule is part of the serving stack.
