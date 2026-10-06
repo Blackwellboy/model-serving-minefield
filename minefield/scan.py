@@ -107,7 +107,10 @@ def _is_model_folder(folder: Path) -> bool:
     return False
 
 
-def _walk(root: Path, roots: list[Path] | None, remaining: int) -> tuple[list[Path], bool]:
+def _walk(
+    root: Path, roots: list[Path] | None, remaining: int, seen: set[Path] | None = None,
+) -> tuple[list[Path], bool]:
+    """Walk ``root`` for up to ``remaining`` files not already in ``seen``."""
     files: list[Path] = []
     stack = [(root, 0)]
     truncated = False
@@ -133,7 +136,7 @@ def _walk(root: Path, roots: list[Path] | None, remaining: int) -> tuple[list[Pa
                 if resolved.is_dir():
                     if depth < MAX_DEPTH and entry.name not in SKIP_DIRS:
                         stack.append((resolved, depth + 1))
-                elif resolved.is_file():
+                elif resolved.is_file() and (seen is None or resolved not in seen):
                     files.append(resolved)
             except OSError:
                 continue
@@ -223,7 +226,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             if remaining == 0:
                 truncated = True
                 break
-            walked, hit_limit = _walk(path, roots, remaining)
+            walked, hit_limit = _walk(path, roots, remaining, discovered)
             truncated = truncated or hit_limit
             for file in walked:
                 if file in discovered:
@@ -244,12 +247,9 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             loose.add(path)
         elif path.name in MODEL_MARKERS or path.name == "hf_quant_config.json":
             discovered.add(path)
-            if _inside(path.parent, roots):
-                model_folders.add(path.parent)
-            else:
-                notes.append(
-                    f"{raw}: its model folder is outside the allowed roots; model-folder checks not run"
-                )
+            # When only the named file is allowed, inspect that file alone
+            # rather than widening access to its folder.
+            model_folders.add(path.parent if _inside(path.parent, roots) else path)
         else:
             discovered.add(path)
             loose.add(path)
@@ -264,7 +264,11 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
 
     bytes_read = 0
     for folder in sorted(model_folders):
-        folder_bytes = sum(_regular_size(folder / name, roots) for name in MODEL_FOLDER_READS)
+        file_only = folder.is_file()
+        folder_bytes = (
+            _regular_size(folder, roots) if file_only
+            else sum(_regular_size(folder / name, roots) for name in MODEL_FOLDER_READS)
+        )
         if bytes_read + folder_bytes > MAX_TOTAL_BYTES:
             notes.append(
                 f"{folder}: global {MAX_TOTAL_BYTES // (1024 * 1024)} MB scan budget reached; "
@@ -272,13 +276,16 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             )
             continue
         bytes_read += folder_bytes
-        scanned.append({"path": str(folder), "kind": "model folder"})
+        scanned.append({"path": str(folder), "kind": "model metadata" if file_only else "model folder"})
         try:
             model_report = inspect_model_folder(folder, allowed_roots=root_strings)
             # Cache refs are bounded per folder (1000 files of at most 256 bytes)
             # and are charged after the read.
             bytes_read += int(model_report.get("cache_ref_bytes") or 0)
             findings += _norm_report(model_report, "model folder", str(folder))
+            notes += [f"{folder.name}: {note}" for note in model_report.get("notes", [])]
+            if file_only and folder.name != "tokenizer_config.json":
+                continue  # no template to render from config.json alone
             template = inspect_template_isolated(folder, root_strings)
             findings += _norm_report(template, "chat template", str(folder))
             notes += [f"{folder.name}: {note}" for note in template.get("notes", [])]
@@ -290,7 +297,9 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
         if kind is None:
             continue
         try:
-            size = file.stat().st_size
+            file_size = size = file.stat().st_size
+            if file.suffix == ".txt":
+                size *= 2  # read once by the config detector and once by the log detector
             if kind == "template":
                 # The template worker also reads the sibling tokenizer_config.json.
                 size += _regular_size(file.parent / "tokenizer_config.json", roots)
@@ -300,7 +309,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 )
                 continue
             bytes_read += size
-            if size > MAX_FILE_BYTES and kind not in {"json", "template"}:
+            if file_size > MAX_FILE_BYTES and kind not in {"json", "template"}:
                 notes.append(
                     f"{file}: larger than {MAX_FILE_BYTES // (1024 * 1024)} MB, skipped"
                 )
@@ -320,7 +329,7 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 try:
                     report = inspect_results(file)
                 except ValueError as exc:
-                    if size > MAX_FILE_BYTES:
+                    if file_size > MAX_FILE_BYTES:
                         raise
                     notes.append(
                         f"{file.name}: not parsed as eval results ({str(exc)[:100]}); checked as config"
@@ -329,7 +338,12 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                 if report["findings"] or not report["notes"]:
                     scanned.append({"path": str(file), "kind": "eval results"})
                     findings += _norm_report(report, "eval results", str(file))
-                elif size <= MAX_FILE_BYTES:
+                elif file_size <= MAX_FILE_BYTES:
+                    # The config detector reads the file a second time.
+                    if bytes_read + file_size > MAX_TOTAL_BYTES:
+                        notes.append(f"{file}: global {MAX_TOTAL_BYTES // (1024 * 1024)} MB scan budget reached; skipped")
+                        continue
+                    bytes_read += file_size
                     scanned.append({"path": str(file), "kind": "config"})
                     findings += [
                         _norm_static(item, "config")

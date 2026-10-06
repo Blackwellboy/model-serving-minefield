@@ -81,7 +81,7 @@ Scenario flags (all default to the well-behaved value):
                         anyway, which is the only one of the four that rules
                         the trap-12 failure mode out.
   stream_channel        "content" | "reasoning" | None.
-  echo_logprobs         "ok" | "reject" | "empty". How /v1/completions answers
+  echo_logprobs         "ok" | "reject" | "empty" | "drop". How /v1/completions answers
                         echo=true plus logprobs (trap 15). "empty" is the lane
                         that returns HTTP 200 with no token_logprobs.
 """
@@ -305,6 +305,10 @@ def _make_lane_handler(cfg):
 
             if path == "/v1/completions":
                 mode = cfg["echo_logprobs"]
+                if mode == "drop":
+                    # Close without a response: the client sees a transport error.
+                    self.close_connection = True
+                    return None
                 if mode == "reject" and body.get("echo") and body.get("logprobs") is not None:
                     return self._send(400, {"error": {
                         "message": "echo is not supported with logprobs"}})

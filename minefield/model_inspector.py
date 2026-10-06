@@ -55,14 +55,15 @@ def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def _quant_excludes(config: dict[str, Any], folder: Path) -> list[str]:
+def _quant_excludes(config: dict[str, Any], folder: Path, roots: list[Path] | None = None) -> list[str]:
     names: list[str] = []
     qc = _as_dict(config.get("quantization_config"))
     for key in ("ignore", "modules_to_not_convert", "exclude_modules", "ignored_layers"):
         value = qc.get(key)
         if isinstance(value, list):
             names += [str(item) for item in value]
-    hf_quant = _load_json(folder / "hf_quant_config.json") or {}
+    sidecar = folder / "hf_quant_config.json"
+    hf_quant = (_load_json(sidecar) if _inside(sidecar, roots) else None) or {}
     inner = _as_dict(hf_quant.get("quantization"))
     for key in ("exclude_modules", "ignore"):
         value = inner.get(key)
@@ -138,7 +139,10 @@ def inspect_model_folder(
     except OSError as exc:
         raise ValueError(f"model path is not readable: {path}") from exc
     folder = resolved_target if resolved_target.is_dir() else resolved_target.parent
-    if not _inside(folder, roots):
+    # A named metadata file may be the only allowed root.  Then the folder is
+    # inspected file-only: siblings outside the roots are never read or listed.
+    file_only = not _inside(folder, roots)
+    if file_only and not (resolved_target.is_file() and _inside(resolved_target, roots)):
         raise ValueError(f"path is outside allowed roots: {path}")
     if not folder.is_dir():
         raise ValueError(f"not a model folder: {path}")
@@ -151,7 +155,13 @@ def inspect_model_folder(
         "cache_ref_bytes": 0,
     }
     findings = report["findings"]
-    config = _load_json(folder / "config.json")
+    if file_only:
+        report["notes"].append(
+            "only the named file is inside the allowed roots; checks that need the rest of the "
+            "model folder (generation_config.json, weight shards, cache refs, quant sidecar) were not run"
+        )
+    config_path = folder / "config.json"
+    config = _load_json(config_path) if _inside(config_path, roots) else None
     if config is None:
         report["notes"].append("no readable object-valued config.json; model-config checks skipped")
     else:
@@ -164,7 +174,7 @@ def inspect_model_folder(
 
         # 21: no generation_config.json means server defaults become "the model's settings".
         generation = folder / "generation_config.json"
-        if generation.is_symlink() or not generation.is_file():
+        if not file_only and (generation.is_symlink() or not generation.is_file()):
             findings.append(_finding(
                 "21", "No regular generation_config.json: the server's built-in sampling defaults will be used "
                 "and reported as 'the model's defaults'. Set sampling explicitly."))
@@ -217,7 +227,7 @@ def inspect_model_folder(
             for key in ("num_nextn_predict_layers", "mtp_num_hidden_layers", "num_mtp_layers")
             if isinstance(text.get(key), int) and not isinstance(text.get(key), bool) and text[key] > 0
         }
-        excludes = _quant_excludes(config, folder)
+        excludes = _quant_excludes(config, folder, roots)
         if mtp_keys:
             key, value = next(iter(mtp_keys.items()))
             findings.append(_finding(
@@ -256,7 +266,7 @@ def inspect_model_folder(
 
     # 89: weight shards that share an inode with another path.
     try:
-        shared = [
+        shared = [] if file_only else [
             item.name
             for item in sorted(folder.iterdir())
             if item.suffix in WEIGHT_SUFFIXES and not item.is_symlink() and item.is_file()

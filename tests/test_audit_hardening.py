@@ -230,6 +230,55 @@ class AuditHardeningTests(unittest.TestCase):
         self.assertEqual(report["accepted_paths"], 0, report)
         self.assertTrue(any("cannot be read or listed" in note for note in report["notes"]), report)
 
+    def test_file_only_metadata_root_is_inspected_without_reading_siblings(self) -> None:
+        folder = self.root / "Model-NVFP4"
+        folder.mkdir()
+        config = folder / "config.json"
+        config.write_text(json.dumps({"model_type": "llama"}), encoding="utf-8")
+        (folder / "hf_quant_config.json").write_text(
+            json.dumps({"quantization": {"exclude_modules": ["SIBLING-SECRET"]}}), encoding="utf-8"
+        )
+        report = call_tool(
+            "scan_files", {"paths": [str(config)]}, load_registry(), allowed_roots=[str(config)],
+        )
+        self.assertEqual(report["scanned"], [{"path": str(config.resolve()), "kind": "model metadata"}])
+        # The folder-name/config mismatch (trap 10) comes from the named file alone.
+        self.assertIn("10", report["traps"], report)
+        # Checks that need siblings are reported as not run, never as findings.
+        self.assertNotIn("21", report["traps"], report)
+        self.assertNotIn("SIBLING-SECRET", json.dumps(report))
+        self.assertTrue(any("checks that need the rest" in note for note in report["notes"]), report)
+
+        tokenizer = folder / "tokenizer_config.json"
+        tokenizer.write_text(json.dumps({
+            "chat_template": "{% for m in messages %}{{ m['content'] }}{% endfor %}",
+        }), encoding="utf-8")
+        report = call_tool(
+            "scan_files", {"paths": [str(tokenizer)]}, load_registry(), allowed_roots=[str(tokenizer)],
+        )
+        origins = [note for note in report["notes"] if "outside allowed roots" in note]
+        self.assertEqual(origins, [], report)
+        self.assertNotIn("56", report["traps"], report)  # the embedded template was found
+
+    def test_text_files_are_charged_once_per_detector_read(self) -> None:
+        self.write("notes.txt", "x" * 60)
+        with mock.patch("minefield.scan.MAX_TOTAL_BYTES", 100):
+            report = scan([str(self.root / "notes.txt")])
+        self.assertEqual(report["scanned"], [], report)
+        self.assertTrue(any("scan budget reached" in note for note in report["notes"]), report)
+
+    def test_overlapping_roots_do_not_spend_the_file_limit_on_duplicates(self) -> None:
+        # The walk visits z-sub before a-new, so without de-duplication the
+        # already-scanned z-sub files would use up the remaining allowance.
+        for number in range(3):
+            self.write(f"z-sub/launch-{number}.sh", "echo ok\n")
+        self.write("a-new/other.sh", "echo ok\n")
+        with mock.patch("minefield.scan.MAX_FILES", 5):
+            report = scan([str(self.root / "z-sub"), str(self.root)])
+        names = {Path(item["path"]).name for item in report["scanned"]}
+        self.assertIn("other.sh", names, report)
+        self.assertFalse(any("file limit" in note for note in report["notes"]), report)
+
     def test_scan_with_no_readable_path_exits_nonzero(self) -> None:
         from minefield.cli import main
 

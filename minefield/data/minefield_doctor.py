@@ -1673,6 +1673,11 @@ def check_echo_logprobs(doc, base, key):
     doc.evidence["echo_logprobs_probe"] = {"status": st, "body": str(txt)[:200]}
     probe = A("POST /completions with echo=true, logprobs=1",
               {"status": st, "body": str(txt)[:160]}, held=st == 200)
+    if st is None:
+        # A timeout or dropped connection says nothing about echo+logprobs.
+        doc.skip(["15"], "echo+logprobs probe", "request failed before an HTTP status",
+                 code="ECHO_LOGPROBS_PROBE_FAILED", asserts=[probe])
+        return
     if st != 200:
         doc.problem(
             ["15"],

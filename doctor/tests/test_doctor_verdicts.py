@@ -452,6 +452,16 @@ class TestEchoLogprobs(DoctorVerdictCase):
         self.assertEqual(f["level"], "PROBLEM")
         self.no_clean_for(doc, "15")
 
+    def test_failed_request_is_unknown_not_a_problem(self):
+        with FixtureLane(echo_logprobs="drop") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ECHO_LOGPROBS_PROBE_FAILED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "UNKNOWN")
+        self.assertIsNone(find(doc, "ECHO_LOGPROBS_REJECTED"))
+        self.no_clean_for(doc, "15")
+
 
 class TestModelIdentity(DoctorVerdictCase):
     """Trap 141. Only SGLang is in the published scope, and every verdict is
