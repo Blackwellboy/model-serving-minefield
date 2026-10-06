@@ -365,16 +365,22 @@ def check_separation(root, entries, cfg, findings):
         else:
             hsection = htext.split(marker, 1)[1]
             hsection = hsection.split("\nBeing listed here is not an endorsement", 1)[0]
+            # Credit is enforced on table rows only. A link repeated in prose,
+            # a note, or any other non-row text must not mask a deleted credit
+            # row.
+            hrows = [line for line in hsection.splitlines() if line.startswith("|")]
             for tid in sorted(ids):
-                count = len(re.findall(
-                    r"\[%s\]\(upstream/" % re.escape(tid), hsection))
+                count = sum(
+                    1 for line in hrows
+                    if re.search(r"\[%s\]\(upstream/" % re.escape(tid), line)
+                )
                 if count != 1:
                     findings.append(Finding(
                         "US-HOF-CREDIT", "HALL_OF_FAME.md",
                         "%s appears %d times in the fourth-tier credit table; expected exactly once"
                         % (tid, count)))
-            for line in hsection.splitlines():
-                if line.startswith("|") and "](traps/" in line:
+            for line in hrows:
+                if "](traps/" in line:
                     findings.append(Finding(
                         "US-HOF-BOUNDARY", "HALL_OF_FAME.md",
                         "canonical trap row appears inside the fourth-tier credit table: %s"
