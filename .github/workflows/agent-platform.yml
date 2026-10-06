@@ -17,6 +17,9 @@ jobs:
           python-version: "3.12"
       - name: compile and unit test
         run: |
+          # Runtime dependency declared in pyproject.toml; the template analyzer
+          # renders templates with it, so its tests need it before install.
+          python -m pip install "jinja2>=3.1"
           python -m compileall -q minefield tests
           python -m unittest discover -s tests
           python -m unittest discover -s community/tests -t .
@@ -26,6 +29,18 @@ jobs:
           python -m minefield agent-bundle --verify
           python community/generate_impact.py --check
           git diff --exit-code -- dist minefield/data registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+      - name: preserve failed verification worktree
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: failed-agent-platform-${{ github.run_id }}
+          path: |
+            .
+            !.git/**
+            !.github/**
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 1
       - name: package smoke test
         run: |
           python -m pip install .

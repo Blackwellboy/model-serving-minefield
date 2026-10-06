@@ -571,6 +571,82 @@ class RegistryMutations(unittest.TestCase):
             any(rx.search(orphan_line) for rx in ri.ORPHAN_PATTERNS),
             "no ORPHAN pattern matches the uncovered-entries sentence")
 
+    # --- "N of the T traps have at least one automatic check" in README ----
+    #
+    # Typed by hand when `minefield scan` landed. The number is
+    # build_coverage()'s any_automated_check, which neither the doctor count
+    # nor the registry total patterns can see, so it had no guard at all.
+
+    def _automated(self):
+        """(any_automated_check, the README claim as written) for self.root."""
+        code = ("import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); "
+                "from minefield.coverage import build_coverage; "
+                "from minefield.registry import load_registry; "
+                "print(build_coverage(load_registry(Path(sys.argv[1])))"
+                "['summary']['any_automated_check'])")
+        r = subprocess.run([PY, "-c", code, self.root], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        actual = int(r.stdout.strip())
+        claim = "%d of the %d traps have at least one automatic check" % (
+            actual, entry_count(self.root))
+        self.assertIn(claim, read(os.path.join(self.root, "README.md")),
+                      "fixture drift: README automated-coverage sentence")
+        return actual, claim
+
+    def _automated_findings(self, out):
+        return [f for f in out["findings"]
+                if f["where"].startswith("README.md:")
+                and (f["check"] == "AUTOMATED-COUNT"
+                     or "traps have" in f["message"])]
+
+    def test_62_correct_automated_claim_passes(self):
+        """POSITIVE: the README sentence as shipped produces no finding."""
+        self._automated()
+        rc, out = run_registry(self.root)
+        self.assertEqual(self._automated_findings(out), [])
+
+    def test_63_stale_automated_count_fails(self):
+        """NEGATIVE: any_automated_check - 1 fails and names the computed value."""
+        actual, claim = self._automated()
+        p = os.path.join(self.root, "README.md")
+        write(p, read(p).replace(claim, claim.replace(str(actual), str(actual - 1), 1), 1))
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = findings_of(out, "AUTOMATED-COUNT")
+        self.assertTrue(hits and hits[0]["where"].startswith("README.md:"), out["findings"])
+        self.assertIn("any_automated_check is %d" % actual, hits[0]["message"])
+
+    def test_64_stale_total_in_automated_claim_fails(self):
+        """NEGATIVE: the total half of the same sentence is a registry total."""
+        actual, claim = self._automated()
+        n = entry_count(self.root)
+        p = os.path.join(self.root, "README.md")
+        write(p, read(p).replace(claim, claim.replace("the %d traps" % n, "the %d traps" % (n - 10)), 1))
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = [f for f in findings_of(out, "COUNT")
+                if f["where"].startswith("README.md:") and "registry total" in f["message"]]
+        self.assertTrue(hits, out["findings"])
+
+    def test_65_reflowed_stale_claim_still_fails(self):
+        """NEGATIVE: a line break inside the sentence does not hide it."""
+        actual, claim = self._automated()
+        stale = claim.replace(str(actual), str(actual + 3), 1).replace(" traps have", "\ntraps have", 1)
+        p = os.path.join(self.root, "README.md")
+        write(p, read(p).replace(claim, stale, 1))
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        self.assertTrue(findings_of(out, "AUTOMATED-COUNT"), out["findings"])
+
+    def test_66_claim_that_cannot_be_computed_fails(self):
+        """NEGATIVE: a broken package is a finding, never a silent skip."""
+        self._automated()
+        write(os.path.join(self.root, "minefield", "coverage.py"), "raise ImportError('mutated')\n")
+        rc, out = run_registry(self.root)
+        self.assertEqual(rc, 1)
+        hits = findings_of(out, "AUTOMATED-COUNT")
+        self.assertTrue(hits and "cannot verify" in hits[0]["message"], out["findings"])
+
 class ClaimLedgerMutations(unittest.TestCase):
     """The claim-propagation checks, including the requirement that made the
     whole thing enforceable."""

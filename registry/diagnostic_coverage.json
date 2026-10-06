@@ -1,12 +1,13 @@
 {
   "schema_version": "1.0",
   "summary": {
+    "any_automated_check": 87,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 20,
+    "endpoint_checks_implemented": 24,
     "guided_experiments_specified": 143,
     "human_review_possible": 143,
-    "log_checks_implemented": 9,
-    "static_checks_implemented": 10,
+    "log_checks_implemented": 23,
+    "static_checks_implemented": 59,
     "total_canonical_traps": 143
   },
   "traps": [
@@ -79,7 +80,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -155,7 +156,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -231,7 +232,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -302,15 +303,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Assemble a three-turn conversation whose first assistant message carries a uniquely marked reasoning string, render the actual prompt through your serving path, and grep it for that marker. If it is absent, your multi-turn numbers describe a model that cannot see its own thinking. Then diff the render with and without the preservation kwarg. checks/preflight_template.py in this registry does exactly this and refuses to pass the lane if the marker is missing. Corollary worth internalizing: enumerate every kwarg the template reads and diff it against the model card. Anything read-but-undocumented is an untested variable, and if it sits near a thinking branch, assume it changes your results until you have shown it does not.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -381,7 +382,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -455,7 +456,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -531,7 +532,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -605,7 +606,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -679,7 +680,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -750,15 +751,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before downloading 160 GB, read the config, not the repo name: Then answer: which kernel family does this quant_method route to in YOUR build on YOUR arch, and is that the fast path or a weight-only fallback? If you cannot answer from the config plus your build, expect the fallback.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -829,7 +830,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -900,15 +901,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Bucket every scored zero by \"was content empty at a cap-hit\". If empties cluster at the ceiling, re-run only those at a larger budget before concluding anything about capability.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -974,15 +975,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "After serving, read actual KV pool size from the server logs and MemAvailable from the OS, and ask whether either number was chosen or merely happened.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1053,7 +1054,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1064,16 +1065,18 @@
       "id": "15",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "One cheap request before any multiple-choice eval: If ok is false, do not run loglikelihood tasks on this server, and do not report their absence as a model score.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -1127,7 +1130,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1198,15 +1201,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Bucket on extractable output first (did you get code that parses, an answer that scores), then split each bucket by finishreason to diagnose truncation versus loop versus verbosity. Never map finishreason directly to pass/fail.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1279,7 +1282,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1348,15 +1351,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Confirm the attention implementation in your server args and logs, then benchmark decode at your REAL working depth (40K+), not at 2K. A depth-dependent slowdown with a healthy shallow number is this trap until proven otherwise.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1429,7 +1432,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1500,15 +1503,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Probe both field names on your lane, same transcript, before trusting either. Render a conversation whose prior assistant turn carries a uniquely marked reasoning string once under reasoning and once under reasoning_content, and diff the two renders (llama.cpp's /apply-template makes this deterministic; on other runtimes compare prompttokens and grep the assembled prompt for the marker, as in checks/preflighttemplate.py). The arm whose render contains the marker is your write field. If neither does, you are in trap 04 with no preservation path and need the kwarg route.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1576,12 +1579,12 @@
           "can_prove_clean": false,
           "confirm_criterion": "Two commands: If the second returns \"Entry not found\", read the card's prose recommendation and compare it to the first, parameter by parameter. Also note which mode the recommendation is for; thinking and non-thinking recommendations differ.",
           "expected_duration": "seconds",
-          "implemented_checker": "minefield.static_inspector",
+          "implemented_checker": "minefield.static_inspector, minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -1657,7 +1660,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1733,7 +1736,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -1802,15 +1805,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render one tool-defined request through your actual serving path and read the assembled prompt, not the request: are the tool names and every argument key present and correctly delimited? Then diff that render against a reference Python Jinja2 render of the same template and messages (checks/preflighttemplate.py does the local reference render). Any divergence means the engine is part of your unit under test.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1878,15 +1881,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render a three-turn conversation where the prior assistant turns carry content but no reasoning, and grep the assembled prompt for empty think pairs. Then token-count two equivalent histories that differ only in empty-reasoning turns. Confirmed if empty wrappers appear or the counts differ.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -1959,7 +1962,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2028,15 +2031,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "A ten-prompt factual probe at temperature 0 immediately after first load, before any speed benching, compared against the unquantized model's known answers. Then diff every module name in the checkpoint against quantization_config.ignore and confirm the layers the architecture requires unquantized actually match. Record the engine version next to the accuracy number.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2107,7 +2110,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2183,7 +2186,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2252,15 +2255,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Do not infer this from behavior; read it: 1. Pull chat_template.jinja (or the chat_template field of tokenizer_config.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2331,7 +2334,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2400,15 +2403,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Send one request with max_tokens greater than the server flag and read usage.completion_tokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2474,15 +2477,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before you change a MoE's active-expert count, measure both settings on the same items, paired, and report the delta. If you are not running a benchmark, the cheap structural check is to confirm what your serving stack does with the extra experts: dump the post-selection gate weights for one token at both k values and compare the weight assigned to the rank-1 expert. If it fell, you bought dilution, not capacity. ```python",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2553,7 +2556,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2627,7 +2630,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2696,15 +2699,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Report the truncation count per arm, next to every generated number, and refuse to compare arms whose truncation rates differ materially. Two assertions catch both halves: ```python",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2770,15 +2773,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Score the gold answers through your own harness before you score a model. If the reference solution does not come back at or near 100%, your harness is what you are measuring. This one check catches all three cases above, and it is cheap: ```python",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2844,15 +2847,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through apply_chat_template with add_generation_prompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -2923,7 +2926,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -2997,7 +3000,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3071,7 +3074,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3140,15 +3143,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Two checks, both cheap and both offline: 1. Conditional against pooled. Compute accuracy conditional on the sample having attempted an answer, and compare it to pooled pass@1. If conditional accuracy is flat against your no-apparatus baseline while pooled dropped, the drop is routing, not capability. A flat or nearly flat wrong-answer count with a large pooled drop is the same signal seen from the other side, and it is visible without recomputing anything. 2. Bucket on two axes, not one. A single five-way bucket list does not work, because some of its members are outcomes and others are termination states, and a sample can be both at once. Record two independent fields per sample and report the cross-tab: - Outcome: PASS / WRONG / NO_EXTRACTABLE / TOOL_CALL / UNPARSED - Termination: STOP / LENGTH / TOOL_CALLS / ERROR / OTHER The counts in the magnitude table above are exactly why. The apparatus column happens to sum to 492, but the baseline column sums to 500 against 492 samples: a cap-hit is a termination state that can co-occur with having no extractable output, so those two rows double-count the same samples. One axis cannot express that; two can, and LENGTH crossed with PASS (a cap-hit that still produced usable code) is a real cell that a one-axis scheme has nowhere to put. A harness that cannot produce this cross-tab cannot tell you which of several different things happened, and they have different fixes. A useful secondary signal: per-problem flakiness that explodes while answers stay stable. Bucket patterns like T,P,P and P,T,P across K seeds on one problem are the route varying, not the answer varying. If your flakiness metric cannot distinguish those, it will report answer instability that is not there.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -3214,15 +3217,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured tool_calls come back rather than prose or an empty call.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -3293,7 +3296,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3362,15 +3365,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "The signature itself, ~20x prefill drop with ~0.5x decode, no error, is diagnostic. Confirm by running the same model on the same binary at f16/f16 and comparing; then check how the build directory was configured. ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -3441,7 +3444,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3515,7 +3518,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3584,15 +3587,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "The diagnostic that cracked it, and the one to run first on any unexplained latency: > Compare the server's own logged total time against the client-reported latency for the same > call. Server said 9.8 s; client said 40.2 s. A large, roughly constant, client-only gap > is not a model or engine problem. Manual equivalents:",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -3663,7 +3666,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3737,7 +3740,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3792,7 +3795,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Run perplexity on every backend you have before drawing a conclusion about a quant format, and bisect by tensor group rather than by guess: ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -3800,7 +3803,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -3811,7 +3814,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3885,7 +3888,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -3959,7 +3962,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -4033,7 +4036,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4102,15 +4105,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. Read all three numbers before quoting a long-context result. config.json max_position_embeddings and the rope factor; the served file's own context_length metadata; and the model card's stated training context, which is usually in prose rather than in config. 2. Anchor with a shorter-context control. Run your battery at the model's native length as well as at the long length. A model that scores well at native and collapses at 8x native is telling you about extension, not about capability. 3. Include a model that was genuinely trained long in any long-context comparison. Without one, every result is confounded with extension quality.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4176,15 +4179,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Do not read the checkpoint; ask the server what it built. Run it for four cases: user only; system plus user; a system message placed after a user message; and a conversation carrying tools. If the second and third produce the same shape of thing, you have a role marker. If the third silently welds the system text onto the user's, you have this trap. Separately, hash the checkpoint's encoder module and record the hash next to your results, because that file, not a template, is what a re-upload changes.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4250,15 +4253,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with return_token_strs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4329,7 +4332,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4403,7 +4406,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4477,7 +4480,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4546,15 +4549,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Three steps, and the first two cost nothing. 1. Read the checkpoint's config.json rope-scaling block before you trust any context number. If it carries a YaRN or similar factor over an original_max_position_embeddings, the advertised window is that base times that factor, and the base is the trained length. Record both numbers. 2. Check whether the serving container sets a long-context override variable. Its presence means the advertised length did not pass the engine's own sanity check. 3. Measure with a fact at position zero, unique non-repeating filler, and a decoy at the tail, laddered across orders of magnitude. Record finish_reason alongside accuracy, and compare the server's prompt_tokens against your own tokenization at every rung. And run every rung cold, or you will measure the cache instead of the model.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4625,7 +4628,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4699,7 +4702,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4768,15 +4771,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Two requests. Send your normal prompt, then send it again with /no_think appended somewhere harmless, both with your usual enable_thinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with `finishreason: \"stop\"` as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4847,7 +4850,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -4916,15 +4919,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Send a prompt containing /think or /no_think as part of an ordinary path, with the opposite enable_thinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/no_think\" chat_template.jinja next to the weights. Any hit means your users' text is being scanned.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -4990,15 +4993,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render a three-turn history and look at the assembled prompt, not the response. If it contains [{'type': or 'text': you have it. On vLLM, POST /tokenize with return_token_strs: true is the cheapest route and shows it unambiguously; POST /v1/chat/completions/render plus POST /detokenize also works. Put the system message first in the probe, because a non-first system message renders correctly and will mask the finding.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -5006,16 +5009,18 @@
       "id": "68",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Render [text A, image, text B] and [image, text A, text B] and compare the assembled prompts. If they are identical, order is discarded. Then look for AB with no separator between them, which is the concatenation half. The registry doctor now performs both checks on any lane that accepts an image part.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -5064,15 +5069,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render [text A, image, text B] and [image, text A, text B] and compare the assembled prompts. If they are identical, order is discarded. Then look for AB with no separator between them, which is the concatenation half. The registry doctor now performs both checks on any lane that accepts an image part.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -5138,15 +5143,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|im_start|> against <|im_end|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -5217,7 +5222,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -5286,15 +5291,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. Grep the config for nextn, not mtp. 2. Read the engine's startup log for the resolved draft architecture and for the max_num_scheduled_tokens line. 3. Scrape the engine's speculative-decoding counters after a real workload, not after a warm-up. Acceptance is content-dependent, so a synthetic prompt gives you a number that does not transfer. 4. Record the KV cache size in both arms. It is printed at startup and it is the number nobody quotes.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -5302,16 +5307,18 @@
       "id": "72",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "One request with a media reference to a path that does not exist. If the status is 5xx, you have it. The registry doctor now runs this on any lane that accepts an image part.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -5346,7 +5353,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "One request with a media reference to a path that does not exist. If the status is 5xx, you have it. The registry doctor now runs this on any lane that accepts an image part.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -5354,7 +5361,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -5365,7 +5372,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5376,16 +5383,18 @@
       "id": "73",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Send one request with no media and one with your typical media, same text, and look at prompt_tokens_details. If it is null on both, you are differencing from now on. The registry doctor now reports this on any lane that accepts an image part.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -5439,7 +5448,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5513,7 +5522,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5587,7 +5596,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5661,7 +5670,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5737,7 +5746,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5813,7 +5822,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -5887,7 +5896,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -5961,7 +5970,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6035,7 +6044,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6104,15 +6113,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompt_tokens_details.cached_tokens.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -6178,15 +6187,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -6252,15 +6261,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Send the four-message sequence in row four to /apply-template. If it 400s, your agent loop needs the intervening assistant turn.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -6312,7 +6321,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Send the string form and the bool form of enable_thinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -6320,7 +6329,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -6331,7 +6340,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6405,7 +6414,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6479,7 +6488,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6553,7 +6562,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6622,15 +6631,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Two assertions, both runnable before any number is published. 1. Prove the copies are actually separate copies. Compare inode numbers between the edit destination and every copy you will compare against, on each node. A shared inode is the trap, present: Note the negative case explicitly: no output from the find is a pass only if the find actually ran over a populated directory. An empty or wrong path also prints nothing. Assert a non-zero shard count first, or this check is a vacuous PASS in the sense of CONTRIBUTING's shape 2. 2. Fingerprint the reference before you publish against it. Hash a fixed set of layer tensors in the stock copy at the start of a campaign and again at the end. Keys' recommendation is to fingerprint L0, L9, L10, L20, L42 and the MTP heads - chosen to straddle the edit window (an edit to layers 10-42 is invisible at L0/L9 and visible at L10/L20/L42, so the pair tells you both that the fingerprint works and whether stock moved). The two assert lines are the point. A fingerprint over an empty tensor set is a stable hash of nothing, and it will match itself run after run while telling you nothing at all. The dtype detail is not cosmetic. The obvious way to write the hash update is .cpu().numpy().tobytes(), and it works on fp32 and fails on bfloat16 and float8_e4m3fn with TypeError: Got unsupported ScalarType. Those are the dtypes an FP8 or quantized checkpoint is actually stored in, so the naive version crashes on precisely the models worth fingerprinting and passes on the toy tensor you test it with. .contiguous().view(torch.uint8) hashes the raw storage and works for every dtype. Verified on torch 2.12.1: fp32 .numpy() OK, bf16 and fp8 .numpy() raise TypeError, .view(torch.uint8) succeeds for all three.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -6701,7 +6710,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -6775,7 +6784,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6849,7 +6858,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -6918,15 +6927,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cached_tokens per turn, with a server restart between the arms.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -6997,7 +7006,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7071,7 +7080,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7145,7 +7154,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7214,15 +7223,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Decode throughput itself, compared against a known-good full-offload figure for the same file and flags. That requires having recorded such a figure, which is the practical recommendation: capture decode tok/s at full offload once, per file per lane, and treat it as the reference. Absent that reference there is no signal on this build, which is the finding. If the launch command is reachable, read -ngl off the process arguments rather than asking the server: it is the only place the value is reliably visible.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -7274,7 +7283,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before serving with speculative decoding on unified memory: ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -7282,21 +7291,21 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Before serving with speculative decoding on unified memory: ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -7367,7 +7376,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7441,7 +7450,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7496,7 +7505,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "```bash python3 -c \"import transformers; print(transformers.version)\"",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -7504,7 +7513,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -7515,7 +7524,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -7589,7 +7598,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7663,7 +7672,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -7737,7 +7746,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "implemented"
@@ -7811,7 +7820,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7885,7 +7894,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -7959,7 +7968,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8033,7 +8042,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8102,15 +8111,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. Read the requant's own manifest before serving it. If hf_quant_config.json (or the stack's equivalent) excludes mtp.* or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (spec_decode_num_accepted_tokens_total over spec_decode_num_draft_tokens_total). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -8181,7 +8190,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8255,7 +8264,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8310,7 +8319,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpoint_readiness_hierarchy_probe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8318,7 +8327,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -8329,7 +8338,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8398,15 +8407,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLE_MARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDED_TO_USER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.template_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -8472,15 +8481,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. On each rank host, dump the GID table for the HCA you intend to use and record which index holds the address family you need. 2. If indices differ, do not force one global number without per-host mapping. 3. Prefer automatic GID selection for bring-up unless you have a pinned, per-host, verified index map checked into the recipe. 4. Confirm success with the same collective on the same hosts after switching from forced-fail to auto (or to the correct per-host indices). Offline triage of changed transport/env paths can use checks/upstream_change_triage.py as a prioritisation hint only; it does not replace live GID inspection.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -8532,7 +8541,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before writing \"OOM killed\": 1. Record the exit status and any allocator error strings separately. 2. Search kernel/journal/cgroup logs for OOM killer / memory.oom.group events in the same PID and time window. 3. If those are absent, leave OOM-killer as UNKNOWNUNADJUDICATED (or equivalent) and do not promote it to a confirmed cause. 4. Do not convert unresolved infrastructure death into a model-quality negative without an explicit policy. Evidence Packet / failure-cause discipline: keep docs/failure-cause-taxonomy.md and evaluation CLIENT_TIMEOUT / HARNESS_ERROR / UNKNOWN_UNADJUDICATED style separation; do not invent a cause to avoid UNKNOWN.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8540,7 +8549,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -8551,7 +8560,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8606,7 +8615,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8614,7 +8623,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -8625,7 +8634,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8680,7 +8689,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8688,21 +8697,21 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -8768,15 +8777,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: ```bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -8828,7 +8837,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Grep for the first exception rather than the loudest: Then compare both OS-visible pressure and the runtime's own free-memory reading against a known-good baseline before blaming the fabric: If host availability is several GiB under a known-good baseline and the runtime's free-memory check is failing on the same node while peers only emit secondary NCCL noise, reclaim shared-pool pressure and retry once before changing fabric settings or permanently shrinking the KV reservation.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8836,7 +8845,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -8847,7 +8856,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8921,7 +8930,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -8995,7 +9004,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9064,15 +9073,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULL_AND_PIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"num_speculative_tokens_per_batch_size\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -9124,7 +9133,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -9132,7 +9141,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -9143,7 +9152,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9217,7 +9226,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9291,7 +9300,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9365,7 +9374,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9434,15 +9443,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: `docker compose config and look for :ro` entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -9513,7 +9522,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9587,7 +9596,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9656,15 +9665,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraph_capture_sizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -9716,7 +9725,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "1. Inspect the exact bytes of every refs/* file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -9724,21 +9733,21 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "1. Inspect the exact bytes of every refs/* file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -9809,7 +9818,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9883,7 +9892,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -9957,7 +9966,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10031,7 +10040,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10105,7 +10114,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10179,7 +10188,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10248,15 +10257,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -10327,7 +10336,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10382,7 +10391,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -10390,7 +10399,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -10401,7 +10410,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10477,7 +10486,7 @@
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
           "state": "possible"
@@ -10532,7 +10541,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -10540,21 +10549,21 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "On a disposable host path, test the syntax you actually deploy. 1. With -v/--volume, point the bind source at a nonexistent path and inspect the host afterward. The positive signature is that the source now exists as a directory. 2. Use --mount type=bind with a nonexistent source as a negative control. Without an explicit create-source option, container creation should fail instead of fabricating the directory. 3. For the file lifecycle, begin with a real file source under the creating syntax, launch successfully, remove the host file, then launch again. Inspect the recreated source type and the container's .State.Error. 4. If Compose is the deployment surface, separately test short syntax and long syntax with create_host_path: false.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -10620,15 +10629,15 @@
           "can_prove_clean": false,
           "confirm_criterion": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.model_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
           "required_inputs": [
-            "Explicitly supplied configuration files"
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     }

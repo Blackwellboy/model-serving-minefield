@@ -6,7 +6,26 @@ from typing import Any
 
 from .guided_experiments import specifications
 from .log_inspector import IMPLEMENTED_TRAPS as LOG_TRAPS
-from .static_inspector import IMPLEMENTED_TRAPS as STATIC_TRAPS
+from .model_inspector import IMPLEMENTED_TRAPS as MODEL_TRAPS
+from .results_inspector import IMPLEMENTED_TRAPS as RESULTS_TRAPS
+from .static_inspector import IMPLEMENTED_TRAPS as CONFIG_TRAPS
+from .template_inspector import IMPLEMENTED_TRAPS as TEMPLATE_TRAPS
+
+# Offline file checks, all read-only over files the user names. The
+# "static_config" modality covers every one of them; which module fires is
+# recorded per trap so a reader can find the rule.
+OFFLINE_CHECKERS = (
+    ("minefield.static_inspector", CONFIG_TRAPS),
+    ("minefield.template_inspector", TEMPLATE_TRAPS),
+    ("minefield.model_inspector", MODEL_TRAPS),
+    ("minefield.results_inspector", RESULTS_TRAPS),
+)
+STATIC_TRAPS = frozenset().union(*(traps for _, traps in OFFLINE_CHECKERS))
+
+
+def _offline_checker(trap_id: str) -> str | None:
+    names = [name for name, traps in OFFLINE_CHECKERS if trap_id in traps]
+    return ", ".join(names) if names else None
 
 
 def build_coverage(registry: dict[str, Any]) -> dict[str, Any]:
@@ -30,8 +49,9 @@ def build_coverage(registry: dict[str, Any]) -> dict[str, Any]:
             },
             "static_config": {
                 "state": "implemented" if trap_id in STATIC_TRAPS else "possible",
-                "implemented_checker": "minefield.static_inspector" if trap_id in STATIC_TRAPS else None,
-                "required_inputs": ["Explicitly supplied configuration files"],
+                "implemented_checker": _offline_checker(trap_id),
+                "required_inputs": ["Explicitly supplied files: configs, launch scripts, model folder, "
+                                    "chat template or eval results"],
                 "safety_level": "read-only",
                 "expected_duration": "seconds",
                 "can_prove_clean": False,
@@ -85,6 +105,11 @@ def build_coverage(registry: dict[str, Any]) -> dict[str, Any]:
         ),
         "static_checks_implemented": len(STATIC_TRAPS),
         "log_checks_implemented": len(LOG_TRAPS),
+        "any_automated_check": sum(
+            item["modalities"]["endpoint_probe"]["state"] == "implemented"
+            or item["id"] in STATIC_TRAPS or item["id"] in LOG_TRAPS
+            for item in traps
+        ),
         "guided_experiments_specified": len(experiments),
         "human_review_possible": len(traps),
         "counts_overlap": True,

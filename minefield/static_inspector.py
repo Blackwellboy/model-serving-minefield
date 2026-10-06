@@ -4,10 +4,25 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 MAX_FILE_BYTES = 2 * 1024 * 1024
-RULES = (
+MAX_MATCHES_PER_RULE = 8
+MAX_FINDINGS_PER_FILE = 256
+class Rule(NamedTuple):
+    trap_id: str
+    pattern: str
+    certainty: str
+    explanation: str
+    # Optional file-level context: the rule fires only if `requires` also
+    # matches somewhere in the same file, and never if `excludes` does. This
+    # keeps advisory rules quiet on files where the risky setting is already
+    # handled (for example a KV pool pinned in bytes).
+    requires: str | None = None
+    excludes: str | None = None
+
+
+RULES = tuple(Rule(*rule) for rule in (
     ("01", r"\breasoning_content\b(?![\s\S]{0,160}\breasoning\b)", "suspicious",
      "Only one reasoning response-field name is referenced."),
     ("07", r"\breasoning_effort\b", "configuration-only",
@@ -29,7 +44,59 @@ RULES = (
      "configuration-only", "Torch and torchvision are jointly present; ABI compatibility needs an import check."),
     ("104", r"(?:ExecStart|command:|args:)[^\n]*(?:--max-model-len|--ctx-size|--reasoning-parser)",
      "configuration-only", "A launcher persists serving flags; compare it with the intended live configuration."),
-)
+    # Launch-command and container rules (0.2.1). Each names the setting the
+    # trap entry identifies; each is advisory until the running process is
+    # checked.
+    ("13", r"(?:--gpu-memory-utilization|gpu_memory_utilization)[\s=:\"']+0?\.(?:8[5-9]|9\d)\b",
+     "requiring-runtime-confirmation",
+     "A high GPU memory fraction is set. On unified-memory machines (DGX Spark/GB10, GH200, Apple) "
+     "it can starve the OS; pin the KV cache in bytes instead.",
+     None, r"kv[-_]cache[-_]memory[-_]bytes"),
+    ("18", r"(?:(?:-fa|--flash-attn)[ =](?:off|0|false)\b|attn_implementation\s*[=:]\s*[\"']?eager)",
+     "suspicious", "Flash attention is switched off; decode can halve at long context."),
+    ("32", r"mlx_lm\.server[^\n]*--max-tokens",
+     "configuration-only", "mlx_lm.server --max-tokens is a per-request default, not a cap; clients can exceed it."),
+    ("33", r"(?:--override-kv[^\n]*expert_used_count|--hf-overrides[^\n]*num_experts_per_tok|num_experts_per_tok\s*=\s*\d)",
+     "suspicious", "The MoE active-expert count is overridden; raising it can lower accuracy with no error."),
+    ("45", r"(?:-ctk|--cache-type-k)\s+(\w+)\b[\s\S]{0,300}?(?:-ctv|--cache-type-v)\s+(?!\1\b)\w+",
+     "suspicious", "K and V cache use different quant types; unsupported pairs silently fall back to CPU "
+     "unless the build enables all flash-attention quant pairs."),
+    ("48", r"https?://[A-Za-z0-9-]+\.local\b",
+     "suspicious", "The endpoint is an mDNS .local name; a dead IPv6 route can add ~30 s per request. "
+     "Try the IPv4 address."),
+    ("97", r"(?:-ngl|--n-gpu-layers|--gpu-layers)[ =](?:[0-9]|[1-8][0-9]|9[0-8])\b",
+     "requiring-runtime-confirmation", "An explicit GPU layer count is set. If it is below the model's layer "
+     "count, part of the model runs on CPU (22-31x slower decode) and nothing in the log says so."),
+    ("98", r"(?:--speculative[-_]config|speculative_config)[^\n]*(?:dflash|mtp|eagle|draft)",
+     "requiring-runtime-confirmation", "Speculative decoding without an explicit --max-num-seqs uses the default "
+     "sequence capacity, which has coincided with OOMs on unified memory.",
+     None, r"max[-_]num[-_]seqs"),
+    ("114", r"NCCL_IB_GID_INDEX\s*[=:]\s*[\"']?\d+",
+     "suspicious", "One fixed RDMA GID index is set; GID tables differ per host, so this is not portable."),
+    ("117", r"fuse_gemm_comms[\"']?\s*[:=]\s*[\"']?(?:true|True|1)\b",
+     "requiring-runtime-confirmation", "fuse_gemm_comms is requested; vLLM can echo it enabled and then resolve it "
+     "to False. Check the resolved engine config, not the CLI echo."),
+    ("118", r"--include-log-monitor[= ]false",
+     "suspicious", "Ray's log monitor is off, so a healthy multi-node boot looks hung from the driver log."),
+    ("122", r"[\"']method[\"']\s*:\s*[\"'][a-z0-9_]*mtp[\"']",
+     "requiring-runtime-confirmation", "MTP speculative decoding with default CUDA graphs. On vLLM 0.27.1 FULL "
+     "capture has corrupted Qwen3.8 MTP verification without errors.",
+     r"vllm", r"enforce[-_]eager|num_speculative_tokens_per_batch_size|PIECEWISE"),
+    ("127", r"-\s*[\"']?[^\s:\"'#]+\.py:[^\s:\"']*(?:site|dist)-packages[^\s:\"']*\.py",
+     "suspicious", "A single .py file is bind-mounted over a module inside the image; an image update can "
+     "turn that into a crash loop."),
+    ("130", r"(?:max_cudagraph_capture_size|cudagraph_capture_sizes|--max-cudagraph-capture-size)",
+     "configuration-only", "CUDA-graph capture sizes are set with speculative decoding; confirm in the startup "
+     "log that the largest captured size covers max_num_seqs x (draft tokens + 1).",
+     r"speculative|num_speculative_tokens"),
+    ("138", r"(?:[\"']method[\"']\s*:\s*[\"']ngram[\"']|--speculative-model[= ]\[?ngram|prompt_lookup)",
+     "configuration-only", "N-gram prompt-lookup speculation is on; if this lane serves JSON or structured "
+     "output, verify every response with a strict parser."),
+    ("142", r"(?:(?:\s-v|--volume)[ =][\"']?(?:\.{1,2}/|~/|/|\$)[^\s:\"']*:/|^\s*-\s+[\"']?(?:\.{1,2}/|~/|/)[^\s:\"']+:/)",
+     "configuration-only", "Short bind-mount syntax: if the host path is missing, Docker creates an empty "
+     "directory and the server fails later. Use --mount type=bind (or compose long syntax) for model/config files."),
+))
+
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
 
@@ -63,10 +130,37 @@ def _read_text_file(path: Path, allowed_roots: list[Path] | None) -> tuple[Path,
 def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []
+    truncations = []
     for raw_path in paths:
         path, data = _read_text_file(Path(raw_path), roots)
-        for trap_id, pattern, certainty, explanation in RULES:
+        file_findings = 0
+        file_capped = False
+        for rule in RULES:
+            if file_capped:
+                break
+            trap_id, pattern, certainty, explanation = rule[:4]
+            if rule.requires and not re.search(rule.requires, data, re.I | re.M):
+                continue
+            if rule.excludes and re.search(rule.excludes, data, re.I | re.M):
+                continue
+            rule_matches = 0
             for match in re.finditer(pattern, data, re.I | re.M):
+                if rule_matches >= MAX_MATCHES_PER_RULE:
+                    truncations.append({
+                        "code": "RULE_MATCH_LIMIT",
+                        "file": str(path),
+                        "trap_id": trap_id,
+                        "limit": MAX_MATCHES_PER_RULE,
+                    })
+                    break
+                if file_findings >= MAX_FINDINGS_PER_FILE:
+                    truncations.append({
+                        "code": "FILE_FINDING_LIMIT",
+                        "file": str(path),
+                        "limit": MAX_FINDINGS_PER_FILE,
+                    })
+                    file_capped = True
+                    break
                 line = data.count("\n", 0, match.start()) + 1
                 findings.append({
                     "trap_ids": [trap_id],
@@ -93,5 +187,13 @@ def inspect_files(paths: list[str], allowed_roots: list[str] | None = None) -> d
                     "file": str(path),
                     "line": line,
                     "matched_signature": match.group(0)[:240],
+                    "certainty": certainty,
                 })
-    return {"kind": "static_config", "files": len(paths), "findings": findings}
+                rule_matches += 1
+                file_findings += 1
+    return {
+        "kind": "static_config",
+        "files": len(paths),
+        "findings": findings,
+        "truncations": truncations,
+    }

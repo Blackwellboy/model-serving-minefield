@@ -3,7 +3,7 @@ name: model-serving-minefield
 description: Diagnose OpenAI-compatible model-serving failures from symptoms, endpoint reports, explicit configuration files, or logs while preserving evidence status and requiring confirm/refute checks. Use for suspected template, reasoning, tool-call, quantisation, runtime, memory, versioning, or evaluation-harness traps.
 license: MIT
 metadata:
-  version: 0.1.0
+  version: 0.2.1
   author: Blackwellboy
   platforms: [hermes, codex, claude, cursor]
   hermes-category: diagnostics

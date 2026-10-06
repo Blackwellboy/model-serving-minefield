@@ -34,6 +34,35 @@ protects is your ability to tell them apart at a glance.
 [![integrity](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/integrity.yml)
 [![surfaces](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml/badge.svg)](https://github.com/Blackwellboy/model-serving-minefield/actions/workflows/surfaces.yml)
 
+## Diagnose it yourself in ten seconds
+
+PyPI trusted publishing is wired but the package is not published there yet, so install the current public tree from GitHub:
+
+```bash
+pipx install "git+https://github.com/Blackwellboy/model-serving-minefield.git@main"
+minefield streaming shows blank replies --stack vllm
+```
+
+(From a clone instead: `python -m pip install .`)
+
+Describe what you see in plain words. You get the few traps that match, how
+strong each match is, the one check to run next, and a link to the entry.
+
+Or let it read your setup and find the traps for you, offline:
+
+```bash
+minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
+```
+
+It checks launch flags, compose mounts, the model's `config.json`, the chat
+template (rendered in Jinja's sandbox against probe conversations), server logs
+and eval result files. Between `scan`, the log checks and the live doctor,
+87 of the 143 traps have at least one automatic check
+(`any_automated_check` in `minefield coverage`). To run it on your own pull
+requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
+Matching quality is measured, not asserted: see the
+[symptom benchmark](benchmarks/README.md).
+
 ## Diagnose with an AI agent
 
 **Agent can access GitHub:** give it
@@ -51,7 +80,7 @@ configuration:
 read-only doctor:
 
 ```bash
-python -m pip install .
+pipx install "git+https://github.com/Blackwellboy/model-serving-minefield.git@main"
 minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
 ```
 
@@ -123,8 +152,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **20 of these 143 entries**, weighted toward reasoning fields, templates and
-tool parsing, and a clean run from it says nothing about the other 123. It runs
+for **24 of these 143 entries**, weighted toward reasoning fields, templates,
+tool parsing and multimodal handling, and a clean run from it says nothing about
+the other 119. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -137,7 +167,7 @@ stop chasing a ghost somebody else already chased.
 
 **Reports we have not been able to run** are published too, in
 [upstream/](upstream/), and they are kept in their own directory rather than
-mixed in so the difference is obvious at a glance. Eleven credited reports from
+mixed in so the difference is obvious at a glance. Credited reports from
 other people's issue trackers, on stacks and hardware we do not have, each
 carrying the primary source, who reported it, whether a maintainer engaged, the
 issue state, a plain statement that **nobody here has reproduced it**, and what
@@ -333,7 +363,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 20 of this registry's 143 entries in under a minute:
+against 24 of this registry's 143 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

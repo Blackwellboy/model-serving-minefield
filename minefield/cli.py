@@ -15,6 +15,8 @@ from .inline_system import EvidenceError, classify_manifest, inspect_template, l
 from .log_inspector import inspect_logs
 from .matching import diagnose
 from .registry import load_registry
+from .render import render_diagnosis, render_scan
+from .scan import scan
 from .static_inspector import inspect_files
 from .support_bundle import plan, write_bundle
 
@@ -50,9 +52,14 @@ def parser() -> argparse.ArgumentParser:
         )
     guide = sub.add_parser(
         "guide",
-        help="rank traps for a symptom (non-interactive; use this from scripts and agents)",
+        help="find the traps that match what you are seeing (also: minefield <symptom>)",
     )
-    guide.add_argument("symptom")
+    guide.add_argument("symptom", nargs="+", help="what you observe, in plain words")
+    fmt = guide.add_mutually_exclusive_group()
+    fmt.add_argument("--json", action="store_true", help="full diagnosis contract as JSON (default when piped)")
+    fmt.add_argument("--text", action="store_true", help="readable summary (default in a terminal)")
+    guide.add_argument("--limit", type=int, default=5, help="how many matches to show (default 5)")
+    guide.add_argument("--log", dest="log_excerpt", help="a short log excerpt to match on as well")
     guide.add_argument("--stack")
     guide.add_argument("--model")
     guide.add_argument("--version")
@@ -64,6 +71,14 @@ def parser() -> argparse.ArgumentParser:
         help="record confirmed, refuted, or inconclusive for an explicit trap probe",
     )
     guide.add_argument("--mechanism-probe-trap", action="append", default=[])
+    scan_cmd = sub.add_parser(
+        "scan",
+        help="check config files, launch scripts, model folders, logs and eval results for known traps",
+    )
+    scan_cmd.add_argument("paths", nargs="+", help="files or folders to read (only these are read)")
+    scan_fmt = scan_cmd.add_mutually_exclusive_group()
+    scan_fmt.add_argument("--json", action="store_true", help="full report as JSON (default when piped)")
+    scan_fmt.add_argument("--text", action="store_true", help="readable report (default in a terminal)")
     sub.add_parser("diagnose", help="interactive symptom prompt; scripts should use guide")
     coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
@@ -120,10 +135,21 @@ def parser() -> argparse.ArgumentParser:
     return ap
 
 
+def _command_names() -> set[str]:
+    # argparse exposes no public accessor for subcommand names.
+    for action in parser()._actions:  # noqa: SLF001
+        if isinstance(action, argparse._SubParsersAction):  # noqa: SLF001
+            return set(action.choices)
+    return set()
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] == "quick":
         return run_doctor(argv[1:])
+    # `minefield empty content when streaming` is shorthand for `minefield guide ...`.
+    if argv and argv[0] not in {"-h", "--help"} and argv[0] not in _command_names():
+        argv = ["guide", *argv]
     args = parser().parse_args(argv)
     registry = load_registry()
     if args.command == "inspect-config":
@@ -144,20 +170,39 @@ def main(argv: list[str] | None = None) -> int:
             for flag in CONDITION_FLAGS
             if getattr(args, flag.replace("-", "_")) is not None
         }
-        _emit(diagnose(
-            registry, args.symptom, stack=args.stack, model=args.model,
+        result = diagnose(
+            registry, " ".join(args.symptom), stack=args.stack, model=args.model,
             version=args.version, conditions=conditions,
+            log_excerpt=args.log_excerpt,
             direct_probe_trap_ids=args.direct_probe_trap,
             direct_probe_results=direct_probe_results,
             mechanism_probe_trap_ids=args.mechanism_probe_trap,
-        ))
+            limit=max(1, args.limit),
+        )
+        if args.text or (not args.json and sys.stdout.isatty()):
+            print(render_diagnosis(result, limit=max(1, args.limit)))
+        else:
+            _emit(result)
+    elif args.command == "scan":
+        report = scan(args.paths)
+        if args.text or (not args.json and sys.stdout.isatty()):
+            titles = {e["id"]: {"title": e["title"], "source_path": e["source_path"]}
+                      for e in registry["entries"]}
+            print(render_scan(report, titles))
+        else:
+            _emit(report)
+        if not report["accepted_paths"]:
+            # Nothing named could be read: a typo or missing path is an error,
+            # not a clean scan of zero files.
+            return 2
     elif args.command == "diagnose":
         if not sys.stdin.isatty():
             raise SystemExit("diagnose requires an interactive terminal")
         symptom = input("What are you seeing? ").strip()
         stack = input("Serving stack and version? ").strip()
         model = input("Model and revision? ").strip()
-        _emit(diagnose(registry, symptom, stack=stack, model=model))
+        print()
+        print(render_diagnosis(diagnose(registry, symptom, stack=stack or None, model=model or None)))
     elif args.command == "coverage":
         value = build_coverage(registry)["summary"]
         _emit(value if args.json else "\n".join(f"{k}: {v}" for k, v in value.items()),

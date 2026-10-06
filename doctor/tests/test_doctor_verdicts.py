@@ -422,6 +422,47 @@ class TestRequestValidation(DoctorVerdictCase):
         self.assertIn("VALIDATION_NO_BASELINE", codes(doc))
 
 
+class TestEchoLogprobs(DoctorVerdictCase):
+    """Trap 15. A clean needs actual token_logprobs, not an HTTP 200."""
+
+    def test_supported_lane_is_clean(self):
+        with FixtureLane(echo_logprobs="ok") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ECHO_LOGPROBS_SUPPORTED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertEqual(f["traps"], ["15"])
+
+    def test_rejecting_lane_is_a_problem(self):
+        with FixtureLane(echo_logprobs="reject") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ECHO_LOGPROBS_REJECTED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.no_clean_for(doc, "15")
+
+    def test_http_200_with_empty_logprobs_is_not_clean(self):
+        with FixtureLane(echo_logprobs="empty") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ECHO_LOGPROBS_EMPTY_200")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.no_clean_for(doc, "15")
+
+    def test_failed_request_is_unknown_not_a_problem(self):
+        with FixtureLane(echo_logprobs="drop") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ECHO_LOGPROBS_PROBE_FAILED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "UNKNOWN")
+        self.assertIsNone(find(doc, "ECHO_LOGPROBS_REJECTED"))
+        self.no_clean_for(doc, "15")
+
+
 class TestModelIdentity(DoctorVerdictCase):
     """Trap 141. Only SGLang is in the published scope, and every verdict is
     paired against a correctly named request on the same fixture lane.
@@ -922,6 +963,10 @@ class TestStreamingAndMultimodal(DoctorVerdictCase):
 # --------------------------------------------------------------------------
 
 CLEAN_CONTRACT = {
+    "ECHO_LOGPROBS_SUPPORTED":
+        "echo+logprobs returned non-empty token_logprobs, which is the exact "
+        "field lm-eval loglikelihood scoring reads; an HTTP 200 alone is not "
+        "accepted",
     "REASONING_FIELD_IDENTIFIED":
         "a reasoning field came back non-empty, so which name to read is "
         "settled by observation, not inferred from silence",
