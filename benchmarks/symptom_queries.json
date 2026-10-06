@@ -1580,6 +1580,166 @@
    "split": "holdout",
    "query": "The stock drafter does behave differently on the edited model: acceptance fell 24% on the refusal battery",
    "source": "issue #153"
+  },
+  {
+   "trap": "144",
+   "split": "tune",
+   "query": "deterministic inference long prompt crashes with FlashInfer workspace only 2 GiB"
+  },
+  {
+   "trap": "144",
+   "split": "holdout",
+   "query": "deterministic SGLang serve dies on long prefill because FlashInfer workspace is hard capped"
+  },
+  {
+   "trap": "145",
+   "split": "tune",
+   "query": "docker run times out because the image was missing and it started pulling it"
+  },
+  {
+   "trap": "145",
+   "split": "holdout",
+   "query": "container launch timeout was actually docker downloading the missing image first"
+  },
+  {
+   "trap": "146",
+   "split": "tune",
+   "query": "context window error turns into an endless gateway compression retry loop"
+  },
+  {
+   "trap": "146",
+   "split": "holdout",
+   "query": "server correctly rejects oversized prompt but downstream gateway keeps compressing and retrying forever"
+  },
+  {
+   "trap": "147",
+   "split": "tune",
+   "query": "gpu docker container fails in nvidia hook when I mount /run read only"
+  },
+  {
+   "trap": "147",
+   "split": "holdout",
+   "query": "--gpus all container dies before startup with nvidia-ctk-hook read only /run error"
+  },
+  {
+   "trap": "148",
+   "split": "tune",
+   "query": "same chat request has different prompt token count because tool json unicode gets escaped"
+  },
+  {
+   "trap": "148",
+   "split": "holdout",
+   "query": "two engines render identical tool schemas differently due to non ascii json escaping"
+  },
+  {
+   "trap": "149",
+   "split": "tune",
+   "query": "json schema works with thinking off but with thinking on it opens a brace and runs to max tokens"
+  },
+  {
+   "trap": "149",
+   "split": "holdout",
+   "query": "structured output never closes json when reasoning is enabled but conforms when thinking is disabled"
+  },
+  {
+   "trap": "150",
+   "split": "tune",
+   "query": "docker save fills the sender disk before the pipe starts transferring the image"
+  },
+  {
+   "trap": "150",
+   "split": "holdout",
+   "query": "streaming docker save still needs a full temporary copy on the source filesystem"
+  },
+  {
+   "trap": "151",
+   "split": "tune",
+   "query": "upgraded python package still imports files from an old local patch"
+  },
+  {
+   "trap": "151",
+   "split": "holdout",
+   "query": "pip uninstall left patch-added files behind when I layered a new engine version"
+  },
+  {
+   "trap": "152",
+   "split": "tune",
+   "query": "first model start after clearing cuda cache runs out of unified memory while compiling kernels"
+  },
+  {
+   "trap": "152",
+   "split": "holdout",
+   "query": "cold JIT compilation overlaps weight loading and trips memory pressure on DGX Spark"
+  },
+  {
+   "trap": "153",
+   "split": "tune",
+   "query": "SGLang thinking_budget is accepted but does nothing on Qwen3.8 because think token ids are wrong"
+  },
+  {
+   "trap": "153",
+   "split": "holdout",
+   "query": "custom thinking budget silently no ops because processor hard codes Qwen3 marker ids"
+  },
+  {
+   "trap": "154",
+   "split": "tune",
+   "query": "same NVFP4 checkpoint gives different tokens after TensorFold upgrade with same launch flags"
+  },
+  {
+   "trap": "154",
+   "split": "holdout",
+   "query": "engine version changed default precision arithmetic and my greedy token hash changed"
+  },
+  {
+   "trap": "155",
+   "split": "tune",
+   "query": "two long chats keep caching only the shared system prompt and re-prefill the rest every turn"
+  },
+  {
+   "trap": "155",
+   "split": "holdout",
+   "query": "prefix slots thrash two conversations so cached_tokens stays equal to the system prompt length"
+  },
+  {
+   "trap": "156",
+   "split": "tune",
+   "query": "TabbyAPI says 3106 completion tokens but the response is actually 16384 tokens"
+  },
+  {
+   "trap": "156",
+   "split": "holdout",
+   "query": "ExLlamaV3 long requeued jobs under report completion_tokens and logged tokens per second"
+  },
+  {
+   "trap": "157",
+   "split": "tune",
+   "query": "ngram speculative decoding is faster at one request but slower with two concurrent requests"
+  },
+  {
+   "trap": "157",
+   "split": "holdout",
+   "query": "vLLM prompt lookup speculation disables async scheduling and loses at real concurrency"
+  },
+  {
+   "trap": "158",
+   "split": "tune",
+   "query": "thinking is off but Gemma reports exactly two reasoning tokens after a tool turn with empty reasoning"
+  },
+  {
+   "trap": "158",
+   "split": "holdout",
+   "query": "empty thought markers are counted as reasoning tokens even though no reasoning text exists"
+  },
+  {
+   "trap": "159",
+   "split": "tune",
+   "query": "vision model admission accounting says zero bytes for model.visual tower even though loader accepts it"
+  },
+  {
+   "trap": "159",
+   "split": "holdout",
+   "query": "TensorFold vision alias model.visual is loaded but omitted from resident weight byte estimate"
   }
  ],
  "negatives": {
