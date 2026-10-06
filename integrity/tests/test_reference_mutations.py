@@ -23,6 +23,16 @@ ROOT = os.path.dirname(INTEGRITY)
 CHECKER = os.path.join(INTEGRITY, "reference_integrity.py")
 
 
+def read_text(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def write_text(path, text):
+    with open(path, "w", encoding="utf-8") as fh:
+        return fh.write(text)
+
+
 def copy_tree(dst):
     """Copy the parts of the repo the checker reads. Deliberately includes
     .git so tracked_md() takes its normal git path rather than the fallback."""
@@ -45,7 +55,7 @@ def copy_tree(dst):
     # added a root front door, generated dist Markdown, and docs/ links; those
     # are copied for the same reason rather than exempted from link checking.
     for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
-                 "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
+                 "registry", "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
                  "AGENT_START_HERE.md", "dist", "docs", "doctor", "checks",
                  "community", "integrity", "skills", ".github", "LICENSE"):
@@ -68,16 +78,6 @@ def run_checker(root):
     p = subprocess.run([sys.executable, CHECKER, "--root", root],
                        capture_output=True, text=True)
     return p.returncode, p.stdout + p.stderr
-
-
-def read_text(path):
-    with open(path, encoding="utf-8") as fh:
-        return fh.read()
-
-
-def write_text(path, content):
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(content)
 
 
 def find_entry(root, tid):
@@ -220,12 +220,10 @@ class ReferenceMutations(unittest.TestCase):
     def test_11_pr_template_teaching_a_partial_slash_list(self):
         """The exact historical defect: a slash-joined subset."""
         p = os.path.join(self.repo, ".github", "PULL_REQUEST_TEMPLATE.md")
-        write_text(
-            p,
+        write_text(p, 
             "# Adding a trap entry\n\n"
             "- [ ] Status line up top: reproduced here / reported by others / "
-            "under test\n",
-        )
+            "under test\n")
         rc, out = run_checker(self.repo)
         self.assertEqual(rc, 1, out)
         self.assertIn("VOCAB-SLASH", out)
