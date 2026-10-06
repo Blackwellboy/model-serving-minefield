@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-07 - Scott promotion batch: traps 144-159
+
+- Promoted **16 contributor-measured/source-bounded findings** from @scottleimroth: [144](traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md) (#87), [145](traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md) (#132), [146](traps/routing/146-gateway-retry-hides-context-rejection.md) (#147), [147](traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md) (#150), [148](traps/template/148-tool-json-ascii-escaping-changes-prompt.md) (#156), [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md) (#158), [150](traps/runtime/150-docker-save-stages-sender-temp-copy.md) (#160), [151](traps/versioning/151-pip-uninstall-leaves-patch-added-files.md) (#161), [152](traps/memory/152-cold-jit-compile-overlaps-weight-load.md) (#162), [153](traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md) (#166), [154](traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md) (#168), [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md) (#169), [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md) (#171), [157](traps/runtime/157-ngram-speculation-disables-async-scheduling.md) (#174), [158](traps/reasoning/158-empty-thought-markers-count-as-reasoning.md) (#175), and [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md) (#178).
+- Folded #134 into Trap 125 (watchdog policy is part of the serving configuration), corrected #146 into Trap 14 (bare compliance does not certify an edited model in real agent context), and folded #154 into Trap 53 (live production config must prove performance-critical features actually took effect).
+- Registry count moves **143 -> 159**. Doctor coverage remains **24**, leaving **135** canonical entries without Doctor checks. Existing automatic checks remain 87; this batch does not claim new automation coverage.
+- Deliberately still open: #89 (needs fresh distributed-runtime replay with loaded NCCL binary identity), #105 (needs exact custom SGLang pin plus tensor-layout instrumentation), #113 (62% page-cache performance claim needs counterbalanced repeated arms), and #172 (two Whisper mechanisms need their missing controls/split adjudication).
+
 ## 2026-10-07 - Scott corroboration and research-integrity sweep
 
 - Folded Scott's open corroborations into the canonical entries they actually strengthen instead of allocating duplicate trap IDs: 03, 05, 12, 14, 16, 19, 54, 70, 111, 119 and 135.

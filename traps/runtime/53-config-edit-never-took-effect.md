@@ -79,3 +79,14 @@ bug, and an unsupported-flag report simultaneously, and it wastes the debugging 
 
 **Attribution.** TheTom.
 
+
+
+## Added 2026-10-07: the benchmark config can be real while production silently runs a different one
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #154](https://github.com/Blackwellboy/model-serving-minefield/issues/154).**
+
+A model was qualified at speculative-decoding speed, but the separate production launcher never passed `--speculative-config` and also selected eager execution. Health checks and answers remained correct, so nothing failed loudly; production simply ran at roughly a quarter of the published decode rate until the live launch line was inspected.
+
+This is the same configuration-identity failure at a different layer: the intended or benchmarked config is not evidence for the process actually answering production requests.
+
+**Extra check.** After at least one request, require a runtime witness for every performance-critical feature. On vLLM speculation that can be nonzero `spec_decode_num_draft_tokens_total` or the corresponding speculative-decoding metrics/logs. Compare the live server's resolved startup arguments against the qualified benchmark arm. The structural fix is one configuration source for benchmark and production, not two scripts that are expected to stay equivalent by convention.

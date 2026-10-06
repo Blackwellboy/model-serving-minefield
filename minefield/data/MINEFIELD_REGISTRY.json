@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 143,
-  "content_sha256": "128a703abafa3bc95a66907bbd549f94527e17e1eaaf85984d30748fd3f088db",
+  "canonical_trap_count": 159,
+  "content_sha256": "c1aa83a2166e443837f0668687af5786cf6c993b6b590b26c48a50cefe0c4d69",
   "doctor_implemented_trap_count": 24,
   "entries": [
     {
@@ -1008,10 +1008,13 @@
       "mechanism": "Community re-uploads live in separate repos with their own gating, their own shard sets, and sometimes changed auxiliary-head behavior. Our measured case, migrating a large MoE lane from v1.0 to a v1.1 abliterated re-upload: authenticated per-shard sha256 comparison found",
       "mitigation": "Treat re-uploads as new models with a shared ancestor. Pin both revisions, state which one every number came from, and rerun your acceptance battery on the swap.",
       "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/146",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/153",
         "https://github.com/TheTom/offlabel/blob/main/patterns.md"
       ],
-      "related_traps": [],
+      "related_traps": [
+        "12"
+      ],
       "source_path": "traps/versioning/14-finetune-reupload-not-drop-in.md",
       "status": "measured here, raw not published",
       "supersession": null,
@@ -3581,7 +3584,9 @@
       "known_limitations": "",
       "mechanism": "A long-lived process the service manager had lost track of kept holding the port. The restart commands returned SUCCESS both times. Meanwhile the newly-launched instance crash-looped every ~3 seconds on bind: address already in use, which is only visible in the log file nobody was tailing, and the stale process kept serving the older config perfectly happily. Two independent failure modes combine here: 1. A restart command that reports on the command, not on the process. Exit code 0 means \"I sent the signal\", not \"the old server died and the new one bound the port.\" 2. A crash-loop that looks like silence. The replacement writes its failure to a file and dies; the client never notices because a healthy-looking server is still answering. The related trap on the other side of the same problem: a graceful signal can leave a GPU process in uninterruptible sleep still holding VRAM for seconds, so the replacement cannot allocate even when the old one is dying (see trap 46).",
       "mitigation": "Make restarts prove themselves: - Kill by port, not by process-name substring. fuser -k 8080/tcp. A name-substring kill can match the wrong process, and pkill -f <pattern> run over SSH matches its own command line and kills the calling shell (the pattern string is in your own argv). Use pkill -x <exact-name> if you must kill by name. - After the kill, assert the port is free before starting the replacement, and assert the new PID is listening afterwards. - Have the server print the settings you care about at startup and grep for them post-restart. A banner the binary printed is evidence; a flag you passed is not.",
-      "public_evidence_links": [],
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/154"
+      ],
       "related_traps": [
         "46"
       ],
@@ -8638,6 +8643,7 @@
       "mechanism": "On the measured GB10 unified-memory path, the CUDA driver-side allocation was not charged to the cgroup's memory.current in proportion to the physical memory it consumed. The cgroup therefore had nothing equivalent to the CUDA footprint to enforce against. The small rise that was visible was consistent with bookkeeping/page-table overhead, not the allocation itself. This is a measured platform/runtime behavior, not a claim that every CUDA or every unified-memory implementation behaves this way.",
       "mitigation": "Do not treat MemoryMax as the sole last-resort guard for CUDA unified-memory pressure on a lane that reproduces this check. The contributor's measured workaround is an off-box or independent watchdog on /proc/meminfo MemAvailable, using consecutive-breach hysteresis so legitimate load/KV transients do not trigger a kill. When terminating a failed serve, also account for child GPU-owning processes rather than assuming the API-server PID owns all allocations; see Trap 123.",
       "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/134",
         "https://github.com/Blackwellboy/model-serving-minefield/issues/57"
       ],
       "related_traps": [
@@ -9916,6 +9922,1030 @@
       "supersession": null,
       "symptom": "A Qwen3-family config.json visibly contains a numeric sliding_window, yet the effective reconstructed model configuration can resolve every layer to full_attention. Small draft models are particularly easy to hit because the default window-transition layer can sit beyond the end of the model. Nothing has to raise or warn.",
       "title": "a Qwen3 config can declare a sliding window while every layer resolves to full attention"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-27B NVFP4 family"
+      ],
+      "affected_stacks": [
+        "SGLang"
+      ],
+      "affected_versions_builds": "SGLang 0.0.0.dev1+g5f55db35e / commit 5f55db35e, FlashInfer attention, Qwen3.8-27B NVFP4 family, DGX Spark GB10. Current SGLang no longer carries this exact 2 GiB setter, so this is a historical/version-scoped trap.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-27b",
+          "qwen3.8-27b nvfp4 family"
+        ],
+        "failure_stage": [
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "sglang"
+        ],
+        "stack_version": [
+          "0.0.0"
+        ],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Pin the serving build, inspect the deterministic branch for a workspace-size setter, then compare matched deterministic-on/off long-prefill requests while recording the required workspace bytes. Do not infer safety from short prompts.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "SGLang 0.0.0.dev1+g5f55db35e / commit 5f55db35e, FlashInfer attention, Qwen3.8-27B NVFP4 family, DGX Spark GB10. Current SGLang no longer carries this exact 2 GiB setter, so this is a historical/version-scoped trap.",
+      "id": "144",
+      "known_limitations": "",
+      "mechanism": "On the reported build, deterministic mode sets fixed split sizes and executes SGLANG_FLASHINFER_WORKSPACE_SIZE.set(2048 * 1024 * 1024), overriding the environment value. Long-prefill workspace demand can exceed that fixed 2 GiB. The threshold depends on model geometry and batching; it is not a universal token count.",
+      "mitigation": "On the affected build, remove the deterministic FlashInfer path or use a deterministic backend/path that does not hard-set this workspace. Verify long prompts after the change. Do not treat the reported ~7.3k-token boundary as portable.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/87"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A SGLang serve passes short benchmarks and then the whole process dies on a sufficiently long fresh prompt with a FlashInfer allocation error. Increasing SGLANG_FLASHINFER_WORKSPACE_SIZE appears ineffective.",
+      "title": "deterministic FlashInfer can hard-cap prefill workspace and kill long prompts"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM",
+        "SGLang",
+        "Docker"
+      ],
+      "affected_versions_builds": "Direct Docker orchestration across DGX Spark nodes with non-identical local image sets; observed across vLLM and SGLang image tags.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker",
+          "sglang",
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Immediately before launch, require docker image inspect <ref> to succeed in the same control path that gates docker run. If absent, report the missing image explicitly instead of timing the launch call.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Direct Docker orchestration across DGX Spark nodes with non-identical local image sets; observed across vLLM and SGLang image tags.",
+      "id": "145",
+      "known_limitations": "",
+      "mechanism": "If the requested image is absent locally, Docker may pull it before creating the container. That network transfer happens inside the same docker run call whose timeout was often sized only for local container startup. A pull can even finish after the orchestrator gives up, leaving an unmanaged container starting in the background.",
+      "mitigation": "Separate image acquisition from container startup. Pull explicitly, verify the local image identity, then start under a timeout intended for startup only.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/132"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "An orchestrator times out inside docker run -d and reports a generic launch failure. No container is healthy, and repeated retries look like a slow or broken model start.",
+      "title": "docker run can hide an image pull inside your launch timeout"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM serving an approximately 27B NVFP4 model behind a LiteLLM-compatible gateway with automatic context-compression retry.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "routing",
+      "check": "Compare the server's actual configured context limit with the gateway/client assumption. Preserve the first upstream error before retry logic. A context-exceeded response must be distinguishable from a transient transport failure.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM serving an approximately 27B NVFP4 model behind a LiteLLM-compatible gateway with automatic context-compression retry.",
+      "id": "146",
+      "known_limitations": "",
+      "mechanism": "The model server correctly rejects a request that exceeds its configured context cap. A downstream gateway interprets the clean context error as recoverable, attempts compression, fails to compress enough, backs off, and retries instead of surfacing the launch/config mismatch. The original server error is therefore converted into a silent operational stall.",
+      "mitigation": "Align the server launch-time context with the intended deployment contract, and bound/terminate gateway compression retries when the upstream limit is authoritative.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/147"
+      ],
+      "related_traps": [],
+      "source_path": "traps/routing/146-gateway-retry-hides-context-rejection.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A request appears to hang for hours behind a gateway even though the model server is healthy. The gateway repeatedly tries context compression and retry logic.",
+      "title": "a correct context rejection can become an indefinite downstream retry loop"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "Docker"
+      ],
+      "affected_versions_builds": "Docker + NVIDIA Container Toolkit 1.19.1 on DGX Spark GB10; reproduced with both a stock CUDA image and a project image. The measured failing case is a read-only /run bind.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker"
+        ],
+        "stack_version": [
+          "1.19.1"
+        ],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Reduce to docker run --rm --gpus all -v <hostdir>:/run:ro <image> nvidia-smi, then move the same mount to another path as the control.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Docker + NVIDIA Container Toolkit 1.19.1 on DGX Spark GB10; reproduced with both a stock CUDA image and a project image. The measured failing case is a read-only /run bind.",
+      "id": "147",
+      "known_limitations": "",
+      "mechanism": "NVIDIA Container Toolkit's createContainer hook needs scratch space under the container's /run. A read-only bind mounted over /run shadows the normal writable tmpfs, so the hook cannot create its scratch directory and GPU setup fails before the GPU or image entrypoint is reached.",
+      "mitigation": "Do not shadow /run read-only in GPU containers. Mount application data/config elsewhere, or preserve a writable /run for runtime hooks.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/150"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "Docker fails before the container process starts with an OCI hook error mentioning /run/nvidia-ctk-hook, ldcache, or a read-only filesystem. The same image works without the mount.",
+      "title": "a read-only bind mount at /run can break every --gpus all container before startup"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-27B-family NVFP4"
+      ],
+      "affected_stacks": [
+        "SGLang"
+      ],
+      "affected_versions_builds": "TensorFold 0.3.6.3 and a vendor SGLang v0.5.17-era lane, Qwen3.8-27B-family NVFP4, long agent prompts with 36 tool schemas. The exact escaping layer in stock SGLang was not established, so do not generalize the engine attribution.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "qwen3.8-27b-family",
+          "qwen3.8-27b-family nvfp4"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "sglang"
+        ],
+        "stack_version": [
+          "v0.5.17"
+        ],
+        "topology": []
+      },
+      "category": "template",
+      "check": "Render the checkpoint template locally with the served tokenizer, compare verbatim and ensure_ascii=True tool serialization counts, then compare both with each engine's reported prompt tokens. Include an ASCII-only control.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.3.6.3 and a vendor SGLang v0.5.17-era lane, Qwen3.8-27B-family NVFP4, long agent prompts with 36 tool schemas. The exact escaping layer in stock SGLang was not established, so do not generalize the engine attribution.",
+      "id": "148",
+      "known_limitations": "",
+      "mechanism": "On the measured lanes, one rendering path preserved non-ASCII characters in tool JSON while another matched json.dumps(..., ensure_ascii=True). Ninety non-ASCII characters expanded into Unicode escapes and added about 394 prompt tokens. The request was identical on the wire; the model input was not.",
+      "mitigation": "Treat rendered prompt identity as part of an engine A/B. Normalize or pin tool serialization when comparing engines, and never infer equivalence from request-body equality alone.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/156"
+      ],
+      "related_traps": [],
+      "source_path": "traps/template/148-tool-json-ascii-escaping-changes-prompt.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "Two engines receive byte-identical OpenAI chat requests but report different prompt-token counts, and borderline greedy long-context outcomes diverge between them.",
+      "title": "two engines can serialize identical tool JSON into different prompt tokens"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-27B-family NVFP4"
+      ],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold 0.5.0 with xgrammar 0.2.8, Qwen3.8-27B-family NVFP4, DFlash2, DGX Spark GB10.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-27b-family",
+          "qwen3.8-27b-family nvfp4"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.5.0 with xgrammar 0.2.8, Qwen3.8-27B-family NVFP4, DFlash2, DGX Spark GB10.",
+      "id": "149",
+      "known_limitations": "",
+      "mechanism": "On the measured TensorFold path the grammar becomes active only after the reasoning close marker. That establishes where constraint enforcement begins, but the exact reason the JSON never closes remains unproven. The important measurement failure is assuming a thinking-off structured-output probe certifies a thinking-on lane.",
+      "mitigation": "On the affected build, use strict json_schema only in the mode that passes the matched check, or gate thinking-on requests until the serving path is fixed.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/158"
+      ],
+      "related_traps": [],
+      "source_path": "traps/evaluation/149-thinking-on-json-schema-can-runaway.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A strict response_format=json_schema probe looks healthy with thinking disabled, but with thinking enabled the reasoning closes, the answer opens with {, never closes, and generation runs to max_tokens.",
+      "title": "strict JSON schema can pass with thinking off and run to the cap with thinking on"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "Docker"
+      ],
+      "affected_versions_builds": "Docker Engine 29.2.1 on DGX Spark, classic exporter behavior, data root under /var/lib/docker.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [
+          "load"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "docker"
+        ],
+        "stack_version": [
+          "29.2.1"
+        ],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Identify the image store, measure free space on the Docker data-root filesystem, and watch the daemon temp directory during a small multi-second docker save control.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "Docker Engine 29.2.1 on DGX Spark, classic exporter behavior, data root under /var/lib/docker.",
+      "id": "150",
+      "known_limitations": "",
+      "mechanism": "On the measured Docker 29.2.1 classic graph-driver exporter, save first materialized all layer/config content under the daemon temp directory and only then tarred it to the output stream. A small-image control staged approximately the entire image size. Containerd-image-store export follows a different path, so the behavior is store-dependent.",
+      "mitigation": "Ensure sender-side temporary capacity, move DOCKER_TMPDIR to a suitable filesystem where appropriate, use a registry/containerd streaming path, or rebuild/pull on the destination.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/160"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/150-docker-save-stages-sender-temp-copy.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A supposedly streaming docker save IMAGE | ssh ... docker load transfer can fill the sender's Docker data-root disk before bytes reach the receiver.",
+      "title": "docker save can stage a full image copy on the sender before streaming"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold 0.3.6.3 patched in place, then 0.5.0 installed with pip install --no-deps; mechanism reproduced offline with a small package on pip/Python.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "Compare the final installed package tree with the pinned upstream tree, or enumerate package files not represented in RECORD and inspect every extra.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.3.6.3 patched in place, then 0.5.0 installed with pip install --no-deps; mechanism reproduced offline with a small package on pip/Python.",
+      "id": "151",
+      "known_limitations": "",
+      "mechanism": "pip uninstall removes files listed in the installed distribution's RECORD. Files added later by in-place patches are absent from RECORD, so they survive uninstall and the new version is installed around them. They can remain inert, shadow renamed modules, or be discovered by package/plugin scans.",
+      "mitigation": "Build upgrades from a clean base, or explicitly remove patch-added files before installing the next version. Verify the final tree rather than trusting uninstall/install logs.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/161"
+      ],
+      "related_traps": [],
+      "source_path": "traps/versioning/151-pip-uninstall-leaves-patch-added-files.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A new engine version installs cleanly over an older patched image, yet files that do not exist in the new release remain importable inside the package tree.",
+      "title": "layering a new package version can leave patch-added files from the old image"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-Flash-Next-family model"
+      ],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold 0.5.0 CUDA, DGX Spark GB10, large MLX-format Qwen3.8-Flash-Next-family model, empty kernel cache.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-flash-next-family",
+          "qwen3.8-flash-next-family model"
+        ],
+        "failure_stage": [
+          "load",
+          "startup"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "memory",
+      "check": "On first start after any engine/cache change, record MemAvailable and build-log events through the entire load. Compare with a control where required extensions are prebuilt in a weight-free container.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.5.0 CUDA, DGX Spark GB10, large MLX-format Qwen3.8-Flash-Next-family model, empty kernel cache.",
+      "id": "152",
+      "known_limitations": "",
+      "mechanism": "The engine JIT-builds CUDA extensions on first use while the checkpoint is simultaneously streaming into the same GB10 physical memory pool. The engine admission estimate accounts model/cache geometry but not compiler working memory, so compilation pressure lands on top of the weight-load peak. A warm kernel cache hides the condition on later boots.",
+      "mitigation": "Prebuild serve-path extensions before the real model boot, persist the kernel cache keyed by engine/toolchain identity, and detect stale build locks after killed compiles.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/162"
+      ],
+      "related_traps": [],
+      "source_path": "traps/memory/152-cold-jit-compile-overlaps-weight-load.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A model shape passes the engine's startup capacity estimate but a first start after install/cache wipe drives host unified memory to a watchdog threshold while weights are still loading.",
+      "title": "first-start CUDA JIT memory can overlap streaming weights on unified-memory hosts"
+    },
+    {
+      "affected_models": [
+        "Qwen3.5/3.8-family tokenizers. This does not claim the newer strict-thinki"
+      ],
+      "affected_stacks": [
+        "SGLang"
+      ],
+      "affected_versions_builds": "SGLang v0.5.17/main custom-logit-processor route; Qwen3.5/3.8-family tokenizers. This does not claim the newer strict-thinking route is affected.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "qwen3.5 3.8-family",
+          "qwen3.5 3.8-family tokenizers. this does not claim the newer strict-thinki"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [],
+        "model_family": [
+          "qwen3.5"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "sglang"
+        ],
+        "stack_version": [
+          "v0.5.17"
+        ],
+        "topology": []
+      },
+      "category": "reasoning",
+      "check": "Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "SGLang v0.5.17/main custom-logit-processor route; Qwen3.5/3.8-family tokenizers. This does not claim the newer strict-thinking route is affected.",
+      "id": "153",
+      "known_limitations": "",
+      "mechanism": "SGLang's Qwen3ThinkingBudgetLogitProcessor hard-codes Qwen3 marker IDs 151667/151668. The inspected Qwen3.5/3.8-family tokenizer uses different think IDs (248068/248069). The processor scans for the hard-coded open marker; when none is found it silently continues without enforcing the budget. An older helper variant also mixes historical prompt markers with current output when deciding whether a budget is complete.",
+      "mitigation": "Use marker IDs from the actual tokenizer, or a serving path whose budget implementation is family-aware and validated for the model. Scope counting to the current generated turn.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/166"
+      ],
+      "related_traps": [],
+      "source_path": "traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A request carries a thinking budget, is accepted, and receives no error or warning, yet the custom processor never finds the expected think marker and therefore applies no cap.",
+      "title": "a thinking-budget processor can silently no-op when its marker IDs belong to another tokenizer"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-27B-family NVFP4 on DGX Spark GB10. Flash Next had a separate boun"
+      ],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold 0.6.0 c464617... versus 0.6.1 17c73e1..., Qwen3.8-27B-family NVFP4 on DGX Spark GB10. Flash Next had a separate boundary where --precision full was a no-op.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-27b-family",
+          "qwen3.8-27b-family nvfp4 on dgx spark gb10. flash next had a separate boun"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "versioning",
+      "check": "After an engine upgrade, pin explicit precision and run long greedy token-hash witnesses, not only short prompts. Compare startup-resolved precision and reject unsupported legacy flag combinations.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.6.0 c464617... versus 0.6.1 17c73e1..., Qwen3.8-27B-family NVFP4 on DGX Spark GB10. Flash Next had a separate boundary where --precision full was a no-op.",
+      "id": "154",
+      "known_limitations": "",
+      "mechanism": "TensorFold 0.6.1 introduced --precision checkpoint|full and defaulted to checkpoint arithmetic for the measured NVFP4 family. The prior 0.6.0 path corresponds to 0.6.1 --precision full. Therefore the default upgrade changes activation arithmetic even though the checkpoint/model name is unchanged.",
+      "mitigation": "Put the intended arithmetic mode explicitly in the launch configuration and requalify any score produced under a different resolved mode.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/168"
+      ],
+      "related_traps": [],
+      "source_path": "traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "After an engine upgrade, the same checkpoint and nearly identical launch line starts faster and passes health checks, but a long greedy generation produces different token hashes. An old precision-related flag may also become invalid.",
+      "title": "an engine upgrade can change NVFP4 arithmetic behind an unchanged launch line"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-Flash-Next-family conversations on DGX Spark. The initial sequence",
+        "qwen4exp"
+      ],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold 0.6.1 Flash Next / qwen4exp, --parallel 2, long Qwen3.8-Flash-Next-family conversations on DGX Spark. The initial sequence began after earlier traffic; do not claim every clean boot reproduces it.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-flash-next-family",
+          "qwen3.8-flash-next-family conversations on dgx spark. the initial sequence",
+          "qwen4exp"
+        ],
+        "failure_stage": [
+          "prefill"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold 0.6.1 Flash Next / qwen4exp, --parallel 2, long Qwen3.8-Flash-Next-family conversations on DGX Spark. The initial sequence began after earlier traffic; do not claim every clean boot reproduces it.",
+      "id": "155",
+      "known_limitations": "",
+      "mechanism": "On the measured TensorFold Flash Next path, a fork could use only a free slot. An idle-but-not-free slot retained an unrelated prefix, so both active conversations alternated through the same slot and evicted each other's post-system state. Source replay reproduced almost all measured cache counts. A later fewest-kept-tokens victim rule on a newer pinned build reduced the measured two-slot wait by roughly 73% while preserving output hashes.",
+      "mitigation": "Use a slot/victim policy that can reclaim an idle retained slot based on re-prefill cost, or provide enough slots for the active long conversations and intervening tasks. Validate with output-hash controls.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/169"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "New conversations reuse a long shared system prefix correctly, yet two long alternating conversations repeatedly cache only that system block. Each turn re-reads tens to hundreds of thousands of prior tokens, producing large first-token delays with no error or memory warning.",
+      "title": "prefix-slot victim policy can make two long conversations repeatedly re-prefill"
+    },
+    {
+      "affected_models": [
+        "Qwen3.8-Flash-Next-family replies on DGX Spark. The same carry expression"
+      ],
+      "affected_stacks": [
+        "TabbyAPI",
+        "ExLlama"
+      ],
+      "affected_versions_builds": "vcruz305/exllamav3 047ce72..., TabbyAPI be74bf0, long Qwen3.8-Flash-Next-family replies on DGX Spark. The same carry expression was also visible in upstream history.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark"
+        ],
+        "exact_checkpoint": [
+          "qwen3.8-flash-next-family",
+          "qwen3.8-flash-next-family replies on dgx spark. the same carry expression"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "qwen3.8"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [],
+        "serving_stack": [
+          "exllama",
+          "tabbyapi"
+        ],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "evaluation",
+      "check": "Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vcruz305/exllamav3 047ce72..., TabbyAPI be74bf0, long Qwen3.8-Flash-Next-family replies on DGX Spark. The same carry expression was also visible in upstream history.",
+      "id": "156",
+      "known_limitations": "",
+      "mechanism": "ExLlamaV3 requeues long jobs. The inspected code carries rq_new_tokens forward as the current segment's new_tokens instead of adding it to the already-carried value, so after multiple requeues earlier segments disappear from the final count. TabbyAPI uses that final count for OpenAI usage and its logged generation rate.",
+      "mitigation": "Until the counter is fixed and validated, derive output length from returned text for long/requeued jobs. The obvious cumulative carry-forward patch is source-suggested but was not claimed as tested here.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/171"
+      ],
+      "related_traps": [],
+      "source_path": "traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "Long replies show implausibly low usage.completion_tokens and server-reported tok/s, sometimes with finish_reason=length even though the reported count is far below max_tokens. Generation text itself is fine.",
+      "title": "repeated ExLlamaV3 requeues can under-report completion tokens and derived tok/s"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.28.0, Gemma-4-26B-A4B-NVFP4, n-gram k5 lookup 1-3, max_num_seqs=2, DGX Spark GB10.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [
+          "decode",
+          "load"
+        ],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.28.0"
+        ],
+        "topology": []
+      },
+      "category": "runtime",
+      "check": "Benchmark matched speculation-on/off arms at the production concurrency, record batch wall/completed-work throughput and per-stream rates, and preserve the startup line showing whether async scheduling was disabled.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.28.0, Gemma-4-26B-A4B-NVFP4, n-gram k5 lookup 1-3, max_num_seqs=2, DGX Spark GB10.",
+      "id": "157",
+      "known_limitations": "",
+      "mechanism": "On vLLM 0.28.0 the measured n-gram path logs that async scheduling is unsupported and will be disabled. The speculative arm therefore changes both decoding and scheduling. On the reported two-request lane, single-stream headline throughput improved while two-stream per-request throughput fell substantially.",
+      "mitigation": "Choose speculative settings from the target concurrency rather than a single-stream benchmark. If the scheduling change makes the production lane slower, remove the speculative config.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/174"
+      ],
+      "related_traps": [],
+      "source_path": "traps/runtime/157-ngram-speculation-disables-async-scheduling.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "An n-gram speculative configuration looks faster in a standard single-stream decode test but becomes materially slower per stream when the server handles its real concurrent load.",
+      "title": "n-gram speculation can win single-stream and lose at real concurrency"
+    },
+    {
+      "affected_models": [],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "vLLM 0.28.0, nvidia/Gemma-4-26B-A4B-NVFP4 revision a19cfe00, Gemma4 reasoning/tool parsers, DGX Spark. Observed 39/157 agent requests; single-turn and no-tool controls stayed at zero.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [
+          "dgx spark"
+        ],
+        "exact_checkpoint": [],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [
+          "0.28.0"
+        ],
+        "topology": []
+      },
+      "category": "reasoning",
+      "check": "Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "vLLM 0.28.0, nvidia/Gemma-4-26B-A4B-NVFP4 revision a19cfe00, Gemma4 reasoning/tool parsers, DGX Spark. Observed 39/157 agent requests; single-turn and no-tool controls stayed at zero.",
+      "id": "158",
+      "known_limitations": "",
+      "mechanism": "On the measured Gemma 4 template branch, a post-tool generation boundary may omit the empty thought shell the template supplies elsewhere. The model then emits the opening and closing thought-channel tokens itself with nothing between them, and the reasoning parser counts the two marker tokens.",
+      "mitigation": "Verify thinking-off from semantic reasoning content, or explicitly allow the exact empty two-marker case on the matched template/parser revision. Non-empty reasoning must still fail.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/175"
+      ],
+      "related_traps": [],
+      "source_path": "traps/reasoning/158-empty-thought-markers-count-as-reasoning.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A verifier asserts reasoning_tokens == 0 for thinking-off requests and fails on some multi-turn tool interactions even though the reasoning field is empty and no reasoning text is visible.",
+      "title": "empty thought markers can make thinking-off report two reasoning tokens after tools"
+    },
+    {
+      "affected_models": [
+        "Qwen-family compatibility work. Stock 0.6.0 separately rejects the combina"
+      ],
+      "affected_stacks": [],
+      "affected_versions_builds": "TensorFold Python 0.6.0 commit c464617..., dense NVFP4 Qwen-family compatibility work. Stock 0.6.0 separately rejects the combination; this entry is about guard-removal compatibility patches, not released-stock admission behavior.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [],
+        "device_class": [],
+        "exact_checkpoint": [
+          "qwen-family",
+          "qwen-family compatibility work. stock 0.6.0 separately rejects the combina"
+        ],
+        "failure_stage": [
+          "load",
+          "startup"
+        ],
+        "gpu_architecture": [],
+        "model_family": [
+          "qwen"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [],
+        "quantization": [
+          "nvfp4"
+        ],
+        "serving_stack": [],
+        "stack_version": [],
+        "topology": []
+      },
+      "category": "memory",
+      "check": "Feed identical synthetic shapes through the byte transform under both aliases and require equal nonzero accounting. Also verify a complete synthetic tower and keep a control for the renamed namespace.",
+      "contributor": "@scottleimroth",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "contributor-measured, conditions as reported"
+      ],
+      "exact_conditions": "TensorFold Python 0.6.0 commit c464617..., dense NVFP4 Qwen-family compatibility work. Stock 0.6.0 separately rejects the combination; this entry is about guard-removal compatibility patches, not released-stock admission behavior.",
+      "id": "159",
+      "known_limitations": "",
+      "mechanism": "TensorFold Python 0.6.0's vision reader accepts both vision_tower.* and original model.visual.* aliases, but the resident-tower byte transform counted only vision_tower.*. The NVFP4 language transform separately excludes model.visual.*. Under the original namespace, the composed accounting therefore returns zero resident tower bytes.",
+      "mitigation": "Reuse the loader's existing shared vision-key alias predicate in the resident-byte transform, preserving rank/enabled checks. Later TensorFold 0.6.5 already recognizes the aliases.",
+      "public_evidence_links": [
+        "https://github.com/Blackwellboy/model-serving-minefield/issues/178"
+      ],
+      "related_traps": [],
+      "source_path": "traps/memory/159-vision-alias-omitted-from-admission-accounting.md",
+      "status": "contributor-measured, conditions as reported",
+      "supersession": null,
+      "symptom": "A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.",
+      "title": "a vision namespace alias can be loaded correctly but omitted from admission byte accounting"
     }
   ],
   "schema_version": "1.1"

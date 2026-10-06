@@ -57,7 +57,7 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-87 of the 143 traps have at least one automatic check
+87 of the 159 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
@@ -106,7 +106,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 143
+Four doors, and which one you want depends on why you are here. All 159
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -141,7 +141,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 143 entries, one row each, sorted by number. It is the
+  directly below, all 159 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -152,9 +152,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **24 of these 143 entries**, weighted toward reasoning fields, templates,
+for **24 of these 159 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
-the other 119. It runs
+the other 135. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -186,7 +186,7 @@ published as if settled.
 
 ## Find your symptom
 
-All 143 entries. If you know what you are running rather than what you are
+All 159 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -251,6 +251,22 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | A chat request names model B but the SGLang server is actually serving model A, and still returns HTTP 200 content | The Python OpenAI chat route does not validate requested base-model identity before generation | [141](traps/evaluation/141-sglang-python-chat-model-name-not-validated.md) | contributor-measured, conditions as reported |
 | A missing Docker bind source becomes a directory and the serve fails later or with a file/directory mismatch | Creating bind syntax fabricated the missing host path instead of failing closed | [142](traps/versioning/142-docker-volume-missing-bind-source-becomes-directory.md) | contributor-measured, conditions as reported |
 | A Qwen3 config visibly declares a sliding window but every reconstructed layer is full attention | `use_sliding_window` and `max_window_layers` silently resolve the effective architecture differently from the raw key | [143](traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md) | contributor-measured, conditions as reported |
+| Long fresh prompts kill a deterministic SGLang lane while short benchmarks stay green | Historical deterministic FlashInfer path hard-sets a 2 GiB prefill workspace | [144](traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md) | contributor-measured, conditions as reported |
+| `docker run -d` times out before a container appears on one host | The image was missing, so Docker started an implicit pull inside the launch timeout | [145](traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md) | contributor-measured, conditions as reported |
+| A clean context-window rejection turns into an hours-long gateway stall | Downstream compression/retry logic keeps retrying an authoritative upstream limit | [146](traps/routing/146-gateway-retry-hides-context-rejection.md) | contributor-measured, conditions as reported |
+| Every `--gpus all` container dies before entrypoint when `/run` is mounted read-only | The NVIDIA OCI hook cannot create its `/run/nvidia-ctk-hook` scratch directory | [147](traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md) | contributor-measured, conditions as reported |
+| Identical chat requests produce different prompt-token counts across engines | One path Unicode-escapes non-ASCII tool JSON before rendering | [148](traps/template/148-tool-json-ascii-escaping-changes-prompt.md) | contributor-measured, conditions as reported |
+| Strict JSON schema works with thinking off but opens `{` and runs to the cap with thinking on | Structured-output enforcement is mode-dependent on the measured path | [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md) | contributor-measured, conditions as reported |
+| Piping `docker save` still fills the sender's nearly-full Docker disk | The classic exporter stages a full temp copy before writing the tar stream | [150](traps/runtime/150-docker-save-stages-sender-temp-copy.md) | contributor-measured, conditions as reported |
+| A clean package upgrade still contains modules that do not exist upstream | `pip uninstall` cannot remove files added after install because they are absent from RECORD | [151](traps/versioning/151-pip-uninstall-leaves-patch-added-files.md) | contributor-measured, conditions as reported |
+| First boot after an install/cache wipe trips UMA memory pressure during model load | CUDA-extension JIT compilation overlaps the streaming weight-load peak | [152](traps/memory/152-cold-jit-compile-overlaps-weight-load.md) | contributor-measured, conditions as reported |
+| A thinking budget is accepted but silently does nothing on Qwen3.5/3.8 | The custom processor hard-codes think-marker IDs from a different tokenizer family | [153](traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md) | contributor-measured, conditions as reported |
+| Same checkpoint and launch line answer differently after an engine upgrade | The new engine default changed the NVFP4 arithmetic mode | [154](traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md) | contributor-measured, conditions as reported |
+| Two long conversations keep caching only the shared system prompt and re-read everything else | Prefix-slot admission/victim policy makes them thrash one retained slot | [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md) | contributor-measured, conditions as reported |
+| Long ExLlamaV3 replies report 2-5x too few completion tokens and fake-low tok/s | Multi-requeue accounting drops earlier generated segments | [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md) | contributor-measured, conditions as reported |
+| N-gram speculation wins a single-stream bench and loses at two requests | The measured vLLM path disables async scheduling when n-gram speculation is enabled | [157](traps/runtime/157-ngram-speculation-disables-async-scheduling.md) | contributor-measured, conditions as reported |
+| Thinking is off and reasoning text is empty, yet usage reports exactly two reasoning tokens after tools | The model emits an empty thought-channel marker pair that the parser counts | [158](traps/reasoning/158-empty-thought-markers-count-as-reasoning.md) | contributor-measured, conditions as reported |
+| A vision compatibility patch admits too little model memory on paper | The loader accepts `model.visual.*` but the 0.6.0 resident-byte transform counted only `vision_tower.*` | [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md) | contributor-measured, conditions as reported |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -363,7 +379,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 24 of this registry's 143 entries in under a minute:
+against 24 of this registry's 159 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

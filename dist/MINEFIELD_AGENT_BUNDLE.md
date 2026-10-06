@@ -275,6 +275,22 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - 141: A health check, benchmark, router or canary sends an OpenAI-compatible chat request naming model B to a server that is actually serving model A. Instead of rejecting the mismatch, the Python SGLang chat route can return HTTP 200 and ordinary assistant content from the model that is actually loaded. The dangerous part is not merely an ignored optional knob. model is the field a client normally uses to say which model it believes it is measuring. A plausible response therefore looks like identity proof even when it is only proof that some model answered.
 - 142: A container launch appears to accept a bind-mounted model/config path that does not exist, then the serving stack fails later because the expected file or model payload is absent. A sharper variant occurs when a bind-mounted source file is deleted: a later launch recreates that path as a directory, and the container can then fail immediately with a file-versus-directory mount error. docker logs may be empty while the useful reason is in .State.Error.
 - 143: A Qwen3-family config.json visibly contains a numeric sliding_window, yet the effective reconstructed model configuration can resolve every layer to full_attention. Small draft models are particularly easy to hit because the default window-transition layer can sit beyond the end of the model. Nothing has to raise or warn.
+- 144: A SGLang serve passes short benchmarks and then the whole process dies on a sufficiently long fresh prompt with a FlashInfer allocation error. Increasing SGLANG_FLASHINFER_WORKSPACE_SIZE appears ineffective.
+- 145: An orchestrator times out inside docker run -d and reports a generic launch failure. No container is healthy, and repeated retries look like a slow or broken model start.
+- 146: A request appears to hang for hours behind a gateway even though the model server is healthy. The gateway repeatedly tries context compression and retry logic.
+- 147: Docker fails before the container process starts with an OCI hook error mentioning /run/nvidia-ctk-hook, ldcache, or a read-only filesystem. The same image works without the mount.
+- 148: Two engines receive byte-identical OpenAI chat requests but report different prompt-token counts, and borderline greedy long-context outcomes diverge between them.
+- 149: A strict response_format=json_schema probe looks healthy with thinking disabled, but with thinking enabled the reasoning closes, the answer opens with {, never closes, and generation runs to max_tokens.
+- 150: A supposedly streaming docker save IMAGE | ssh ... docker load transfer can fill the sender's Docker data-root disk before bytes reach the receiver.
+- 151: A new engine version installs cleanly over an older patched image, yet files that do not exist in the new release remain importable inside the package tree.
+- 152: A model shape passes the engine's startup capacity estimate but a first start after install/cache wipe drives host unified memory to a watchdog threshold while weights are still loading.
+- 153: A request carries a thinking budget, is accepted, and receives no error or warning, yet the custom processor never finds the expected think marker and therefore applies no cap.
+- 154: After an engine upgrade, the same checkpoint and nearly identical launch line starts faster and passes health checks, but a long greedy generation produces different token hashes. An old precision-related flag may also become invalid.
+- 155: New conversations reuse a long shared system prefix correctly, yet two long alternating conversations repeatedly cache only that system block. Each turn re-reads tens to hundreds of thousands of prior tokens, producing large first-token delays with no error or memory warning.
+- 156: Long replies show implausibly low usage.completion_tokens and server-reported tok/s, sometimes with finish_reason=length even though the reported count is far below max_tokens. Generation text itself is fine.
+- 157: An n-gram speculative configuration looks faster in a standard single-stream decode test but becomes materially slower per stream when the server handles its real concurrent load.
+- 158: A verifier asserts reasoning_tokens == 0 for thinking-off requests and fails on some multi-turn tool interactions even though the reasoning field is empty and no reasoning text is visible.
+- 159: A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.
 
 ## Canonical trap records
 
@@ -457,7 +473,7 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: A ~600B-class MoE with an MTP drafter, vLLM TP=2 across two GB10 nodes, community abliterated re-upload; the upstream patterns.md entry spans several model families.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": [], "failure_stage": ["load"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": ["tp"], "quantization": [], "serving_stack": ["vllm"], "stack_version": [], "topology": ["tp"]}`
 - Source: `traps/versioning/14-finetune-reupload-not-drop-in.md`
-- Related traps: none stated
+- Related traps: 12
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
 ### Trap 15: a server without echo plus logprobs silently breaks lm-eval multiple choice
@@ -2134,6 +2150,214 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: Independently reproduced on the configuration-only path with transformers==5.12.1, Python 3.11 on Ubuntu 24.04, with PyTorch intentionally absent. The contributor encountered the same class while exporting a five-layer Qwen3.8-family DFlash draft. This entry promotes the Transformers config-class mechanism; a separate NVIDIA ModelOpt exporter gating observation is corroborating context, not required for this canonical claim.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen3-family", "qwen3.8-family", "qwen3.8-family dflash draft. this entry promotes the transformers config-c"], "failure_stage": [], "gpu_architecture": [], "model_family": ["qwen3", "qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["transformers"], "stack_version": ["5.12.1"], "topology": []}`
 - Source: `traps/memory/143-qwen3-sliding-window-config-can-resolve-full-attention.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 144: deterministic FlashInfer can hard-cap prefill workspace and kill long prompts
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A SGLang serve passes short benchmarks and then the whole process dies on a sufficiently long fresh prompt with a FlashInfer allocation error. Increasing SGLANG_FLASHINFER_WORKSPACE_SIZE appears ineffective.
+- Mechanism: On the reported build, deterministic mode sets fixed split sizes and executes SGLANG_FLASHINFER_WORKSPACE_SIZE.set(2048 * 1024 * 1024), overriding the environment value. Long-prefill workspace demand can exceed that fixed 2 GiB. The threshold depends on model geometry and batching; it is not a universal token count.
+- Check: Pin the serving build, inspect the deterministic branch for a workspace-size setter, then compare matched deterministic-on/off long-prefill requests while recording the required workspace bytes. Do not infer safety from short prompts.
+- Safe conditional mitigation: On the affected build, remove the deterministic FlashInfer path or use a deterministic backend/path that does not hard-set this workspace. Verify long prompts after the change. Do not treat the reported ~7.3k-token boundary as portable.
+- Named conditions: SGLang 0.0.0.dev1+g5f55db35e / commit 5f55db35e, FlashInfer attention, Qwen3.8-27B NVFP4 family, DGX Spark GB10. Current SGLang no longer carries this exact 2 GiB setter, so this is a historical/version-scoped trap.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": ["qwen3.8-27b", "qwen3.8-27b nvfp4 family"], "failure_stage": ["prefill"], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["sglang"], "stack_version": ["0.0.0"], "topology": []}`
+- Source: `traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 145: docker run can hide an image pull inside your launch timeout
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: An orchestrator times out inside docker run -d and reports a generic launch failure. No container is healthy, and repeated retries look like a slow or broken model start.
+- Mechanism: If the requested image is absent locally, Docker may pull it before creating the container. That network transfer happens inside the same docker run call whose timeout was often sized only for local container startup. A pull can even finish after the orchestrator gives up, leaving an unmanaged container starting in the background.
+- Check: Immediately before launch, require docker image inspect <ref> to succeed in the same control path that gates docker run. If absent, report the missing image explicitly instead of timing the launch call.
+- Safe conditional mitigation: Separate image acquisition from container startup. Pull explicitly, verify the local image identity, then start under a timeout intended for startup only.
+- Named conditions: Direct Docker orchestration across DGX Spark nodes with non-identical local image sets; observed across vLLM and SGLang image tags.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["docker", "sglang", "vllm"], "stack_version": [], "topology": []}`
+- Source: `traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 146: a correct context rejection can become an indefinite downstream retry loop
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A request appears to hang for hours behind a gateway even though the model server is healthy. The gateway repeatedly tries context compression and retry logic.
+- Mechanism: The model server correctly rejects a request that exceeds its configured context cap. A downstream gateway interprets the clean context error as recoverable, attempts compression, fails to compress enough, backs off, and retries instead of surfacing the launch/config mismatch. The original server error is therefore converted into a silent operational stall.
+- Check: Compare the server's actual configured context limit with the gateway/client assumption. Preserve the first upstream error before retry logic. A context-exceeded response must be distinguishable from a transient transport failure.
+- Safe conditional mitigation: Align the server launch-time context with the intended deployment contract, and bound/terminate gateway compression retries when the upstream limit is authoritative.
+- Named conditions: vLLM serving an approximately 27B NVFP4 model behind a LiteLLM-compatible gateway with automatic context-compression retry.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["vllm"], "stack_version": [], "topology": []}`
+- Source: `traps/routing/146-gateway-retry-hides-context-rejection.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 147: a read-only bind mount at /run can break every --gpus all container before startup
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: Docker fails before the container process starts with an OCI hook error mentioning /run/nvidia-ctk-hook, ldcache, or a read-only filesystem. The same image works without the mount.
+- Mechanism: NVIDIA Container Toolkit's createContainer hook needs scratch space under the container's /run. A read-only bind mounted over /run shadows the normal writable tmpfs, so the hook cannot create its scratch directory and GPU setup fails before the GPU or image entrypoint is reached.
+- Check: Reduce to docker run --rm --gpus all -v <hostdir>:/run:ro <image> nvidia-smi, then move the same mount to another path as the control.
+- Safe conditional mitigation: Do not shadow /run read-only in GPU containers. Mount application data/config elsewhere, or preserve a writable /run for runtime hooks.
+- Named conditions: Docker + NVIDIA Container Toolkit 1.19.1 on DGX Spark GB10; reproduced with both a stock CUDA image and a project image. The measured failing case is a read-only /run bind.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": ["startup"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["docker"], "stack_version": ["1.19.1"], "topology": []}`
+- Source: `traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 148: two engines can serialize identical tool JSON into different prompt tokens
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: Two engines receive byte-identical OpenAI chat requests but report different prompt-token counts, and borderline greedy long-context outcomes diverge between them.
+- Mechanism: On the measured lanes, one rendering path preserved non-ASCII characters in tool JSON while another matched json.dumps(..., ensure_ascii=True). Ninety non-ASCII characters expanded into Unicode escapes and added about 394 prompt tokens. The request was identical on the wire; the model input was not.
+- Check: Render the checkpoint template locally with the served tokenizer, compare verbatim and ensure_ascii=True tool serialization counts, then compare both with each engine's reported prompt tokens. Include an ASCII-only control.
+- Safe conditional mitigation: Treat rendered prompt identity as part of an engine A/B. Normalize or pin tool serialization when comparing engines, and never infer equivalence from request-body equality alone.
+- Named conditions: TensorFold 0.3.6.3 and a vendor SGLang v0.5.17-era lane, Qwen3.8-27B-family NVFP4, long agent prompts with 36 tool schemas. The exact escaping layer in stock SGLang was not established, so do not generalize the engine attribution.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen3.8-27b-family", "qwen3.8-27b-family nvfp4"], "failure_stage": [], "gpu_architecture": [], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["sglang"], "stack_version": ["v0.5.17"], "topology": []}`
+- Source: `traps/template/148-tool-json-ascii-escaping-changes-prompt.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 149: strict JSON schema can pass with thinking off and run to the cap with thinking on
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A strict response_format=json_schema probe looks healthy with thinking disabled, but with thinking enabled the reasoning closes, the answer opens with {, never closes, and generation runs to max_tokens.
+- Mechanism: On the measured TensorFold path the grammar becomes active only after the reasoning close marker. That establishes where constraint enforcement begins, but the exact reason the JSON never closes remains unproven. The important measurement failure is assuming a thinking-off structured-output probe certifies a thinking-on lane.
+- Check: Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.
+- Safe conditional mitigation: On the affected build, use strict json_schema only in the mode that passes the matched check, or gate thinking-on requests until the serving path is fixed.
+- Named conditions: TensorFold 0.5.0 with xgrammar 0.2.8, Qwen3.8-27B-family NVFP4, DFlash2, DGX Spark GB10.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": ["qwen3.8-27b-family", "qwen3.8-27b-family nvfp4"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/evaluation/149-thinking-on-json-schema-can-runaway.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 150: docker save can stage a full image copy on the sender before streaming
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A supposedly streaming docker save IMAGE | ssh ... docker load transfer can fill the sender's Docker data-root disk before bytes reach the receiver.
+- Mechanism: On the measured Docker 29.2.1 classic graph-driver exporter, save first materialized all layer/config content under the daemon temp directory and only then tarred it to the output stream. A small-image control staged approximately the entire image size. Containerd-image-store export follows a different path, so the behavior is store-dependent.
+- Check: Identify the image store, measure free space on the Docker data-root filesystem, and watch the daemon temp directory during a small multi-second docker save control.
+- Safe conditional mitigation: Ensure sender-side temporary capacity, move DOCKER_TMPDIR to a suitable filesystem where appropriate, use a registry/containerd streaming path, or rebuild/pull on the destination.
+- Named conditions: Docker Engine 29.2.1 on DGX Spark, classic exporter behavior, data root under /var/lib/docker.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark"], "exact_checkpoint": [], "failure_stage": ["load"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["docker"], "stack_version": ["29.2.1"], "topology": []}`
+- Source: `traps/runtime/150-docker-save-stages-sender-temp-copy.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 151: layering a new package version can leave patch-added files from the old image
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A new engine version installs cleanly over an older patched image, yet files that do not exist in the new release remain importable inside the package tree.
+- Mechanism: pip uninstall removes files listed in the installed distribution's RECORD. Files added later by in-place patches are absent from RECORD, so they survive uninstall and the new version is installed around them. They can remain inert, shadow renamed modules, or be discovered by package/plugin scans.
+- Check: Compare the final installed package tree with the pinned upstream tree, or enumerate package files not represented in RECORD and inspect every extra.
+- Safe conditional mitigation: Build upgrades from a clean base, or explicitly remove patch-added files before installing the next version. Verify the final tree rather than trusting uninstall/install logs.
+- Named conditions: TensorFold 0.3.6.3 patched in place, then 0.5.0 installed with pip install --no-deps; mechanism reproduced offline with a small package on pip/Python.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": [], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/versioning/151-pip-uninstall-leaves-patch-added-files.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 152: first-start CUDA JIT memory can overlap streaming weights on unified-memory hosts
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A model shape passes the engine's startup capacity estimate but a first start after install/cache wipe drives host unified memory to a watchdog threshold while weights are still loading.
+- Mechanism: The engine JIT-builds CUDA extensions on first use while the checkpoint is simultaneously streaming into the same GB10 physical memory pool. The engine admission estimate accounts model/cache geometry but not compiler working memory, so compilation pressure lands on top of the weight-load peak. A warm kernel cache hides the condition on later boots.
+- Check: On first start after any engine/cache change, record MemAvailable and build-log events through the entire load. Compare with a control where required extensions are prebuilt in a weight-free container.
+- Safe conditional mitigation: Prebuild serve-path extensions before the real model boot, persist the kernel cache keyed by engine/toolchain identity, and detect stale build locks after killed compiles.
+- Named conditions: TensorFold 0.5.0 CUDA, DGX Spark GB10, large MLX-format Qwen3.8-Flash-Next-family model, empty kernel cache.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": ["qwen3.8-flash-next-family", "qwen3.8-flash-next-family model"], "failure_stage": ["load", "startup"], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/memory/152-cold-jit-compile-overlaps-weight-load.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 153: a thinking-budget processor can silently no-op when its marker IDs belong to another tokenizer
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A request carries a thinking budget, is accepted, and receives no error or warning, yet the custom processor never finds the expected think marker and therefore applies no cap.
+- Mechanism: SGLang's Qwen3ThinkingBudgetLogitProcessor hard-codes Qwen3 marker IDs 151667/151668. The inspected Qwen3.5/3.8-family tokenizer uses different think IDs (248068/248069). The processor scans for the hard-coded open marker; when none is found it silently continues without enforcing the budget. An older helper variant also mixes historical prompt markers with current output when deciding whether a budget is complete.
+- Check: Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.
+- Safe conditional mitigation: Use marker IDs from the actual tokenizer, or a serving path whose budget implementation is family-aware and validated for the model. Scope counting to the current generated turn.
+- Named conditions: SGLang v0.5.17/main custom-logit-processor route; Qwen3.5/3.8-family tokenizers. This does not claim the newer strict-thinking route is affected.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen3.5 3.8-family", "qwen3.5 3.8-family tokenizers. this does not claim the newer strict-thinki"], "failure_stage": [], "gpu_architecture": [], "model_family": ["qwen3.5"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["sglang"], "stack_version": ["v0.5.17"], "topology": []}`
+- Source: `traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 154: an engine upgrade can change NVFP4 arithmetic behind an unchanged launch line
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: After an engine upgrade, the same checkpoint and nearly identical launch line starts faster and passes health checks, but a long greedy generation produces different token hashes. An old precision-related flag may also become invalid.
+- Mechanism: TensorFold 0.6.1 introduced --precision checkpoint|full and defaulted to checkpoint arithmetic for the measured NVFP4 family. The prior 0.6.0 path corresponds to 0.6.1 --precision full. Therefore the default upgrade changes activation arithmetic even though the checkpoint/model name is unchanged.
+- Check: After an engine upgrade, pin explicit precision and run long greedy token-hash witnesses, not only short prompts. Compare startup-resolved precision and reject unsupported legacy flag combinations.
+- Safe conditional mitigation: Put the intended arithmetic mode explicitly in the launch configuration and requalify any score produced under a different resolved mode.
+- Named conditions: TensorFold 0.6.0 c464617... versus 0.6.1 17c73e1..., Qwen3.8-27B-family NVFP4 on DGX Spark GB10. Flash Next had a separate boundary where --precision full was a no-op.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": ["qwen3.8-27b-family", "qwen3.8-27b-family nvfp4 on dgx spark gb10. flash next had a separate boun"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 155: prefix-slot victim policy can make two long conversations repeatedly re-prefill
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: New conversations reuse a long shared system prefix correctly, yet two long alternating conversations repeatedly cache only that system block. Each turn re-reads tens to hundreds of thousands of prior tokens, producing large first-token delays with no error or memory warning.
+- Mechanism: On the measured TensorFold Flash Next path, a fork could use only a free slot. An idle-but-not-free slot retained an unrelated prefix, so both active conversations alternated through the same slot and evicted each other's post-system state. Source replay reproduced almost all measured cache counts. A later fewest-kept-tokens victim rule on a newer pinned build reduced the measured two-slot wait by roughly 73% while preserving output hashes.
+- Check: Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.
+- Safe conditional mitigation: Use a slot/victim policy that can reclaim an idle retained slot based on re-prefill cost, or provide enough slots for the active long conversations and intervening tasks. Validate with output-hash controls.
+- Named conditions: TensorFold 0.6.1 Flash Next / qwen4exp, --parallel 2, long Qwen3.8-Flash-Next-family conversations on DGX Spark. The initial sequence began after earlier traffic; do not claim every clean boot reproduces it.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark"], "exact_checkpoint": ["qwen3.8-flash-next-family", "qwen3.8-flash-next-family conversations on dgx spark. the initial sequence", "qwen4exp"], "failure_stage": ["prefill"], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 156: repeated ExLlamaV3 requeues can under-report completion tokens and derived tok/s
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: Long replies show implausibly low usage.completion_tokens and server-reported tok/s, sometimes with finish_reason=length even though the reported count is far below max_tokens. Generation text itself is fine.
+- Mechanism: ExLlamaV3 requeues long jobs. The inspected code carries rq_new_tokens forward as the current segment's new_tokens instead of adding it to the already-carried value, so after multiple requeues earlier segments disappear from the final count. TabbyAPI uses that final count for OpenAI usage and its logged generation rate.
+- Check: Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.
+- Safe conditional mitigation: Until the counter is fixed and validated, derive output length from returned text for long/requeued jobs. The obvious cumulative carry-forward patch is source-suggested but was not claimed as tested here.
+- Named conditions: vcruz305/exllamav3 047ce72..., TabbyAPI be74bf0, long Qwen3.8-Flash-Next-family replies on DGX Spark. The same carry expression was also visible in upstream history.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark"], "exact_checkpoint": ["qwen3.8-flash-next-family", "qwen3.8-flash-next-family replies on dgx spark. the same carry expression"], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": ["qwen3.8"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": [], "serving_stack": ["exllama", "tabbyapi"], "stack_version": [], "topology": []}`
+- Source: `traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 157: n-gram speculation can win single-stream and lose at real concurrency
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: An n-gram speculative configuration looks faster in a standard single-stream decode test but becomes materially slower per stream when the server handles its real concurrent load.
+- Mechanism: On vLLM 0.28.0 the measured n-gram path logs that async scheduling is unsupported and will be disabled. The speculative arm therefore changes both decoding and scheduling. On the reported two-request lane, single-stream headline throughput improved while two-stream per-request throughput fell substantially.
+- Check: Benchmark matched speculation-on/off arms at the production concurrency, record batch wall/completed-work throughput and per-stream rates, and preserve the startup line showing whether async scheduling was disabled.
+- Safe conditional mitigation: Choose speculative settings from the target concurrency rather than a single-stream benchmark. If the scheduling change makes the production lane slower, remove the speculative config.
+- Named conditions: vLLM 0.28.0, Gemma-4-26B-A4B-NVFP4, n-gram k5 lookup 1-3, max_num_seqs=2, DGX Spark GB10.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": ["decode", "load"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["vllm"], "stack_version": ["0.28.0"], "topology": []}`
+- Source: `traps/runtime/157-ngram-speculation-disables-async-scheduling.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 158: empty thought markers can make thinking-off report two reasoning tokens after tools
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A verifier asserts reasoning_tokens == 0 for thinking-off requests and fails on some multi-turn tool interactions even though the reasoning field is empty and no reasoning text is visible.
+- Mechanism: On the measured Gemma 4 template branch, a post-tool generation boundary may omit the empty thought shell the template supplies elsewhere. The model then emits the opening and closing thought-channel tokens itself with nothing between them, and the reasoning parser counts the two marker tokens.
+- Check: Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.
+- Safe conditional mitigation: Verify thinking-off from semantic reasoning content, or explicitly allow the exact empty two-marker case on the matched template/parser revision. Non-empty reasoning must still fail.
+- Named conditions: vLLM 0.28.0, nvidia/Gemma-4-26B-A4B-NVFP4 revision a19cfe00, Gemma4 reasoning/tool parsers, DGX Spark. Observed 39/157 agent requests; single-turn and no-tool controls stayed at zero.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark"], "exact_checkpoint": [], "failure_stage": [], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["vllm"], "stack_version": ["0.28.0"], "topology": []}`
+- Source: `traps/reasoning/158-empty-thought-markers-count-as-reasoning.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 159: a vision namespace alias can be loaded correctly but omitted from admission byte accounting
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.
+- Mechanism: TensorFold Python 0.6.0's vision reader accepts both vision_tower.* and original model.visual.* aliases, but the resident-tower byte transform counted only vision_tower.*. The NVFP4 language transform separately excludes model.visual.*. Under the original namespace, the composed accounting therefore returns zero resident tower bytes.
+- Check: Feed identical synthetic shapes through the byte transform under both aliases and require equal nonzero accounting. Also verify a complete synthetic tower and keep a control for the renamed namespace.
+- Safe conditional mitigation: Reuse the loader's existing shared vision-key alias predicate in the resident-byte transform, preserving rank/enabled checks. Later TensorFold 0.6.5 already recognizes the aliases.
+- Named conditions: TensorFold Python 0.6.0 commit c464617..., dense NVFP4 Qwen-family compatibility work. Stock 0.6.0 separately rejects the combination; this entry is about guard-removal compatibility patches, not released-stock admission behavior.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen-family", "qwen-family compatibility work. stock 0.6.0 separately rejects the combina"], "failure_stage": ["load", "startup"], "gpu_architecture": [], "model_family": ["qwen"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": [], "stack_version": [], "topology": []}`
+- Source: `traps/memory/159-vision-alias-omitted-from-admission-accounting.md`
 - Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
