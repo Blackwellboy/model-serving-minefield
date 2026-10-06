@@ -14,6 +14,7 @@ is safe.
 from __future__ import annotations
 
 import os
+from itertools import islice
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +26,9 @@ from .static_inspector import MAX_FILE_BYTES, inspect_files
 
 MAX_DEPTH = 3
 MAX_FILES = 400
+MAX_ENTRY_VISITS = 4_000
 MAX_TOTAL_BYTES = 256 * 1024 * 1024
+MAX_SCAN_FINDINGS = 2_000
 SKIP_DIRS = {
     ".git", "node_modules", "__pycache__", ".venv", "venv",
     "site-packages", ".cache", "blobs",
@@ -108,22 +111,38 @@ def _is_model_folder(folder: Path) -> bool:
 
 
 def _walk(
-    root: Path, roots: list[Path] | None, remaining: int, seen: set[Path] | None = None,
-) -> tuple[list[Path], bool]:
-    """Walk ``root`` for up to ``remaining`` files not already in ``seen``."""
+    root: Path,
+    roots: list[Path] | None,
+    remaining_files: int,
+    remaining_visits: int,
+    seen: set[Path] | None = None,
+) -> tuple[list[Path], bool, int, bool]:
+    """Walk a bounded number of files and directory entries.
+
+    Files and directories both spend the visit budget. Directory contents are
+    read through a bounded scandir slice before sorting, so a single enormous
+    directory is never materialised in full.
+    """
     files: list[Path] = []
+    visits = 0
     stack = [(root, 0)]
-    truncated = False
     while stack:
+        if visits >= remaining_visits:
+            return files, False, visits, True
         folder, depth = stack.pop()
+        allowance = remaining_visits - visits
         try:
-            entries = sorted(folder.iterdir())
+            with os.scandir(folder) as stream:
+                raw_entries = list(islice(stream, allowance + 1))
         except OSError:
             continue
+        entry_truncated = len(raw_entries) > allowance
+        entries = [Path(entry.path) for entry in raw_entries[:allowance]]
+        visits += len(entries)
+        entries.sort(key=lambda path: path.name)
         for entry in entries:
-            if len(files) >= remaining:
-                truncated = True
-                return files, truncated
+            if len(files) >= remaining_files:
+                return files, True, visits, entry_truncated
             if entry.is_symlink() or (entry.name.startswith(".") and entry.name != ".env"):
                 continue
             try:
@@ -140,8 +159,9 @@ def _walk(
                     files.append(resolved)
             except OSError:
                 continue
-    return files, truncated
-
+        if entry_truncated:
+            return files, False, visits, True
+    return files, False, visits, False
 
 def _kind(path: Path) -> str | None:
     name = path.name.lower()
@@ -206,7 +226,10 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
     model_folders: set[Path] = set()
     loose: set[Path] = set()
     discovered: set[Path] = set()
-    truncated = False
+    file_truncated = False
+    entry_truncated = False
+    visited_entries = 0
+    truncations: list[dict[str, Any]] = []
     accepted = 0
 
     for raw in paths:
@@ -223,11 +246,19 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             if _is_model_folder(path):
                 model_folders.add(path)
             remaining = max(0, MAX_FILES - len(discovered))
+            remaining_visits = max(0, MAX_ENTRY_VISITS - visited_entries)
             if remaining == 0:
-                truncated = True
+                file_truncated = True
                 break
-            walked, hit_limit = _walk(path, roots, remaining, discovered)
-            truncated = truncated or hit_limit
+            if remaining_visits == 0:
+                entry_truncated = True
+                break
+            walked, hit_file_limit, visits, hit_entry_limit = _walk(
+                path, roots, remaining, remaining_visits, discovered
+            )
+            visited_entries += visits
+            file_truncated = file_truncated or hit_file_limit
+            entry_truncated = entry_truncated or hit_entry_limit
             for file in walked:
                 if file in discovered:
                     continue
@@ -254,13 +285,22 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
             discovered.add(path)
             loose.add(path)
         if len(discovered) >= MAX_FILES:
-            truncated = True
+            file_truncated = True
+            break
+        if entry_truncated:
             break
 
-    if truncated:
+    if file_truncated:
         notes.append(
             f"scan stopped after the global {MAX_FILES}-file limit; remaining files were not checked"
         )
+        truncations.append({"code": "FILE_LIMIT", "limit": MAX_FILES})
+    if entry_truncated:
+        notes.append(
+            f"scan stopped after the global {MAX_ENTRY_VISITS}-entry visit limit; "
+            "remaining files and directories were not checked"
+        )
+        truncations.append({"code": "ENTRY_VISIT_LIMIT", "limit": MAX_ENTRY_VISITS})
 
     bytes_read = 0
     for folder in sorted(model_folders):
@@ -375,12 +415,24 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
         else:
             merged[key] = {**item, "count": 1}
     ordered = sorted(merged.values(), key=lambda item: (str(item["file"]), int(item["trap_id"])))
+    if len(ordered) > MAX_SCAN_FINDINGS:
+        truncations.append({
+            "code": "SCAN_FINDING_LIMIT",
+            "limit": MAX_SCAN_FINDINGS,
+            "available": len(ordered),
+        })
+        notes.append(
+            f"scan finding output stopped after {MAX_SCAN_FINDINGS} distinct findings; "
+            "additional findings were omitted"
+        )
+        ordered = ordered[:MAX_SCAN_FINDINGS]
     return {
         "kind": "scan",
         "accepted_paths": accepted,
         "scanned": scanned,
         "findings": ordered,
         "traps": sorted({item["trap_id"] for item in ordered}, key=int),
+        "truncations": truncations,
         "notes": list(dict.fromkeys(notes)),
         "warning": "Each finding is a lead to check, not a diagnosis. An empty scan means no "
                    "implemented check fired, not that the setup is safe.",
