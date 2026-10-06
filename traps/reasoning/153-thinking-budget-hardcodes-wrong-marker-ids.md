@@ -2,7 +2,7 @@
 
 **Found by @scottleimroth.**
 
-**Status: contributor-measured/source-inspected, conditions as reported** ([issue #166](https://github.com/Blackwellboy/model-serving-minefield/issues/166)). Public source and tokenizer files make the mismatch independently checkable; live budget behavior on Qwen3.8 was not claimed.
+**Status: contributor-measured, conditions as reported** ([issue #166](https://github.com/Blackwellboy/model-serving-minefield/issues/166)). Public source and tokenizer files make the mismatch independently checkable; live budget behavior on Qwen3.8 was not claimed.
 
 **Symptom.** A request carries a thinking budget, is accepted, and receives no error or warning, yet the custom processor never finds the expected think marker and therefore applies no cap.
 
