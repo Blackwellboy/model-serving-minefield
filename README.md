@@ -176,13 +176,13 @@ then closed by a staleness bot, which is not the same as fixed. They never
 appear in [Core](CORE.md), never count toward doctor coverage, and never count
 toward the registry total; a checker asserts all three on every run.
 
-**What is still open** is published too, in
-private evidence archive *(private evidence archived)*: every unsettled question,
-with its source marked PRIMARY or secondary, the hardware and stack it needs,
-and its CONFIRM and REFUTE criteria fixed **before** anyone runs it. Several are
-things a stranger with the right hardware can close faster than we can, and one
-needs no hardware at all. Settled questions are listed there as closed, with
-their dispositions, so they stay closed.
+**Open trap-adjudication questions** are public in
+[registry/OPEN_TRAP_ISSUES.md](registry/OPEN_TRAP_ISSUES.md). Every currently
+open GitHub issue whose title begins `[trap]` must be represented there with
+CONFIRM and REFUTE criteria fixed **before** adjudication; CI compares the queue
+against live issue state. Broader raw candidate research, blocked reproductions
+and negative evidence remain in the private evidence archive rather than being
+published as if settled.
 
 ## Find your symptom
 
