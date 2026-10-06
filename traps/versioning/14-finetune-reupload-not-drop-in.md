@@ -64,3 +64,14 @@ A refusal-edited derivative was served against the base model's unchanged stock 
 This is a useful boundary on "drop-in": changing target weights can alter the target/drafter relationship selectively, even when the drafter itself is byte-identical and ordinary agent behavior still looks compatible.
 
 **Extra check.** If a fine-tune or post-hoc edit will retain the base model's drafter, measure acceptance on both ordinary production work and the behavior the edit intentionally changed. Do not infer drafter compatibility from one workload.
+
+
+## Added 2026-10-07: bare compliance does not certify an edited model in its real agent context
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #146](https://github.com/Blackwellboy/model-serving-minefield/issues/146).**
+
+A refusal-removal edit initially appeared perfect on a bare 63-item single-turn compliance set. The first reported 46/63 wrapped result was later corrected: it inherited an unsafe 512-token cap and 14 apparent misses were Trap 12 truncations. At a 4096-token cap the same edited model completed **61/63**, and with the real production tool schema the wrapped agent condition landed at **59/63**. The corrected result is smaller than the first report but still establishes the important boundary: qualification on bare prompts does not prove the same edited weights behave identically under the system prompt, history and tool apparatus they will actually see.
+
+A second edit exposed the other side of the same non-drop-in rule. It improved the failing bare thinking-off compliance condition, but served agent tests lost caution on destructive/injected-instruction scenarios. Strength sweeps, a caution-orthogonal direction and averaging edits did not recover both properties cleanly.
+
+**Extra check.** Any post-hoc behavioral edit intended for an agent must be requalified on the deployment context, including the real system prompt, tools and representative history, with token ceilings high enough that truncation is not scored as behavior. Treat bare compliance, agent reliability and caution as separate measured axes rather than assuming one edited direction is a strict superset.
