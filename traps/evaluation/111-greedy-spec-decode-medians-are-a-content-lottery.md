@@ -89,3 +89,14 @@ lane whose recovery these suites were measuring).
 2. **Acceptance still prices throughput.** On a 48-prompt workload matrix, draft acceptance tracked decode tok/s nearly linearly (Pearson ≈ 0.998 on the measured set): narrative/conversational ~10% accept / ~60 tok/s class, code ~35% / ~150, repetitive structured ~74% / ~280. A single DFlash headline tok/s is not portable across workloads.
 
 *Status of this addendum: measured here, raw not published.* Phrase as claim boundary + performance reporting, **not** as "DFlash quality defect." See private evidence archive *(private evidence archived)*.
+
+
+## Added 2026-10-07: spec-on and spec-off are not automatically the same temperature-0 measurement
+
+**Status of this addendum: contributor-measured, conditions as reported. Found by @scottleimroth in [issue #133](https://github.com/Blackwellboy/model-serving-minefield/issues/133).**
+
+Two vLLM studies on GB10 found task-level outcomes moving between speculation-off and speculation-on arms at temperature 0, despite identical target weights and prompts. Later controls narrowed the likely owner: swapping between two different drafters in the **same engine mode** produced byte-identical greedy outputs across large batteries, while switching eager versus CUDA-graph mode changed greedy text. A separate TensorFold control produced identical drafted and serial token IDs over an 8192-token thinking-on generation.
+
+The supported conclusion is therefore narrower than "speculation changes safety." **A speculative configuration is part of the numerical execution path and cannot be assumed token-identical to serial decoding on every engine.** Whether it changes output is engine/path specific. Provenance for behavioral scores must include speculation state and engine mode, and a lane that needs identity should run a direct spec-on/spec-off token-hash witness.
+
+This also supplies a useful negative control: an engine whose verify path is numerically identical to serial decoding can preserve the greedy token stream exactly.
