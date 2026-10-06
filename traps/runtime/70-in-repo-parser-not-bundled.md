@@ -89,3 +89,14 @@ writes to once it is correctly loaded.
 **Found.** 2026-07-27 and 2026-07-28.
 
 **Attribution.** Blackwellboy.
+
+
+## Added 2026-10-07: the same missing-parser symptom also appears with built-in family parsers
+
+**Status of this addendum: contributor-measured symptom corroboration, not corroboration of this entry's packaging mechanism. Reported by @scottleimroth in [issue #148](https://github.com/Blackwellboy/model-serving-minefield/issues/148).**
+
+A newly onboarded multimodal Gemma-family checkpoint served coherent chat while leaving full `<think>...</think>` blocks in `content`. Setting the correct family reasoning parser separated reasoning and content on retry.
+
+The useful shared lesson is the **check**, not the exact cause: a smoke test that only asks whether the model answers cannot validate reasoning-field wiring. Inspect the raw response shape with thinking on and off before any scorer consumes it.
+
+This addendum does not claim the Gemma lane required a checkpoint-bundled plugin file. The canonical mechanism above remains the unbundled parser shipped in the model repository; the Gemma report is a symptom-level parser-configuration corroboration.
