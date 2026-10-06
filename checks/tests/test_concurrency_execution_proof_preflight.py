@@ -39,6 +39,19 @@ class ConcurrencyExecutionProofTests(unittest.TestCase):
         self.assertIn("CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF", flags)
         self.assertTrue(any("active_sequences rose" in line for line in findings))
 
+
+    def test_post_slot_saturation_flags_adjacent_pair(self):
+        """C1->C2 may scale cleanly while C2->C4 reveals a slot-count plateau."""
+        doc = {"rows": [
+            {"concurrency": 1, "batch_wall": 13.4, "aggregate_tps": 38.2},
+            {"concurrency": 2, "batch_wall": 15.5, "aggregate_tps": 66.1},
+            {"concurrency": 4, "batch_wall": 30.7, "aggregate_tps": 66.7},
+        ]}
+        code, findings, flags = chk.evaluate(doc)
+        self.assertEqual(code, chk.BLOCKING)
+        self.assertIn("CLIENT_CONCURRENCY_NOT_EXECUTION_PROOF", flags)
+        self.assertTrue(any("C2->C4" in line for line in findings))
+
     def test_zero_throughput_is_not_ok(self):
         doc = {"rows": [
             {"concurrency": 1, "batch_wall": 2.0, "aggregate_tps": 0},
