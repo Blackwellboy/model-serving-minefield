@@ -6,7 +6,12 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .static_inspector import MAX_FILE_BYTES, _read_text_file
+from .static_inspector import (
+    MAX_FILE_BYTES,
+    MAX_FINDINGS_PER_FILE,
+    MAX_MATCHES_PER_RULE,
+    _read_text_file,
+)
 
 RULES = (
     ("08", r"(?:CUDA|driver)[^\n]{0,120}(?:error\s*222|unsupported toolchain)",
@@ -80,12 +85,34 @@ def signatures_in_text(text: str) -> dict[str, str]:
 def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, Any]:
     roots = [Path(root) for root in allowed_roots] if allowed_roots else None
     findings = []
+    truncations = []
     for raw_path in paths:
         path, data = _read_text_file(Path(raw_path), roots)
         if path.stat().st_size > MAX_FILE_BYTES:
             raise ValueError(f"log exceeds {MAX_FILE_BYTES} bytes: {path}")
+        file_findings = 0
+        file_capped = False
         for trap_id, pattern, rationale in RULES:
+            if file_capped:
+                break
+            rule_matches = 0
             for match in re.finditer(pattern, data, re.I | re.M):
+                if rule_matches >= MAX_MATCHES_PER_RULE:
+                    truncations.append({
+                        "code": "RULE_MATCH_LIMIT",
+                        "file": str(path),
+                        "trap_id": trap_id,
+                        "limit": MAX_MATCHES_PER_RULE,
+                    })
+                    break
+                if file_findings >= MAX_FINDINGS_PER_FILE:
+                    truncations.append({
+                        "code": "FILE_FINDING_LIMIT",
+                        "file": str(path),
+                        "limit": MAX_FINDINGS_PER_FILE,
+                    })
+                    file_capped = True
+                    break
                 start = data.count("\n", 0, match.start()) + 1
                 end = data.count("\n", 0, match.end()) + 1
                 findings.append({
@@ -116,4 +143,11 @@ def inspect_logs(paths: list[str], allowed_roots: list[str] | None = None) -> di
                     "line_end": end,
                     "matched_signature": match.group(0)[:500],
                 })
-    return {"kind": "log_scan", "files": len(paths), "findings": findings}
+                rule_matches += 1
+                file_findings += 1
+    return {
+        "kind": "log_scan",
+        "files": len(paths),
+        "findings": findings,
+        "truncations": truncations,
+    }
