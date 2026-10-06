@@ -237,9 +237,19 @@ def scan(paths: list[str], allowed_roots: list[str] | None = None) -> dict[str, 
                     if file.name == "chat_template.jinja":
                         continue
                 loose.add(file)
+        elif path.suffix == ".jinja":
+            # A named template is rendered itself, even when only that file is
+            # an allowed root and its folder is not.
+            discovered.add(path)
+            loose.add(path)
         elif path.name in MODEL_MARKERS or path.name == "hf_quant_config.json":
             discovered.add(path)
-            model_folders.add(path.parent)
+            if _inside(path.parent, roots):
+                model_folders.add(path.parent)
+            else:
+                notes.append(
+                    f"{raw}: its model folder is outside the allowed roots; model-folder checks not run"
+                )
         else:
             discovered.add(path)
             loose.add(path)

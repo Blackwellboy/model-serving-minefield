@@ -179,6 +179,11 @@ class AuditHardeningTests(unittest.TestCase):
             allowed_roots=[str(template)],
         )
         self.assertNotIn("SIDECAR-SECRET", json.dumps(report))
+        # The named template must actually be inspected, not silently skipped.
+        self.assertEqual(
+            report["scanned"], [{"path": str(template.resolve()), "kind": "chat template"}], report
+        )
+        self.assertFalse(any("outside allowed roots" in note for note in report["notes"]), report)
 
     def test_non_canonical_template_beside_model_metadata_is_checked(self) -> None:
         folder = self.model("deploy")
