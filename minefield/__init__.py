@@ -4,6 +4,10 @@ __version__ = "0.2.1"
 
 # Phase-0 reusable Doctor API (optional import; keeps lightweight CLI imports fast)
 def __getattr__(name: str):
+    if name == "diagnose_environment":
+        from .unified import diagnose_environment
+
+        return diagnose_environment
     if name in {
         "detect_target",
         "plan_checks",

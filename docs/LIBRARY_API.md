@@ -13,7 +13,13 @@ from minefield.api import plan_checks, run_checks, summarize, result_to_doctor_j
 plan = plan_checks(base_url="http://127.0.0.1:8000/v1", mode="lite", max_requests=5)
 # plan makes zero chat completions when detect=False (default)
 
-plan = plan_checks(base_url="http://127.0.0.1:8000/v1", mode="lite", max_requests=5, detect=True)
+plan = plan_checks(
+    base_url="http://127.0.0.1:8000/v1",
+    mode="lite",
+    max_requests=5,
+    detect=True,
+    preferred_trap_ids=("12", "23"),  # optional: matched traps are probed first
+)
 result = run_checks(plan)   # hard ceiling: requests_executed <= max_requests
 summary = summarize(result) # structured counts + findings (not an intelligence score)
 payload = result_to_doctor_json(result)  # classic doctor --json keys + plan metadata
@@ -67,3 +73,26 @@ plugin matcher once went silently dark.
 
 The CLI (`minefield quick` / `doctor/minefield_doctor.py`) remains the user-facing
 entry and shares the same probe catalogue.
+
+
+## Unified diagnosis
+
+```python
+from minefield import diagnose_environment
+from minefield.registry import load_registry
+
+report = diagnose_environment(
+    load_registry(),
+    "streaming replies go blank under tools",
+    paths=["docker-compose.yml", "server.log"],
+    base_url="http://127.0.0.1:8000/v1",
+    max_requests=5,
+)
+```
+
+The unified orchestrator keeps evidence classes separate while considering the
+entire canonical registry for routing. Symptom similarity remains a lead,
+offline file findings remain static/log leads, and live Doctor findings remain
+bounded endpoint observations. When a small live request budget is used, probes
+whose trap IDs already matched the symptom or supplied files are prioritised
+before generic lite probes. No API key is copied into the result.

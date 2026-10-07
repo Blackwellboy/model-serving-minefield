@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-08 - unified diagnose + first coverage expansion
+
+- Added **`minefield diagnose` as a unified front door**: one invocation can combine a plain-language symptom, explicit files/folders, and an optional OpenAI-compatible endpoint while keeping symptom similarity, offline findings, and live Doctor evidence separate.
+- Lite live planning can now prioritise probes whose trap IDs already matched the symptom or supplied files, so a five-request budget is spent on relevant checks before generic probes.
+- Added automatic detector coverage for six recent canonical traps: deterministic SGLang/FlashInfer risk (144), read-only `/run` NVIDIA hook collision (147), `docker save | ... docker load` sender staging (150), n-gram speculation disabling async scheduling (157), sustained distributed rank-stall signatures (160), and DFlash draft-budget-2 / FP4 contiguity startup failure (161).
+- Automatic coverage moves **87 -> 93 of 161**. Static/offline coverage moves **59 -> 63** and log-signature coverage moves **23 -> 26**; live Doctor remains **24** in this phase.
+- Added regression tests for evidence fusion, scriptable diagnose JSON, matched-trap probe priority, and positive/safe-control pairs for every new detector.
+
 ## 2026-10-08 - Scott follow-up batch: traps 160-161
 
 - Promoted [160](traps/runtime/160-sustained-tp-rank-divergence-build-scoped.md) from issue #89: sustained TP=2 rank divergence under load, with the canonical claim bounded to the measured old-build/new-build outcome split and **not** assigning unresolved ownership to vLLM, NCCL or FlashInfer.

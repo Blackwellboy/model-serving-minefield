@@ -95,6 +95,24 @@ RULES = tuple(Rule(*rule) for rule in (
     ("142", r"(?:(?:\s-v|--volume)[ =][\"']?(?:\.{1,2}/|~/|/|\$)[^\s:\"']*:/|^\s*-\s+[\"']?(?:\.{1,2}/|~/|/)[^\s:\"']+:/)",
      "configuration-only", "Short bind-mount syntax: if the host path is missing, Docker creates an empty "
      "directory and the server fails later. Use --mount type=bind (or compose long syntax) for model/config files."),
+    ("144", r"--enable-deterministic-inference\b",
+     "requiring-runtime-confirmation",
+     "SGLang deterministic inference is enabled on a FlashInfer-capable launch. On the affected historical build "
+     "this also forced a fixed 2 GiB prefill workspace; long prompts need a version-scoped workspace check.",
+     r"(?:sglang|flashinfer)"),
+    ("147", r"(?:(?:-v|--volume)[ =][^\s]+:/run:ro\b|^\s*-\s+[^\s]+:/run:ro\s*$|--mount[^\n]*target=/run[^\n]*(?:readonly|read-only))",
+     "suspicious",
+     "A GPU container bind-mounts /run read-only. NVIDIA Container Toolkit needs writable scratch space there, "
+     "so this can fail before the container entrypoint starts."),
+    ("150", r"docker\s+save\b[^\n]{0,500}(?:\||>)[^\n]{0,500}docker\s+load\b",
+     "configuration-only",
+     "A docker save -> docker load pipe is used as if it were sender-disk-free streaming. On the measured classic "
+     "exporter, save staged a full temporary copy on the sending Docker data-root first."),
+    ("161", r"--speculative-num-draft-tokens(?:=|\s+)2\b",
+     "requiring-runtime-confirmation",
+     "DFlash draft budget 2 is configured. On the reported NVFP4/DFlash2 lane this was a deterministic startup "
+     "failure during draft-worker CUDA-graph FP4 capture; treat startup as a measured cell.",
+     r"(?:DFLASH|dflash)"),
 ))
 
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)

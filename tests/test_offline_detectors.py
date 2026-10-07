@@ -132,6 +132,59 @@ class LogRules(TempDirCase):
         )
 
 
+PHASE2_RISKY_CONFIG = """\
+sglang serve model --attention-backend flashinfer --enable-deterministic-inference
+docker run --gpus all -v /tmp/runtime:/run:ro image
+docker save giant-image | ssh worker docker load
+sglang serve model --speculative-algorithm DFLASH --speculative-num-draft-tokens 2
+"""
+PHASE2_SAFE_CONFIG = """\
+sglang serve model --attention-backend flashinfer --disable-flashinfer-autotune
+docker run --gpus all -v /tmp/data:/app/data:ro image
+docker run --gpus all --mount type=bind,source=/tmp/runtime,target=/run image
+sglang serve model --speculative-algorithm DFLASH --speculative-num-draft-tokens 4
+"""
+PHASE2_CONFIG_TRAPS = {"144", "147", "150", "161"}
+
+
+class Phase2ConfigRules(TempDirCase):
+    def test_recent_runtime_signatures_fire(self):
+        found = _ids(inspect_files([str(self.write("phase2.sh", PHASE2_RISKY_CONFIG))]))
+        self.assertEqual(PHASE2_CONFIG_TRAPS - found, set())
+
+    def test_matched_safe_controls_stay_quiet(self):
+        found = _ids(inspect_files([str(self.write("phase2-safe.sh", PHASE2_SAFE_CONFIG))]))
+        self.assertEqual(PHASE2_CONFIG_TRAPS & found, set())
+
+
+PHASE2_BAD_LOG = """\
+INFO speculative method=ngram prompt_lookup enabled
+WARNING Async scheduling is not supported with speculative decoding. Disabling it.
+WARNING shm_broadcast.py:705 No available shared memory broadcast block found in 60 seconds
+ERROR RPC call to sample_tokens timed out
+ERROR EngineDeadError: engine process died
+  File ".../sglang/srt/speculative/dflash_worker_v2.py", line 468, in init_cuda_graphs
+RuntimeError: Check failed: (self.IsContiguous()) is false: self must be contiguous
+"""
+PHASE2_CLEAN_LOG = """\
+INFO speculative method=mtp
+INFO async scheduling enabled
+INFO shared memory broadcast healthy
+INFO dflash worker initialized
+"""
+PHASE2_LOG_TRAPS = {"157", "160", "161"}
+
+
+class Phase2LogRules(TempDirCase):
+    def test_recent_log_signatures_fire(self):
+        found = _ids(inspect_logs([str(self.write("phase2.log", PHASE2_BAD_LOG))]))
+        self.assertEqual(PHASE2_LOG_TRAPS - found, set())
+
+    def test_matched_safe_log_stays_quiet(self):
+        found = _ids(inspect_logs([str(self.write("phase2-clean.log", PHASE2_CLEAN_LOG))]))
+        self.assertEqual(PHASE2_LOG_TRAPS & found, set())
+
+
 DEFECTIVE_TEMPLATE = """\
 {%- if messages[0].role == 'system' %}{% set sys = messages[0].content %}{% set rest = messages[1:] %}\
 {% else %}{% set sys = 'You are a helpful assistant created by Probe Labs. Always answer carefully and politely.' %}\
@@ -467,7 +520,7 @@ class ScanCommand(TempDirCase):
 class CoverageFloor(unittest.TestCase):
     def test_automated_coverage_does_not_regress(self):
         summary = build_coverage(load_registry())["summary"]
-        self.assertGreaterEqual(summary["any_automated_check"], 87)
+        self.assertGreaterEqual(summary["any_automated_check"], 93)
 
 
 

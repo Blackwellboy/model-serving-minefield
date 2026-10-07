@@ -66,7 +66,7 @@ class RegistryPlatformTests(unittest.TestCase):
             self.assertIn(f"### Trap {entry['id']}:", bundle)
 
     def test_mcp_tools_are_read_only_and_callable(self):
-        self.assertEqual(11, len(TOOLS))
+        self.assertEqual(12, len(TOOLS))
         self.assertNotIn("shell", " ".join(TOOLS).lower())
         found = call_tool("get_trap", {"id": "01"}, self.registry)
         self.assertEqual("01", found["id"])
@@ -78,7 +78,7 @@ class RegistryPlatformTests(unittest.TestCase):
         self.assertEqual(0, serve(source, output))
         lines = [json.loads(line) for line in output.getvalue().splitlines()]
         self.assertEqual("model-serving-minefield", lines[0]["result"]["serverInfo"]["name"])
-        self.assertEqual(11, len(lines[1]["result"]["tools"]))
+        self.assertEqual(12, len(lines[1]["result"]["tools"]))
         for tool in lines[1]["result"]["tools"]:
             self.assertFalse(tool["inputSchema"]["additionalProperties"])
         malformed_in = io.StringIO("{not-json}\n")

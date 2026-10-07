@@ -3,13 +3,13 @@
   "coverage": {
     "schema_version": "1.0",
     "summary": {
-      "any_automated_check": 87,
+      "any_automated_check": 93,
       "counts_overlap": true,
       "endpoint_checks_implemented": 24,
       "guided_experiments_specified": 161,
       "human_review_possible": 161,
-      "log_checks_implemented": 23,
-      "static_checks_implemented": 59,
+      "log_checks_implemented": 26,
+      "static_checks_implemented": 63,
       "total_canonical_traps": 161
     },
     "traps": [
@@ -10705,7 +10705,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Pin the serving build, inspect the deterministic branch for a workspace-size setter, then compare matched deterministic-on/off long-prefill requests while recording the required workspace bytes. Do not infer safety from short prompts.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -10713,7 +10713,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -10927,7 +10927,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Reduce to docker run --rm --gpus all -v <hostdir>:/run:ro <image> nvidia-smi, then move the same mount to another path as the control.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -10935,7 +10935,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11149,7 +11149,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Identify the image store, measure free space on the Docker data-root filesystem, and watch the daemon temp directory during a small multi-second docker save control.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11157,7 +11157,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11653,7 +11653,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Benchmark matched speculation-on/off arms at the production concurrency, record batch wall/completed-work throughput and per-stream rates, and preserve the startup line showing whether async scheduling was disabled.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.log_inspector",
             "limitations": "Absence of a signature is not proof of safety.",
             "possible_match_only": true,
             "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -11661,7 +11661,7 @@
               "Explicitly supplied bounded log files"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           },
           "static_config": {
             "can_prove_clean": false,
@@ -11875,7 +11875,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "At the first sustained-load stall, capture stacks on both ranks twice, separated by roughly 45 to 60 seconds. Preserve the actually loaded libnccl.so identity from each live process (for example from /proc/<pid>/maps plus build ID/hash), plus vLLM and FlashInfer identities. A single stack shows only where a rank was; two frame-identical captures prove it stayed there.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.log_inspector",
             "limitations": "Absence of a signature is not proof of safety.",
             "possible_match_only": true,
             "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -11883,7 +11883,7 @@
               "Explicitly supplied bounded log files"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           },
           "static_config": {
             "can_prove_clean": false,
@@ -11949,7 +11949,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Treat startup as a measured cell. For each candidate draft budget, launch a fresh serve and require it to reach /health before running any benchmark. Preserve the full startup traceback and record DID NOT COME UP as its own outcome. Do not coerce that cell to zero throughput or silently drop it from a curve.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.log_inspector",
             "limitations": "Absence of a signature is not proof of safety.",
             "possible_match_only": true,
             "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -11957,13 +11957,13 @@
               "Explicitly supplied bounded log files"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           },
           "static_config": {
             "can_prove_clean": false,
             "confirm_criterion": "Treat startup as a measured cell. For each candidate draft budget, launch a fresh serve and require it to reach /health before running any benchmark. Preserve the full startup traceback and record DID NOT COME UP as its own outcome. Do not coerce that cell to zero throughput or silently drop it from a curve.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11971,7 +11971,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       }

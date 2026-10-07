@@ -204,3 +204,95 @@ def render_scan(report: dict[str, Any], titles: dict[str, dict[str, str]], *,
                 "before changing anything."]
     out += ["", style.dim("Full detail for scripts and agents: add --json")]
     return "\n".join(out)
+
+
+def render_unified_diagnosis(
+    report: dict[str, Any],
+    *,
+    limit: int = 5,
+    stream: TextIO | None = None,
+) -> str:
+    """Readable summary for the unified diagnose command."""
+    stream = stream or sys.stdout
+    style = _Style(_use_color(stream))
+    coverage = report.get("automatic_coverage") or {}
+    considered = int(report.get("registry_traps_considered") or 0)
+    out = [
+        style.bold(f"Minefield diagnosis: {considered} canonical traps considered"),
+        (
+            f"Automatic checks exist for {coverage.get('any_automated_check', 0)}/{considered}; "
+            f"live Doctor {coverage.get('endpoint_checks_implemented', 0)}/{considered}; "
+            f"static {coverage.get('static_checks_implemented', 0)}; "
+            f"log signatures {coverage.get('log_checks_implemented', 0)}."
+        ),
+    ]
+
+    target = report.get("detected_target")
+    if target:
+        status = "reachable" if target.get("reachable") else "unreachable"
+        details = [str(target.get("stack") or "unknown")]
+        if target.get("model"):
+            details.append(str(target["model"]))
+        if target.get("build"):
+            details.append(str(target["build"]))
+        out.append("Target: " + " · ".join(details) + f" · {status}")
+
+    scan_report = report.get("file_scan")
+    if scan_report is not None:
+        out.append(
+            f"Files: {len(scan_report.get('scanned') or [])} scanned, "
+            f"{len(scan_report.get('traps') or [])} distinct trap leads."
+        )
+
+    live = report.get("live_doctor")
+    if live is not None:
+        out.append(
+            f"Live: {live.get('requests_made', 0)} request(s), "
+            f"{len(live.get('selected_probes') or [])} probe(s) selected."
+        )
+
+    candidates = (report.get("candidate_traps") or [])[: max(1, limit)]
+    if candidates:
+        out += ["", style.bold("Best candidates")]
+        for idx, item in enumerate(candidates, 1):
+            trap = item["trap_id"]
+            kinds = []
+            for signal in item.get("signals") or []:
+                kind = signal.get("kind")
+                if kind == "symptom_match":
+                    kinds.append(f"symptom #{signal.get('rank')}")
+                elif kind == "file_scan":
+                    kinds.append(f"files x{signal.get('finding_count', 1)}")
+                elif kind == "live_probe":
+                    kinds.append(f"live {str(signal.get('level') or '').lower()}")
+            signals = ", ".join(dict.fromkeys(kinds)) or "registry lead"
+            out.append(
+                f" {idx}. {style.bold('Trap ' + trap)}  "
+                f"{_clip(str(item.get('title') or ''), 68)}"
+            )
+            out.append(f"     {item.get('evidence_level')} · {signals}")
+            check = _check_text(str(item.get("confirmation_check") or ""), 220)
+            if check:
+                out.append(f"     check: {check}")
+            if item.get("source_path"):
+                out.append(f"     read:  {REPO_URL + item['source_path']}")
+    else:
+        out += [
+            "",
+            "No canonical trap rose to the candidate list from the supplied evidence.",
+            style.dim("That is NOT a clean bill of health; unimplemented checks remain unknown."),
+        ]
+
+    clean = report.get("live_checked_clean_traps") or []
+    if clean:
+        out += ["", f"Live probes scoped-clean for: {', '.join(clean)}"]
+
+    out += [
+        "",
+        style.dim(
+            "Evidence stays separated: text/file matches are leads; only the live "
+            "probe result can report a bounded live problem/clean result."
+        ),
+        style.dim("Full machine-readable evidence: add --json"),
+    ]
+    return "\n".join(out)
