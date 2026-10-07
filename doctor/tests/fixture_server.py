@@ -149,7 +149,13 @@ def llamacpp_props(template=TEMPLATE_WITHOUT_EFFORT, temperature=0.6, top_p=0.95
 def render_prompt(cfg, messages, kwargs):
     kwargs = kwargs or {}
     thinking = kwargs.get("enable_thinking", True)
-    preserve = cfg["preserve_history"] or kwargs.get("preserve_thinking") is True
+    preserve = (
+        cfg["preserve_history"]
+        or kwargs.get("preserve_thinking") is True
+        or kwargs.get("truncate_history_thinking") is False
+        or kwargs.get("keep_thinking") is True
+        or kwargs.get("include_reasoning") is True
+    )
     out = []
     field = cfg["reasoning_field"] or "reasoning_content"
     for m in messages:
