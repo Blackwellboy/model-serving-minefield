@@ -72,6 +72,9 @@ TRAP_PATHS = {
     "22": "evaluation/22-family-card-budget-floors-differ-by-size.md",
     "23": "reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
     "25": "template/25-empty-think-blocks-poison-prefix-cache.md",
+    "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
+    "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
+    "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
@@ -112,7 +115,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "63", "86", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -1136,6 +1139,211 @@ def check_multimodal(doc, base, root, key):
              code="MM_AUDIO_VIDEO_NOT_PROBED",
              asserts=[A("audio or video was probed", "no audio or video request "
                         "is made by this tool", held=False)])
+
+
+def check_reasoning_roundtrip_shape(doc, root, key):
+    """Trap 63: cross field-name x preservation-gate render shape."""
+    marker = "ZQX_ROUNDTRIP_63"
+    base_messages = [
+        {"role": "user", "content": "First turn."},
+        {"role": "assistant", "content": "Answer one."},
+        {"role": "user", "content": "Second turn."},
+    ]
+    arms = {}
+    for field in ("reasoning", "reasoning_content"):
+        for preserve in (False, True):
+            messages = [dict(item) for item in base_messages]
+            messages[1][field] = marker
+            kwargs = {"enable_thinking": True}
+            label = f"{field}:" + ("truncate_false" if preserve else "default")
+            if preserve:
+                kwargs["truncate_history_thinking"] = False
+            rendered, how = render_paths(doc, root, key, messages, kwargs)
+            if rendered is None:
+                arms[label] = None
+            else:
+                arms[label] = marker in rendered
+                doc.evidence.setdefault("trap63_render_path", how)
+    doc.evidence["trap63_arms"] = arms
+    available = {name: value for name, value in arms.items() if value is not None}
+    if len(available) < 4:
+        doc.skip(
+            ["63"], "reasoning round-trip four-arm render",
+            f"only {len(available)}/4 render arms were available; a four-way field/gate "
+            "comparison is required before assigning this trap",
+            code="ROUNDTRIP_RENDER_INCOMPLETE",
+            asserts=[A("all four render arms returned", arms, held=False)])
+        return
+    hits = [name for name, value in available.items() if value]
+    if len(hits) == 1:
+        doc.problem(
+            ["63"],
+            f"reasoning round trip has exactly one working shape out of four: {hits[0]}",
+            "Preserve and replay the exact working field+gate pair on every multi-turn call; "
+            "do not port a field name or preservation-kwarg polarity from another family.",
+            code="ROUNDTRIP_ONE_OF_FOUR",
+            asserts=[A("more than one of the four field/gate arms preserves the marker",
+                       {"arms": arms, "working": hits}, held=False)])
+        return
+    if not hits:
+        doc.inconclusive(
+            ["63"], "reasoning round-trip four-arm render",
+            "none of the four published arms preserved the marker. This does not reproduce "
+            "Trap 63's one-of-four shape, but it also does not establish a clean round trip; "
+            "the lane may use a different preservation kwarg or field mapping.",
+            code="ROUNDTRIP_ZERO_OF_FOUR",
+            asserts=[A("at least one published field/gate arm preserves the marker",
+                       arms, held=False)])
+        return
+    doc.ok(
+        ["63"],
+        f"reasoning round trip does not have the one-of-four failure shape: "
+        f"{len(hits)}/4 arms preserve the marker ({', '.join(hits)})",
+        code="ROUNDTRIP_NOT_ONE_OF_FOUR",
+        asserts=[A("more than one of four field/gate arms preserves the marker",
+                   {"arms": arms, "working": hits})])
+
+
+def _apply_template_prompt(root, key, messages):
+    st, txt = post(root + "/apply-template", {"messages": messages}, key, timeout=30)
+    if st != 200:
+        return st, None
+    try:
+        return st, json.loads(txt).get("prompt")
+    except Exception:
+        return st, None
+
+
+def check_final_assistant_prefill(doc, root, key):
+    """Trap 86: llama.cpp final assistant prefill bypasses normal delimiters."""
+    if doc.stack != "llama.cpp":
+        doc.skip(
+            ["86"], "final-assistant prefill render",
+            f"trap 86 is scoped to llama.cpp /apply-template; detected stack={doc.stack!r}",
+            code="PREFILL_SCOPE_NOT_LLAMACPP",
+            asserts=[A("detected stack is llama.cpp", doc.stack, held=False)])
+        return
+    mark = "ZQX_PREFILL_86"
+    prefix = [
+        {"role": "system", "content": "System."},
+        {"role": "user", "content": "User one."},
+    ]
+    st_final, final = _apply_template_prompt(
+        root, key, prefix + [{"role": "assistant", "content": mark}])
+    st_mid, mid = _apply_template_prompt(
+        root, key, prefix + [
+            {"role": "assistant", "content": mark},
+            {"role": "user", "content": "User two."},
+        ])
+    doc.evidence["trap86_status"] = {"final": st_final, "mid": st_mid}
+    if final is None or mid is None or mark not in final or mark not in mid:
+        doc.skip(
+            ["86"], "final-assistant prefill render",
+            f"/apply-template did not return both comparable renders "
+            f"(final http {st_final}, mid http {st_mid})",
+            code="PREFILL_RENDER_UNAVAILABLE",
+            asserts=[A("both /apply-template arms contain the assistant marker",
+                       {"final": st_final, "mid": st_mid}, held=False)])
+        return
+
+    def around(text):
+        i = text.index(mark)
+        return text[max(0, i - 16):i], text[i + len(mark):i + len(mark) + 16]
+
+    final_ctx, mid_ctx = around(final), around(mid)
+    doc.evidence["trap86_context"] = {"final": final_ctx, "mid": mid_ctx}
+    if final_ctx != mid_ctx:
+        doc.problem(
+            ["86"],
+            "the same assistant text is delimited differently when it is the final "
+            "prefill turn versus a mid-conversation assistant turn",
+            "Do not assume a final assistant prefill shares the same prompt prefix as "
+            "the completed conversation. Diff the server render and qualify prefill "
+            "behaviour separately.",
+            code="FINAL_ASSISTANT_BYPASSES_TEMPLATE_BRANCH",
+            asserts=[A("assistant delimiters are identical final vs mid conversation",
+                       {"final": final_ctx, "mid": mid_ctx}, held=False)])
+    else:
+        doc.ok(
+            ["86"],
+            "final and mid-conversation assistant text use identical local delimiters "
+            "around the probe marker on this llama.cpp lane",
+            code="FINAL_ASSISTANT_DELIMITERS_MATCH",
+            asserts=[A("assistant delimiters are identical final vs mid conversation",
+                       {"final": final_ctx, "mid": mid_ctx})])
+
+
+def check_llamacpp_slot_context(doc, root, key):
+    """Trap 87: /props n_ctx may be per-slot rather than total context."""
+    if doc.stack != "llama.cpp":
+        doc.skip(
+            ["87"], "llama.cpp /props context semantics",
+            f"trap 87 is scoped to llama.cpp; detected stack={doc.stack!r}",
+            code="PROPS_CONTEXT_SCOPE_NOT_LLAMACPP",
+            asserts=[A("detected stack is llama.cpp", doc.stack, held=False)])
+        return
+    props = doc.evidence.get("props") or {}
+    defaults = props.get("default_generation_settings") or {}
+    params = defaults.get("params") if isinstance(defaults, dict) else {}
+    props_ctx = None
+    if isinstance(params, dict):
+        props_ctx = params.get("n_ctx")
+    if props_ctx is None:
+        props_ctx = defaults.get("n_ctx") if isinstance(defaults, dict) else None
+    total_slots = props.get("total_slots")
+    st, txt = get(root + "/slots", key, timeout=15)
+    try:
+        payload = json.loads(txt) if st == 200 else None
+    except Exception:
+        payload = None
+    slots = payload.get("slots") if isinstance(payload, dict) else payload
+    if not isinstance(slots, list):
+        slots = []
+    slot_ctx = [row.get("n_ctx") for row in slots
+                if isinstance(row, dict) and isinstance(row.get("n_ctx"), int)]
+    doc.evidence["trap87_context"] = {
+        "props_n_ctx": props_ctx, "total_slots": total_slots,
+        "slots_status": st, "slot_n_ctx": slot_ctx,
+        "endpoint_props": props.get("endpoint_props"),
+    }
+    if not isinstance(props_ctx, int) or not isinstance(total_slots, int) or total_slots < 2 or not slot_ctx:
+        doc.skip(
+            ["87"], "llama.cpp /props context semantics",
+            "the check needs /props n_ctx, total_slots >= 2, and /slots n_ctx values; "
+            f"observed props_n_ctx={props_ctx!r}, total_slots={total_slots!r}, "
+            f"/slots http {st}, slot values={slot_ctx[:8]}",
+            code="PROPS_CONTEXT_INCOMPLETE",
+            asserts=[A("parallel llama.cpp lane publishes comparable /props and /slots context",
+                       doc.evidence["trap87_context"], held=False)])
+        return
+    all_same = len(slot_ctx) == total_slots and all(value == props_ctx for value in slot_ctx)
+    if all_same:
+        doc.problem(
+            ["87"],
+            f"/props n_ctx={props_ctx} matches every one of {total_slots} slot n_ctx values: "
+            "this is per-slot context, not the total context budget",
+            "Treat /props n_ctx as per-slot on this lane. Do not compare it directly "
+            "with a total -c launch value; multiply by slot count when reconstructing "
+            "the total served KV budget.",
+            code="PROPS_CONTEXT_IS_PER_SLOT",
+            asserts=[A("/props n_ctx differs from each per-slot n_ctx when parallel>1",
+                       doc.evidence["trap87_context"], held=False)])
+    elif all(value != props_ctx for value in slot_ctx):
+        doc.ok(
+            ["87"],
+            f"/props n_ctx={props_ctx} differs from all published per-slot values "
+            f"{slot_ctx[:8]}; the specific per-slot-reporting failure is not present",
+            code="PROPS_CONTEXT_NOT_PER_SLOT",
+            asserts=[A("/props n_ctx differs from each per-slot n_ctx when parallel>1",
+                       doc.evidence["trap87_context"])])
+    else:
+        doc.inconclusive(
+            ["87"], "llama.cpp /props context semantics",
+            f"mixed /slots context values {slot_ctx[:8]} cannot establish whether "
+            f"/props n_ctx={props_ctx} is total or per-slot",
+            code="PROPS_CONTEXT_MIXED",
+            asserts=[A("/props and every /slots value have one unambiguous relation",
+                       doc.evidence["trap87_context"], held=False)])
 
 
 def check_kwarg_deadness(doc, base, root, key):
@@ -2414,6 +2622,18 @@ def _probe_history_assembly(doc, base, root, args):
     check_history_assembly(doc, root, args.api_key)
 
 
+def _probe_reasoning_roundtrip_shape(doc, base, root, args):
+    check_reasoning_roundtrip_shape(doc, root, args.api_key)
+
+
+def _probe_final_assistant_prefill(doc, base, root, args):
+    check_final_assistant_prefill(doc, root, args.api_key)
+
+
+def _probe_llamacpp_slot_context(doc, base, root, args):
+    check_llamacpp_slot_context(doc, root, args.api_key)
+
+
 def _probe_kwarg_deadness(doc, base, root, args):
     check_kwarg_deadness(doc, base, root, args.api_key)
 
@@ -2468,6 +2688,21 @@ PROBE_SPECS = (
         "history_assembly", ("04", "20", "25"), 0, True, 70, (),
         _probe_history_assembly,
         "history / empty-think shell render inspection",
+    ),
+    ProbeSpec(
+        "reasoning_roundtrip_shape", ("63",), 0, True, 69, (),
+        _probe_reasoning_roundtrip_shape,
+        "reasoning history field x preservation-gate render matrix",
+    ),
+    ProbeSpec(
+        "final_assistant_prefill", ("86",), 0, False, 18, (),
+        _probe_final_assistant_prefill,
+        "llama.cpp final-assistant prefill delimiter comparison",
+    ),
+    ProbeSpec(
+        "llamacpp_slot_context", ("87",), 0, False, 17, (),
+        _probe_llamacpp_slot_context,
+        "llama.cpp /props versus /slots context semantics",
     ),
     ProbeSpec(
         "kwarg_deadness", ("03", "29"), 3, False, 40, (),
