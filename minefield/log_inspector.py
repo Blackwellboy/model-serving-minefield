@@ -62,6 +62,15 @@ RULES = (
      "An illegal address follows sparse-MLA/indexer activity; metadata may name a request row that does not exist."),
     ("142", r"(?:IsADirectoryError|Is a directory)[^\n]{0,200}(?:\.json|\.gguf|\.safetensors|\.jinja|config|model|tokenizer)",
      "A model or config path turned out to be a directory; Docker may have created it from a missing bind source."),
+    ("157", r"(?:(?:ngram|prompt[_ -]?lookup)[\s\S]{0,2000}Async scheduling is not supported with speculative decoding[^\n]{0,160}(?:disabl|off)|Async scheduling is not supported with speculative decoding[^\n]{0,160}(?:disabl|off)[\s\S]{0,2000}(?:ngram|prompt[_ -]?lookup))",
+     "N-gram/prompt-lookup speculation is present with the vLLM warning that async scheduling is disabled; "
+     "single-stream wins may reverse at production concurrency."),
+    ("160", r"(?:(?:No available shared memory broadcast block|shm_broadcast)[\s\S]{0,5000}(?:sample_tokens[^\n]{0,160}timed out|EngineDeadError)|(?:sample_tokens[^\n]{0,160}timed out|EngineDeadError)[\s\S]{0,5000}(?:No available shared memory broadcast block|shm_broadcast))",
+     "A sustained-load shared-memory/RPC stall signature is present. Trap 160 requires two-rank stack capture "
+     "to distinguish rank divergence from other distributed-runtime failures."),
+    ("161", r"(?:(?:dflash_worker_v2\.py|draft_worker)[\s\S]{0,1800}(?:self must be contiguous|IsContiguous\(\).*false)|(?:self must be contiguous|IsContiguous\(\).*false)[\s\S]{0,1800}(?:dflash_worker_v2\.py|draft_worker))",
+     "The DFlash draft CUDA-graph path reached an FP4 contiguity failure. Compare matched draft budgets before "
+     "blaming the checkpoint or quantization format."),
 )
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
