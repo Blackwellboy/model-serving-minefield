@@ -291,6 +291,8 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - 157: An n-gram speculative configuration looks faster in a standard single-stream decode test but becomes materially slower per stream when the server handles its real concurrent load.
 - 158: A verifier asserts reasoning_tokens == 0 for thinking-off requests and fails on some multi-turn tool interactions even though the reasoning field is empty and no reasoning text is visible.
 - 159: A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.
+- 160: A two-node tensor-parallel serve starts cleanly, survives light traffic, then dies roughly 15 to 25 minutes into sustained agentic load. The head reports shared-memory broadcast stalls, sample_tokens RPC timeout and EngineDeadError, while memory pressure and RDMA error counters remain clean.
+- 161: A downward speculative-depth sweep looks healthy at draft budgets 8, 6 and 4, then budget 2 never reaches health at all. The failure happens during startup CUDA-graph capture and the traceback points at FP4 quantization / tensor contiguity, which makes the checkpoint or quantization path look guilty.
 
 ## Canonical trap records
 
@@ -2358,6 +2360,32 @@ Separate `PROBLEM`, `OK`, `INCONCLUSIVE`, and `UNKNOWN`. CLEAN applies only to t
 - Named conditions: TensorFold Python 0.6.0 commit c464617..., dense NVFP4 Qwen-family compatibility work. Stock 0.6.0 separately rejects the combination; this entry is about guard-removal compatibility patches, not released-stock admission behavior.
 - Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": [], "exact_checkpoint": ["qwen-family", "qwen-family compatibility work. stock 0.6.0 separately rejects the combina"], "failure_stage": ["load", "startup"], "gpu_architecture": [], "model_family": ["qwen"], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": [], "stack_version": [], "topology": []}`
 - Source: `traps/memory/159-vision-alias-omitted-from-admission-accounting.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 160: a TP=2 serve can pass bring-up, then rank-diverge around a collective only under sustained load
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A two-node tensor-parallel serve starts cleanly, survives light traffic, then dies roughly 15 to 25 minutes into sustained agentic load. The head reports shared-memory broadcast stalls, sample_tokens RPC timeout and EngineDeadError, while memory pressure and RDMA error counters remain clean.
+- Mechanism: Two time-separated stack captures on both ranks showed a true rank divergence: one rank remained inside ncclAllGather while the peer stayed in the local operation immediately before that collective and never entered it. Which physical box became the collective-stuck rank swapped across reproductions, ruling out a fixed host/NIC/rank explanation. The measured discriminator was the whole serving build: the vLLM 0.26 lane failed four of four sustained runs, while a v0.28.0-aarch64 lane survived two matched 85+ minute runs without the stall signature. The exact bundled component that removes the failure is not resolved. The upgrade also changed NCCL (reported 2.28.9 to 2.29.7) and FlashInfer, and a related upstream GB10 report later demonstrated that even identical NCCL version strings can hide different binaries. Therefore this trap does not claim that vLLM core, NCCL, FlashInfer, or one flag is the proven root cause.
+- Check: At the first sustained-load stall, capture stacks on both ranks twice, separated by roughly 45 to 60 seconds. Preserve the actually loaded libnccl.so identity from each live process (for example from /proc/<pid>/maps plus build ID/hash), plus vLLM and FlashInfer identities. A single stack shows only where a rank was; two frame-identical captures prove it stayed there.
+- Safe conditional mitigation: On a lane matching this signature, stop treating generic NCCL flags as the only lever. Move to a known-good whole runtime build and re-run the same sustained workload. Record the complete before/after runtime binary identities before attributing the fix to one bundled component.
+- Named conditions: Contributor-measured on two DGX Spark / GB10 nodes, vLLM TP=2 over QSFP/RDMA, large MoE workload, old v0.26 build versus newer v0.28.0-aarch64 build. Three plausible controls did not rescue the old lane: NCCL_CUMEM_ENABLE=0, prefix caching off, and FlashInfer autotune off.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["dgx spark", "gb10"], "exact_checkpoint": [], "failure_stage": ["load", "sustained"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": ["2"], "operating_system": [], "parallelism": ["tp"], "quantization": [], "serving_stack": ["vllm"], "stack_version": [], "topology": ["2-node", "tp"]}`
+- Source: `traps/runtime/160-sustained-tp-rank-divergence-build-scoped.md`
+- Related traps: none stated
+- Unknown/limits: No additional limitation is stated; absence is not safety.
+
+### Trap 161: a lower DFlash draft budget can be a hard startup failure, not a safer operating point
+
+- Evidence: contributor-measured, conditions as reported
+- Symptom: A downward speculative-depth sweep looks healthy at draft budgets 8, 6 and 4, then budget 2 never reaches health at all. The failure happens during startup CUDA-graph capture and the traceback points at FP4 quantization / tensor contiguity, which makes the checkpoint or quantization path look guilty.
+- Mechanism: On the reported SGLang DFlash2 + NVFP4 lane, budget 2 failed 8/8 attempts during the draft worker's decode CUDA-graph initialization with self must be contiguous from the FP4 quantization path. The matched controls at budgets 4, 6 and 8 reached health and completed 24/24 arms. The only deliberately varied setting was --speculative-num-draft-tokens. That proves a build-scoped k=2 startup cliff. It does not prove why depth 2 produces a non-contiguous input. The traceback establishes where the failure surfaces, not the tensor-shape transition that owns it. Current-source inspection also found no universal validation that forbids k=2 and no global .contiguous() repair before FP4 quantization.
+- Check: Treat startup as a measured cell. For each candidate draft budget, launch a fresh serve and require it to reach /health before running any benchmark. Preserve the full startup traceback and record DID NOT COME UP as its own outcome. Do not coerce that cell to zero throughput or silently drop it from a curve.
+- Safe conditional mitigation: On the affected lane, do not use draft budget 2. Use a budget that passes startup and then benchmark quality/performance normally. If root-cause work is needed, instrument the tensor immediately before the failing FP4 call with shape, stride and is_contiguous() under matched k=2 and k=4 arms.
+- Named conditions: Contributor report: SGLang dev build with DFlash2 support, CUDA 13, aarch64/sm121, NVFP4 27B target and NVFP4 five-layer DFlash2 drafter on GB10. Contemporaneous reports from the same public DFlash2 lane identify SGLang 0.0.0.dev1+g5f55db35e / image lmsysorg/sglang:dev-cu13-qwen38-27b-dflash2; issue 105 itself did not preserve an immutable failing-container digest, so treat that identity as supporting context rather than proof of the exact failing image.
+- Structured applicability: `{"concurrency_regime": [], "context_regime": [], "device_class": ["gb10"], "exact_checkpoint": ["qwen38-27b-dflash2"], "failure_stage": ["startup"], "gpu_architecture": ["blackwell"], "model_family": [], "node_count": [], "operating_system": [], "parallelism": [], "quantization": ["nvfp4"], "serving_stack": ["sglang"], "stack_version": ["0.0.0"], "topology": []}`
+- Source: `traps/runtime/161-dflash-k2-cuda-graph-fp4-startup-cliff.md`
 - Related traps: none stated
 - Unknown/limits: No additional limitation is stated; absence is not safety.
 
