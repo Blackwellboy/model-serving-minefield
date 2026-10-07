@@ -71,6 +71,19 @@ class LiteBudgets(unittest.TestCase):
         self.assertTrue(plan.expected_requests <= 5)
 
 
+class PreferredTrapPlanning(unittest.TestCase):
+    def test_lite_prioritises_probe_for_matched_trap(self):
+        plan = plan_checks(
+            base_url="http://127.0.0.1:1/v1",
+            mode="lite",
+            max_requests=1,
+            preferred_trap_ids=("12",),
+            detect=False,
+        )
+        self.assertEqual([p.id for p in plan.selected], ["ceiling"])
+        self.assertIn("preferred_trap_match", plan.selected[0].reason)
+
+
 class HardBudget(unittest.TestCase):
     def test_run_cannot_exceed_budget(self):
         with FixtureLane(props=llamacpp_props()) as base:
