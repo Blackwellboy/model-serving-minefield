@@ -123,7 +123,7 @@ RULES = tuple(Rule(*rule) for rule in (
      "The image mutates files inside an installed package and also performs a pip uninstall/install upgrade. Files "
      "added by the patch are not in the old RECORD and can survive into the new version.",
      r"pip(?:3)?\s+(?:uninstall|install)[\s\S]{0,1600}pip(?:3)?\s+(?:install|uninstall)"),
-    ("153", r"(?:151667[^\n]{0,240}151668|151668[^\n]{0,240}151667)",
+    ("153", r"(?:151667[\s\S]{0,240}151668|151668[\s\S]{0,240}151667)",
      "suspicious",
      "A thinking-budget implementation hard-codes Qwen3 think marker IDs 151667/151668. Verify them against the "
      "served tokenizer before using the budget on Qwen3.5/3.8-family checkpoints.",
