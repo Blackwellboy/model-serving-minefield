@@ -78,7 +78,7 @@ class RegistryPlatformTests(unittest.TestCase):
         self.assertEqual(0, serve(source, output))
         lines = [json.loads(line) for line in output.getvalue().splitlines()]
         self.assertEqual("model-serving-minefield", lines[0]["result"]["serverInfo"]["name"])
-        self.assertEqual(11, len(lines[1]["result"]["tools"]))
+        self.assertEqual(12, len(lines[1]["result"]["tools"]))
         for tool in lines[1]["result"]["tools"]:
             self.assertFalse(tool["inputSchema"]["additionalProperties"])
         malformed_in = io.StringIO("{not-json}\n")
