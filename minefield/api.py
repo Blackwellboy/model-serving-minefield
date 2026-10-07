@@ -250,6 +250,7 @@ def plan_checks(
     model: Optional[str] = None,
     hf_repo: Optional[str] = None,
     detect: bool = False,
+    preferred_trap_ids: Optional[Iterable[str]] = None,
 ) -> ProbePlan:
     """Build a deterministic probe plan. Issues zero chat completions.
 
@@ -310,14 +311,24 @@ def plan_checks(
     selected: list[PlannedProbe] = []
     skipped: list[SkippedProbe] = []
     used = 0
+    preferred = {
+        str(item).zfill(2) for item in (preferred_trap_ids or ())
+        if item is not None
+    }
 
     if mode_norm == "doctor":
         candidates = list(specs)
     else:
-        # Lite: eligible probes only, highest priority first, then catalog order.
+        # Lite: probes for already-matched traps go first, then normal priority.
+        # This keeps the hard request budget while making the live phase relevant
+        # to the symptom/config evidence that brought the user here.
         candidates = sorted(
             [s for s in specs if s.lite_eligible],
-            key=lambda s: (-s.lite_priority, s.id),
+            key=lambda s: (
+                0 if preferred.intersection(str(t).zfill(2) for t in s.traps) else 1,
+                -s.lite_priority,
+                s.id,
+            ),
         )
 
     for spec in candidates:
@@ -347,7 +358,12 @@ def plan_checks(
                 )
             )
             continue
-        reason = "doctor_catalog_order" if mode_norm == "doctor" else f"lite_priority={spec.lite_priority}"
+        if mode_norm == "doctor":
+            reason = "doctor_catalog_order"
+        elif preferred.intersection(str(t).zfill(2) for t in spec.traps):
+            reason = f"preferred_trap_match;lite_priority={spec.lite_priority}"
+        else:
+            reason = f"lite_priority={spec.lite_priority}"
         selected.append(
             PlannedProbe(
                 id=spec.id,
