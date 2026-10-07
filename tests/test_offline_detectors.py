@@ -622,7 +622,7 @@ class ScanCommand(TempDirCase):
 class CoverageFloor(unittest.TestCase):
     def test_automated_coverage_does_not_regress(self):
         summary = build_coverage(load_registry())["summary"]
-        self.assertGreaterEqual(summary["any_automated_check"], 93)
+        self.assertGreaterEqual(summary["any_automated_check"], 104)
 
 
 
