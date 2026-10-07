@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from minefield.mcp_server import call_tool
 from minefield.registry import load_registry
 from minefield.unified import diagnose_environment
 
@@ -44,6 +45,26 @@ class UnifiedDiagnosisTests(unittest.TestCase):
         self.assertEqual(report["registry_traps_considered"], 161)
         self.assertEqual(report["candidate_traps"], [])
         self.assertGreaterEqual(report["automatic_coverage"]["any_automated_check"], 93)
+
+
+class UnifiedMcpTests(unittest.TestCase):
+    def test_mcp_unified_tool_respects_roots_and_fuses_file_signal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = root / "start.sh"
+            path.write_text(
+                "sglang serve model --speculative-algorithm DFLASH "
+                "--speculative-num-draft-tokens 2\n",
+                encoding="utf-8",
+            )
+            report = call_tool(
+                "diagnose_environment",
+                {"symptom": "dflash budget 2 startup failure", "paths": [str(path)]},
+                REGISTRY,
+                allowed_roots=[str(root)],
+            )
+        self.assertEqual(report["kind"], "unified_diagnosis")
+        self.assertIn("161", report["file_scan"]["traps"])
 
 
 class UnifiedCliTests(unittest.TestCase):
