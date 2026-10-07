@@ -55,7 +55,7 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-93 of the 161 traps have at least one automatic check
+104 of the 161 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
@@ -168,9 +168,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **24 of these 161 entries**, weighted toward reasoning fields, templates,
+for **27 of these 161 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
-the other 137. It runs
+the other 134. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
