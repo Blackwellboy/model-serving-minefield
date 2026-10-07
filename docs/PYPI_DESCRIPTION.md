@@ -12,7 +12,7 @@ your setup is safe.
 ## Install
 
 ```bash
-pipx install model-serving-minefield
+pipx install msmf
 ```
 
 ## Use
