@@ -185,6 +185,108 @@ class Phase2LogRules(TempDirCase):
         self.assertEqual(PHASE2_LOG_TRAPS & found, set())
 
 
+PHASE_NEXT_RISKY_CONFIG = """\
+payload = json.dumps({"tools": tools}, ensure_ascii=True)
+cp local_patch.py /usr/lib/python3.12/site-packages/tensorfold/local_patch.py
+pip uninstall tensorfold -y
+pip install tensorfold==0.6.1
+class Qwen3ThinkingBudgetLogitProcessor:
+    start_id = 151667
+    end_id = 151668
+IMAGE=tensorfold:0.6.1-nvfp4
+# NVFP4 serving lane
+"""
+PHASE_NEXT_SAFE_CONFIG = """\
+payload = json.dumps({"tools": tools}, ensure_ascii=False)
+pip install tensorfold==0.6.1
+start_id = tokenizer.convert_tokens_to_ids("<think>")
+end_id = tokenizer.convert_tokens_to_ids("</think>")
+IMAGE=tensorfold:0.6.1-nvfp4
+# NVFP4 serving lane
+ARGS="--precision full"
+"""
+PHASE_NEXT_CONFIG_TRAPS = {"148", "151", "153", "154"}
+
+
+class PhaseNextConfigRules(TempDirCase):
+    def test_new_static_rules_fire(self):
+        found = _ids(inspect_files([str(self.write("next.py", PHASE_NEXT_RISKY_CONFIG))]))
+        self.assertEqual(PHASE_NEXT_CONFIG_TRAPS - found, set())
+
+    def test_new_static_safe_controls_stay_quiet(self):
+        found = _ids(inspect_files([str(self.write("next-safe.py", PHASE_NEXT_SAFE_CONFIG))]))
+        self.assertEqual(PHASE_NEXT_CONFIG_TRAPS & found, set())
+
+
+PHASE_NEXT_BAD_LOG = """\
+Unable to find image 'engine:v9' locally
+v9: Pulling from inference/engine
+context_length_exceeded: maximum context length is 32768
+gateway: compressing prompt before retry, backoff 2s
+Loading checkpoint shards: 25%
+torch extension build: ninja -v
+nvcc compiling flash_kernel.cu
+memory watchdog: low memory, sending SIGTERM
+"""
+PHASE_NEXT_CLEAN_LOG = """\
+image engine:v9 found locally
+request rejected once for maximum context length and returned to client
+loading checkpoint shards complete
+kernel cache already warm
+"""
+PHASE_NEXT_LOG_TRAPS = {"145", "146", "152"}
+
+
+class PhaseNextLogRules(TempDirCase):
+    def test_new_log_rules_fire(self):
+        found = _ids(inspect_logs([str(self.write("next.log", PHASE_NEXT_BAD_LOG))]))
+        self.assertEqual(PHASE_NEXT_LOG_TRAPS - found, set())
+
+    def test_new_log_safe_controls_stay_quiet(self):
+        found = _ids(inspect_logs([str(self.write("next-clean.log", PHASE_NEXT_CLEAN_LOG))]))
+        self.assertEqual(PHASE_NEXT_LOG_TRAPS & found, set())
+
+
+class EmptyThoughtMarkerResults(TempDirCase):
+    def test_post_tool_thinking_off_two_reasoning_tokens_fires_158(self):
+        row = {
+            "request": {
+                "messages": [
+                    {"role": "user", "content": "use the tool"},
+                    {"role": "assistant", "content": "", "tool_calls": [{"id": "c1"}]},
+                    {"role": "tool", "content": "ok", "tool_call_id": "c1"},
+                ],
+                "chat_template_kwargs": {"enable_thinking": False},
+            },
+            "response": {
+                "choices": [{
+                    "finish_reason": "stop",
+                    "message": {"content": "done", "reasoning_content": ""},
+                }],
+                "usage": {"completion_tokens_details": {"reasoning_tokens": 2}},
+            },
+        }
+        report = inspect_results(self.write("tool-result.json", json.dumps([row])))
+        self.assertIn("158", _ids(report))
+
+    def test_two_tokens_without_tool_history_does_not_fire_158(self):
+        row = {
+            "request": {
+                "messages": [{"role": "user", "content": "hello"}],
+                "chat_template_kwargs": {"enable_thinking": False},
+            },
+            "response": {
+                "choices": [{
+                    "finish_reason": "stop",
+                    "message": {"content": "done", "reasoning_content": ""},
+                }],
+                "usage": {"completion_tokens_details": {"reasoning_tokens": 2}},
+            },
+        }
+        report = inspect_results(self.write("plain-result.json", json.dumps([row])))
+        self.assertNotIn("158", _ids(report))
+
+
 DEFECTIVE_TEMPLATE = """\
 {%- if messages[0].role == 'system' %}{% set sys = messages[0].content %}{% set rest = messages[1:] %}\
 {% else %}{% set sys = 'You are a helpful assistant created by Probe Labs. Always answer carefully and politely.' %}\
