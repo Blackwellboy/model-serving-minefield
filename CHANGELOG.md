@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - Doctor 27 and automatic coverage 104
+
+- Added three zero-generation-request Doctor checks: [63](traps/reasoning/63-reasoning-round-trip-one-correct-shape.md) (four-arm reasoning field x preservation-gate render matrix), [86](traps/template/86-final-assistant-turn-bypasses-the-template-branch.md) (llama.cpp final-vs-mid assistant render delimiters), and [87](traps/runtime/87-llamacpp-props-reports-per-slot-context.md) (GET-only `/props` versus `/slots` context semantics). Live Doctor coverage moves **24 -> 27 of 161** without increasing the generation-request ceiling.
+- Added automatic checks for eight more traps: Docker implicit image pulls (145), context-limit retry/compression loops (146), tool-JSON ASCII escaping (148), layered patch files surviving pip upgrades (151), cold JIT/weight-load memory overlap (152), hard-coded Qwen3 thinking marker IDs (153), TensorFold 0.6.1 NVFP4 precision-default drift (154), and empty two-token thought markers after tool turns (158).
+- Automatic coverage moves **93 -> 104 of 161**. Static/offline coverage moves **63 -> 68**; log-signature coverage moves **26 -> 29**; Doctor moves **24 -> 27**.
+- Every new Doctor check has a paired bad/control fixture. Every new static/log/result detector has a positive and matched-safe control.
+
 ## 2026-10-08 - unified diagnose + first coverage expansion
 
 - Added **`minefield diagnose` as a unified front door**: one invocation can combine a plain-language symptom, explicit files/folders, and an optional OpenAI-compatible endpoint while keeping symptom similarity, offline findings, and live Doctor evidence separate.
