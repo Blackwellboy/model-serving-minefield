@@ -1051,6 +1051,84 @@ CLEAN_CONTRACT = {
         "a bad media path returned 4xx (advisory, not a trap)",
 }
 
+
+class TestNewLowCostDoctorProbes(DoctorVerdictCase):
+
+    def test_trap63_one_of_four_shape_is_detected(self):
+        with FixtureLane(preserve_history=False, reasoning_field="reasoning") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ROUNDTRIP_ONE_OF_FOUR")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("63", f["traps"])
+
+    def test_trap63_multi_arm_control_is_clean(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "ROUNDTRIP_NOT_ONE_OF_FOUR")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+    def test_trap86_final_assistant_prefill_bypass_is_detected(self):
+        with FixtureLane(
+            props=llamacpp_props(),
+            assistant_prefill_bypass=True,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "FINAL_ASSISTANT_BYPASSES_TEMPLATE_BRANCH")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("86", f["traps"])
+
+    def test_trap86_matched_delimiters_are_clean(self):
+        with FixtureLane(props=llamacpp_props()) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "FINAL_ASSISTANT_DELIMITERS_MATCH")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+    def test_trap87_props_per_slot_semantics_are_detected(self):
+        slots = [{"id": i, "n_ctx": 32768} for i in range(4)]
+        with FixtureLane(
+            props=llamacpp_props(n_ctx=32768, total_slots=4),
+            slots=slots,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "PROPS_CONTEXT_IS_PER_SLOT")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("87", f["traps"])
+
+    def test_trap87_total_props_value_is_clean_control(self):
+        slots = [{"id": i, "n_ctx": 32768} for i in range(4)]
+        with FixtureLane(
+            props=llamacpp_props(n_ctx=131072, total_slots=4),
+            slots=slots,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "PROPS_CONTEXT_NOT_PER_SLOT")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+
+CLEAN_CONTRACT.update({
+    "ROUNDTRIP_NOT_ONE_OF_FOUR":
+        "all four field/gate renders completed and more than one preserved the marker, "
+        "which rules out trap 63's exact one-working-shape failure",
+    "FINAL_ASSISTANT_DELIMITERS_MATCH":
+        "on llama.cpp, /apply-template returned the same local delimiters around the "
+        "same assistant marker in final and mid-conversation positions",
+    "PROPS_CONTEXT_NOT_PER_SLOT":
+        "on a parallel llama.cpp lane, /props n_ctx differed from every /slots n_ctx, "
+        "ruling out the specific per-slot-reporting shape of trap 87",
+})
+
 # Every scenario flag combination the suite can reach, so the sweep below sees
 # every CLEAN the tool is capable of emitting, not only the well-behaved path.
 SWEEP = [
@@ -1077,6 +1155,8 @@ SWEEP = [
     {"ceiling": "empty_at_cap"}, {"ceiling": "empty_not_at_cap"},
     {"stream_channel": "reasoning"}, {"stream_channel": None},
     {"bad_media_status": 500}, {"usage_details": None},
+    {"props": llamacpp_props(n_ctx=131072, total_slots=4),
+     "slots": [{"id": i, "n_ctx": 32768} for i in range(4)]},
 ]
 
 
