@@ -71,6 +71,15 @@ RULES = (
     ("161", r"(?:(?:dflash_worker_v2\.py|draft_worker)[\s\S]{0,1800}(?:self must be contiguous|IsContiguous\(\).*false)|(?:self must be contiguous|IsContiguous\(\).*false)[\s\S]{0,1800}(?:dflash_worker_v2\.py|draft_worker))",
      "The DFlash draft CUDA-graph path reached an FP4 contiguity failure. Compare matched draft budgets before "
      "blaming the checkpoint or quantization format."),
+    ("145", r"Unable to find image[^\n]{0,300}locally[\s\S]{0,1600}(?:Pulling from|Pull complete|Downloading)",
+     "docker run entered image acquisition because the image was absent locally; a launcher timeout here is not a "
+     "local container-start timeout."),
+    ("146", r"(?:(?:maximum context length|context length exceeded|context_length_exceeded)[\s\S]{0,3000}(?:compress|retry|backoff)|(?:compress|retry|backoff)[\s\S]{0,3000}(?:maximum context length|context length exceeded|context_length_exceeded))",
+     "An authoritative context-limit error appears in the same retry/compression loop. Preserve the first upstream "
+     "error instead of treating this as a transient transport failure."),
+    ("152", r"(?:(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM)|(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM))",
+     "CUDA-extension compilation overlaps model-weight loading and is followed by memory pressure. A warm kernel "
+     "cache can hide this first-start UMA peak."),
 )
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
