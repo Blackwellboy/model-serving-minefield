@@ -18,8 +18,10 @@ from .matching import diagnose
 from .registry import load_registry
 from .scan import scan
 from .static_inspector import inspect_files
+from .unified import diagnose_environment
 
 TOOLS = {
+    "diagnose_environment": "Unified diagnosis across a symptom, explicit files, and an optional live endpoint; considers the full canonical registry.",
     "search_symptom": "Return diagnosis-contract candidates from symptom and explicit conditions.",
     "get_trap": "Return one canonical trap record.",
     "get_stack_checks": "Return declared-context traps and checks for a serving stack.",
@@ -45,6 +47,18 @@ CONDITION_SCHEMA = {
 }
 
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
+    "diagnose_environment": {"properties": {
+        "symptom": {"type": "string"},
+        "paths": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
+        "base_url": {"type": "string"},
+        "stack": {"type": "string"},
+        "model": {"type": "string"},
+        "version": {"type": "string"},
+        "hf_repo": {"type": "string"},
+        "mode": {"type": "string"},
+        "max_requests": {"type": "integer"},
+        "limit": {"type": "integer"},
+    }},
     "search_symptom": {"properties": {
         "symptom": {"type": "string"}, "stack": {"type": "string"},
         "model": {"type": "string"}, "version": {"type": "string"},
@@ -149,6 +163,12 @@ def _validate_args(name: str, args: Any) -> dict[str, Any]:
                 for trap_id, outcome in value.items()
             ):
                 raise ValueError("direct_probe_results contains an invalid result")
+    if "mode" in args and args["mode"] not in {"lite", "doctor"}:
+        raise ValueError("mode must be lite or doctor")
+    if "max_requests" in args and args["max_requests"] < 0:
+        raise ValueError("max_requests must be >= 0")
+    if "limit" in args and args["limit"] < 1:
+        raise ValueError("limit must be >= 1")
     return args
 
 
@@ -169,6 +189,37 @@ def call_tool(
     allowed_roots: list[str] | None = None,
 ) -> Any:
     args = _validate_args(name, args)
+    if name == "diagnose_environment":
+        paths = list(args.get("paths") or [])
+        if not (str(args.get("symptom") or "").strip() or paths or args.get("base_url")):
+            raise ValueError("diagnose_environment requires symptom, paths, or base_url")
+        if paths:
+            if not allowed_roots:
+                raise ValueError(
+                    "diagnose_environment file scanning is disabled until MINEFIELD_ALLOWED_ROOTS is configured"
+                )
+            roots = [Path(root).resolve() for root in allowed_roots]
+            for raw in paths:
+                candidate = Path(raw)
+                if candidate.is_symlink():
+                    raise ValueError(f"symlink input is refused: {raw}")
+                resolved = candidate.resolve(strict=True)
+                if not any(resolved == root or root in resolved.parents for root in roots):
+                    raise ValueError(f"path is outside allowed roots: {raw}")
+        return diagnose_environment(
+            registry,
+            str(args.get("symptom") or ""),
+            paths=paths,
+            base_url=args.get("base_url"),
+            stack=args.get("stack"),
+            model=args.get("model"),
+            version=args.get("version"),
+            hf_repo=args.get("hf_repo"),
+            mode=args.get("mode", "lite"),
+            max_requests=args.get("max_requests"),
+            limit=int(args.get("limit", 5)),
+            allowed_roots=allowed_roots if paths else None,
+        )
     if name == "search_symptom":
         return diagnose(
             registry, args.get("symptom", ""), stack=args.get("stack"),
