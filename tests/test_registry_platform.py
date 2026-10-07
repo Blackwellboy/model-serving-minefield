@@ -66,7 +66,7 @@ class RegistryPlatformTests(unittest.TestCase):
             self.assertIn(f"### Trap {entry['id']}:", bundle)
 
     def test_mcp_tools_are_read_only_and_callable(self):
-        self.assertEqual(11, len(TOOLS))
+        self.assertEqual(12, len(TOOLS))
         self.assertNotIn("shell", " ".join(TOOLS).lower())
         found = call_tool("get_trap", {"id": "01"}, self.registry)
         self.assertEqual("01", found["id"])
