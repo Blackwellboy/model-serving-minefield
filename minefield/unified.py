@@ -42,6 +42,7 @@ def diagnose_environment(
     limit: int = 5,
     mode: str = "lite",
     max_requests: int | None = None,
+    allowed_roots: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Consider the full registry, then fuse only evidence the caller supplied.
 
@@ -53,7 +54,7 @@ def diagnose_environment(
     coverage = build_coverage(registry)["summary"]
     files = list(paths or [])
 
-    file_report = scan(files) if files else None
+    file_report = scan(files, list(allowed_roots) if allowed_roots is not None else None) if files else None
 
     target = None
     effective_stack = stack
