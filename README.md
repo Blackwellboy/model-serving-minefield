@@ -104,7 +104,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 159
+Four doors, and which one you want depends on why you are here. All 161
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
