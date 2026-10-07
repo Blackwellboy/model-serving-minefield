@@ -174,7 +174,7 @@ The doctor implements checks for **24 of the registry's 161 numbered entries**
 Every run ends with a coverage line:
 
 ```
-implemented 24/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 137
+implemented 27/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 134
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
