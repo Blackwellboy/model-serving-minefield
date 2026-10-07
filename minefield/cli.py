@@ -15,8 +15,9 @@ from .inline_system import EvidenceError, classify_manifest, inspect_template, l
 from .log_inspector import inspect_logs
 from .matching import diagnose
 from .registry import load_registry
-from .render import render_diagnosis, render_scan
+from .render import render_diagnosis, render_scan, render_unified_diagnosis
 from .scan import scan
+from .unified import diagnose_environment
 from .static_inspector import inspect_files
 from .support_bundle import plan, write_bundle
 
@@ -79,7 +80,27 @@ def parser() -> argparse.ArgumentParser:
     scan_fmt = scan_cmd.add_mutually_exclusive_group()
     scan_fmt.add_argument("--json", action="store_true", help="full report as JSON (default when piped)")
     scan_fmt.add_argument("--text", action="store_true", help="readable report (default in a terminal)")
-    sub.add_parser("diagnose", help="interactive symptom prompt; scripts should use guide")
+    diag = sub.add_parser(
+        "diagnose",
+        help="unified diagnosis across symptom matching, supplied files, and an optional live endpoint",
+    )
+    diag.add_argument("symptom", nargs="*", help="what you observe, in plain words")
+    diag.add_argument("--files", nargs="+", default=[], help="configs, model folders, logs, or results to scan")
+    diag.add_argument("--base-url", help="optional OpenAI-compatible endpoint for bounded live probes")
+    diag.add_argument("--api-key", help="optional endpoint API key; never included in output")
+    diag.add_argument("--stack")
+    diag.add_argument("--model")
+    diag.add_argument("--version")
+    diag.add_argument("--hf-repo")
+    diag.add_argument("--log", dest="log_excerpt", help="short log excerpt to include in symptom matching")
+    diag.add_argument("--limit", type=int, default=5)
+    diag.add_argument("--mode", choices=("lite", "doctor"), default="lite",
+                      help="lite uses a small live budget; doctor runs the full endpoint catalogue")
+    diag.add_argument("--max-requests", type=int,
+                      help="hard live request budget; lite defaults to 5, doctor defaults to uncapped")
+    diag_fmt = diag.add_mutually_exclusive_group()
+    diag_fmt.add_argument("--json", action="store_true")
+    diag_fmt.add_argument("--text", action="store_true")
     coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
     agent = sub.add_parser("agent-bundle", help="regenerate (or --verify) the shipped registry and agent bundles")
@@ -196,13 +217,40 @@ def main(argv: list[str] | None = None) -> int:
             # not a clean scan of zero files.
             return 2
     elif args.command == "diagnose":
-        if not sys.stdin.isatty():
-            raise SystemExit("diagnose requires an interactive terminal")
-        symptom = input("What are you seeing? ").strip()
-        stack = input("Serving stack and version? ").strip()
-        model = input("Model and revision? ").strip()
-        print()
-        print(render_diagnosis(diagnose(registry, symptom, stack=stack or None, model=model or None)))
+        symptom_parts = list(args.symptom)
+        # Preserve the old no-argument interactive workflow for humans.
+        if not symptom_parts and not args.files and not args.base_url:
+            if not sys.stdin.isatty():
+                raise SystemExit(
+                    "diagnose needs a symptom, --files, or --base-url when stdin is not a terminal"
+                )
+            symptom_parts = [input("What are you seeing? ").strip()]
+            if not args.stack:
+                args.stack = input("Serving stack and version? ").strip() or None
+            if not args.model:
+                args.model = input("Model and revision? ").strip() or None
+            print()
+        report = diagnose_environment(
+            registry,
+            " ".join(part for part in symptom_parts if part).strip(),
+            paths=args.files,
+            base_url=args.base_url,
+            api_key=args.api_key,
+            stack=args.stack,
+            model=args.model,
+            version=args.version,
+            hf_repo=args.hf_repo,
+            log_excerpt=args.log_excerpt,
+            limit=max(1, args.limit),
+            mode=args.mode,
+            max_requests=args.max_requests,
+        )
+        if args.text or (not args.json and sys.stdout.isatty()):
+            print(render_unified_diagnosis(report, limit=max(1, args.limit)))
+        else:
+            _emit(report)
+        if args.files and not (report.get("file_scan") or {}).get("accepted_paths"):
+            return 2
     elif args.command == "coverage":
         value = build_coverage(registry)["summary"]
         _emit(value if args.json else "\n".join(f"{k}: {v}" for k, v in value.items()),
