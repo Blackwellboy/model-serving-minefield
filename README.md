@@ -36,10 +36,8 @@ protects is your ability to tell them apart at a glance.
 
 ## Diagnose it yourself in ten seconds
 
-PyPI trusted publishing is wired but the package is not published there yet, so install the current public tree from GitHub:
-
 ```bash
-pipx install "git+https://github.com/Blackwellboy/model-serving-minefield.git@main"
+pipx install msmf
 minefield streaming shows blank replies --stack vllm
 ```
 
@@ -80,7 +78,7 @@ configuration:
 read-only doctor:
 
 ```bash
-pipx install "git+https://github.com/Blackwellboy/model-serving-minefield.git@main"
+pipx install msmf
 minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
 ```
 
