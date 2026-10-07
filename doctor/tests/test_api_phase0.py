@@ -80,8 +80,11 @@ class PreferredTrapPlanning(unittest.TestCase):
             preferred_trap_ids=("12",),
             detect=False,
         )
-        self.assertEqual([p.id for p in plan.selected], ["ceiling"])
+        self.assertEqual(plan.selected[0].id, "ceiling")
         self.assertIn("preferred_trap_match", plan.selected[0].reason)
+        self.assertLessEqual(sum(p.request_cost for p in plan.selected), 1)
+        # Zero-cost probes may still be included; they do not consume the live budget.
+        self.assertTrue(all(p.request_cost == 0 for p in plan.selected[1:]))
 
 
 class HardBudget(unittest.TestCase):
