@@ -3815,6 +3815,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "159",
       "untrusted_published_check_text": "Feed identical synthetic shapes through the byte transform under both aliases and require equal nonzero accounting. Also verify a complete synthetic tower and keep a control for the renamed namespace."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 160 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 160 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "160",
+      "untrusted_published_check_text": "At the first sustained-load stall, capture stacks on both ranks twice, separated by roughly 45 to 60 seconds. Preserve the actually loaded libnccl.so identity from each live process (for example from /proc/<pid>/maps plus build ID/hash), plus vLLM and FlashInfer identities. A single stack shows only where a rank was; two frame-identical captures prove it stayed there."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 161 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 161 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "161",
+      "untrusted_published_check_text": "Treat startup as a measured cell. For each candidate draft budget, launch a fresh serve and require it to reach /health before running any benchmark. Preserve the full startup traceback and record DID NOT COME UP as its own outcome. Do not coerce that cell to zero throughput or silently drop it from a curve."
     }
   ],
   "schema_version": "1.0"

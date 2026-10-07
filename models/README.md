@@ -115,3 +115,9 @@ section and gets you credited.
 ## Scott 2026-10-07 promotion batch
 
 Cross-model and stack-scoped contributor findings: [144](../traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md), [145](../traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md), [146](../traps/routing/146-gateway-retry-hides-context-rejection.md), [147](../traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md), [148](../traps/template/148-tool-json-ascii-escaping-changes-prompt.md), [149](../traps/evaluation/149-thinking-on-json-schema-can-runaway.md), [150](../traps/runtime/150-docker-save-stages-sender-temp-copy.md), [151](../traps/versioning/151-pip-uninstall-leaves-patch-added-files.md), [152](../traps/memory/152-cold-jit-compile-overlaps-weight-load.md), [153](../traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md), [154](../traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md), [155](../traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md), [156](../traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md), [157](../traps/runtime/157-ngram-speculation-disables-async-scheduling.md), [158](../traps/reasoning/158-empty-thought-markers-count-as-reasoning.md), [159](../traps/memory/159-vision-alias-omitted-from-admission-accounting.md).
+
+
+## Scott 2026-10-08 follow-up batch
+
+- Two-node vLLM TP=2 sustained-load rank divergence: [160](../traps/runtime/160-sustained-tp-rank-divergence-build-scoped.md).
+- SGLang DFlash2 low-end draft-budget startup cliff: [161](../traps/runtime/161-dflash-k2-cuda-graph-fp4-startup-cliff.md).

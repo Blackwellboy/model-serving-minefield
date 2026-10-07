@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - Scott follow-up batch: traps 160-161
+
+- Promoted [160](traps/runtime/160-sustained-tp-rank-divergence-build-scoped.md) from issue #89: sustained TP=2 rank divergence under load, with the canonical claim bounded to the measured old-build/new-build outcome split and **not** assigning unresolved ownership to vLLM, NCCL or FlashInfer.
+- Promoted [161](traps/runtime/161-dflash-k2-cuda-graph-fp4-startup-cliff.md) from issue #105: deterministic DFlash draft-budget-2 startup failure during draft-worker CUDA-graph FP4 capture, while explicitly leaving the depth-to-layout mechanism unproven.
+- Registry count moves **159 -> 161**. Doctor coverage remains **24**, leaving **137** canonical entries without Doctor checks. Automatic coverage remains 87.
+- Scott's remaining open trap queue after this batch is #113 and #172 only.
+
 ## 2026-10-07 - Scott promotion batch: traps 144-159
 
 - Promoted **16 contributor-measured/source-bounded findings** from @scottleimroth: [144](traps/runtime/144-deterministic-flashinfer-workspace-hard-cap.md) (#87), [145](traps/runtime/145-docker-run-implicit-pull-inside-launch-timeout.md) (#132), [146](traps/routing/146-gateway-retry-hides-context-rejection.md) (#147), [147](traps/runtime/147-run-bind-mount-breaks-nvidia-container-hook.md) (#150), [148](traps/template/148-tool-json-ascii-escaping-changes-prompt.md) (#156), [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md) (#158), [150](traps/runtime/150-docker-save-stages-sender-temp-copy.md) (#160), [151](traps/versioning/151-pip-uninstall-leaves-patch-added-files.md) (#161), [152](traps/memory/152-cold-jit-compile-overlaps-weight-load.md) (#162), [153](traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md) (#166), [154](traps/versioning/154-engine-upgrade-changes-nvfp4-default-arithmetic.md) (#168), [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md) (#169), [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md) (#171), [157](traps/runtime/157-ngram-speculation-disables-async-scheduling.md) (#174), [158](traps/reasoning/158-empty-thought-markers-count-as-reasoning.md) (#175), and [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md) (#178).

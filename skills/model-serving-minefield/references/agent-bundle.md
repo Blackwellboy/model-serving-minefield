@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `6762f466f5e2b25a0940330b539cac2e9b475d11837d57a0ccbc87fb488a8896`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `0962f48a11f7e397d3b96f5d4b0425a4bc70e65928f85364c508671ade61e53a`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -530,6 +530,8 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 157: An n-gram speculative configuration looks faster in a standard single-stream decode test but becomes materially slower per stream when the server handles its real concurrent load.
 - 158: A verifier asserts reasoning_tokens == 0 for thinking-off requests and fails on some multi-turn tool interactions even though the reasoning field is empty and no reasoning text is visible.
 - 159: A compatibility patch that removes an NVFP4+vision guard can make startup admission undercount the retained vision tower even though the loader later recognizes and loads that tower namespace.
+- 160: A two-node tensor-parallel serve starts cleanly, survives light traffic, then dies roughly 15 to 25 minutes into sustained agentic load. The head reports shared-memory broadcast stalls, sample_tokens RPC timeout and EngineDeadError, while memory pressure and RDMA error counters remain clean.
+- 161: A downward speculative-depth sweep looks healthy at draft budgets 8, 6 and 4, then budget 2 never reaches health at all. The failure happens during startup CUDA-graph capture and the traceback points at FP4 quantization / tensor contiguity, which makes the checkpoint or quantization path look guilty.
 
 ## Compact possible/unverified lead index
 

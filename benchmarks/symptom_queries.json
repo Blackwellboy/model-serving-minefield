@@ -1740,6 +1740,26 @@
    "trap": "159",
    "split": "holdout",
    "query": "TensorFold vision alias model.visual is loaded but omitted from resident weight byte estimate"
+  },
+  {
+   "trap": "160",
+   "split": "tune",
+   "query": "two node tensor parallel server works for twenty minutes then one rank hangs inside nccl and the other never enters the collective"
+  },
+  {
+   "trap": "160",
+   "split": "holdout",
+   "query": "tp2 serve passes startup and light traffic but dies later with rank divergence under sustained load"
+  },
+  {
+   "trap": "161",
+   "split": "tune",
+   "query": "lowering DFlash speculative draft tokens to 2 makes SGLang die during cuda graph capture before health"
+  },
+  {
+   "trap": "161",
+   "split": "holdout",
+   "query": "draft budget 2 crashes in FP4 quantization while 4 6 and 8 all start normally"
   }
  ],
  "negatives": {
