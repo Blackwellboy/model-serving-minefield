@@ -55,11 +55,29 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-87 of the 161 traps have at least one automatic check
+93 of the 161 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
 [symptom benchmark](benchmarks/README.md).
+
+## Diagnose everything you have at once
+
+When you have a symptom plus files and/or a live endpoint, use the unified
+front door instead of running the matcher, scanner and Doctor separately:
+
+```bash
+minefield diagnose "tp=2 dies after twenty minutes" \
+  --files docker-compose.yml start.sh ./logs/ \
+  --base-url http://HOST:8000/v1
+```
+
+Minefield considers all **161 canonical traps** for routing, scans the supplied
+files, auto-detects the endpoint stack/model when available, and spends its
+bounded live-probe budget on checks related to the traps already surfaced by
+the symptom/files before falling back to generic lite probes. The output keeps
+evidence types separate: text and file hits are leads; live Doctor findings are
+reported as bounded endpoint observations.
 
 ## Diagnose with an AI agent
 
