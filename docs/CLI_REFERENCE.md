@@ -8,7 +8,9 @@ minefield SYMPTOM...                      (shorthand for `minefield guide`)
 minefield scan PATH... [--text | --json]  (offline: configs, model folders, templates, logs, results)
 minefield guide SYMPTOM... [--stack STACK] [--model MODEL] [--version VERSION]
                            [--log EXCERPT] [--limit N] [--text | --json]
-minefield diagnose
+minefield diagnose [SYMPTOM...] [--files PATH...] [--base-url URL]
+                   [--stack STACK] [--model MODEL] [--version VERSION]
+                   [--mode lite|doctor] [--max-requests N] [--text | --json]
 minefield bundle [--config FILE] [--log FILE] [--doctor-report FILE]
                  [--output ZIP] [--no-write]
 minefield coverage [--json]
@@ -20,6 +22,30 @@ All inspection is read-only. `quick` preserves the standalone doctor's exit
 codes: 0 means it ran and the result must be read; 1 means the endpoint was
 unreachable. Argparse usage errors return 2. Other commands return 0 on
 success and non-zero on validation, bounds, path, or generation failures.
+
+## Unified diagnosis
+
+`minefield diagnose` is the front door when you have more than one kind of
+evidence. It considers every canonical trap for routing, then combines only the
+evidence you supplied:
+
+```text
+minefield diagnose "tp=2 dies after twenty minutes" \
+  --files docker-compose.yml start.sh ./logs/ \
+  --base-url http://HOST:8000/v1 \
+  --mode lite --max-requests 5
+```
+
+The file scan runs first, endpoint detection supplies stack/model context, and
+the live planner prioritises Doctor probes whose trap IDs already match the
+symptom or files. Output states the total registry considered, automatic
+coverage, selected live probes, scoped-clean live traps, and the strongest
+multi-signal candidates. Text/file matches remain leads; they are never
+silently promoted to a live confirmation.
+
+With no arguments in an interactive terminal, `diagnose` preserves the older
+question-and-answer prompt. For scripts, provide a symptom, `--files`, or
+`--base-url`; piped output is JSON unless `--text` is forced.
 
 ## Finding the trap you hit
 
