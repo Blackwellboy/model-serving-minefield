@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
   "summary": {
-    "any_automated_check": 93,
+    "any_automated_check": 104,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 24,
+    "endpoint_checks_implemented": 27,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
-    "log_checks_implemented": 26,
-    "static_checks_implemented": 63,
+    "log_checks_implemented": 29,
+    "static_checks_implemented": 68,
     "total_canonical_traps": 161
   },
   "traps": [
@@ -4639,16 +4639,18 @@
       "id": "63",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Four renders, one marker, one grep. Build a two-turn history whose assistant message carries a unique marker string as its reasoning. Render it four ways: marker under reasoning and under reasoning_content, each with the preservation kwarg at default and set. Grep each assembled prompt for the marker. Exactly one arm should contain it. If none does, the switch has another name and you need the kwarg enumeration below. On vLLM: POST /v1/chat/completions/render returns token_ids, and POST /detokenize converts them back to text. POST /tokenize with return_token_strs: true also works and is available on builds whose route listing does not advertise it. On llama.cpp: /apply-template. Otherwise checks/preflight_template.py with --template-file, and doctor/minefield_doctor.py, which now tries four known gate names in both polarities against both field names and names the combination that worked.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -6351,16 +6353,18 @@
       "id": "86",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Send the same assistant text in last position and in second-to-last position to /apply-template and diff the two strings around it. If the delimiters differ, your prefill is not the conversation your multi-turn arm produces, and the two will not share a cache prefix.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "One Mistral-family Q80 GGUF of unstated provenance on llama.cpp b9878. The mechanism is a server-side prefill path, so it should travel across templates on this build; the exact delimiters are a property of this template.",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -6425,16 +6429,18 @@
       "id": "87",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Launch with a total context and a parallel count, then read the reported context from /props and confirm it is the total divided by the parallel count.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "llama.cpp b9878-2da668617. Server property, not a model property; the served target only supplied the context numbers.",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -10763,7 +10769,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Immediately before launch, require docker image inspect <ref> to succeed in the same control path that gates docker run. If absent, report the missing image explicitly instead of timing the launch call.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -10771,7 +10777,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -10837,7 +10843,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Compare the server's actual configured context limit with the gateway/client assumption. Preserve the first upstream error before retry logic. A context-exceeded response must be distinguishable from a transient transport failure.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -10845,7 +10851,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -10999,7 +11005,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Render the checkpoint template locally with the served tokenizer, compare verbatim and ensure_ascii=True tool serialization counts, then compare both with each engine's reported prompt tokens. Include an ASCII-only control.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11007,7 +11013,7 @@
             "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -11221,7 +11227,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Compare the final installed package tree with the pinned upstream tree, or enumerate package files not represented in RECORD and inspect every extra.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11229,7 +11235,7 @@
             "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -11281,7 +11287,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "On first start after any engine/cache change, record MemAvailable and build-log events through the entire load. Compare with a control where required extensions are prebuilt in a weight-free container.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -11289,7 +11295,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -11369,7 +11375,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11377,7 +11383,7 @@
             "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -11443,7 +11449,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "After an engine upgrade, pin explicit precision and run long greedy token-hash witnesses, not only short prompts. Compare startup-resolved precision and reject unsupported legacy flag combinations.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.static_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11451,7 +11457,7 @@
             "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },
@@ -11739,7 +11745,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.results_inspector",
           "limitations": "Static configuration does not prove the live process used it.",
           "possible_match_only": true,
           "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11747,7 +11753,7 @@
             "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         }
       }
     },

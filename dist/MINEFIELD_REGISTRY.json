@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "5980b6f765a60f2f92f082a3b1fa1c038568870102417794ea188169a33ea3ab",
-  "doctor_implemented_trap_count": 24,
+  "content_sha256": "dbdf28de507ad5eb6e207dcbd82dcd38935c6cd37c164549e00a2dcfd90a76a7",
+  "doctor_implemented_trap_count": 27,
   "entries": [
     {
       "affected_models": [
@@ -4323,14 +4323,15 @@
       "check": "Four renders, one marker, one grep. Build a two-turn history whose assistant message carries a unique marker string as its reasoning. Render it four ways: marker under reasoning and under reasoning_content, each with the preservation kwarg at default and set. Grep each assembled prompt for the marker. Exactly one arm should contain it. If none does, the switch has another name and you need the kwarg enumeration below. On vLLM: POST /v1/chat/completions/render returns token_ids, and POST /detokenize converts them back to text. POST /tokenize with return_token_strs: true also works and is available on builds whose route listing does not advertise it. On llama.cpp: /apply-template. Otherwise checks/preflight_template.py with --template-file, and doctor/minefield_doctor.py, which now tries four known gate names in both polarities against both field names and names the combination that worked.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/63-reasoning-round-trip-one-correct-shape.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -5878,14 +5879,15 @@
       "check": "Send the same assistant text in last position and in second-to-last position to /apply-template and diff the two strings around it. If the delimiters differ, your prefill is not the conversation your multi-turn arm produces, and the two will not share a cache prefix.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/86-final-assistant-turn-bypasses-the-template-branch.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -5933,14 +5935,15 @@
       "check": "Launch with a total context and a parallel count, then read the reported context from /props and confirm it is the total divided by the parallel count.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/87-llamacpp-props-reports-per-slot-context.md"
       },
       "evidence_strength": [
         "reproduced here"
