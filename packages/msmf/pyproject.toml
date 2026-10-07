@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "msmf"
+version = "0.1.0"
+description = "Thin alias for model-serving-minefield; installs minefield and minefield-mcp."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Blackwellboy" }]
+keywords = ["alias", "minefield", "model-serving", "llm", "diagnostics"]
+dependencies = [
+  "model-serving-minefield>=0.2,<0.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/Blackwellboy/model-serving-minefield"
+Repository = "https://github.com/Blackwellboy/model-serving-minefield"
+Issues = "https://github.com/Blackwellboy/model-serving-minefield/issues"
+Changelog = "https://github.com/Blackwellboy/model-serving-minefield/blob/main/CHANGELOG.md"
+
+[project.scripts]
+minefield = "minefield.cli:main"
+minefield-mcp = "minefield.mcp_server:main"
+
