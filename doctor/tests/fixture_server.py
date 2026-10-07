@@ -128,20 +128,34 @@ DEFAULTS = {
     "ceiling": "content",
     "stream_channel": "content",
     "echo_logprobs": "ok",
+    "slots": None,
+    "assistant_prefill_bypass": False,
 }
 
 
-def llamacpp_props(template=TEMPLATE_WITHOUT_EFFORT, temperature=0.6, top_p=0.95):
-    return {"build_info": "fixture-b0000",
-            "chat_template": template,
-            "default_generation_settings": {
-                "params": {"temperature": temperature, "top_p": top_p}}}
+def llamacpp_props(template=TEMPLATE_WITHOUT_EFFORT, temperature=0.6, top_p=0.95,
+                    n_ctx=None, total_slots=None):
+    props = {"build_info": "fixture-b0000",
+             "chat_template": template,
+             "default_generation_settings": {
+                 "params": {"temperature": temperature, "top_p": top_p}}}
+    if n_ctx is not None:
+        props["default_generation_settings"]["n_ctx"] = n_ctx
+    if total_slots is not None:
+        props["total_slots"] = total_slots
+    return props
 
 
 def render_prompt(cfg, messages, kwargs):
     kwargs = kwargs or {}
     thinking = kwargs.get("enable_thinking", True)
-    preserve = cfg["preserve_history"] or kwargs.get("preserve_thinking") is True
+    preserve = (
+        cfg["preserve_history"]
+        or kwargs.get("preserve_thinking") is True
+        or kwargs.get("truncate_history_thinking") is False
+        or kwargs.get("keep_thinking") is True
+        or kwargs.get("include_reasoning") is True
+    )
     out = []
     field = cfg["reasoning_field"] or "reasoning_content"
     for m in messages:
@@ -193,6 +207,10 @@ def _make_lane_handler(cfg):
             if self.path == "/props":
                 if cfg["props"]:
                     return self._send(200, cfg["props"])
+                return self._send(404, {"error": "not found"})
+            if self.path == "/slots":
+                if cfg["slots"] is not None:
+                    return self._send(200, cfg["slots"])
                 return self._send(404, {"error": "not found"})
             if self.path == "/api/version":
                 if cfg["ollama"]:
@@ -301,7 +319,11 @@ def _make_lane_handler(cfg):
             if path == "/apply-template":
                 if not (cfg["render"] and cfg["props"]):
                     return self._send(404, {"error": "not found"})
-                return self._send(200, {"prompt": render_prompt(cfg, msgs, kw)})
+                if cfg["assistant_prefill_bypass"] and msgs and msgs[-1].get("role") == "assistant":
+                    prompt = render_prompt(cfg, msgs[:-1], kw) + str(msgs[-1].get("content") or "")
+                else:
+                    prompt = render_prompt(cfg, msgs, kw)
+                return self._send(200, {"prompt": prompt})
 
             if path == "/v1/completions":
                 mode = cfg["echo_logprobs"]

@@ -113,6 +113,26 @@ RULES = tuple(Rule(*rule) for rule in (
      "DFlash draft budget 2 is configured. On the reported NVFP4/DFlash2 lane this was a deterministic startup "
      "failure during draft-worker CUDA-graph FP4 capture; treat startup as a measured cell.",
      r"(?:DFLASH|dflash)"),
+    ("148", r"ensure_ascii\s*=\s*True",
+     "configuration-only",
+     "Tool/schema JSON is explicitly ASCII-escaped before prompt construction. Compare rendered prompt tokens with "
+     "verbatim Unicode serialization before treating two engine requests as identical.",
+     r"(?:tool|function|schema|chat[_ -]?template|messages?)"),
+    ("151", r"(?:cp|patch|sed)[^\n]{0,240}(?:site|dist)-packages",
+     "suspicious",
+     "The image mutates files inside an installed package and also performs a pip uninstall/install upgrade. Files "
+     "added by the patch are not in the old RECORD and can survive into the new version.",
+     r"pip(?:3)?\s+(?:uninstall|install)[\s\S]{0,1600}pip(?:3)?\s+(?:install|uninstall)"),
+    ("153", r"(?:151667[\s\S]{0,240}151668|151668[\s\S]{0,240}151667)",
+     "suspicious",
+     "A thinking-budget implementation hard-codes Qwen3 think marker IDs 151667/151668. Verify them against the "
+     "served tokenizer before using the budget on Qwen3.5/3.8-family checkpoints.",
+     r"(?:Qwen3ThinkingBudgetLogitProcessor|thinking[_ -]?budget)"),
+    ("154", r"(?:tensorfold|TensorFold)[^\n]{0,160}(?:0\.6\.1|v0\.6\.1)",
+     "requiring-runtime-confirmation",
+     "TensorFold 0.6.1 is selected for an NVFP4 lane without an explicit precision mode. That version changed the "
+     "default arithmetic; pin --precision and requalify long greedy output.",
+     r"(?:NVFP4|nvfp4)", r"(?:--precision\b|precision\s*[:=])"),
 ))
 
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)

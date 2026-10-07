@@ -19,7 +19,7 @@ from typing import Any
 MAX_RESULTS_BYTES = 64 * 1024 * 1024
 MAX_RECORDS = 200_000
 
-IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64"})
+IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64", "158"})
 
 _FINISH = ("finish_reason", "stop_reason", "done_reason")
 _CONTENT = ("content", "response", "output", "completion", "answer", "prediction", "generated_text")
@@ -116,6 +116,60 @@ def _short_scalar(value: Any, limit: int = 200) -> str | None:
     return None
 
 
+def _request_object(record: dict[str, Any]) -> dict[str, Any]:
+    for key in ("request", "input", "payload", "body"):
+        value = record.get(key)
+        if isinstance(value, dict):
+            return value
+    return record
+
+
+def _reasoning_tokens(record: dict[str, Any]) -> int | None:
+    holders = [record]
+    nested = record.get("response")
+    if isinstance(nested, dict):
+        holders.append(nested)
+    for holder in holders:
+        direct = holder.get("reasoning_tokens")
+        if isinstance(direct, int) and not isinstance(direct, bool):
+            return direct
+        usage = holder.get("usage")
+        if not isinstance(usage, dict):
+            continue
+        direct = usage.get("reasoning_tokens")
+        if isinstance(direct, int) and not isinstance(direct, bool):
+            return direct
+        details = usage.get("completion_tokens_details")
+        if isinstance(details, dict):
+            value = details.get("reasoning_tokens")
+            if isinstance(value, int) and not isinstance(value, bool):
+                return value
+    return None
+
+
+def _thinking_off(record: dict[str, Any]) -> bool:
+    req = _request_object(record)
+    if req.get("enable_thinking") is False or req.get("think") is False:
+        return True
+    if str(req.get("reasoning_effort") or "").lower() in {"none", "off"}:
+        return True
+    kwargs = req.get("chat_template_kwargs")
+    return isinstance(kwargs, dict) and kwargs.get("enable_thinking") is False
+
+
+def _tool_history(record: dict[str, Any]) -> bool:
+    req = _request_object(record)
+    messages = req.get("messages")
+    if not isinstance(messages, list):
+        return False
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        if message.get("role") == "tool" or message.get("tool_calls"):
+            return True
+    return False
+
+
 def _normalise(record: dict[str, Any]) -> dict[str, Any]:
     envelope = _choice(record)
     content = envelope.get("content") if envelope else _get(record, _CONTENT)
@@ -138,6 +192,9 @@ def _normalise(record: dict[str, Any]) -> dict[str, Any]:
         "tool_calls": envelope.get("tool_calls") or record.get("tool_calls"),
         "score": score,
         "arm": _short_scalar(arm_value),
+        "reasoning_tokens": _reasoning_tokens(record),
+        "thinking_off": _thinking_off(record),
+        "tool_history": _tool_history(record),
     }
 
 
@@ -206,6 +263,17 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
         findings.append(_finding(
             "42", f"{_items(len(tool_wrong))} answered with a tool call and were scored wrong; a single-turn "
             "harness counts a tool call as a wrong answer."))
+
+    empty_marker_rows = [
+        row for row in understood
+        if row["thinking_off"] and row["tool_history"]
+        and row["reasoning_tokens"] == 2 and _empty(row["reasoning"])
+    ]
+    if empty_marker_rows:
+        findings.append(_finding(
+            "158", f"{_items(len(empty_marker_rows))} explicitly disabled thinking after tool history, returned "
+            "empty reasoning text, but usage still reports exactly 2 reasoning tokens. That is the empty "
+            "thought-marker signature; do not fail thinking-off solely on reasoning_tokens == 0."))
 
     arms: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in understood:
