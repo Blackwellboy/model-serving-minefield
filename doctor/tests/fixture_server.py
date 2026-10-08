@@ -432,9 +432,10 @@ def _make_lane_handler(cfg):
                 prompt_tokens = 119
             cached_tokens = None
             if docache := ("cache_prompt" in body or cfg["cache_prompt_isolates"]):
-                if cfg["cache_prompt_isolates"]:
+                mode = cfg["cache_prompt_isolates"]
+                if mode:
                     if body.get("cache_prompt") is False:
-                        cached_tokens = 0
+                        cached_tokens = 64 if mode == "reuses" else 0
                     else:
                         cached_tokens = 64 if cfg["_cache_warm"] else 0
                         cfg["_cache_warm"] = True
