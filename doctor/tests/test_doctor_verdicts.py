@@ -1078,6 +1078,24 @@ CLEAN_CONTRACT = {
 
 class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
+    def test_trap82_system_relocation_is_detected(self):
+        with FixtureLane(system_prompt_relocates=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "SYSTEM_PROMPT_RELOCATED_TO_LAST_USER")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("82", f["traps"])
+
+    def test_trap82_system_stays_at_head_is_clean(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "SYSTEM_PROMPT_STAYS_AT_HEAD")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertIn("82", f["traps"])
+
     def test_trap63_one_of_four_shape_is_detected(self):
         with FixtureLane(preserve_history=False, reasoning_field="reasoning") as base:
             doc = diagnose(base)
@@ -1142,6 +1160,10 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
 
 CLEAN_CONTRACT.update({
+    "SYSTEM_PROMPT_STAYS_AT_HEAD":
+        "all four unique markers appear exactly once and the system marker precedes "
+        "both user turns and the intervening assistant turn, directly ruling out "
+        "trap 82's last-user relocation shape",
     "ROUNDTRIP_NOT_ONE_OF_FOUR":
         "all four field/gate renders completed and more than one preserved the marker, "
         "which rules out trap 63's exact one-working-shape failure",
@@ -1239,6 +1261,7 @@ SWEEP = [
     {"reasoning_effort_mode": "reject"},
     {"props": llamacpp_props(), "cache_prompt_isolates": True},
     {"string_false_truthy": False},
+    {"system_prompt_relocates": True},
 ]
 
 
