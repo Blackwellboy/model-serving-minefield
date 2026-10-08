@@ -4,7 +4,7 @@ This is a **public governance surface only**. It does not contain raw evidence, 
 
 Every currently open issue whose title begins `[trap]` must appear here with criteria written before adjudication. The integrity gate compares this file against live GitHub issue state.
 
-Coverage snapshot: the doctor implements checks for **27 of 161** entries.  134 uncovered entries remain outside automated doctor checks.
+Coverage snapshot: the doctor implements checks for **29 of 161** entries.  132 uncovered entries remain outside automated doctor checks.
 
 ## OPEN
 
