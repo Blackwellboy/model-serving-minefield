@@ -169,8 +169,8 @@ verdict cannot be added without writing down what it rules out.
 ## Coverage, stated plainly
 
 The doctor implements checks for **29 of the registry's 161 numbered entries**
-(01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 68, 72,
-73, 77, 78, 141).
+(01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 58, 63,
+68, 72, 73, 77, 78, 80, 86, 87, 141).
 Every run ends with a coverage line:
 
 ```
@@ -178,7 +178,7 @@ implemented 29/161 | executed on this stack N | clean N | problems N | inconclus
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
-verdict on that run, which on a real lane is well under 24. Even 24 overstates
+verdict on that run, which on a real lane is well under 29. Even 29 overstates
 depth, and the coverage block says so every time:
 
 - **25** shares the trap-04 history-render heuristic. It is not a separate
@@ -192,7 +192,7 @@ depth, and the coverage block says so every time:
   this tool sends one request at one budget, so it is linked from the ceiling
   check purely so you can find the entry, and is never given a verdict by it.
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
-- **04, 20, 25, 68** need a render path. On a stack that exposes none they cannot
+- **04, 20, 25, 63, 68, 86** need a render path. On a stack that exposes none they cannot
   run at all.
 - **77** is the newest and the cheapest: one baseline request and one request
   carrying an invented top-level field. It runs first, because it decides
@@ -244,11 +244,12 @@ here is everything this one does:
 
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
-- **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **17 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. 17 is the reachable budget when every applicable probe runs;
-  a lane that skips probes issues fewer, and two contributor-measured SGLang
-  runs issued 14. Size any rate limit on 17, not on an observed count. It also calls render or tokenise routes
+- **Bounded.** GET probes (`/models`, `/props`, `/version`) plus a conservative
+  full-catalogue plan of at most **24 chat completions**, each capped at 512
+  output tokens or less, all at temperature 0. Stack/capability skips usually
+  make real runs smaller. The `minefield quick` planner remains hard-capped at
+  **5** requests and will only select probes whose declared worst-case request
+  cost fits that budget. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.
@@ -280,6 +281,10 @@ Every check traces to a registry trap; every finding links it.
 | Ceiling: empty content at cap, empty content *without* a cap hit, content at a real cap hit | 12, 16 |
 | Budget floor across sizes: **not checked**, declared uncovered every run | 22 |
 | Streaming: answer deltas in `content` vs reasoning channels, thinking off | 23 |
+| Top-level `reasoning_effort`: matched baseline/low/max reasoning + prompt-token effect | 58 |
+| Reasoning-history four-arm field/preservation render matrix | 63 |
+| Stream delta count versus reported completion-token count | 80 |
+| llama.cpp final-assistant prefill delimiters and `/props` versus `/slots` context semantics | 86, 87 |
 | `generation_config.json` exists at the compared revision; server defaults vs shipped config, on shared keys only | 21, 17 |
 | Quantisation **label** in `config.json`, then `hf_quant_config.json`. Never the kernel path, so never clean | 10 |
 | Multimodal surface, usage attribution, content-part ordering, media error classification | advisory, not in the registry |
