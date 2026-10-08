@@ -215,6 +215,8 @@ _INDEX_CACHE: dict[str, tuple[list[tuple[set[str], set[str], set[str]]], dict[st
 # still a lead: the signature says the line is present, not that the trap is
 # the cause, and no score reaches a confirmed level without a direct probe.
 LOG_SIGNATURE_BOOST = 40
+FINGERPRINT_BASE_BOOST = 18
+FINGERPRINT_MAX_BOOST = 54
 MAX_PASTE_CHARS = 64 * 1024
 
 # A word that matches the trap's title counts for more than one buried in the
@@ -254,6 +256,46 @@ def _index(registry: dict[str, Any]) -> tuple[list[tuple[set[str], set[str], set
     }
     _INDEX_CACHE[key] = (per_entry, idf)
     return per_entry, idf
+
+
+def _normalise_fingerprint_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip().lower())
+
+
+def _fingerprint_hits(entry: dict[str, Any], text: str) -> list[str]:
+    """Exact operator evidence: flags, field names, routes, errors, versions.
+
+    Fingerprints are generated from canonical Markdown. They bypass the
+    two-concept admission floor because one exact machine identifier can be
+    more diagnostic than several prose words, but they remain routing leads.
+    """
+    haystack = _normalise_fingerprint_text(text)
+    if not haystack:
+        return []
+    hits: list[str] = []
+    for raw in entry.get("diagnostic_fingerprints") or []:
+        needle = _normalise_fingerprint_text(str(raw))
+        if len(needle) < 4:
+            continue
+        forms = {needle}
+        if needle.startswith("--") and len(needle) > 4:
+            forms.add(needle[2:])
+        if any(form and form in haystack for form in forms):
+            hits.append(str(raw))
+    return hits
+
+
+def _fingerprint_boost(hits: list[str]) -> int:
+    if not hits:
+        return 0
+    # One exact identifier is already meaningful; multiple independent
+    # identifiers increase confidence but the cap prevents fingerprints from
+    # overwhelming a concrete log signature or direct probe.
+    total = 0
+    for item in hits[:4]:
+        specificity = min(10, max(0, len(item) // 8))
+        total += FINGERPRINT_BASE_BOOST + specificity
+    return min(FINGERPRINT_MAX_BOOST, total)
 
 
 def _concept_weight(
@@ -335,21 +377,27 @@ def search(
         context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
         signature = signatures.get(entry["id"])
+        fingerprint_hits = _fingerprint_hits(entry, symptom_text_for_match)
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
         # because the caller explicitly named the trap under test, and a
         # trap's own log signature bypasses it because the line is concrete.
-        if (direct < 2 or not on_topic) and not is_explicit and not signature:
+        if (direct < 2 or not on_topic) and not is_explicit and not signature and not fingerprint_hits:
             continue
         weight = _concept_weight(symptom_concepts, searchable_symptom_tokens, idf, title_tokens)
-        if weight < MIN_EVIDENCE and not is_explicit and not signature:
+        if weight < MIN_EVIDENCE and not is_explicit and not signature and not fingerprint_hits:
             continue
 
         # Rarity-weighted: two specific shared words outrank four generic
         # ones. Scaled so a typical shared word is worth about 4 points, the
         # same order as the previous flat per-concept score.
-        score = round(weight * 7) + context + (LOG_SIGNATURE_BOOST if signature else 0)
+        score = (
+            round(weight * 7)
+            + context
+            + (LOG_SIGNATURE_BOOST if signature else 0)
+            + _fingerprint_boost(fingerprint_hits)
+        )
         normalized_symptom = symptom.strip().lower()
         if (
             normalized_symptom
@@ -394,6 +442,7 @@ def search(
             "score": score,
             "evidence_weight": round(weight, 2),
             "log_signature": signature,  # why a pasted line matched this trap's signature, else None
+            "fingerprint_matches": fingerprint_hits,
             "source_path": entry["source_path"],
             **contract,
         })
