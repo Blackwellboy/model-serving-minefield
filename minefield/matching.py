@@ -12,6 +12,14 @@ from .leads import search_leads
 from .log_inspector import signatures_in_text
 
 TOKEN_RE = re.compile(r"[a-z0-9_.+-]{2,}", re.I)
+IDENT_RE = re.compile(
+    r"(?<![A-Za-z0-9_])(?:"
+    r"--[A-Za-z0-9][A-Za-z0-9_.-]{3,}|"
+    r"[A-Za-z][A-Za-z0-9]{1,}_[A-Za-z0-9_.-]{2,}|"
+    r"[A-Z][A-Z0-9]{2,}(?:_[A-Z0-9]{2,})+"
+    r")"
+)
+IDENTIFIER_BOOST = 24
 # Function words and conversational filler. Without these, "how do I ..."
 # supplied two "concepts" on its own and off-domain questions (baking bread,
 # centering a div) returned serving traps. Domain words that look ordinary
@@ -224,6 +232,49 @@ MAX_PASTE_CHARS = 64 * 1024
 TITLE_BOOST = 1.5
 
 
+_IDENTIFIER_CACHE: dict[str, tuple[dict[str, str], dict[str, set[str]]]] = {}
+
+
+def _identifier_index(registry: dict[str, Any]) -> tuple[dict[str, str], dict[str, set[str]]]:
+    """Return unique canonical identifier -> trap id and per-trap identifiers.
+
+    Only literal flag/snake-case/environment-style identifiers are eligible.
+    Identifiers mentioned by more than one canonical trap are deliberately
+    excluded because they do not identify one owner.
+    """
+    key = str(registry.get("content_sha256") or id(registry))
+    cached = _IDENTIFIER_CACHE.get(key)
+    if cached is not None:
+        return cached
+    owners: dict[str, set[str]] = {}
+    display: dict[str, str] = {}
+    for entry in registry["entries"]:
+        text = " ".join((
+            entry.get("title") or "",
+            entry.get("symptom") or "",
+            entry.get("check") or "",
+            entry.get("mechanism") or "",
+            entry.get("affected_versions_builds") or "",
+        ))
+        for raw in IDENT_RE.findall(text):
+            ident = raw.lower()
+            if len(ident) < 6:
+                continue
+            owners.setdefault(ident, set()).add(entry["id"])
+            display.setdefault(ident, raw)
+    unique = {ident: next(iter(ids)) for ident, ids in owners.items() if len(ids) == 1}
+    by_trap: dict[str, set[str]] = {}
+    for ident, trap_id in unique.items():
+        by_trap.setdefault(trap_id, set()).add(ident)
+    result = (unique, by_trap)
+    _IDENTIFIER_CACHE[key] = result
+    return result
+
+
+def _query_identifiers(text: str) -> set[str]:
+    return {raw.lower() for raw in IDENT_RE.findall(text or "")}
+
+
 def _index(registry: dict[str, Any]) -> tuple[list[tuple[set[str], set[str], set[str]]], dict[str, float]]:
     """Per-entry token sets plus an inverse-document-frequency table.
 
@@ -325,6 +376,8 @@ def search(
     bounded_match_text = symptom_text_for_match[:MAX_PASTE_CHARS]
     signatures = signatures_in_text(bounded_match_text)
     fingerprints = fingerprints_in_text(bounded_match_text)
+    unique_identifiers, identifiers_by_trap = _identifier_index(registry)
+    query_identifiers = _query_identifiers(bounded_match_text)
     per_entry, idf = _index(registry)
     results: list[dict[str, Any]] = []
     for entry, (searchable_symptom_tokens, searchable_context_tokens, title_tokens) in zip(
@@ -340,16 +393,32 @@ def search(
         is_explicit = entry["id"] in explicit_ids
         signature = signatures.get(entry["id"])
         fingerprint = fingerprints.get(entry["id"])
+        identifier_hits = sorted(
+            query_identifiers & identifiers_by_trap.get(entry["id"], set())
+        )
+        identifier_match = identifier_hits[0] if identifier_hits else None
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
         # because the caller explicitly named the trap under test. Concrete
         # log signatures and structured fingerprints bypass it because they
         # are exact identifiers/error shapes rather than prose resemblance.
-        if (direct < 2 or not on_topic) and not is_explicit and not signature and not fingerprint:
+        if (
+            (direct < 2 or not on_topic)
+            and not is_explicit
+            and not signature
+            and not fingerprint
+            and not identifier_match
+        ):
             continue
         weight = _concept_weight(symptom_concepts, searchable_symptom_tokens, idf, title_tokens)
-        if weight < MIN_EVIDENCE and not is_explicit and not signature and not fingerprint:
+        if (
+            weight < MIN_EVIDENCE
+            and not is_explicit
+            and not signature
+            and not fingerprint
+            and not identifier_match
+        ):
             continue
 
         # Rarity-weighted: two specific shared words outrank four generic
@@ -359,6 +428,8 @@ def search(
             round(weight * 7) + context
             + (LOG_SIGNATURE_BOOST if signature else 0)
             + (FINGERPRINT_BOOST if fingerprint else 0)
+            + (IDENTIFIER_BOOST + min(8, 2 * (len(identifier_hits) - 1))
+               if identifier_match else 0)
         )
         normalized_symptom = symptom.strip().lower()
         if (
@@ -404,7 +475,9 @@ def search(
             "score": score,
             "evidence_weight": round(weight, 2),
             "log_signature": signature,  # contextual log-rule hit, else None
-            "fingerprint_match": fingerprint,  # exact identifier/error-shape routing hit, else None
+            "fingerprint_match": fingerprint,  # exact error-shape routing hit, else None
+            "identifier_match": identifier_match,  # unique canonical literal, else None
+            "identifier_matches": identifier_hits,
             "source_path": entry["source_path"],
             **contract,
         })
