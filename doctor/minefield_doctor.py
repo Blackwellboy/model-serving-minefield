@@ -16,8 +16,8 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 19 generation requests, each capped at 512 output
-    tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
+    completions (at most 24 generation requests in the full catalogue, each capped
+    at 512 output tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
     the standard library, and one deliberately non-existent file path. No file
@@ -2889,7 +2889,7 @@ PROBE_SPECS = (
         "SGLang served-model identity validation",
     ),
     ProbeSpec(
-        "reasoning_fields", ("01", "02", "03", "29"), 2, True, 80, (),
+        "reasoning_fields", ("01", "02", "03", "29"), 4, True, 80, (),
         _probe_reasoning_fields,
         "reasoning field / thinking toggle map",
     ),
