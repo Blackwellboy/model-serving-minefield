@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from .diagnosis_contract import contract_for_match, miss_contract
+from .fingerprints import fingerprints_in_text
 from .leads import search_leads
 from .log_inspector import signatures_in_text
 
@@ -215,6 +216,7 @@ _INDEX_CACHE: dict[str, tuple[list[tuple[set[str], set[str], set[str]]], dict[st
 # still a lead: the signature says the line is present, not that the trap is
 # the cause, and no score reaches a confirmed level without a direct probe.
 LOG_SIGNATURE_BOOST = 40
+FINGERPRINT_BOOST = 38
 MAX_PASTE_CHARS = 64 * 1024
 
 # A word that matches the trap's title counts for more than one buried in the
@@ -320,7 +322,9 @@ def search(
     on_topic = any(_is_anchor(token) for concept in symptom_concepts for token in concept)
     context_concepts = _concepts(" ".join(filter(None, (stack, model, version))))
 
-    signatures = signatures_in_text(symptom_text_for_match[:MAX_PASTE_CHARS])
+    bounded_match_text = symptom_text_for_match[:MAX_PASTE_CHARS]
+    signatures = signatures_in_text(bounded_match_text)
+    fingerprints = fingerprints_in_text(bounded_match_text)
     per_entry, idf = _index(registry)
     results: list[dict[str, Any]] = []
     for entry, (searchable_symptom_tokens, searchable_context_tokens, title_tokens) in zip(
@@ -335,21 +339,27 @@ def search(
         context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
         signature = signatures.get(entry["id"])
+        fingerprint = fingerprints.get(entry["id"])
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
-        # because the caller explicitly named the trap under test, and a
-        # trap's own log signature bypasses it because the line is concrete.
-        if (direct < 2 or not on_topic) and not is_explicit and not signature:
+        # because the caller explicitly named the trap under test. Concrete
+        # log signatures and structured fingerprints bypass it because they
+        # are exact identifiers/error shapes rather than prose resemblance.
+        if (direct < 2 or not on_topic) and not is_explicit and not signature and not fingerprint:
             continue
         weight = _concept_weight(symptom_concepts, searchable_symptom_tokens, idf, title_tokens)
-        if weight < MIN_EVIDENCE and not is_explicit and not signature:
+        if weight < MIN_EVIDENCE and not is_explicit and not signature and not fingerprint:
             continue
 
         # Rarity-weighted: two specific shared words outrank four generic
         # ones. Scaled so a typical shared word is worth about 4 points, the
         # same order as the previous flat per-concept score.
-        score = round(weight * 7) + context + (LOG_SIGNATURE_BOOST if signature else 0)
+        score = (
+            round(weight * 7) + context
+            + (LOG_SIGNATURE_BOOST if signature else 0)
+            + (FINGERPRINT_BOOST if fingerprint else 0)
+        )
         normalized_symptom = symptom.strip().lower()
         if (
             normalized_symptom
@@ -393,7 +403,8 @@ def search(
             "match_confidence": contract["diagnosis_level"],
             "score": score,
             "evidence_weight": round(weight, 2),
-            "log_signature": signature,  # why a pasted line matched this trap's signature, else None
+            "log_signature": signature,  # contextual log-rule hit, else None
+            "fingerprint_match": fingerprint,  # exact identifier/error-shape routing hit, else None
             "source_path": entry["source_path"],
             **contract,
         })
