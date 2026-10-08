@@ -20,6 +20,11 @@ FINDER_RE = re.compile(
     re.M | re.I,
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\((https?://[^)]+)\)")
+INLINE_CODE_RE = re.compile(r"`([^`\n]{2,160})`")
+FLAG_RE = re.compile(r"(?<![\w-])--[a-zA-Z0-9][a-zA-Z0-9_-]{1,80}")
+ROUTE_RE = re.compile(r"(?<![\w])/(?:v\d+/|api/|props\b|slots\b|metrics\b|health\b)[a-zA-Z0-9_./{}:-]*")
+EXCEPTION_RE = re.compile(r"\b[A-Z][A-Za-z0-9_]{2,}(?:Error|Exception)\b")
+ENV_RE = re.compile(r"\b[A-Z][A-Z0-9_]{3,}\b")
 RELATED_RE = re.compile(r"(?:trap\s+|\[)(\d{1,3})(?:\]|\b)", re.I)
 STACK_NAMES = (
     "vLLM", "llama.cpp", "Ollama", "mlx_lm", "SGLang", "TensorRT-LLM",
@@ -103,6 +108,51 @@ def _clean(text: str, limit: int = 2400) -> str:
     for index, value in enumerate(inline_code):
         text = text.replace(f"\uE000{index}\uE001", value)
     return re.sub(r"\s+", " ", text).strip()[:limit]
+
+
+def _machine_fingerprint(value: str) -> bool:
+    """Keep operator-visible identifiers, not arbitrary inline prose."""
+    value = " ".join(value.strip().split())
+    if len(value) < 4 or len(value) > 120:
+        return False
+    if value.startswith("--") or value.startswith("/"):
+        return True
+    if re.search(r"(?:Error|Exception)$", value):
+        return True
+    if re.fullmatch(r"[A-Z][A-Z0-9_]{3,}", value):
+        return True
+    if "_" in value or "=" in value:
+        return True
+    if re.search(r"\d", value) and re.search(r"[A-Za-z]", value):
+        return True
+    # CamelCase runtime/config identifiers such as MemoryMax.
+    if re.search(r"[a-z][A-Z]", value):
+        return True
+    # Filenames and dotted runtime/module identifiers.
+    if re.search(r"\.(?:json|jinja|gguf|safetensors|py|so|cu|cpp|md)\b", value, re.I):
+        return True
+    return False
+
+
+def _diagnostic_fingerprints(text: str) -> list[str]:
+    """Derive exact machine-facing fingerprints from canonical Markdown.
+
+    These are routing hints only. They are intentionally restricted to
+    identifiers/error surfaces a user can actually paste, so ordinary prose
+    does not become a benchmark-fitted synonym table.
+    """
+    values: set[str] = set()
+    for match in INLINE_CODE_RE.finditer(text):
+        value = " ".join(match.group(1).strip().split())
+        if _machine_fingerprint(value):
+            values.add(value)
+    visible = re.sub(r"```.*?```", " ", text, flags=re.S)
+    for rx in (FLAG_RE, ROUTE_RE, EXCEPTION_RE, ENV_RE):
+        for match in rx.finditer(visible):
+            value = " ".join(match.group(0).strip().split())
+            if _machine_fingerprint(value):
+                values.add(value)
+    return sorted(values, key=lambda item: (item.lower(), item))
 
 
 def _related_trap_ids(
@@ -248,6 +298,7 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
                 "source": f"doctor/{doctor[trap_id]}" if trap_id in doctor else None,
             },
             "diagnostic_modalities": [],
+            "diagnostic_fingerprints": _diagnostic_fingerprints(text),
             "known_limitations": _section(
                 text, ("Limitations", "What this does and does not say", "Scope"), ""
             ),
