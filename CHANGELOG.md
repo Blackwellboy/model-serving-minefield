@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - half batch: two fingerprints + Doctor 31
+
+- Added two high-specificity routing fingerprints: `MemoryMax=` -> Trap 125 and the paired `sliding_window` / `max_window_layers` Qwen config shape -> Trap 143. Both remain routing leads and never confirm a mechanism by themselves.
+- Added render-only live Doctor coverage for [57](traps/reasoning/57-thinking-kwarg-truthiness-coercion.md): compare `enable_thinking=true`, JSON boolean `false`, and string `"false"`. CLEAN requires the typed true/false renders to differ and string `"false"` to match boolean false; if the typed control is not established the result stays inconclusive.
+- Doctor moves **30 -> 31 of 161**. This probe adds **zero generation requests**. Automatic coverage remains **119/161** because Trap 57 already had offline/template automation.
+- Closed stale PR #192 as superseded by merged #193/#194; its over-broad all-caps fingerprint approach is intentionally not revived.
+
 ## 2026-10-08 - structured diagnostic fingerprints
 
 - Added a high-specificity fingerprint routing layer for exact diagnostic identifiers/error shapes. Fingerprint hits bypass the ordinary two-concept admission threshold, receive a strong ranking boost, are labelled separately from log-signature and prose matches, and **remain leads rather than confirmations**.

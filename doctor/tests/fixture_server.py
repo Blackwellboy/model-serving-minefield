@@ -133,6 +133,7 @@ DEFAULTS = {
     "reasoning_effort_mode": "ignored",
     "stream_completion_tokens": 2,
     "cache_prompt_isolates": False,
+    "string_false_truthy": True,
 }
 
 
@@ -151,7 +152,13 @@ def llamacpp_props(template=TEMPLATE_WITHOUT_EFFORT, temperature=0.6, top_p=0.95
 
 def render_prompt(cfg, messages, kwargs):
     kwargs = kwargs or {}
-    thinking = kwargs.get("enable_thinking", True)
+    thinking_value = kwargs.get("enable_thinking", True)
+    if (isinstance(thinking_value, str)
+            and thinking_value.lower() == "false"
+            and not cfg["string_false_truthy"]):
+        thinking = False
+    else:
+        thinking = bool(thinking_value)
     preserve = (
         cfg["preserve_history"]
         or kwargs.get("preserve_thinking") is True

@@ -41,6 +41,16 @@ FINGERPRINTS = (
         r"auto\s+tool\s+choice\s+requires\s+--enable-auto-tool-choice\s+and\s+--tool-call-parser",
         "explicit auto-tool-choice parser/configuration requirement",
     ),
+    Fingerprint(
+        "125",
+        r"\bMemoryMax\s*=",
+        "systemd/cgroup MemoryMax is present as a serving-memory guard",
+    ),
+    Fingerprint(
+        "143",
+        r"\bsliding_window\b[\s\S]{0,320}\bmax_window_layers\b|\bmax_window_layers\b[\s\S]{0,320}\bsliding_window\b",
+        "Qwen sliding-window configuration keys appear together",
+    ),
 )
 
 
