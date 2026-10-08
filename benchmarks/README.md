@@ -54,7 +54,7 @@ together; 20 off-domain negatives.
 |---|---|---|---|---|---|---|---|
 | 0.2.0 (before) | 70.6% | 86.0% | | | | | 70% |
 | 0.2.1, part 1 | 83.2% | 92.3% | 33.3% | 58.3% | 79.4% | 89.7% | 0% |
-| 0.2.1 | **88.8%** | **92.3%** | **50.0%** | **58.3%** | **85.8%** | **89.7%** | **0%** |\n| fingerprint + real-signature pass (2026-10-08) | **86.1%** | **90.8%** | **50.0%** | **66.7%** | **83.5%** | **89.0%** | **0%** |
+| 0.2.1 | **88.8%** | **92.3%** | **50.0%** | **58.3%** | **85.8%** | **89.7%** | **0%** |\n| fingerprint + real-signature pass (2026-10-08) | **88.8%** | **92.5%** | **50.0%** | **66.7%** | **86.1%** | **90.8%** | **0%** |
 
 The reported column is the honest headline for people with a real problem:
 on reporters' own words the right trap is first half the time and in the top
@@ -144,6 +144,6 @@ is rare across the registry. Ordinary prose stays on the semantic matcher.
 Four exact signatures copied from real reports were also added for traps 19,
 77, 118 and 119. On the six real pasted report lines, top-1 moved to **6/6
 (100%)** while off-domain false alarms remained **0/20** on both splits.
-Reporter-wording holdout top-5 improved from **58.3% to 66.7%**. The feature was
+Reporter-wording holdout top-5 improved from **58.3% to 66.7%**. Written-only holdout remained **88.8% top-1 / 92.5% top-5**, while the combined holdout (written + reported) measured **86.1% / 90.8%**. The feature was
 kept only after two broader fingerprint variants were benchmarked and rejected:
 one raised false alarms to 10%, and another degraded ordinary symptom ranking.
