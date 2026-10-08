@@ -1117,6 +1117,52 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
         self.assertEqual(f["level"], "OK")
 
 
+class TestNextFullDoctorProbes(DoctorVerdictCase):
+
+    def test_trap58_reasoning_effort_changes_lane(self):
+        with FixtureLane(
+            thinking_effective=False,
+            reasoning_effort_effect=True,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "REASONING_EFFORT_CHANGES_LANE")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("58", f["traps"])
+
+    def test_trap58_no_effect_is_clean_control(self):
+        with FixtureLane(thinking_effective=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "REASONING_EFFORT_NO_EFFECT")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+    def test_trap80_batched_stream_is_detected(self):
+        with FixtureLane(
+            stream_pieces=("one batched chunk",),
+            stream_completion_tokens=20,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "STREAM_DELTAS_BATCHED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("80", f["traps"])
+
+    def test_trap80_near_token_stream_is_clean_control(self):
+        with FixtureLane(
+            stream_pieces=tuple(str(i) for i in range(20)),
+            stream_completion_tokens=20,
+        ) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "STREAM_DELTAS_NEAR_TOKEN_RATE")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+
 CLEAN_CONTRACT.update({
     "ROUNDTRIP_NOT_ONE_OF_FOUR":
         "all four field/gate renders completed and more than one preserved the marker, "
@@ -1127,6 +1173,12 @@ CLEAN_CONTRACT.update({
     "PROPS_CONTEXT_NOT_PER_SLOT":
         "on a parallel llama.cpp lane, /props n_ctx differed from every /slots n_ctx, "
         "ruling out the specific per-slot-reporting shape of trap 87",
+    "REASONING_EFFORT_NO_EFFECT":
+        "on a reasoning-off vLLM baseline, matched low/max arms stayed reasoning-off and "
+        "reported identical prompt_tokens, ruling out trap 58's switch/preamble shape",
+    "STREAM_DELTAS_NEAR_TOKEN_RATE":
+        "a vLLM stream with at least ten completion tokens produced at least 0.9 non-empty "
+        "text deltas per reported completion token, ruling out trap 80's severe batching shape",
 })
 
 # Every scenario flag combination the suite can reach, so the sweep below sees
@@ -1157,6 +1209,9 @@ SWEEP = [
     {"bad_media_status": 500}, {"usage_details": None},
     {"props": llamacpp_props(n_ctx=131072, total_slots=4),
      "slots": [{"id": i, "n_ctx": 32768} for i in range(4)]},
+    {"thinking_effective": False},
+    {"stream_pieces": tuple(str(i) for i in range(20)),
+     "stream_completion_tokens": 20},
 ]
 
 
