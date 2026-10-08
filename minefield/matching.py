@@ -262,7 +262,11 @@ def _normalise_fingerprint_text(value: str) -> str:
     return re.sub(r"\s+", " ", value.strip().lower())
 
 
-def _fingerprint_hits(entry: dict[str, Any], text: str) -> list[str]:
+def _fingerprint_hits(
+    entry: dict[str, Any],
+    text: str,
+    fingerprint_df: dict[str, int],
+) -> list[str]:
     """Exact operator evidence: flags, field names, routes, errors, versions.
 
     Fingerprints are generated from canonical Markdown. They bypass the
@@ -277,10 +281,11 @@ def _fingerprint_hits(entry: dict[str, Any], text: str) -> list[str]:
         needle = _normalise_fingerprint_text(str(raw))
         if len(needle) < 4:
             continue
-        forms = {needle}
-        if needle.startswith("--") and len(needle) > 4:
-            forms.add(needle[2:])
-        if any(form and form in haystack for form in forms):
+        # Shared identifiers such as max_tokens occur across many unrelated
+        # traps and are not discriminative enough for a fingerprint boost.
+        if fingerprint_df.get(needle, 0) > 2:
+            continue
+        if needle in haystack:
             hits.append(str(raw))
     return hits
 
@@ -364,6 +369,15 @@ def search(
 
     signatures = signatures_in_text(symptom_text_for_match[:MAX_PASTE_CHARS])
     per_entry, idf = _index(registry)
+    fingerprint_df: dict[str, int] = {}
+    for fp_entry in registry["entries"]:
+        seen = {
+            _normalise_fingerprint_text(str(item))
+            for item in (fp_entry.get("diagnostic_fingerprints") or [])
+            if str(item).strip()
+        }
+        for item in seen:
+            fingerprint_df[item] = fingerprint_df.get(item, 0) + 1
     results: list[dict[str, Any]] = []
     for entry, (searchable_symptom_tokens, searchable_context_tokens, title_tokens) in zip(
         registry["entries"], per_entry
@@ -377,13 +391,15 @@ def search(
         context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
         signature = signatures.get(entry["id"])
-        fingerprint_hits = _fingerprint_hits(entry, symptom_text_for_match)
+        fingerprint_hits = _fingerprint_hits(entry, symptom_text_for_match, fingerprint_df)
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
         # because the caller explicitly named the trap under test, and a
         # trap's own log signature bypasses it because the line is concrete.
-        if (direct < 2 or not on_topic) and not is_explicit and not signature and not fingerprint_hits:
+        if not on_topic and not is_explicit and not signature:
+            continue
+        if direct < 2 and not is_explicit and not signature and not fingerprint_hits:
             continue
         weight = _concept_weight(symptom_concepts, searchable_symptom_tokens, idf, title_tokens)
         if weight < MIN_EVIDENCE and not is_explicit and not signature and not fingerprint_hits:
