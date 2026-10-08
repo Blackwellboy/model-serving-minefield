@@ -1129,6 +1129,61 @@ CLEAN_CONTRACT.update({
         "ruling out the specific per-slot-reporting shape of trap 87",
 })
 
+
+class TestNextDoctorProbes(DoctorVerdictCase):
+
+    def test_trap58_reasoning_effort_switch_is_detected(self):
+        with FixtureLane(reasoning_effort_mode="activates") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "EFFORT_CHANGES_PROMPT_OR_REASONING")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("58", f["traps"])
+
+    def test_trap58_loud_rejection_is_clean(self):
+        with FixtureLane(reasoning_effort_mode="reject") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "EFFORT_REJECTED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+    def test_trap80_batched_stream_is_detected(self):
+        with FixtureLane(stream_completion_tokens=12) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "STREAM_DELTAS_BATCH_TOKENS")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("80", f["traps"])
+
+    def test_trap88_cache_prompt_false_isolation_is_clean(self):
+        with FixtureLane(props=llamacpp_props(), cache_prompt_isolates=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "CACHE_PROMPT_FALSE_ISOLATES")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+
+    def test_trap88_reuse_under_false_is_detected(self):
+        with FixtureLane(props=llamacpp_props(), cache_prompt_isolates="reuses") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "CACHE_PROMPT_FALSE_REUSED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+
+
+CLEAN_CONTRACT.update({
+    "EFFORT_REJECTED":
+        "both reasoning_effort probe values are rejected while baseline succeeds, so the field cannot silently "
+        "enable reasoning or rewrite the prompt on this route",
+    "CACHE_PROMPT_FALSE_ISOLATES":
+        "the isolated request reports zero cached tokens and the following default request still reuses the warmed "
+        "prefix, proving both isolation and cache survival on this build",
+})
+
 # Every scenario flag combination the suite can reach, so the sweep below sees
 # every CLEAN the tool is capable of emitting, not only the well-behaved path.
 SWEEP = [
@@ -1157,6 +1212,8 @@ SWEEP = [
     {"bad_media_status": 500}, {"usage_details": None},
     {"props": llamacpp_props(n_ctx=131072, total_slots=4),
      "slots": [{"id": i, "n_ctx": 32768} for i in range(4)]},
+    {"reasoning_effort_mode": "reject"},
+    {"props": llamacpp_props(), "cache_prompt_isolates": True},
 ]
 
 

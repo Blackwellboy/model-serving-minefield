@@ -130,6 +130,9 @@ DEFAULTS = {
     "echo_logprobs": "ok",
     "slots": None,
     "assistant_prefill_bypass": False,
+    "reasoning_effort_mode": "ignored",
+    "stream_completion_tokens": 2,
+    "cache_prompt_isolates": False,
 }
 
 
@@ -235,6 +238,8 @@ def _make_lane_handler(cfg):
             # A lane whose off switch is ignored fires on every arm, including
             # the one that explicitly asked for thinking off.
             honoured = want_think or not cfg["explicit_off_honored"]
+            if cfg["reasoning_effort_mode"] == "activates" and body.get("reasoning_effort") is not None:
+                honoured = True
             fires = cfg["thinking_effective"] and honoured and cfg["reasoning_field"]
             msg = {"role": "assistant", "content": "OK"}
             if fires:
@@ -293,6 +298,12 @@ def _make_lane_handler(cfg):
                 for piece in ("Os", "lo"):
                     chunk = {"choices": [{"index": 0, "delta": {ch: piece}}]}
                     self.wfile.write(f"data: {json.dumps(chunk)}\n\n".encode())
+            usage = {"prompt_tokens": 40,
+                     "completion_tokens": int(cfg["stream_completion_tokens"]),
+                     "total_tokens": 40 + int(cfg["stream_completion_tokens"])}
+            self.wfile.write(
+                f"data: {json.dumps({'choices': [], 'usage': usage})}\n\n".encode()
+            )
             self.wfile.write(b"data: [DONE]\n\n")
 
         def do_POST(self):
@@ -346,6 +357,9 @@ def _make_lane_handler(cfg):
             if cfg["reject_everything"]:
                 return self._send(400, {"error": {
                     "message": "model not found or not yet loaded"}})
+            if body.get("reasoning_effort") is not None and cfg["reasoning_effort_mode"] == "reject":
+                return self._send(400, {"error": {
+                    "message": "reasoning_effort is not supported"}})
 
             if cfg["validates_model_name"] and body.get("model") not in (None, MODEL):
                 return self._send(400, {"error": {
@@ -413,8 +427,23 @@ def _make_lane_handler(cfg):
             else:
                 msg, finish = self._message(body), "stop"
 
-            usage = {"prompt_tokens": 40, "completion_tokens": 2,
-                     "total_tokens": 42}
+            prompt_tokens = 40
+            if cfg["reasoning_effort_mode"] == "activates" and body.get("reasoning_effort") == "max":
+                prompt_tokens = 119
+            cached_tokens = None
+            if docache := ("cache_prompt" in body or cfg["cache_prompt_isolates"]):
+                mode = cfg["cache_prompt_isolates"]
+                if mode:
+                    if body.get("cache_prompt") is False:
+                        cached_tokens = 64 if mode == "reuses" else 0
+                    else:
+                        cached_tokens = 64 if cfg["_cache_warm"] else 0
+                        cfg["_cache_warm"] = True
+            usage = {"prompt_tokens": prompt_tokens, "completion_tokens": 2,
+                     "total_tokens": prompt_tokens + 2}
+            if cached_tokens is not None:
+                usage["cached_tokens"] = cached_tokens
+                usage["cache_n"] = cached_tokens
             if has_image:
                 usage["prompt_tokens_details"] = cfg["usage_details"]
             return self._send(200, {"id": "chatcmpl-fixture", "model": MODEL,
@@ -433,6 +462,7 @@ class FixtureLane:
         if unknown:
             raise TypeError(f"unknown fixture flags: {sorted(unknown)}")
         cfg.update(overrides)
+        cfg["_cache_warm"] = False
         self.cfg = cfg
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), _make_lane_handler(cfg))
         self.port = self.httpd.server_address[1]

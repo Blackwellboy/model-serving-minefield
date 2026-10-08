@@ -3,13 +3,13 @@
   "coverage": {
     "schema_version": "1.0",
     "summary": {
-      "any_automated_check": 104,
+      "any_automated_check": 119,
       "counts_overlap": true,
-      "endpoint_checks_implemented": 27,
+      "endpoint_checks_implemented": 30,
       "guided_experiments_specified": 161,
       "human_review_possible": 161,
-      "log_checks_implemented": 29,
-      "static_checks_implemented": 68,
+      "log_checks_implemented": 31,
+      "static_checks_implemented": 78,
       "total_canonical_traps": 161
     },
     "traps": [
@@ -4271,16 +4271,18 @@
         "id": "58",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Ask the server what it actually built, twice, once with the field and once without, and compare prompt_tokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoning_effort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompt_tokens on real completions, which cannot be faked.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -5911,16 +5913,18 @@
         "id": "80",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Detection first, because it is one request: ```python",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -6507,16 +6511,18 @@
         "id": "88",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Warm a long prefix, send the same prefix with `cacheprompt: false`, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "It says the flag is honoured on this build. It does not refute the prior findings on their stacks; isolation is a per-implementation property and the sensible reading is that the claim needs a build qualifier rather than being true or false in general. Anyone carrying the \"cacheprompt does not isolate\" warning forward should name the stack it was measured on.",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -9007,7 +9013,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Assert actual worker state after launch and inspect Docker's own state/error before assigning a cause: Treat Created, Exited, or a missing expected container as launch failure, not as proof of this specific trap. To confirm the transport failure, compare a known-good local argv with what the remote execution layer actually receives. Useful methods are set -x in a temporary remote wrapper, an argv-dumping entrypoint in a disposable diagnostic container, or a launcher mode that writes the exact remote script before executing it. The confirmation is an argument or quoting difference across the transport, not a particular Docker state.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -9015,7 +9021,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -9215,7 +9221,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.log_inspector",
             "limitations": "Absence of a signature is not proof of safety.",
             "possible_match_only": true,
             "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -9223,7 +9229,7 @@
               "Explicitly supplied bounded log files"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           },
           "static_config": {
             "can_prove_clean": false,
@@ -9303,7 +9309,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "First prove the limiter itself with a positive control: run a plain host allocator in an 8 GiB scope with MemorySwapMax=0, grow in 1 GiB steps, and require an exit near the limit plus an oom_kill increment in memory.events. Then repeat the same growth pattern with CUDA while watching both memory.current and /proc/meminfo MemAvailable. If physical available memory falls with the CUDA allocation while memory.current remains far below the configured cap and no cgroup OOM event fires, MemoryMax is not a valid CUDA guard on that lane. Do not omit the swap control: with swap allowed, even the host control can survive and make a broken test look healthy.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -9311,7 +9317,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -9525,7 +9531,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Under load with concurrent prefills and rising inter-token latency, do not clear the scheduler on the preemption counter. Read the scheduler's waiting-admission loop and grep for reads of max_num_partial_prefills. If the value is defined and never consumed, this is the trap. Confirm the single-variable experiment would be a false negative: apply the flag change and expect zero effect because nothing reads it.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -9533,7 +9539,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -9821,7 +9827,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Do not test this with a warm prompt. Use a long prompt and put a unique nonce in its first tokens on every request so prefix reuse cannot rescue the run. Capture the raw first output tokens and compare the same pinned workload with the scheduler guard absent and present. On the affected install, a quick source check is: The source check is not a substitute for the cold A/B, but it tells you whether the known guard is even present.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -9829,7 +9835,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -9881,7 +9887,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.log_inspector",
             "limitations": "Absence of a signature is not proof of safety.",
             "possible_match_only": true,
             "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -9889,7 +9895,7 @@
               "Explicitly supplied bounded log files"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           },
           "static_config": {
             "can_prove_clean": false,
@@ -10117,7 +10123,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Use a deliberately failing producer as a negative control before trusting the wrapper: For wrappers that must support shells without pipefail, capture the producer status explicitly (PIPESTATUS[0] in Bash) before running any later command. Also require the receipt to name the stage whose status it records.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -10125,7 +10131,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -10191,7 +10197,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Before interpreting an extension return, bind the verdict to the pinned function contract and validate the output independently: 1. inspect the exact installed wrapper/source or documented binding for the return-value meaning; 2. assert the call wrote an output of the expected shape and dtype; 3. reject non-finite values; 4. compare against an independent reference with a preregistered tolerance; 5. run a negative control that corrupts or suppresses the output and confirm the correctness gate fails even if the selector value looks familiar. Record the field as dispatch_id, kernel_variant, or the contract's real name, not a generic rc. If the contract is unavailable, the verdict is unknown, not failure and not success.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.results_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -10199,7 +10205,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11081,7 +11087,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.results_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11089,7 +11095,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11525,7 +11531,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.results_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11533,7 +11539,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11599,7 +11605,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.results_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11607,7 +11613,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -11821,7 +11827,7 @@
             "can_prove_clean": false,
             "confirm_criterion": "Feed identical synthetic shapes through the byte transform under both aliases and require equal nonzero accounting. Also verify a complete synthetic tower and keep a control for the renamed namespace.",
             "expected_duration": "seconds",
-            "implemented_checker": null,
+            "implemented_checker": "minefield.static_inspector",
             "limitations": "Static configuration does not prove the live process used it.",
             "possible_match_only": true,
             "refute_criterion": "Compare with the effective runtime configuration.",
@@ -11829,7 +11835,7 @@
               "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
             ],
             "safety_level": "read-only",
-            "state": "possible"
+            "state": "implemented"
           }
         }
       },
@@ -17207,8 +17213,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 161,
-    "content_sha256": "dbdf28de507ad5eb6e207dcbd82dcd38935c6cd37c164549e00a2dcfd90a76a7",
-    "doctor_implemented_trap_count": 27,
+    "content_sha256": "d2b17517a1e8daa5d27aa633f3860bf71ae2cfb08307ad7586c6977ff220c4b1",
+    "doctor_implemented_trap_count": 30,
     "entries": [
       {
         "affected_models": [
@@ -21125,14 +21131,15 @@
         "check": "Ask the server what it actually built, twice, once with the field and once without, and compare prompt_tokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoning_effort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompt_tokens on real completions, which cannot be faked.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/reasoning/58-reasoning-effort-injects-hidden-preamble.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -22705,14 +22712,15 @@
         "check": "Detection first, because it is one request: ```python",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/80-reasoning-parser-batches-sse-deltas.md"
         },
         "evidence_strength": [
           "measured here, raw not published"
@@ -23197,14 +23205,15 @@
         "check": "Warm a long prefix, send the same prefix with `cacheprompt: false`, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/88-cache-prompt-false-does-isolate-here.md"
         },
         "evidence_strength": [
           "measured here, raw not published"

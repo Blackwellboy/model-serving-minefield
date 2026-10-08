@@ -72,11 +72,14 @@ TRAP_PATHS = {
     "22": "evaluation/22-family-card-budget-floors-differ-by-size.md",
     "23": "reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
     "25": "template/25-empty-think-blocks-poison-prefix-cache.md",
+    "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
+    "80": "runtime/80-reasoning-parser-batches-sse-deltas.md",
+    "88": "runtime/88-cache-prompt-false-does-isolate-here.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
     "77": "reasoning/77-only-one-request-field-is-validated.md",
     "141": "evaluation/141-sglang-python-chat-model-name-not-validated.md",
@@ -697,29 +700,47 @@ def check_reasoning_fields(doc, base, key):
 
 
 def check_streaming(doc, base, key):
-    """Trap 23: streamed answer must land in content."""
+    """Traps 23 and 80: channel placement plus stream-delta batching."""
     body = {"model": doc.model or "default",
             "messages": [{"role": "user", "content": "Capital of Norway? One word."}],
-            "stream": True, "max_tokens": 64, "temperature": 0,
+            "stream": True, "stream_options": {"include_usage": True},
+            "max_tokens": 64, "temperature": 0,
             "chat_template_kwargs": {"enable_thinking": False}}
     doc.consume_request()
+    keys = {}
+    text_deltas = 0
+    completion_tokens = None
     try:
         req = urllib.request.Request(base + "/chat/completions",
                                      json.dumps(body).encode(),
                                      {"Content-Type": "application/json"})
         if key:
             req.add_header("Authorization", f"Bearer {key}")
-        keys = {}
         with urllib.request.urlopen(req, timeout=120) as r:
             for line in r:
                 line = line.decode("utf-8", "replace").strip()
                 if not line.startswith("data: {"):
                     continue
-                delta = json.loads(line[6:])["choices"][0].get("delta", {})
+                payload = json.loads(line[6:])
+                usage = payload.get("usage") or {}
+                if isinstance(usage.get("completion_tokens"), int):
+                    completion_tokens = usage["completion_tokens"]
+                choices = payload.get("choices") or []
+                if not choices:
+                    continue
+                delta = choices[0].get("delta", {})
+                had_text = False
                 for k, v in delta.items():
                     if v:
                         keys[k] = keys.get(k, 0) + 1
+                        if k in ("content", "reasoning", "reasoning_content") and isinstance(v, str):
+                            had_text = True
+                if had_text:
+                    text_deltas += 1
         doc.evidence["stream_delta_keys"] = keys
+        doc.evidence["stream_delta_count"] = text_deltas
+        doc.evidence["stream_completion_tokens"] = completion_tokens
+
         if keys.get("content"):
             doc.ok(["23"], f"streamed answer arrives in content deltas ({keys})",
                    code="STREAM_CONTENT_DELTAS",
@@ -728,18 +749,50 @@ def check_streaming(doc, base, key):
             doc.problem(["23"], f"streamed answer arrives ONLY in reasoning deltas "
                         f"with thinking off ({keys}): clients that concatenate "
                         f"content see blank replies",
-                        "upgrade the engine (vLLM: past PR #40820) or read "
-                        "reasoning deltas as a fallback channel",
+                        "upgrade the engine or read reasoning deltas as a fallback channel",
                         code="STREAM_ANSWER_IN_REASONING",
                         asserts=[A("at least one non-empty content delta", keys,
                                    held=False)])
         else:
             doc.skip(["23"], "streaming delta placement", "no non-empty deltas seen",
                      code="STREAM_NO_DELTAS",
-                     asserts=[A("stream produced non-empty deltas", keys,
-                                held=False)])
+                     asserts=[A("stream produced non-empty deltas", keys, held=False)])
+
+        if not isinstance(completion_tokens, int) or completion_tokens <= 0:
+            doc.skip(["80"], "stream delta batching ratio",
+                     "the stream did not include usage.completion_tokens, so delta count "
+                     "cannot be compared with generated token count",
+                     code="STREAM_USAGE_UNAVAILABLE",
+                     asserts=[A("stream returned completion_tokens usage",
+                                completion_tokens, held=False)])
+        else:
+            ratio = text_deltas / completion_tokens
+            if completion_tokens >= 8 and ratio < 0.5:
+                doc.problem(
+                    ["80"],
+                    f"only {text_deltas} text-bearing SSE deltas carried "
+                    f"{completion_tokens} completion tokens (ratio {ratio:.2f}); "
+                    "stream arrival timing is parser flush timing, not token timing",
+                    "Do not derive TTFT/inter-token/decode speed from SSE delta timing "
+                    "on this lane. Use non-stream total wall time plus a prefill control.",
+                    code="STREAM_DELTAS_BATCH_TOKENS",
+                    asserts=[A("text-bearing delta count is at least half the "
+                               "reported completion token count",
+                               {"deltas": text_deltas,
+                                "completion_tokens": completion_tokens,
+                                "ratio": round(ratio, 4)}, held=False)])
+            else:
+                doc.inconclusive(
+                    ["80"], "stream delta batching ratio",
+                    f"observed {text_deltas} text-bearing deltas for "
+                    f"{completion_tokens} completion tokens (ratio {ratio:.2f}). "
+                    "That does not reproduce the strong batching signature, but a "
+                    "near-1 ratio is not enough to prove token-per-delta timing.",
+                    code="STREAM_BATCHING_NOT_PROVEN",
+                    asserts=[A("a single stream ratio can prove absence of parser "
+                               "buffering", {"ratio": round(ratio, 4)}, held=False)])
     except Exception as e:
-        doc.skip(["23"], "streaming delta placement", f"stream failed: {e}",
+        doc.skip(["23", "80"], "streaming checks", f"stream failed: {e}",
                  code="STREAM_FAILED",
                  asserts=[A("stream request completed", str(e), held=False)])
 
@@ -2014,6 +2067,142 @@ def check_tool_choice_gate(doc, base, key):
                       {"tool_calls": len(none_calls)})])
 
 
+def check_reasoning_effort_switch(doc, base, key):
+    """Trap 58: top-level reasoning_effort can enable thinking and rewrite prompt."""
+    messages = [{"role": "user", "content": "Hi. Reply briefly."}]
+    arms = {}
+    for name, extra in (
+        ("baseline", {}),
+        ("low", {"reasoning_effort": "low"}),
+        ("max", {"reasoning_effort": "max"}),
+    ):
+        st, choice, raw = chat(doc, base, key, doc.model, messages,
+                               max_tokens=16, **extra)
+        if st != 200 or choice is None or not isinstance(raw, dict):
+            arms[name] = {"status": st}
+            continue
+        content, rc, rr, _tc, _m = msg_fields(choice)
+        usage = raw.get("usage") or {}
+        arms[name] = {
+            "status": st,
+            "prompt_tokens": usage.get("prompt_tokens"),
+            "reasoning_len": len(rc) + len(rr),
+            "content_len": len(content),
+        }
+    doc.evidence["reasoning_effort_arms"] = arms
+    base_arm, low_arm, max_arm = arms["baseline"], arms["low"], arms["max"]
+    if base_arm.get("status") != 200:
+        doc.skip(["58"], "reasoning_effort switch",
+                 "baseline completion failed, so effort-arm behavior is not attributable",
+                 code="EFFORT_NO_BASELINE",
+                 asserts=[A("baseline completion succeeds", base_arm, held=False)])
+        return
+    if low_arm.get("status") != 200 and max_arm.get("status") != 200:
+        doc.ok(["58"], "top-level reasoning_effort is rejected on this lane; it "
+               "cannot silently enable reasoning or inject a hidden preamble",
+               code="EFFORT_REJECTED",
+               asserts=[A("both reasoning_effort probe values are rejected",
+                          {"low": low_arm.get("status"), "max": max_arm.get("status")})])
+        return
+    base_reason = int(base_arm.get("reasoning_len") or 0)
+    changed = []
+    for name, arm in (("low", low_arm), ("max", max_arm)):
+        if arm.get("status") != 200:
+            continue
+        if int(arm.get("reasoning_len") or 0) > base_reason:
+            changed.append(f"{name}:reasoning")
+        bpt, apt = base_arm.get("prompt_tokens"), arm.get("prompt_tokens")
+        if isinstance(bpt, int) and isinstance(apt, int) and apt > bpt + 8:
+            changed.append(f"{name}:prompt_tokens")
+    if changed:
+        doc.problem(
+            ["58"],
+            f"top-level reasoning_effort changes the served request ({', '.join(changed)}); "
+            f"arms={arms}",
+            "Treat reasoning_effort as a prompt/budget-changing switch on this lane. "
+            "Strip it at the gateway unless deliberately qualified.",
+            code="EFFORT_CHANGES_PROMPT_OR_REASONING",
+            asserts=[A("reasoning_effort leaves reasoning state and prompt usage "
+                       "unchanged from baseline", arms, held=False)])
+    else:
+        doc.inconclusive(
+            ["58"], "reasoning_effort switch",
+            f"the field was accepted but this bounded probe saw no visible reasoning "
+            f"or prompt-token change: {arms}. Acceptance alone cannot prove it is inert.",
+            code="EFFORT_ACCEPTED_NO_VISIBLE_EFFECT",
+            asserts=[A("accepted field is proven inert by one bounded probe",
+                       arms, held=False)])
+
+
+def _cached_tokens(raw):
+    if not isinstance(raw, dict):
+        return None
+    usage = raw.get("usage") or {}
+    for key in ("cached_tokens", "cache_n"):
+        value = usage.get(key)
+        if isinstance(value, int):
+            return value
+    details = usage.get("prompt_tokens_details")
+    if isinstance(details, dict):
+        value = details.get("cached_tokens")
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def check_cache_prompt_isolation(doc, base, key):
+    """Trap 88: llama.cpp cache_prompt:false isolation is build-specific."""
+    if doc.stack != "llama.cpp":
+        doc.skip(["88"], "cache_prompt isolation",
+                 f"trap 88 is scoped to llama.cpp; detected stack={doc.stack!r}",
+                 code="CACHE_PROMPT_SCOPE_NOT_LLAMACPP",
+                 asserts=[A("detected stack is llama.cpp", doc.stack, held=False)])
+        return
+    prefix = "shared-prefix " * 64
+    messages = [{"role": "user", "content": prefix + "answer OK"}]
+    arms = []
+    for label, extra in (
+        ("warm", {}),
+        ("isolated", {"cache_prompt": False}),
+        ("reuse_after", {}),
+    ):
+        st, choice, raw = chat(doc, base, key, doc.model, messages,
+                               max_tokens=8, **extra)
+        arms.append({"label": label, "status": st, "cached_tokens": _cached_tokens(raw)})
+    doc.evidence["cache_prompt_arms"] = arms
+    if any(row["status"] != 200 or row["cached_tokens"] is None for row in arms):
+        doc.skip(["88"], "cache_prompt isolation",
+                 f"all three requests must return a cached-token counter; observed {arms}",
+                 code="CACHE_PROMPT_COUNTER_UNAVAILABLE",
+                 asserts=[A("all three cache arms return cached-token counters",
+                            arms, held=False)])
+        return
+    isolated, after = arms[1]["cached_tokens"], arms[2]["cached_tokens"]
+    if isolated == 0 and after > 0:
+        doc.ok(["88"],
+               f"cache_prompt:false isolated the request (cached_tokens=0) and the "
+               f"next default request still reused the prefix ({after} cached tokens)",
+               code="CACHE_PROMPT_FALSE_ISOLATES",
+               asserts=[A("isolated request has zero cached tokens and following "
+                          "default request still has a cache hit", arms)])
+    elif isolated > 0:
+        doc.problem(["88"],
+                    f"cache_prompt:false still reused {isolated} cached tokens on this "
+                    "llama.cpp lane; trap 88's b9878 behavior does not generalize here",
+                    "Treat cache isolation as build-specific and use the observed "
+                    "cached-token counter, not the flag name, as proof.",
+                    code="CACHE_PROMPT_FALSE_REUSED",
+                    asserts=[A("cache_prompt:false request has zero cached tokens",
+                               arms, held=False)])
+    else:
+        doc.inconclusive(["88"], "cache_prompt isolation",
+                         f"the isolated arm was cold but the following default arm did "
+                         f"not prove cache survival: {arms}",
+                         code="CACHE_PROMPT_SURVIVAL_UNPROVEN",
+                         asserts=[A("following default request reuses the warmed prefix",
+                                    arms, held=False)])
+
+
 def check_ceiling(doc, base, key):
     """Traps 12/16/22: empty content at cap, degeneration vs truncation."""
     st, choice, _ = chat(doc, base, key, doc.model,
@@ -2650,6 +2839,14 @@ def _probe_tool_choice_gate(doc, base, root, args):
     check_tool_choice_gate(doc, base, args.api_key)
 
 
+def _probe_reasoning_effort_switch(doc, base, root, args):
+    check_reasoning_effort_switch(doc, base, args.api_key)
+
+
+def _probe_cache_prompt_isolation(doc, base, root, args):
+    check_cache_prompt_isolation(doc, base, args.api_key)
+
+
 def _probe_ceiling(doc, base, root, args):
     check_ceiling(doc, base, args.api_key)
 
@@ -2680,7 +2877,7 @@ PROBE_SPECS = (
         "reasoning field / thinking toggle map",
     ),
     ProbeSpec(
-        "streaming", ("23",), 1, True, 90, ("streaming",),
+        "streaming", ("23", "80"), 1, True, 90, ("streaming",),
         _probe_streaming,
         "streaming content deltas",
     ),
@@ -2723,6 +2920,16 @@ PROBE_SPECS = (
         "tool_choice_gate", ("19",), 2, False, 30, ("tools",),
         _probe_tool_choice_gate,
         "tool_choice=none gate",
+    ),
+    ProbeSpec(
+        "reasoning_effort_switch", ("58",), 3, False, 25, (),
+        _probe_reasoning_effort_switch,
+        "top-level reasoning_effort prompt/reasoning effect",
+    ),
+    ProbeSpec(
+        "cache_prompt_isolation", ("88",), 3, False, 16, (),
+        _probe_cache_prompt_isolation,
+        "llama.cpp cache_prompt=false isolation",
     ),
     ProbeSpec(
         "ceiling", ("12", "16", "22"), 1, True, 60, (),

@@ -19,7 +19,7 @@ from typing import Any
 MAX_RESULTS_BYTES = 64 * 1024 * 1024
 MAX_RECORDS = 200_000
 
-IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64", "158"})
+IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64", "137", "149", "155", "156", "158"})
 
 _FINISH = ("finish_reason", "stop_reason", "done_reason")
 _CONTENT = ("content", "response", "output", "completion", "answer", "prediction", "generated_text")
@@ -170,6 +170,57 @@ def _tool_history(record: dict[str, Any]) -> bool:
     return False
 
 
+def _usage_value(record: dict[str, Any], key: str) -> int | None:
+    holders = [record]
+    nested = record.get("response")
+    if isinstance(nested, dict):
+        holders.append(nested)
+    for holder in holders:
+        usage = holder.get("usage")
+        if isinstance(usage, dict) and isinstance(usage.get(key), int):
+            return usage[key]
+        if isinstance(holder.get(key), int):
+            return holder[key]
+    return None
+
+
+def _request_max_tokens(record: dict[str, Any]) -> int | None:
+    req = _request_object(record)
+    for key in ("max_tokens", "max_completion_tokens"):
+        if isinstance(req.get(key), int):
+            return req[key]
+    return None
+
+
+def _structured_json_request(record: dict[str, Any]) -> bool:
+    req = _request_object(record)
+    rf = req.get("response_format")
+    if not isinstance(rf, dict):
+        return False
+    return rf.get("type") in {"json_schema", "json_object"}
+
+
+def _thinking_on(record: dict[str, Any]) -> bool:
+    req = _request_object(record)
+    if req.get("enable_thinking") is True or req.get("think") is True:
+        return True
+    effort = str(req.get("reasoning_effort") or "").lower()
+    if effort and effort not in {"none", "off"}:
+        return True
+    kwargs = req.get("chat_template_kwargs")
+    return isinstance(kwargs, dict) and kwargs.get("enable_thinking") is True
+
+
+def _valid_json_text(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    try:
+        json.loads(value)
+        return True
+    except Exception:
+        return False
+
+
 def _normalise(record: dict[str, Any]) -> dict[str, Any]:
     envelope = _choice(record)
     content = envelope.get("content") if envelope else _get(record, _CONTENT)
@@ -195,6 +246,15 @@ def _normalise(record: dict[str, Any]) -> dict[str, Any]:
         "reasoning_tokens": _reasoning_tokens(record),
         "thinking_off": _thinking_off(record),
         "tool_history": _tool_history(record),
+        "completion_tokens": _usage_value(record, "completion_tokens"),
+        "prompt_tokens": _usage_value(record, "prompt_tokens"),
+        "cached_tokens": _usage_value(record, "cached_tokens"),
+        "max_tokens": _request_max_tokens(record),
+        "structured_json": _structured_json_request(record),
+        "thinking_on": _thinking_on(record),
+        "selector_rc": record.get("rc", record.get("return_code")),
+        "reference_ok": record.get("reference_ok", record.get("allclose")),
+        "conversation_id": _short_scalar(record.get("conversation_id") or record.get("session_id")),
     }
 
 
@@ -274,6 +334,61 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
             "158", f"{_items(len(empty_marker_rows))} explicitly disabled thinking after tool history, returned "
             "empty reasoning text, but usage still reports exactly 2 reasoning tokens. That is the empty "
             "thought-marker signature; do not fail thinking-off solely on reasoning_tokens == 0."))
+
+    selector_rows = [
+        row for row in understood
+        if isinstance(row["selector_rc"], int) and row["selector_rc"] != 0
+        and row["reference_ok"] is True
+    ]
+    if selector_rows:
+        findings.append(_finding(
+            "137", f"{_items(len(selector_rows))} carry a nonzero rc/return_code while an independent "
+            "reference check says the output is correct. Do not interpret the integer as a process failure "
+            "until the pinned extension contract says it is an error code."))
+
+    structured_runaway = [
+        row for row in understood
+        if row["structured_json"] and row["thinking_on"]
+        and row["finish"] in ("length", "max_tokens")
+        and isinstance(row["content"], str) and row["content"].lstrip().startswith("{")
+        and not _valid_json_text(row["content"])
+    ]
+    if structured_runaway:
+        findings.append(_finding(
+            "149", f"{_items(len(structured_runaway))} requested structured JSON with thinking enabled, "
+            "hit the token cap, opened JSON, and returned invalid/unclosed JSON. Re-run the same schema "
+            "thinking-off before certifying the structured-output lane."))
+
+    undercount_rows = [
+        row for row in understood
+        if row["finish"] in ("length", "max_tokens")
+        and isinstance(row["completion_tokens"], int)
+        and isinstance(row["max_tokens"], int) and row["max_tokens"] >= 128
+        and row["completion_tokens"] < int(row["max_tokens"] * 0.75)
+    ]
+    if undercount_rows:
+        findings.append(_finding(
+            "156", f"{_items(len(undercount_rows))} stopped for length while reported completion_tokens "
+            "were under 75% of the explicit token cap. That is inconsistent enough to retokenize returned "
+            "text before trusting usage or derived tok/s."))
+
+    conversations: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in understood:
+        if row["conversation_id"] and isinstance(row["cached_tokens"], int) and isinstance(row["prompt_tokens"], int):
+            conversations[row["conversation_id"]].append(row)
+    thrash = []
+    for cid, items in conversations.items():
+        if len(items) < 3:
+            continue
+        cached = [row["cached_tokens"] for row in items]
+        prompts = [row["prompt_tokens"] for row in items]
+        if min(cached) > 0 and len(set(cached)) == 1 and max(prompts) - min(prompts) >= 128:
+            thrash.append((cid, cached[0], min(prompts), max(prompts)))
+    if thrash:
+        findings.append(_finding(
+            "155", f"{len(thrash)} conversation(s) show cached_tokens pinned to one constant while prompt "
+            "length grows materially; inspect prefix-slot residency/victim selection rather than attributing "
+            "the repeated prefill to model speed.", evidence=str(thrash[:5])))
 
     arms: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in understood:

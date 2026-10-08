@@ -287,6 +287,130 @@ class EmptyThoughtMarkerResults(TempDirCase):
         self.assertNotIn("158", _ids(report))
 
 
+PHASE4_RISKY_CONFIG = """\
+ssh worker "docker run engine --speculative-config '{\"method\":\"mtp\"}'"
+[Service]
+MemoryMax=32G
+ExecStart=/usr/bin/vllm serve model
+--max-num-partial-prefills 2
+# scheduler speculative placeholder resize during chunked prefill
+python probe.py | tail -n 40
+def account_resident_bytes(name):
+    return name.startswith("vision_tower.")
+# loader also accepts model.visual aliases
+model.visual.encoder
+"""
+PHASE4_SAFE_CONFIG = """\
+ssh worker ./argv_wrapper.sh
+set -o pipefail
+python probe.py | tail -n 40
+# MemoryMax omitted for CUDA service
+# scheduler guard:
+if not request.is_prefill_chunk:
+    resize_speculative_placeholders()
+def account_resident_bytes(name):
+    return name.startswith(("vision_tower.", "model.visual."))
+"""
+PHASE4_CONFIG_TRAPS = {"121", "125", "128", "132", "136", "159"}
+
+
+class Phase4ConfigRules(TempDirCase):
+    def test_phase4_static_rules_fire(self):
+        found = _ids(inspect_files([str(self.write("phase4.sh", PHASE4_RISKY_CONFIG))]))
+        self.assertEqual(PHASE4_CONFIG_TRAPS - found, set())
+
+    def test_phase4_static_controls_stay_quiet(self):
+        found = _ids(inspect_files([str(self.write("phase4-safe.sh", PHASE4_SAFE_CONFIG))]))
+        self.assertEqual(PHASE4_CONFIG_TRAPS & found, set())
+
+
+PHASE4_BAD_LOG = """\
+Pstate : P0
+GPU utilization : 96%
+SM clock : 640 MHz
+WARNING skipping unknown weight model.layers.3.mlp.shared_experts.w1
+WARNING skipping unknown weight model.layers.3.mlp.shared_experts.w3
+"""
+PHASE4_CLEAN_LOG = """\
+Pstate : P0
+GPU utilization : 96%
+SM clock : 1650 MHz
+loaded shared_experts.w1
+loaded shared_experts.w3
+"""
+PHASE4_LOG_TRAPS = {"124", "133"}
+
+
+class Phase4LogRules(TempDirCase):
+    def test_phase4_log_rules_fire(self):
+        found = _ids(inspect_logs([str(self.write("phase4.log", PHASE4_BAD_LOG))]))
+        self.assertEqual(PHASE4_LOG_TRAPS - found, set())
+
+    def test_phase4_log_controls_stay_quiet(self):
+        found = _ids(inspect_logs([str(self.write("phase4-clean.log", PHASE4_CLEAN_LOG))]))
+        self.assertEqual(PHASE4_LOG_TRAPS & found, set())
+
+
+class Phase4ResultsRules(TempDirCase):
+    def test_selector_nonzero_with_reference_ok_fires_137(self):
+        rows = [{"finish_reason": "stop", "content": "ok", "rc": 7, "reference_ok": True}]
+        report = inspect_results(self.write("selector.json", json.dumps(rows)))
+        self.assertIn("137", _ids(report))
+
+    def test_thinking_on_structured_runaway_fires_149(self):
+        rows = [{
+            "request": {
+                "response_format": {"type": "json_schema"},
+                "chat_template_kwargs": {"enable_thinking": True},
+                "max_tokens": 512,
+            },
+            "response": {
+                "choices": [{"finish_reason": "length",
+                             "message": {"content": "{\"answer\": ", "reasoning_content": "trace"}}],
+                "usage": {"completion_tokens": 512, "prompt_tokens": 80},
+            },
+        }]
+        report = inspect_results(self.write("json-runaway.json", json.dumps(rows)))
+        self.assertIn("149", _ids(report))
+
+    def test_prefix_slot_thrash_shape_fires_155(self):
+        rows = []
+        for prompt in (1000, 1400, 1800):
+            rows.append({
+                "conversation_id": "chat-a",
+                "finish_reason": "stop",
+                "content": "ok",
+                "prompt_tokens": prompt,
+                "cached_tokens": 256,
+            })
+        report = inspect_results(self.write("prefix-thrash.json", json.dumps(rows)))
+        self.assertIn("155", _ids(report))
+
+    def test_length_stop_with_low_usage_fires_156(self):
+        rows = [{
+            "request": {"max_tokens": 1024},
+            "response": {
+                "choices": [{"finish_reason": "length", "message": {"content": "long reply"}}],
+                "usage": {"completion_tokens": 300, "prompt_tokens": 50},
+            },
+        }]
+        report = inspect_results(self.write("undercount.json", json.dumps(rows)))
+        self.assertIn("156", _ids(report))
+
+    def test_phase4_result_controls_stay_quiet(self):
+        rows = [{
+            "request": {"max_tokens": 1024},
+            "response": {
+                "choices": [{"finish_reason": "length", "message": {"content": "{\"answer\": 1}"}}],
+                "usage": {"completion_tokens": 1024, "prompt_tokens": 50},
+            },
+            "rc": 0,
+            "reference_ok": True,
+        }]
+        found = _ids(inspect_results(self.write("controls.json", json.dumps(rows))))
+        self.assertEqual({"137", "149", "155", "156"} & found, set())
+
+
 DEFECTIVE_TEMPLATE = """\
 {%- if messages[0].role == 'system' %}{% set sys = messages[0].content %}{% set rest = messages[1:] %}\
 {% else %}{% set sys = 'You are a helpful assistant created by Probe Labs. Always answer carefully and politely.' %}\
@@ -622,7 +746,7 @@ class ScanCommand(TempDirCase):
 class CoverageFloor(unittest.TestCase):
     def test_automated_coverage_does_not_regress(self):
         summary = build_coverage(load_registry())["summary"]
-        self.assertGreaterEqual(summary["any_automated_check"], 104)
+        self.assertGreaterEqual(summary["any_automated_check"], 119)
 
 
 
