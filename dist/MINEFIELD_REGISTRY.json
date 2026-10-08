@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "dbdf28de507ad5eb6e207dcbd82dcd38935c6cd37c164549e00a2dcfd90a76a7",
-  "doctor_implemented_trap_count": 27,
+  "content_sha256": "d2b17517a1e8daa5d27aa633f3860bf71ae2cfb08307ad7586c6977ff220c4b1",
+  "doctor_implemented_trap_count": 30,
   "entries": [
     {
       "affected_models": [
@@ -3919,14 +3919,15 @@
       "check": "Ask the server what it actually built, twice, once with the field and once without, and compare prompt_tokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoning_effort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompt_tokens on real completions, which cannot be faked.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/58-reasoning-effort-injects-hidden-preamble.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -5499,14 +5500,15 @@
       "check": "Detection first, because it is one request: ```python",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/80-reasoning-parser-batches-sse-deltas.md"
       },
       "evidence_strength": [
         "measured here, raw not published"
@@ -5991,14 +5993,15 @@
       "check": "Warm a long prefix, send the same prefix with `cacheprompt: false`, and read the cached-token count in the usage block. Then send it once more with the default and confirm the cache survived.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/88-cache-prompt-false-does-isolate-here.md"
       },
       "evidence_strength": [
         "measured here, raw not published"
