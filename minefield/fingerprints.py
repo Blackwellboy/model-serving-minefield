@@ -51,6 +51,16 @@ FINGERPRINTS = (
         r"\bsliding_window\b[\s\S]{0,320}\bmax_window_layers\b|\bmax_window_layers\b[\s\S]{0,320}\bsliding_window\b",
         "Qwen sliding-window configuration keys appear together",
     ),
+    Fingerprint(
+        "100",
+        r"\bhipErrorInvalidImage\b",
+        "exact ROCm/HIP invalid-code-object diagnostic",
+    ),
+    Fingerprint(
+        "130",
+        r"\bcudagraph_capture_sizes\b",
+        "effective CUDA-graph capture-size list identifier",
+    ),
 )
 
 
