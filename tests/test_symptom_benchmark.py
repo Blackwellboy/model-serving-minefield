@@ -101,6 +101,8 @@ class StructuredFingerprints(unittest.TestCase):
         ("118", "INFO ... [shm_broadcast.py:705] No available shared memory broadcast block found in 60 seconds"),
         ("119", "max_total_tokens=200000 is larger than the profiled value 163089. Use the profiled value instead."),
         ("19", "auto tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set"),
+        ("125", "systemd unit has MemoryMax=120G around the vllm serve"),
+        ("143", "Qwen config has sliding_window=4096 and max_window_layers=0"),
     )
 
     @classmethod
