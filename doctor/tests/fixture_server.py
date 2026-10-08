@@ -127,6 +127,9 @@ DEFAULTS = {
     "usage_details": {"image_tokens": 256},
     "ceiling": "content",
     "stream_channel": "content",
+    "stream_pieces": ("Os", "lo"),
+    "stream_completion_tokens": 2,
+    "reasoning_effort_effect": False,
     "echo_logprobs": "ok",
     "slots": None,
     "assistant_prefill_bypass": False,
@@ -236,6 +239,8 @@ def _make_lane_handler(cfg):
             # the one that explicitly asked for thinking off.
             honoured = want_think or not cfg["explicit_off_honored"]
             fires = cfg["thinking_effective"] and honoured and cfg["reasoning_field"]
+            if cfg["reasoning_effort_effect"] and body.get("reasoning_effort") in ("low", "max"):
+                fires = bool(cfg["reasoning_field"])
             msg = {"role": "assistant", "content": "OK"}
             if fires:
                 msg[cfg["reasoning_field"]] = "a brief trace"
@@ -290,9 +295,15 @@ def _make_lane_handler(cfg):
             self.end_headers()
             ch = cfg["stream_channel"]
             if ch:
-                for piece in ("Os", "lo"):
+                for piece in cfg["stream_pieces"]:
                     chunk = {"choices": [{"index": 0, "delta": {ch: piece}}]}
                     self.wfile.write(f"data: {json.dumps(chunk)}\n\n".encode())
+            if (body.get("stream_options") or {}).get("include_usage"):
+                usage = {"prompt_tokens": 40,
+                         "completion_tokens": cfg["stream_completion_tokens"],
+                         "total_tokens": 40 + cfg["stream_completion_tokens"]}
+                self.wfile.write(
+                    f"data: {json.dumps({'choices': [], 'usage': usage})}\n\n".encode())
             self.wfile.write(b"data: [DONE]\n\n")
 
         def do_POST(self):
@@ -413,8 +424,12 @@ def _make_lane_handler(cfg):
             else:
                 msg, finish = self._message(body), "stop"
 
-            usage = {"prompt_tokens": 40, "completion_tokens": 2,
-                     "total_tokens": 42}
+            prompt_tokens = 40
+            if cfg["reasoning_effort_effect"]:
+                effort = body.get("reasoning_effort")
+                prompt_tokens = 84 if effort == "max" else 5
+            usage = {"prompt_tokens": prompt_tokens, "completion_tokens": 2,
+                     "total_tokens": prompt_tokens + 2}
             if has_image:
                 usage["prompt_tokens_details"] = cfg["usage_details"]
             return self._send(200, {"id": "chatcmpl-fixture", "model": MODEL,
