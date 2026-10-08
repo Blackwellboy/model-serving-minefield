@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
   "summary": {
-    "any_automated_check": 104,
+    "any_automated_check": 106,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 27,
+    "endpoint_checks_implemented": 29,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
-    "log_checks_implemented": 29,
+    "log_checks_implemented": 32,
     "static_checks_implemented": 68,
     "total_canonical_traps": 161
   },
@@ -1413,7 +1413,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "One request with one tool defined, before anything else: assert the response contains a structured tool_calls array, not prose describing a call. If prose: check the serve line for the template/parser flags before touching the client.",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -1421,7 +1421,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -4269,16 +4269,18 @@
       "id": "58",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Ask the server what it actually built, twice, once with the field and once without, and compare prompt_tokens and whether the reasoning field is populated. Do it at more than one value: low and max behave differently here, and testing only max will make you think the tell is always a token-count jump when at low there is none. The warning: check on the endpoint you actually serve from. This server exposes two render surfaces and they do not agree. /v1/chat/completions/render faithfully reproduces the injected preamble and the toggle. /tokenize silently drops the top-level field and reports the baseline length, because reasoning_effort is not part of its request schema. A tokenize-based preflight therefore returns a false clean for exactly this trap. Render if your server has it; if it does not, fall back to comparing prompt_tokens on real completions, which cannot be faked.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -5729,7 +5731,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Two requests, and the assertion is on the response rather than the status code: ```bash",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -5737,7 +5739,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,
@@ -5909,16 +5911,18 @@
       "id": "80",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Detection first, because it is one request: ```python",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -8769,7 +8773,7 @@
           "can_prove_clean": false,
           "confirm_criterion": "Before calling a Ray deploy hung, read a worker rather than the driver: Progress there while the head is silent means it is not hung. Two liveness discriminators that need no logs at all: ```bash docker exec <container> bash -lc 'ps -eLo pcpu,comm --sort=-pcpu | head -3'",
           "expected_duration": "seconds",
-          "implemented_checker": null,
+          "implemented_checker": "minefield.log_inspector",
           "limitations": "Absence of a signature is not proof of safety.",
           "possible_match_only": true,
           "refute_criterion": "Show a later recovery or a contradictory control.",
@@ -8777,7 +8781,7 @@
             "Explicitly supplied bounded log files"
           ],
           "safety_level": "read-only",
-          "state": "possible"
+          "state": "implemented"
         },
         "static_config": {
           "can_prove_clean": false,

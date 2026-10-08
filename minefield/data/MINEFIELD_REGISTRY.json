@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "ed3ba2291fa0d3599388b9b0a53324336436dd13071e994e7c070250d062e5d6",
-  "doctor_implemented_trap_count": 27,
+  "content_sha256": "4ea93e61fa010cb6b0b51fcee79df026ac82534f695d482bc3a2a57ad230e6db",
+  "doctor_implemented_trap_count": 29,
   "entries": [
     {
       "affected_models": [
@@ -46,8 +46,28 @@
       "check": "Read both keys, and fall back to scraping <think> tags out of content: Then confirm positively: send one prompt you are confident makes the model think, and assert the field is non-empty. An empty field means wrong key at least as often as it means did not reason.",
       "contributor": "Blackwellboy; streaming variant confirmed by @quantumleap68",
       "diagnostic_fingerprints": [
+        "/api/chat",
+        "/api/generate",
+        "/v1/chat/completions",
+        "ABSENT",
+        "benchmarks/garble_tap.py",
+        "benchmarks/soak.py",
+        "BODY",
+        "CUDA",
+        "delta.reasoning_content",
+        "EMPTY",
+        "finish_reason=length",
+        "GB10",
+        "KeyError",
+        "message.reasoning_content",
         "NO_REASONING",
-        "NVFP4"
+        "NVFP4",
+        "ONLY",
+        "qwen3:8b",
+        "reasoning_content",
+        "role=\"assistant\"",
+        "SHORT",
+        "tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -120,8 +140,15 @@
       "check": "Assert that content.lstrip() does not start with </think>, and that open and close tag counts in the response are balanced. In an assembled prompt, expect exactly one dangling open <think> at the end (the generation prompt) and treat any excess of closes as this trap.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--reasoning-parser",
+        "A12B",
+        "enable_thinking",
         "EXL3",
-        "JSON"
+        "GB10",
+        "JSON",
+        "NVFP4",
+        "NVIDIA",
+        "poolside_v1"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -207,10 +234,33 @@
       "check": "Never reason about thinking from a template's default. Render your own prompt through the serving path and confirm which branch you landed in. Record the checkpoint revision hash next to every published number.",
       "contributor": "Blackwellboy and TheTom",
       "diagnostic_fingerprints": [
+        "--chat-template-args",
+        "52d1adc5f38aa5ebf099c29ed7025ba34cfbb854",
+        "832c3bd439fb7e40bed4955b73455afabbb90eeb",
+        "8b5d34f00c876027d737525d16c0e7439ca389d2",
+        "9a12aaef394d5a75bb28dc5cdb62bf6da4e3ad84b0900f5a71713b8d9fddc7cf",
+        "bdcd945690ea721de18799a207c3243c8345ea1b856e40084020003cbdd13ba7",
+        "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+        "chat_template_kwargs: {\"enable_thinking\": false}",
+        "checks/fixtures/qwen38_nvfp4_52d1adc/",
+        "checks/reproduce_qwen38_reasoning_config_traps.py",
+        "d5c052a8fbbe2495645582fca6230bd3e33ec41e161252d2cc61eefd0db31603",
         "enable_thinking",
+        "enable_thinking:false",
         "EXL3",
+        "EXPLICIT",
+        "fa73d9a94cb0d52e1db244a78699ee12172173fea7c6d7df9e8961f5b32cbb82",
+        "GB10",
+        "HIGH",
+        "lmsysorg/sglang:qwen38-27b",
         "NVFP4",
-        "Q4KM"
+        "Q4_K_M",
+        "RadixArk/Qwen3.8-27B-NVFP4",
+        "README",
+        "reasoning_effort",
+        "Return only the number 42.",
+        "SHA256",
+        "vcruz305/GLM-5.3-Flash-EXL3-K2"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -295,9 +345,22 @@
       "check": "Assemble a three-turn conversation whose first assistant message carries a uniquely marked reasoning string, render the actual prompt through your serving path, and grep it for that marker. If it is absent, your multi-turn numbers describe a model that cannot see its own thinking. Then diff the render with and without the preservation kwarg. checks/preflight_template.py in this registry does exactly this and refuses to pass the lane if the marker is missing. Corollary worth internalizing: enumerate every kwarg the template reads and diff it against the model card. Anything read-but-undocumented is an untested variable, and if it sits near a thinking branch, assume it changes your results until you have shown it does not.",
       "contributor": "@quantumleap68 and Blackwellboy",
       "diagnostic_fingerprints": [
+        "/apply-template",
+        "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+        "checks/preflight_template.py",
+        "checks/reproduce_qwen38_reasoning_config_traps.py",
+        "CUDA",
         "EXL3",
+        "GB10",
         "NVFP4",
-        "Q4KM"
+        "preserve_thinking",
+        "preserve_thinking: true",
+        "preserve_thinking=false",
+        "preserve_thinking=true",
+        "Q4_K_M",
+        "qwen3:8b",
+        "RadixArk/Qwen3.8-27B-NVFP4@52d1adc",
+        "reasoning_content"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -437,7 +500,15 @@
       "check": "Prepend the template's own default identity sentence as the literal first line of your system message and re-measure firing. If the rate recovers, you were looking at identity eviction, not instruction-dose suppression, and every \"prompt dose\" number you took without controlling the first line is confounded. Position of the check matters by stack: on the tested second stack the recovery lever was the tail, not the first line. Run the check both ways (identity as line one, and any ~30-token matched text appended at the end) before concluding which mechanism you have.",
       "contributor": "@quantumleap68",
       "diagnostic_fingerprints": [
-        "NVFP4"
+        "06-identity-sentence-eviction",
+        "BOTH",
+        "finish_reason=tool_calls",
+        "HTTP",
+        "NVFP4",
+        "P100",
+        "Q2_K_XL",
+        "reasoning_content",
+        "tool_calls"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -518,9 +589,36 @@
       "contributor": "@quantumleap68",
       "diagnostic_fingerprints": [
         "/props",
+        "/tokenize",
+        "575d9cb4b43894c0dcd0184639dbb765f8073a9263ca25385e3cfb34d6a81751",
+        "62bf73d25",
+        "A12B",
+        "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+        "chat_template_kwargs",
+        "checks/preflight_template.py",
+        "checks/reproduce_qwen38_reasoning_config_traps.py",
+        "DOES",
+        "enable_thinking",
+        "GB10",
         "HTTP",
-        "Q4KM",
-        "reasoning_effort"
+        "LEVEL",
+        "low_effort",
+        "max_token",
+        "max_tokens",
+        "NVFP4",
+        "NVIDIA",
+        "preserve_thinking",
+        "Q4_K_M",
+        "Q4_K_XL",
+        "RadixArk/Qwen3.8-27B-NVFP4@52d1adc",
+        "reasoning_effort",
+        "reasoning_effort=\"none\"",
+        "reasoning_effort=low",
+        "REASONING_EFFORT_MAX",
+        "reasoning_strength=high",
+        "tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark",
+        "truncate_history_thinking",
+        "WIDER"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -599,7 +697,9 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "CUDA",
+        "cudaErrorUnsupportedPtxVersion",
         "GB10",
+        "marlin_utils_fp4.py: repack_weight",
         "NVFP4",
         "TRITON_PTXAS_PATH"
       ],
@@ -677,8 +777,13 @@
       "check": "Before concluding anything about a model, record the image digest next to the result, and test any model-level conclusion on a second image before publishing it. Treat \"image + weights + hardware\" as the unit under test, never \"the model\".",
       "contributor": "Blackwellboy; working path by eugr",
       "diagnostic_fingerprints": [
+        "ABLATE",
+        "ABLATE=1",
+        "EXL3",
         "FINDINGS",
         "GB10",
+        "lambda=3.5",
+        "model.py",
         "NVFP4",
         "README"
       ],
@@ -748,12 +853,45 @@
       "check": "Before downloading 160 GB, read the config, not the repo name: Then answer: which kernel family does this quant_method route to in YOUR build on YOUR arch, and is that the fast path or a weight-only fallback? If you cannot answer from the config plus your build, expect the fallback.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--format",
+        "--format auto_gptq",
+        "--moe-backend",
+        "--moe-backend marlin",
+        "4-bit",
+        "8-bit",
+        "A12B",
+        "auto_round:auto_gptq",
+        "config.json",
+        "EMULATION",
         "EXL3",
         "FINDINGS",
+        "FLASHINFER_CUTLASS",
+        "g_idx",
+        "g_idx=0",
         "GB10",
+        "GPTQ",
+        "INT4",
+        "MARLIN",
+        "MIXED_PRECISION",
         "MXFP4",
         "NVFP4",
+        "NVIDIA",
+        "OBLIT",
+        "OBLITERATED",
+        "prepare_moe_fp4_layer_for_marlin",
+        "quant_method",
+        "quant_method=gptq",
+        "quantization=modelopt_mixed",
+        "quantization_config",
+        "quantization_config.quant_algo",
+        "VLLM_NVFP4_GEMM_BACKEND",
+        "VLLM_NVFP4_GEMM_BACKEND=marlin",
         "VLLM_USE_B12X_MOE",
+        "VLLM_USE_B12X_MOE=1",
+        "VLLM_USE_FLASHINFER_MOE_FP4",
+        "VLLM_USE_FLASHINFER_MOE_FP4=0",
+        "W4A16",
+        "W4A4",
         "YOUR"
       ],
       "diagnostic_modalities": [
@@ -827,6 +965,8 @@
       "diagnostic_fingerprints": [
         "GB10",
         "JSON",
+        "num_speculative_tokens",
+        "optimise.py",
         "SLOWER",
         "TTFT"
       ],
@@ -905,12 +1045,41 @@
       "check": "Bucket every scored zero by \"was content empty at a cap-hit\". If empties cluster at the ceiling, re-run only those at a larger budget before concluding anything about capability.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6",
+        "62bf73d25",
+        "A12B",
+        "CONTRIBUTING",
+        "CUDA",
+        "done_reason: \"length\"",
+        "DSV4",
+        "enable_thinking",
+        "finish_reason",
+        "finish_reason == \"length\"",
+        "finish_reason == \"stop\"",
+        "finish_reason: length",
+        "finish_reason=length",
         "GB10",
         "HTTP",
+        "JSONL",
         "KeyError",
+        "max_tokens",
+        "max_tokens=1024",
+        "max_tokens=1500",
+        "max_tokens=512",
+        "num_predict",
+        "num_speculative_tokens=3",
         "NVFP4",
+        "NVIDIA",
         "OMITS",
-        "THIS"
+        "Q4_K_XL",
+        "qwen3:8b",
+        "README",
+        "REDACTIONS",
+        "temp > 0",
+        "temperature=1.0",
+        "thinking_budget",
+        "THIS",
+        "top_p=0.95"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -991,7 +1160,14 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--gpu-memory-utilization",
+        "--kv-cache-memory-bytes",
+        "--kv-cache-memory-bytes 12884901888",
+        "A12B",
+        "CUDA",
         "GB10",
+        "MemAvailable",
+        "NVFP4",
+        "NVIDIA",
         "VRAM"
       ],
       "diagnostic_modalities": [
@@ -1063,6 +1239,8 @@
       "check": "Before treating any re-upload as drop-in: ```bash",
       "contributor": "Blackwellboy and TheTom",
       "diagnostic_fingerprints": [
+        "config.json",
+        "edit_mtp",
         "GB10"
       ],
       "diagnostic_modalities": [
@@ -1124,10 +1302,14 @@
       "contributor": "@mrpmorris",
       "diagnostic_fingerprints": [
         "/v1/completions",
+        "benchllm.py",
         "CRASH",
+        "echo=true",
         "HANG",
+        "HTTP",
         "MMLU",
         "STARTUP",
+        "token_logprobs",
         "UNSUPPORTED"
       ],
       "diagnostic_modalities": [
@@ -1195,11 +1377,16 @@
       "check": "Bucket on extractable output first (did you get code that parses, an answer that scores), then split each bucket by finishreason to diagnose truncation versus loop versus verbosity. Never map finishreason directly to pass/fail.",
       "contributor": "@apollo-mg and Blackwellboy",
       "diagnostic_fingerprints": [
+        "finish_reason",
+        "finish_reason != length",
+        "finish_reason=length",
         "GB10",
+        "max_tokens",
         "NVFP4",
         "P100",
         "PASS",
-        "Q2KXL"
+        "Q2_K_XL",
+        "tool_calls"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1272,10 +1459,14 @@
       "check": "For every A/B, list every request parameter that differs between arms. If the list is not exactly the variable under test, either fix the parameters or state the comparison as \"shipped-defaults versus shipped-defaults\", which is a different claim than \"X versus Y\".",
       "contributor": "@apollo-mg; replicated by Blackwellboy",
       "diagnostic_fingerprints": [
+        "A12B",
         "GB10",
+        "generation_config.json",
+        "max_tokens",
         "NVFP4",
+        "NVIDIA",
         "P100",
-        "Q2KXL"
+        "Q2_K_XL"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1340,6 +1531,9 @@
       "check": "Confirm the attention implementation in your server args and logs, then benchmark decode at your REAL working depth (40K+), not at 2K. A depth-dependent slowdown with a healthy shallow number is this trap until proven otherwise.",
       "contributor": "@Defilan",
       "diagnostic_fingerprints": [
+        "--jinja",
+        "FLASHINFER",
+        "RDNA3",
         "REAL"
       ],
       "diagnostic_modalities": [
@@ -1418,7 +1612,14 @@
       "check": "One request with one tool defined, before anything else: assert the response contains a structured tool_calls array, not prose describing a call. If prose: check the serve line for the template/parser flags before touching the client.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
-        "--jinja"
+        "--jinja",
+        "--tool-call-parser",
+        "HTTP",
+        "LAGUNA_OPERATORS_GUIDE",
+        "qwen3_coder",
+        "qwen3_xml",
+        "TOOL_CALLING_ISSUES",
+        "tool_calls"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1498,9 +1699,18 @@
       "check": "Probe both field names on your lane, same transcript, before trusting either. Render a conversation whose prior assistant turn carries a uniquely marked reasoning string once under reasoning and once under reasoning_content, and diff the two renders (llama.cpp's /apply-template makes this deterministic; on other runtimes compare prompttokens and grep the assembled prompt for the marker, as in checks/preflighttemplate.py). The arm whose render contains the marker is your write field. If neither does, you are in trap 04 with no preservation path and need the kwarg route.",
       "contributor": "@Defilan",
       "diagnostic_fingerprints": [
+        "/apply-template",
+        "EMITS",
         "GGUF",
+        "message.reasoning_content",
+        "NONE",
         "NVFP4",
-        "Q4KM"
+        "preserve_thinking",
+        "prompt_tokens",
+        "Q4_K_M",
+        "READS",
+        "reasoning_content",
+        "WRITES"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1577,9 +1787,25 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "/props",
+        "A12B",
+        "b9066",
+        "b9193",
+        "config.json",
+        "eos_token_id",
+        "GB10",
+        "generation_config.json",
         "GGUF",
-        "Q4KM",
-        "README"
+        "min_p=0.0",
+        "NVFP4",
+        "NVIDIA",
+        "presence_penalty=1.5",
+        "probe_qwen35-9b*.json",
+        "probe_qwen36-27b*.json",
+        "Q4_K_M",
+        "README",
+        "top_k=20",
+        "transformers_version",
+        "unsloth/Muse-Glimmer-30B-GGUF"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1663,11 +1889,19 @@
       "check": "Before trusting any per-family budget guidance: run your hardest routine task at your production ceiling on THE model you deploy, thinking on, and check for empty content at cap.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "ceiling_audit_20260727.jsonl",
         "DISTRIBUTION",
+        "finish_reason=length",
         "GB10",
+        "hdegen_*",
+        "hfollow_*",
         "HTTP",
+        "max_tokens=2560",
         "NVFP4",
-        "Q4KM"
+        "NVIDIA",
+        "probe_*",
+        "Q4_K_M",
+        "RATE"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1746,7 +1980,17 @@
       "check": "One streamed request against your lane, thinking off, logging the key set of every delta: does the answer text arrive under content, reasoning, or reasoning_content? Then the same request with stream: false. Confirmed if the streamed answer exists only in reasoning deltas while the non-streamed answer sits in content. Assert streaming and non-streaming parity before trusting any streamed harness number.",
       "contributor": "@xy3xy3 (vLLM issue), independently confirmed in-thread by @ArtemVorozhtsov",
       "diagnostic_fingerprints": [
-        "--reasoning-parser"
+        "--reasoning-parser",
+        "--reasoning-parser qwen3",
+        "A12B",
+        "enable_thinking: false",
+        "finish_reason: \"length\"",
+        "finish_reason: \"stop\"",
+        "GB10",
+        "HTTP",
+        "NVFP4",
+        "NVIDIA",
+        "reasoning_content"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -1825,7 +2069,11 @@
       "category": "template",
       "check": "Render one tool-defined request through your actual serving path and read the assembled prompt, not the request: are the tool names and every argument key present and correctly delimited? Then diff that render against a reference Python Jinja2 render of the same template and messages (checks/preflighttemplate.py does the local reference render). Any divergence means the engine is part of your unit under test.",
       "contributor": "barubary and froggeric (community template fixes; issue filed by @blockoracle)",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "GGUF",
+        "Q4_K_M",
+        "Qwen/Qwen3.5-35B-A3B"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -1897,7 +2145,13 @@
       "category": "template",
       "check": "Render a three-turn conversation where the prior assistant turns carry content but no reasoning, and grep the assembled prompt for empty think pairs. Then token-count two equivalent histories that differ only in empty-reasoning turns. Confirmed if empty wrappers appear or the counts differ.",
       "contributor": "@latent-variable",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+        "checks/reproduce_qwen38_reasoning_config_traps.py",
+        "NVFP4",
+        "RadixArk/Qwen3.8-27B-NVFP4@52d1adc",
+        "reasoning_content"
+      ],
       "diagnostic_modalities": [
         "endpoint_probe",
         "static_config",
@@ -1980,7 +2234,13 @@
       "check": "On forced-tool prompts, log the raw model text before any parser, alongside the structured response. Confirmed on any turn where raw text contains tool markup inside an open think block while structured tool_calls is empty. Never conclude \"cannot tool-call\" from the structured channel alone; that conclusion requires the raw dump.",
       "contributor": "@kik4444 (llama.cpp issue) and tfriedel (mechanism writeup)",
       "diagnostic_fingerprints": [
-        "GGUF"
+        "<tool_call>",
+        "<tool_call>...</tool_call>",
+        "GGUF",
+        "Q4_K_M",
+        "TOOL_CALLING_ISSUES",
+        "tool_calls",
+        "toolUse"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -2073,8 +2333,13 @@
         "A17B",
         "GB10",
         "GSM8K",
+        "in_proj_ba",
+        "in_proj_qkvz",
         "MXFP4",
-        "NVFP4"
+        "NVFP4",
+        "nvidia/Qwen3.5-397B-A17B-NVFP4",
+        "quantization_config.ignore",
+        "tensor_parallel_size=1"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2151,8 +2416,10 @@
       "diagnostic_fingerprints": [
         "B200",
         "CUDA",
+        "FULL",
         "KeyError",
-        "No available shared memory broadcast block found in 60 seconds"
+        "num_speculative_tokens=2",
+        "PIECEWISE"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2227,8 +2494,37 @@
       "check": "Send the same hard prompt twice at your production maxtokens: once bare, once with the thinking kwarg enabled. If the kwarg arm hits the ceiling with empty content while the bare arm completes, every caller's kwarg surface is part of your budget model. Grep your callers for chat_template_kwargs.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--chat-template-args",
+        "--chat-template-args {\"enable_thinking\":false}",
+        "--max-tokens",
         "--reasoning",
-        "Q4KM"
+        "--reasoning off",
+        "25a44fdb…",
+        "694cf89a63fed7eaa377057bfa99613f50d3a035",
+        "campaigns/GLM53_TP2_SIXCAT_77P5_ROOT_CAUSE_20260918/THINKING_ON_FULL_SIXCAT/",
+        "ceiling_audit_20260727.jsonl",
+        "ceiling_audit_prodarm_20260727.jsonl",
+        "chat_template_kwargs",
+        "chat_template_kwargs.enable_thinking:false",
+        "chat_template_kwargs.enable_thinking=False",
+        "chat_template_kwargs: {\"enable_thinking\": true}",
+        "enable_thinking",
+        "enable_thinking:false",
+        "enable_thinking:true",
+        "enable_thinking=false",
+        "enable_thinking=true",
+        "EXL3",
+        "GLM53_TP2_SIXCAT_77P5_ROOT_CAUSE_20260918",
+        "model-serving-minefield-evidence-private/findings/2026-09-18-overnight-fleet-glm53-preclose/",
+        "NVFP4",
+        "POST",
+        "preclose_think=false",
+        "preclose_think=true",
+        "Q4_K_M",
+        "reasoning_content",
+        "REQUEST",
+        "THINKING_ON_FULL_SIXCAT",
+        "TRUE"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -2290,9 +2586,13 @@
       "check": "Do not infer this from behavior; read it: 1. Pull chat_template.jinja (or the chat_template field of tokenizer_config.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "chat_template",
+        "chat_template.jinja",
         "EXL3",
+        "md5sum",
         "NVFP4",
-        "REPLACES"
+        "REPLACES",
+        "tokenizer_config.json"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2350,7 +2650,7 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "JSON",
-        "SHOULDNOTHELP"
+        "SHOULD_NOT_HELP"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2409,7 +2709,19 @@
       "check": "Send one request with max_tokens greater than the server flag and read usage.completion_tokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
-        "--max-tokens"
+        "--chat-template-args",
+        "--max-tokens",
+        "--max-tokens 1024",
+        "BOTH",
+        "cli_args.max_tokens",
+        "finish_reason=length",
+        "HTTP",
+        "max_completion_tokens",
+        "max_tokens",
+        "max_tokens=1600",
+        "mlx_lm server",
+        "usage.completion_tokens",
+        "usage.completion_tokens=1600"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2476,10 +2788,21 @@
       "check": "Before you change a MoE's active-expert count, measure both settings on the same items, paired, and report the delta. If you are not running a benchmark, the cheap structural check is to confirm what your serving stack does with the extra experts: dump the post-selection gate weights for one token at both k values and compare the weight assigned to the rank-1 expert. If it fell, you bought dilution, not capacity. ```python",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "--router-tail-scale",
+        "508/600 vs 489/600",
+        "995ad96eacd98c81ed38be0c5b274b04031597b0",
+        "alpha = 0",
+        "alpha = 1",
+        "ALPHA_DIAL_20260712",
         "CI95",
+        "esft/reports/eval/base_k{8,16,24,32}_intel_items.json",
         "GSM8K",
+        "JMMLU",
         "JSON",
+        "MAINTAINING",
         "MMLU",
+        "num_experts_per_tok",
+        "NVFP4",
         "README"
       ],
       "diagnostic_modalities": [
@@ -2550,10 +2873,13 @@
       "check": "Write down the configuration of your reference arm and ask one question: would anyone serve this? If the answer is no, it is not a floor, it is a handicap. Then report both numbers. The finder's standing rule, which is the cheapest possible fix: > Every verdict reports against base@k8 and against base@k32. Concretely, before publishing any delta: 1. Name the shipped default for every knob you touched (top-k, quant, template, sampling, budget). 2. If your reference differs from that default on any knob, add a third arm at the default and report against it too. 3. If you cannot run the third arm, say \"measured against <config>, not against the shipped default\" in the same sentence as the number.",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "995ad96eacd98c81ed38be0c5b274b04031597b0",
+        "DATA_QUALITY_STRATEGY_20260711",
         "GSM8K",
         "JSON",
         "MBPP",
-        "MMLU"
+        "MMLU",
+        "n=164"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2633,8 +2959,17 @@
       "check": "Measure your own agreement floor before you trust any small delta. Run the same model twice, on the two machines (or the two sessions) you actually intend to compare across, on the same items, and report per-item agreement, not just the score: If that agreement is 98.7%, then any effect smaller than roughly the resulting score spread is inside your noise and needs a same-machine paired re-run before you publish it. Two independent measurements of this floor now exist, 98.7% and 97.58%, so if you have not measured your own, assume you are somewhere near them rather than at 100%. Run the same check twice on one machine as well. That is the version most people skip, and on our stack it returns the same floor as the cross-machine one.",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "491c2f1e",
+        "995ad96eacd98c81ed38be0c5b274b04031597b0",
+        "a346d589",
+        "a720df3e84a8",
+        "alpha=0",
+        "base@k8",
+        "c4b017ad",
+        "DEVLOG",
         "GB10",
         "GSM8K",
+        "JSON",
         "MMLU",
         "NVFP4"
       ],
@@ -2704,11 +3039,16 @@
       "check": "Report the truncation count per arm, next to every generated number, and refuse to compare arms whose truncation rates differ materially. Two assertions catch both halves: ```python",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "995ad96eacd98c81ed38be0c5b274b04031597b0",
+        "DEVLOG",
         "GSM8K",
         "JMMLU",
         "JSON",
+        "max_new",
+        "max_new=1536",
         "MBPP",
-        "MMLU"
+        "MMLU",
+        "truncated_n: 0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2778,8 +3118,18 @@
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
         "--served-model-name",
+        "6ea57973c7a6097fd7c5915698c54c17c5b1b6c8",
+        "<tool_call>",
         "BFCL",
+        "DEVLOG",
+        "finished_at",
+        "finished_at: null",
+        "infra_error_n == 0",
+        "infra_error_n=0",
         "KeyError",
+        "KeyError('string')",
+        "MT_SETA_POSTMORTEM_20260726",
+        "parser_error:ValueError",
         "SIGTERM",
         "ValueError"
       ],
@@ -2849,6 +3199,11 @@
       "check": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through apply_chat_template with add_generation_prompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce.",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "995ad96eacd98c81ed38be0c5b274b04031597b0",
+        "add_generation_prompt=True",
+        "apply_chat_template",
+        "CI95",
+        "DEVLOG",
         "GRPO"
       ],
       "diagnostic_modalities": [
@@ -2922,10 +3277,12 @@
       "check": "Two lines, before any generation: ```python import os os.environ[\"CUDAVISIBLEDEVICES\"] = \"0,1\" set BEFORE importing torch",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
-        "BEFORE",
+        ".to(\"cuda:0\")",
         "CUDA_VISIBLE_DEVICES",
-        "CUDAVISIBLEDEVICES",
-        "device_map=\"auto\""
+        "CUDA_VISIBLE_DEVICES=0,1",
+        "device_map",
+        "device_map=\"auto\"",
+        "DEVLOG"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -2980,10 +3337,16 @@
       "check": "Never accept a removal rate without opening the removals. Three concrete steps: 1. Print the top matching grams by frequency. If one gram explains most of your hits, it is boilerplate. This alone caught 95.2% of the finder's false positives. 2. Look at the run-length distribution, not just the hit count. Long contiguous runs are transcription; isolated single-gram hits are format. 3. Run a positive control. Verify the matcher still catches real leakage after you tighten it, or you have replaced a noisy detector with a dead one. The finder checked that verbatim BFCL question transcriptions were still caught: 19/20 retained.",
       "contributor": "@Hikari07jp",
       "diagnostic_fingerprints": [
+        "--max-df",
+        "--max-df 2",
         "BFCL",
+        "DEVLOG",
         "GSM8K",
         "JMMLU",
-        "MMLU"
+        "JSON",
+        "min_hits=2",
+        "MMLU",
+        "MT_SETA_POSTMORTEM_20260726"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3055,7 +3418,10 @@
       "category": "runtime",
       "check": "Measure completed items per minute, end to end, before and after any batching change. Do not accept GPU utilization, power draw, or tokens/second as evidence, because all three rise when the batch is padding. ```python",
       "contributor": "@Hikari07jp",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "DEVLOG",
+        "max_num_seqs"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -3122,19 +3488,30 @@
       "check": "Two checks, both cheap and both offline: 1. Conditional against pooled. Compute accuracy conditional on the sample having attempted an answer, and compare it to pooled pass@1. If conditional accuracy is flat against your no-apparatus baseline while pooled dropped, the drop is routing, not capability. A flat or nearly flat wrong-answer count with a large pooled drop is the same signal seen from the other side, and it is visible without recomputing anything. 2. Bucket on two axes, not one. A single five-way bucket list does not work, because some of its members are outcomes and others are termination states, and a sample can be both at once. Record two independent fields per sample and report the cross-tab: - Outcome: PASS / WRONG / NO_EXTRACTABLE / TOOL_CALL / UNPARSED - Termination: STOP / LENGTH / TOOL_CALLS / ERROR / OTHER The counts in the magnitude table above are exactly why. The apparatus column happens to sum to 492, but the baseline column sums to 500 against 492 samples: a cap-hit is a termination state that can co-occur with having no extractable output, so those two rows double-count the same samples. One axis cannot express that; two can, and LENGTH crossed with PASS (a cap-hit that still produced usable code) is a real cell that a one-axis scheme has nowhere to put. A harness that cannot produce this cross-tab cannot tell you which of several different things happened, and they have different fixes. A useful secondary signal: per-problem flakiness that explodes while answers stay stable. Bucket patterns like T,P,P and P,T,P across K seeds on one problem are the route varying, not the answer varying. If your flakiness metric cannot distinguish those, it will report answer instability that is not there.",
       "contributor": "@apollo-mg",
       "diagnostic_fingerprints": [
+        "-c 32768 -np 1 -ngl 99 -sm layer -ts 1,1,1,1 -fit off",
+        "APPARATUS",
         "ERROR",
+        "finish_reason=tool_calls",
         "GB10",
         "GGUF",
+        "HIGH",
         "LENGTH",
         "NO_EXTRACTABLE",
         "NVFP4",
         "OTHER",
         "P100",
         "PASS",
+        "Q2_K_XL",
+        "read_file",
+        "REAL",
+        "run_command",
         "STOP",
         "TOOL_CALL",
         "TOOL_CALLS",
+        "tool_calls",
+        "TRUNCATED",
         "UNPARSED",
+        "write_file",
         "WRONG"
       ],
       "diagnostic_modalities": [
@@ -3202,8 +3579,16 @@
       "check": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured tool_calls come back rather than prose or an empty call.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "<function=NAME></function>",
+        "<tool_call><function=NAME><parameter=KEY>...",
+        "checks/tool_args_dialect_probe.py",
+        "CONTRIBUTING",
         "JSON",
-        "NAME"
+        "NAME",
+        "README",
+        "tokenizer.chat_template",
+        "tool_call.arguments is mapping",
+        "tool_calls"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3267,9 +3652,41 @@
       "check": "Three assertions, all cheap, in this order: 1. Per-row cosine in float64, not a flat cosine over the whole tensor. A flat cosine over a 1.27B-element lm_head overflows in float32 and can return > 1, which is itself the tell that your metric is broken. 2. A decimal-comparison generation probe (is 9.9 or 9.11 larger?) alongside the usual capital-of-France probe. The capital probe passes on a subtly-broken dequant; the decimal probe does not. 3. Compare against the base model's own output on the same prompts, not against your expectation.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        ".weight_scale",
+        ".weight_scale_2",
+        "block_size",
+        "CHANGELOG",
+        "checks/dequant_fidelity.py",
+        "CONTRIBUTING",
+        "CUTLASS",
+        "dequantize_to_dtype(...)",
+        "do_shuffle=False",
+        "do_shuffle=True",
+        "float8_e4m3fn",
+        "float_ue4m3_t",
+        "float_ue8m0_t",
+        "is 9.9 or 9.11 larger?",
+        "lm_head",
+        "mm_fp4",
+        "mx_float4_t",
+        "MXFP4",
+        "nv_float4_t",
         "NVFP4",
         "NVIDIA",
-        "W4A16"
+        "Qwen3.6-27B-NVFP4",
+        "README",
+        "SfLayout",
+        "SM120",
+        "Sm1xxBlockScaledConfig",
+        "swizzle=",
+        "swizzle=False",
+        "swizzle=True",
+        "ue4m3",
+        "ue8m0",
+        "uint8",
+        "w.to(float32) * weight_scale",
+        "W4A16",
+        "weight_scale_2"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3339,9 +3756,22 @@
       "check": "The signature itself, ~20x prefill drop with ~0.5x decode, no error, is diagnostic. Confirm by running the same model on the same binary at f16/f16 and comparing; then check how the build directory was configured. ```bash",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "-DCMAKE_CUDA_ARCHITECTURES=<arch>",
+        "-DGGML_CUDA=ON",
+        "-DGGML_CUDA_FA_ALL_QUANTS=ON",
+        "AMDGPU_TARGETS",
+        "CONTRIBUTING",
         "CUDA",
+        "DCMAKE_CUDA_ARCHITECTURES",
+        "DGGML_CUDA",
         "DGGML_CUDA_FA_ALL_QUANTS",
-        "NVIDIA"
+        "f16/f16",
+        "GPU_TARGETS",
+        "NVIDIA",
+        "q4_0",
+        "q8_0",
+        "ROCBLAS_USE_HIPBLASLT",
+        "ROCBLAS_USE_HIPBLASLT=0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3403,8 +3833,19 @@
       "check": "Two, in order of cheapness: 1. GPU utilization vs power draw. This is the tell, and it is architecture-agnostic: 98% utilization.gpu at ~270W of 575W (47% TDP) means compute units are busy but tensor cores are not saturated, i.e. you are on a fallback path. After the rebuild the same workload ran 95% util at ~460W (80% TDP) and 16 to 40 tok/s. Runnable: 2. Ancestry, before you assume a fix needs porting: Also confirm the feature actually compiled in, the server's startup system_info line reports the arch-native flag (BLACKWELL_NATIVE_FP4 = 1 in this case). A flag you passed is not evidence; a banner the binary printed is.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "--ctx-size",
+        "--parallel",
         "BLACKWELL_NATIVE_FP4",
-        "NVFP4"
+        "BLACKWELL_NATIVE_FP4 = 1",
+        "checks/util_vs_power_tell.sh",
+        "CONTRIBUTING",
+        "ctx / n_parallel",
+        "kill -9",
+        "NVFP4",
+        "README",
+        "SIGTERM",
+        "system_info",
+        "VRAM"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3478,7 +3919,14 @@
       "category": "runtime",
       "check": "Two lines: ```bash",
       "contributor": "TheTom",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "--max-model-len",
+        "cache=58055/59835",
+        "checks/cache_hit_probe.py",
+        "CONTRIBUTING",
+        "README",
+        "TTFT"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -3529,9 +3977,15 @@
       "check": "The diagnostic that cracked it, and the one to run first on any unexplained latency: > Compare the server's own logged total time against the client-reported latency for the same > call. Server said 9.8 s; client said 40.2 s. A large, roughly constant, client-only gap > is not a model or engine problem. Manual equivalents:",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "-np 1",
         "AAAA",
+        "base_url",
+        "checks/latency_reconciliation.py",
+        "CONTRIBUTING",
+        "CUDA",
         "HOST",
-        "HTTP"
+        "HTTP",
+        "README"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3582,7 +4036,15 @@
       "category": "evaluation",
       "check": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server n_tokens, usage.prompt_tokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a",
       "contributor": "TheTom",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "'AI. ' * 400",
+        "checks/tokenized_length_assert.py",
+        "CONTRIBUTING",
+        "n_tokens",
+        "n_tokens = 246,722",
+        "README",
+        "usage.prompt_tokens"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -3643,7 +4105,19 @@
       "category": "evaluation",
       "check": "Three, cheapest first: 1. Count the dumps. The reference produced 53 entries for 52 layers. That mismatch alone is the tell, and it costs nothing to check. 2. Check norms against theory. RMSNorm maps any input to about ||weight||. Here ||norm_f.weight|| = 124.99, so every post-norm state lands at ~125 by construction. The reference's dramatic 567 to 124 \"drop\" is just the norm being applied. If a \"collapse\" lands exactly on ||weight||, it is not a collapse. 3. Apply your own final norm before comparing. Ours: raw L51 = 552.1; after applying norm_f = 120.7, against the reference's 123.7 (on a different prompt). After fixing the offset, the two implementations tracked within ~3% across the whole stack: | backbone layer output | reference | ours | |---|---|---| | 49 | 452.5 | 452.3 | | 50 | 566.8 | 582.3 | | post-final-norm | 123.7 | 120.7 | match, tries both index alignments, and reports which one is consistent.",
       "contributor": "TheTom",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "all_hidden_states += (hidden_states,)",
+        "checks/hidden_state_align.py",
+        "CONTRIBUTING",
+        "hs[0]",
+        "hs[51]",
+        "norm_f",
+        "output_hidden_states",
+        "README",
+        "ref[L+1]",
+        "trust_remote_code",
+        "||norm_f.weight|| = 124.99"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -3704,10 +4178,20 @@
       "check": "Run perplexity on every backend you have before drawing a conclusion about a quant format, and bisect by tensor group rather than by guess: ```bash",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "--tensor-type",
+        "--tensor-type ssm=q8_0",
+        "_build_tensors",
+        "CONTRIBUTING",
         "CUDA",
+        "dyld: Symbol not found: common_init_from_params",
         "GELU",
+        "ggml-metal-ops.cpp",
+        "mul_mm",
+        "Nemotron-H-8B-Base-8K",
         "Q8_0",
-        "TQ4_1S"
+        "TQ4_1S",
+        "TQ_NO_ROTATE",
+        "TQ_NO_ROTATE=1"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3764,7 +4248,12 @@
       "category": "evaluation",
       "check": "Gate every performance number on a correctness assertion produced by the same binary, same flags, same session. Not a correctness run from last week on a different build. Minimum viable gate, in order of cost: 1. A coherence probe plus a discriminative probe, capital-of-France catches gross breakage, a decimal comparison (9.9 vs 9.11) catches subtle breakage that the first one passes. See 2. Top-1 rank of a known answer, not just readability of the output. Rank 1213 for \"Paris\" reads as fluent text. 3. Perplexity or KL against a high-precision reference on the same build, if the change touches numerics at all. Then record the correctness result in the same row as the throughput number. A perf table with no correctness column is an invitation to this trap.",
       "contributor": "TheTom",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "checks/dequant_fidelity.py",
+        "CONTRIBUTING",
+        "gemma-4-E2B-it",
+        "n_params: 4,647,450,147"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -3823,6 +4312,11 @@
       "check": "After every restart, prove three things about the process that is answering, not about the command you ran: ```bash",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
+        "--speculative-config",
+        "/health",
+        "CONTRIBUTING",
+        "fuser -k 8080/tcp",
+        "spec_decode_num_draft_tokens_total",
         "SUCCESS",
         "VRAM",
         "WSL2"
@@ -3883,7 +4377,12 @@
       "check": "1. Counterbalance the order. Run A to B and B to A and compare. If the winner is whichever ran second, you have this trap and no result. 2. Discard warm-up explicitly. Fixed warm-up count (we use at least 8 steps), then an N-run median. Then check that the warmed runs are stable, monotonic degradation across warmed runs is thermal throttling, a different artifact with the same shape. 3. Test the null. Run the \"improved\" configuration on a build that does not contain the improvement. This is the cheapest disproof available and it is the one that settled ours. If the effect survives, it was never your feature. 4. Never compare across sessions. Re-measure the baseline in the same session, on the same binary, with the same clocks locked. Record the build hash and the locked clock with every number. 5. Lock clocks. Demand-governed boards swing widely, one dev board ranged 363 to 597 MHz, and a figure that had been quoted for weeks was simply a high-clock sample about 20% above the locked baseline.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
-        "CUDA"
+        "0e4a036",
+        "cache_prompt = true",
+        "cache_prompt: false",
+        "CUDA",
+        "JSONL",
+        "TTFT"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -3946,7 +4445,17 @@
       "check": "1. Read all three numbers before quoting a long-context result. config.json max_position_embeddings and the rope factor; the served file's own context_length metadata; and the model card's stated training context, which is usually in prose rather than in config. 2. Anchor with a shorter-context control. Run your battery at the model's native length as well as at the long length. A model that scores well at native and collapses at 8x native is telling you about extension, not about capability. 3. Include a model that was genuinely trained long in any long-context comparison. Without one, every result is confounded with extension quality.",
       "contributor": "TheTom",
       "diagnostic_fingerprints": [
-        "GGUF"
+        "config.json",
+        "context_length",
+        "context_length = 262144",
+        "CONTRIBUTING",
+        "GGUF",
+        "max_position_embeddings",
+        "max_position_embeddings: 1048576",
+        "MRCR",
+        "Qwen2.5-14B-Instruct-1M",
+        "Qwen2.5-7B-Instruct",
+        "the slot context (1048576) exceeds the training context of the model (262144) - capping"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4026,7 +4535,44 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--trust-remote-code",
-        "GB10"
+        "/tokenize",
+        "/v1/chat/completions",
+        "/v1/chat/completions/render",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "20eb61abe97be7607fd12e2b929faef91743cd2699ad9a4e032b54237d137694",
+        "48a077e4cfaa5425ac5df67ce95f07a99c6d26d5",
+        "4e671e9adc64ca315db284545e72a6db",
+        "60d8d70770c6776ff598c94bb586a859a38244f1",
+        "70a8bab597ddab53ab8d0bf60b4230ec",
+        "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+        "auto_map",
+        "bdbd57c132a1b3725042323d02b98b9d1df28e5f388f134399555d041f5055e0",
+        "chat_template",
+        "chat_template.jinja",
+        "chat_template_kwargs",
+        "CRLF",
+        "deepseek_v4",
+        "DeepseekV4Tokenizer.apply_chat_template",
+        "DROPPED",
+        "encoding/encoding_dsv4.py",
+        "ENDPOINT_RENDER_REPRODUCED",
+        "GB10",
+        "HTTP",
+        "INCONCLUSIVE",
+        "prompt_tokens",
+        "reasoning_effort",
+        "return_token_strs",
+        "ROLE_MARKED",
+        "S1S2",
+        "SOURCE_INSPECTED_AT_PINNED_REVISION",
+        "TEMPLATE_EXECUTED_AT_PINNED_REVISION",
+        "tokenization_kimi.TikTokenTokenizer",
+        "tokenizer_config.json",
+        "TOKENIZER_EXECUTED_AT_PINNED_REVISION",
+        "trust_remote_code",
+        "UNDER_TEST",
+        "vllm/tokenizers/deepseek_v4_encoding.py",
+        "WELDED_TO_USER"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4117,10 +4663,15 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--default-chat-template-kwargs",
+        "--default-chat-template-kwargs {\"thinking\": false}",
         "--trust-remote-code",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "deepseek_v4",
+        "enable_thinking",
         "GB10",
         "HTTP",
         "JSON",
+        "return_token_strs",
         "YAML"
       ],
       "diagnostic_modalities": [
@@ -4199,20 +4750,33 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--default-chat-template-kwargs",
+        "--default-chat-template-kwargs {\"thinking\": false}",
         "--trust-remote-code",
+        "/tokenize",
         "/v1/chat/completions/render",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "chat_template_kwargs",
+        "chat_template_kwargs: {\"reasoning_effort\": \"max\"}",
+        "deepseek_v4",
+        "finish_reason: length",
         "GB10",
-        "HTTP"
+        "HTTP",
+        "max_tokens",
+        "prompt_tokens",
+        "reasoning_effort",
+        "reasoning_effort: \"low\"",
+        "reasoning_effort: \"max\""
       ],
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/58-reasoning-effort-injects-hidden-preamble.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -4283,9 +4847,13 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--reasoning-parser",
+        "--reasoning-parser deepseek_v4",
         "--trust-remote-code",
         "/v1/chat/completions/render",
-        "GB10"
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "deepseek_v4",
+        "GB10",
+        "reasoning_content"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4375,9 +4943,25 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--max-num-batched-tokens",
+        "--max-num-batched-tokens 8192",
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "-np 1",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "0e4a03622",
+        "cache_prompt = true",
+        "cache_prompt: false",
+        "common/common.h:622",
+        "finish_reason",
+        "finish_reason: length",
+        "finish_reason: stop",
         "GB10",
+        "ggml-org/llama.cpp",
+        "JSON",
         "NVFP4",
+        "prefix_cache_hits / prefix_cache_queries",
+        "quiet-foundry-3946",
+        "quiet-ledge-1234",
         "TTFT"
       ],
       "diagnostic_modalities": [
@@ -4464,12 +5048,27 @@
       "check": "Three steps, and the first two cost nothing. 1. Read the checkpoint's config.json rope-scaling block before you trust any context number. If it carries a YaRN or similar factor over an original_max_position_embeddings, the advertised window is that base times that factor, and the base is the trained length. Record both numbers. 2. Check whether the serving container sets a long-context override variable. Its presence means the advertised length did not pass the engine's own sanity check. 3. Measure with a fact at position zero, unique non-repeating filler, and a decoy at the tail, laddered across orders of magnitude. Record finish_reason alongside accuracy, and compare the server's prompt_tokens against your own tokenization at every rung. And run every rung cold, or you will measure the cache instead of the model.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--max-model-len",
         "--max-num-batched-tokens",
+        "--max-num-batched-tokens 8192",
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "9e165c30e2704aec5d9d593cce3eebd58bbef1cb",
+        "config.json",
+        "finish_reason",
+        "finish_reason: length",
+        "finish_reason: stop",
         "GB10",
         "GGUF",
         "HTTP",
-        "NVFP4"
+        "model_max_length",
+        "NVFP4",
+        "original_max_position_embeddings",
+        "prompt_tokens",
+        "VLLM_ALLOW_LONG_MAX_MODEL_LEN",
+        "VLLM_ALLOW_LONG_MAX_MODEL_LEN=1"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4555,10 +5154,29 @@
       "check": "You do not need to reproduce the failure. 1. Read the engine's own startup line and confirm what the drafter is actually configured as, rather than what the launcher intended. The engine logs a speculative-config summary at init. Confirm the token count, and separately confirm that a draft sampling method is set at all. An absent method is the risky state, not a wrong one. 2. Confirm the sampler backend variable is set in the container's environment, not in the shell that launched it. These differ more often than people expect. 3. Behavioural and non-destructive: send thirty or so generations that force the model through its markup dialect (tool calls, structured output) and scan the raw response bodies, before any client-side parsing, for fragments of special-token syntax that are not complete valid tokens. Well-formed markup is fine; truncated or spliced markup is the signature. Parsing first will hide exactly the evidence you need, because a tolerant parser discards the malformed fragment.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--block-size",
+        "--block-size 256",
+        "--gpu-memory-utilization",
+        "--gpu-memory-utilization 0.85",
+        "--kv-cache-dtype",
+        "--kv-cache-dtype nvfp4_ds_mla",
+        "--max-cudagraph-capture-size",
+        "--max-model-len",
+        "--max-model-len 1048576",
+        "--max-num-seqs",
+        "--max-num-seqs 4",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "60b9118",
         "CUDA",
+        "draft_sample_method",
+        "DSV4F",
+        "FULL",
         "GB10",
         "HTTP",
-        "NVFP4"
+        "num_speculative_tokens",
+        "NVFP4",
+        "PIECEWISE",
+        "VLLM_USE_FLASHINFER_SAMPLER"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4637,13 +5255,29 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--template-file",
+        "/apply-template",
         "/v1/chat/completions/render",
+        "<think></think>\\nA1",
+        "<think></think>A1",
         "A12B",
+        "checks/preflight_template.py",
+        "doctor/minefield_doctor.py",
+        "enable_thinking",
         "GB10",
         "HTTP",
+        "low_effort",
+        "message.reasoning_content",
         "NVFP4",
         "NVIDIA",
-        "POST"
+        "POST",
+        "POST /v1/chat/completions/render",
+        "preserve_thinking",
+        "preserve_thinking: true",
+        "reasoning_content",
+        "return_token_strs: true",
+        "token_ids",
+        "truncate_history_thinking",
+        "truncate_history_thinking: false"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -4728,10 +5362,21 @@
       "check": "Two requests. Send your normal prompt, then send it again with /no_think appended somewhere harmless, both with your usual enable_thinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with `finishreason: \"stop\"` as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "/no_think",
+        "/think",
+        "enable_thinking",
+        "enable_thinking: false",
+        "enable_thinking: true",
+        "finish_reason",
+        "finish_reason: \"length\"",
+        "finish_reason: \"stop\"",
+        "force_nonempty_content",
         "GB10",
         "HTTP",
+        "nemotron_v3",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "qwen3_coder"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4809,9 +5454,14 @@
       "diagnostic_fingerprints": [
         "--reasoning-parser-plugin",
         "A12B",
+        "finish_reason",
+        "finish_reason: \"length\"",
+        "force_nonempty_content",
+        "force_nonempty_content: true",
         "GB10",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "super_v3_reasoning_parser.py"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4887,10 +5537,23 @@
       "check": "Send a prompt containing /think or /no_think as part of an ordinary path, with the opposite enable_thinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/no_think\" chat_template.jinja next to the weights. Any hit means your users' text is being scanned.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "/no_think",
+        "/reason",
+        "/think",
+        "Compare and/think versus and/no_think as strings.",
+        "CUDA",
+        "enable_thinking",
+        "enable_thinking: false",
+        "enable_thinking: true",
         "GB10",
+        "grep -c \"/no_think\" chat_template.jinja",
+        "nemotron_v3",
+        "num_predict",
         "NVFP4",
         "NVIDIA",
-        "POST"
+        "POST",
+        "qwen3:8b",
+        "src/reason/main.py"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -4967,7 +5630,9 @@
         "GB10",
         "NVFP4",
         "NVIDIA",
-        "POST"
+        "POST",
+        "POST /v1/chat/completions/render",
+        "return_token_strs: true"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -5102,7 +5767,15 @@
       "category": "template",
       "check": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|im_start|> against <|im_end|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes.",
       "contributor": "Blackwellboy",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "<tool_response>",
+        "<|im_end|>",
+        "<|im_start|>",
+        "<|im_start|>user",
+        "if messages[0].role == \"system\"",
+        "if system_message is defined",
+        "system_message"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -5177,12 +5850,17 @@
       "check": "One request, one assertion: If content is empty and reasoning is populated, your parser is wrong or missing. Separately, grep any thinking-on content for a bare </think>; if you find one with no opener, you have no reasoning parser at all. Before downloading a checkpoint from this family, list its files and look for a *_reasoning_parser.py. It is the cheapest possible check and it changes your serve line.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "*_reasoning_parser.py",
         "--reasoning-parser",
+        "--reasoning-parser <name>",
         "--reasoning-parser-plugin",
+        "--reasoning-parser-plugin <path>",
         "A12B",
         "GB10",
+        "nano_v3_reasoning_parser.py",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "super_v3_reasoning_parser.py"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -5258,10 +5936,24 @@
       "check": "1. Grep the config for nextn, not mtp. 2. Read the engine's startup log for the resolved draft architecture and for the max_num_scheduled_tokens line. 3. Scrape the engine's speculative-decoding counters after a real workload, not after a warm-up. Acceptance is content-dependent, so a synthetic prompt gives you a number that does not transfer. 4. Record the KV cache size in both arms. It is printed at startup and it is the number nobody quotes.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "0.25.2.dev0+g752a3a504.d20260714",
         "A12B",
+        "config.json",
+        "dspark_block_size: 5",
         "GB10",
+        "max_num_scheduled_tokens",
+        "max_num_seqs x (k + 1)",
+        "mtp_hybrid_override_pattern: \"*E\"",
+        "MTP_NUM_TOKENS",
+        "num_mtp",
+        "num_nextn_predict_layers",
+        "num_nextn_predict_layers: 1",
+        "num_spec_tokens",
+        "num_speculative_tokens > 1",
+        "num_speculative_tokens=1",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "TTFT"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -5335,9 +6027,12 @@
       "check": "One request with a media reference to a path that does not exist. If the status is 5xx, you have it. The registry doctor now runs this on any lane that accepts an image part.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "[Errno 2] No such file or directory",
+        "At most 1 image(s) may be provided in one prompt.",
         "GB10",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "Unknown part type: hologram_url"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -5412,7 +6107,9 @@
       "diagnostic_fingerprints": [
         "GB10",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "prompt_tokens",
+        "prompt_tokens_details"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -5547,7 +6244,10 @@
       "category": "versioning",
       "check": "Two lines, and they cost nothing: ```bash",
       "contributor": "Blackwellboy",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "--zstd",
+        "CONTRIBUTING"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -5612,8 +6312,12 @@
       "diagnostic_fingerprints": [
         "ASCII",
         "CUDA",
+        "cuda_v12",
+        "cuda_v13",
         "GB10",
         "INFO",
+        "NVIDIA",
+        "qwen3:8b",
         "VRAM"
       ],
       "diagnostic_modalities": [
@@ -5684,11 +6388,32 @@
       "check": "Two requests, and the assertion is on the response rather than the status code: ```bash",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--fail-on-environ-validation",
         "/api/chat",
         "/api/generate",
+        "62bf73d25",
+        "chat_template_kwargs.reasoning_strength=low",
+        "chat_template_kwargs: {...}",
         "CUDA",
+        "CUTLASS",
+        "enable_thinking: false",
+        "enable_thinking=false",
+        "FLASHINFER_CUTLASS",
         "GB10",
-        "HTTP"
+        "HIGH",
+        "HTTP",
+        "JSON",
+        "NVFP4",
+        "Q4_K_XL",
+        "qwen3:8b",
+        "reasoning_content",
+        "reasoning_strength",
+        "REQUEST_SURFACE_UNVALIDATED_CONTROL",
+        "SM121",
+        "STARTUP_CONFIGURATION_UNVALIDATED_CONTROL",
+        "VLLM_",
+        "VLLM_*",
+        "VLLM_FLASHINFER_MOE_BACKEND"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -5767,8 +6492,17 @@
         "/api/chat",
         "/v1/chat/completions",
         "CUDA",
+        "finish_reason: \"tool_calls\"",
+        "finish_reason: tool_calls",
         "GB10",
-        "tool_choice"
+        "JSON",
+        "qwen3:8b",
+        "tool_choice",
+        "tool_choice: \"none\"",
+        "tool_choice: \"required\"",
+        "tool_choice=auto",
+        "tool_choice=none",
+        "tool_choice=required"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -5840,9 +6574,18 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "/api/chat",
+        "context_length",
         "CUDA",
+        "done_reason: \"length\"",
+        "done_reason: length",
+        "DSV4F",
         "GB10",
-        "HTTP"
+        "HTTP",
+        "max_tokens",
+        "num_ctx",
+        "num_ctx: 200000",
+        "num_predict",
+        "qwen3:8b"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -5913,19 +6656,30 @@
       "check": "Detection first, because it is one request: ```python",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--reasoning-parser-plugin",
         "CUDA",
         "GB10",
+        "HTTP",
+        "max_tokens",
+        "nano_v3",
+        "NVFP4",
+        "NVIDIA",
+        "read1()",
+        "reasoning_content",
+        "tokens / (t_last_delta - t_first_delta)",
+        "total_s",
         "TTFT"
       ],
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/80-reasoning-parser-batches-sse-deltas.md"
       },
       "evidence_strength": [
         "measured here, raw not published"
@@ -5974,7 +6728,17 @@
       "category": "memory",
       "check": "Do not gate lane bring-up on container state, and do not gate it on a sleep. Gate it on measured free memory: ```bash",
       "contributor": "Blackwellboy",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "--gpu-memory-utilization",
+        "--gpu-memory-utilization 0.86",
+        "cudaMemGetInfo",
+        "Exited (0)",
+        "FLOOR_G",
+        "GB10",
+        "init_device",
+        "MemorySnapshot.__post_init__",
+        "torch.cuda.mem_get_info"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -6045,9 +6809,18 @@
       "check": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompt_tokens_details.cached_tokens.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--jinja",
+        "/apply-template",
+        "[INST] SYS\\n\\nU1[/INST]",
+        "[INST] U1[/INST] A1</s>[INST] SYS\\n\\nU2[/INST]",
+        "b9878-2da668617",
         "GGUF",
         "INST",
-        "LAST"
+        "LAST",
+        "prompt_tokens_details.cached_tokens",
+        "Q8_0",
+        "system, user(U1)",
+        "system, user(U1), assistant(A1), user(U2)"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6109,7 +6882,14 @@
       "check": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
-        "GGUF"
+        "--jinja",
+        "/apply-template",
+        "b9878-2da668617",
+        "GGUF",
+        "prompt_tokens",
+        "Q8_0",
+        "system_message",
+        "{%- if loop.last and system_message is defined %}"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6175,10 +6955,25 @@
       "check": "Send the four-message sequence in row four to /apply-template. If it 400s, your agent loop needs the intervening assistant turn.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--jinja",
+        "/apply-template",
+        "/props",
+        "[TOOL_CALLS]",
+        "[TOOL_RESULTS]",
+        "b9878-2da668617",
+        "chat_template_caps.supports_object_arguments: true",
         "GGUF",
         "HTTP",
+        "JSON",
+        "Q8_0",
+        "raise_exception",
         "TOOL_CALLS",
-        "TOOL_RESULTS"
+        "tool_calls",
+        "TOOL_RESULTS",
+        "user, assistant(tool_calls)",
+        "user, assistant(tool_calls), tool",
+        "user, assistant(tool_calls), tool, assistant, user",
+        "user, assistant(tool_calls), tool, user"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6246,10 +7041,24 @@
       "check": "Send the string form and the bool form of enable_thinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--jinja",
+        "b9878-2da668617",
         "enable_thinking",
         "GGUF",
         "HTTP",
-        "YAML"
+        "invalid type for \"enable_thinking\" (expected boolean, got string)",
+        "max_tokens=10",
+        "Q8_0",
+        "temperature=0",
+        "YAML",
+        "{\"enable_thinking\": \"false\"}",
+        "{\"enable_thinking\": \"true\"}",
+        "{\"enable_thinking\": 1.0}",
+        "{\"enable_thinking\": 1}",
+        "{\"enable_thinking\": null}",
+        "{\"enable_thinking\": true}",
+        "{\"zzz_nonsense\": \"somestring\"}",
+        "{\"zzz_nonsense\": 7}"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6319,8 +7128,22 @@
       "check": "Send the same assistant text in last position and in second-to-last position to /apply-template and diff the two strings around it. If the delimiters differ, your prefill is not the conversation your multi-turn arm produces, and the two will not share a cache prefix.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "--jinja",
+        "/apply-template",
+        "[/INST] A1",
+        "[/INST]A1",
+        "[INST] SYS\\n\\nU1[/INST]A1",
+        "[INST] U1[/INST] A1</s>[INST] SYS\\n\\nU2[/INST]",
+        "b9878",
+        "b9878-2da668617",
         "GGUF",
-        "INST"
+        "HTTP",
+        "INST",
+        "Q8_0",
+        "system, user(U1), assistant(A1)",
+        "system, user(U1), assistant(A1), user(U2)",
+        "tool_calls",
+        "user, assistant(tool_calls)"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -6383,12 +7206,27 @@
         "--metrics",
         "--parallel",
         "--slots",
+        "-c 131072",
+        "-c 131072 -np 4 -fa on --jinja --slots --metrics",
         "/props",
         "/slots",
-        "/v1/models.",
+        "/v1/models",
+        "b9878-2da668617",
+        "build_info",
+        "chat_format",
+        "chat_template",
+        "chat_template_caps.supports_preserve_reasoning",
         "CHECK",
         "COULD",
+        "endpoint_metrics",
+        "endpoint_slots",
         "GGUF",
+        "HTTP",
+        "llama.context_length",
+        "n_ctx",
+        "Q8_0",
+        "reasoning_format",
+        "request (40089 tokens) exceeds the available context size (32768 tokens)",
         "SLOT"
       ],
       "diagnostic_modalities": [
@@ -6449,8 +7287,15 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "b9878",
+        "b9878-2da668617",
+        "cache_n",
+        "cache_prompt",
         "cache_prompt: false",
-        "DOES"
+        "cached_tokens",
+        "DOES",
+        "GGUF",
+        "Q8_0",
+        "temperature=0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6521,11 +7366,27 @@
       "contributor": "@drowzeys (Keys). Shared by",
       "diagnostic_fingerprints": [
         "--local-dir",
+        "--reflink",
+        ".contiguous().view(torch.uint8)",
+        ".view(torch.uint8)",
+        "afd4137",
+        "afd4137540ba5c4c2a1e96ecaf4200af74f8dfd8",
+        "attn.wo_b",
+        "bfloat16",
         "CONTRIBUTING",
+        "cp --reflink=never -L",
+        "DSV4F",
+        "float8_e4m3fn",
         "GB10",
         "NVFP4",
         "PASS",
-        "TypeError"
+        "project_wob.py",
+        "save_file",
+        "STOCK",
+        "TECHNICAL_REPORT",
+        "TECHNICAL_REPORT.md",
+        "TypeError",
+        "TypeError: Got unsupported ScalarType"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6601,10 +7462,28 @@
       "check": "Ask the library what it has compiled for your architecture,",
       "contributor": "@drowzeys (Keys). Shared by",
       "diagnostic_fingerprints": [
+        "--list-elf",
+        "afd4137",
+        "afd4137540ba5c4c2a1e96ecaf4200af74f8dfd8",
+        "CONTRIBUTING",
+        "DSV4F",
+        "dsv4f-v025-gt60",
+        "Expected 64 or 128 query heads, got 32",
+        "flashinfer-cubin 0.6.14",
         "GB10",
+        "HOLD",
+        "kv_layout=NHD",
+        "nvfp4_ds_mla",
+        "preflight_template.py",
         "SM100",
         "SM12",
-        "SM120"
+        "SM120",
+        "sm_NNN",
+        "swa_kv_cache.shape[1] == 1, got 64",
+        "sys.exit(3)",
+        "TECHNICAL_REPORT",
+        "TECHNICAL_REPORT.md",
+        "unexpected keyword argument 'swa_topk_lens'"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6682,7 +7561,15 @@
       "check": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cache_prompt: false, then hash the completions: ```bash",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
-        "GGUF"
+        "--jinja",
+        "-np 4 -fa on",
+        "b9878-2da668617",
+        "cache_prompt: false",
+        "GGUF",
+        "Q8_0",
+        "sm_120",
+        "sm_86",
+        "temperature: 0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6757,7 +7644,14 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--jinja",
-        "GGUF"
+        "-np 4 -fa on",
+        "b9878-2da668617",
+        "cache_prompt: false",
+        "cached_tokens",
+        "cached_tokens == 0",
+        "cached_tokens: 0",
+        "GGUF",
+        "Q8_0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6833,7 +7727,12 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--jinja",
+        "-np 4",
+        "b9878-2da668617",
+        "cached_tokens",
         "GGUF",
+        "prompt_tokens_details.cached_tokens",
+        "Q8_0",
         "SYSMARK"
       ],
       "diagnostic_modalities": [
@@ -6903,9 +7802,20 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--jinja",
+        "-c 131072",
+        "-c 32768",
+        "-ngl 999 -c <n> -np 4 -fa on --jinja",
+        "/props",
+        "b9878-2da668617",
+        "cache_prompt: false",
         "CMAKE_CUDA_ARCHITECTURES",
+        "CMAKE_CUDA_ARCHITECTURES=86;120",
         "CUDA_VISIBLE_DEVICES",
-        "GGUF"
+        "GGUF",
+        "Q8_0",
+        "sm_120",
+        "sm_86",
+        "system_fingerprint"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -6980,8 +7890,14 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--jinja",
+        "-c 32768 -np 4 -fa on --jinja",
+        "b9878-2da668617",
+        "cache_prompt: false",
         "CUDA_VISIBLE_DEVICES",
         "GGUF",
+        "Q8_0",
+        "sm_120",
+        "sm_86",
         "VRAM"
       ],
       "diagnostic_modalities": [
@@ -7050,7 +7966,9 @@
       "diagnostic_fingerprints": [
         "--list-devices",
         "--query-gpu",
+        "b9878-2da668617",
         "CUDA",
+        "nvidia-smi --query-gpu=memory.free",
         "VRAM",
         "WSL2"
       ],
@@ -7127,9 +8045,20 @@
       "diagnostic_fingerprints": [
         "--jinja",
         "--version",
+        "-c 8192 -np 1",
+        "-c 8192 -np 1 -fa on --jinja",
+        "-ngl 8",
         "/props",
+        "b9878-2da668617",
+        "cache_prompt: false",
         "CUDA",
+        "default_generation_settings",
         "GGUF",
+        "gpu_layers",
+        "n_ctx",
+        "n_gpu_layers",
+        "n_layer",
+        "Q8_0",
         "VRAM"
       ],
       "diagnostic_modalities": [
@@ -7213,8 +8142,14 @@
       "contributor": "Nemo (@smfworks)",
       "diagnostic_fingerprints": [
         "--max-num-seqs",
+        "b482b5d57fda6e4e562a652869bde24ba2a57c92",
         "GB10",
-        "NVFP4"
+        "LAGUNA_SOAK_12H_20260725_RESULTS",
+        "max-num-seqs=256",
+        "max-num-seqs=32",
+        "max-num-seqs=4",
+        "NVFP4",
+        "poolside/Laguna-S-2.1-NVFP4"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -7274,9 +8209,13 @@
       "check": "Run this on the target GPU — it takes seconds and will tell you whether SDPA works for causal attention:",
       "contributor": "Nemo (@smfworks)",
       "diagnostic_fingerprints": [
+        "_sdpa_wrapper",
         "CUDA",
         "EFFICIENT_ATTENTION",
+        "F.scaled_dot_product_attention",
         "FAIL",
+        "hipErrorInvalidValue",
+        "is_causal=True",
         "MATH",
         "SDPA"
       ],
@@ -7332,7 +8271,12 @@
       "category": "runtime",
       "check": "```bash uname -r",
       "contributor": "Nemo (@smfworks)",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "/etc/grub.d/40_custom",
+        "GRUB",
+        "hipErrorInvalidImage",
+        "torch.zeros(10, device='cuda')"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -7402,7 +8346,13 @@
       "category": "template",
       "check": "```bash python3 -c \"import transformers; print(transformers.version)\"",
       "contributor": "Nemo (@smfworks)",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "create_causal_mask",
+        "input_embeds",
+        "transformers==5.14.1",
+        "transformers==5.5.0",
+        "transformers==5.6.0"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -7542,7 +8492,11 @@
       "check": "```python try: import torchvision print(\"torchvision:\", torchvision.version) except ImportError as e: print(f\"torchvision unavailable: {e}\") If you are on ROCm with TheRock wheels, this is expected. Your model's AutoProcessor call will fail unless you patch it.",
       "contributor": "Nemo (@smfworks)",
       "diagnostic_fingerprints": [
-        "ImportError"
+        "AutoProcessor",
+        "AutoProcessor.from_pretrained",
+        "AutoTokenizer",
+        "ImportError",
+        "transformers==5.5.0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -7629,11 +8583,17 @@
       "contributor": "Nemo (@smfworks)",
       "diagnostic_fingerprints": [
         "--max-num-seqs",
+        "--max-num-seqs 4",
         "--override-generation-config",
+        "--override-generation-config '{\"enable_thinking\":false,\"max_tokens\":16384}'",
         "--revision",
+        "--revision b482b5d",
         "GB10",
         "LAGUNA",
+        "LAGUNA-S-2.1-NVFP4.md",
+        "max-num-seqs 32",
         "NVFP4",
+        "poolside/Laguna-S-2.1-NVFP4",
         "README"
       ],
       "diagnostic_modalities": [
@@ -7718,9 +8678,36 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--max-model-len",
+        "--max-model-len 1048576",
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "/health",
+        "/metrics",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6",
+        "A12B",
+        "accepted_tokens / draft_tokens",
+        "decode_steps",
+        "dsv4_ablit_mida",
         "GB10",
-        "NVFP4"
+        "http_requests_total",
+        "K + 1",
+        "MANIFEST",
+        "METHODS",
+        "num_speculative_tokens=3",
+        "NVFP4",
+        "nvfp4_ds_mla",
+        "NVIDIA",
+        "README",
+        "REDACTIONS",
+        "SHA256SUMS",
+        "spec_decode_num_accepted_tokens_total",
+        "spec_decode_num_draft_tokens_total",
+        "tokens_per_step",
+        "tokens_per_step <= K + 1",
+        "vllm:request_success_total",
+        "vllm:spec_decode_*",
+        "vllm:spec_decode_num_accepted_tokens_total / ..._num_draft_tokens_total"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -7813,8 +8800,22 @@
       "diagnostic_fingerprints": [
         "--enable-prefix-caching",
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "cache_salt",
+        "dsv4_ablit_mida",
         "GB10",
-        "NVFP4"
+        "MANIFEST",
+        "METHODS",
+        "NVFP4",
+        "nvfp4_ds_mla",
+        "README",
+        "REDACTIONS",
+        "SHA256SUMS",
+        "TTFT",
+        "vllm:kv_cache_usage_perc",
+        "vllm:num_preemptions_total",
+        "vllm:num_requests_waiting"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -7908,11 +8909,23 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--gpu-memory-utilization",
+        "--gpu-memory-utilization 0.90",
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6",
         "A12B",
+        "enable_prefix_caching=False",
         "GB10",
+        "JSONL",
+        "MANIFEST",
+        "METHODS",
+        "num_speculative_tokens=3",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "README",
+        "REDACTIONS",
+        "sha256:04563c302537a91aa49ebdfbceda96111c5712275999b7e8804fa598f0b5641d",
+        "SHA256SUMS"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -7995,10 +9008,28 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "--async-scheduling",
+        "2f97d795fd1d",
+        "4f0cf9daaeb7a4d5e23f80a00e7ed15f0e03caf6",
+        "7e776e9bd5e2",
+        "81a6298f36c3",
         "A12B",
+        "enable_prefix_caching=False",
+        "finish_reason: stop",
         "GB10",
+        "JSONL",
+        "MANIFEST",
+        "max_tokens",
+        "max_tokens=512",
+        "METHODS",
+        "num_speculative_tokens=3",
         "NVFP4",
         "NVIDIA",
+        "OUT_OF_BAND_T0_REFERENCE",
+        "README",
+        "REDACTIONS",
+        "seed=20260728",
+        "SHA256SUMS",
+        "temperature=0",
         "TTFT"
       ],
       "diagnostic_modalities": [
@@ -8088,12 +9119,19 @@
       "check": "1. Read the requant's own manifest before serving it. If hf_quant_config.json (or the stack's equivalent) excludes mtp.* or any draft-model module while the launch line enables speculative decoding, you are in this trap's territory: the drafter will run on weights the quantized path was never given in its own format. 2. After a real workload, scrape the engine's speculative counters (spec_decode_num_accepted_tokens_total over spec_decode_num_draft_tokens_total). Compare against the vendor's published acceptance for the family. A large shortfall (here, 14.7% against 50.8%) with clean output is the signature; do not wait for an error, because there is none. 3. A/B the draft sampling method on your own lane before concluding anything from garbled output. Thirty structured-output generations per method, scan the raw bodies. See trap 62 for the scan.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "/metrics",
+        "7872f01b",
         "CUDA",
         "CUTLASS",
+        "deepseek-ai/DeepSeek-V4-Flash-0731",
         "E2M1",
         "E8M0",
+        "hf_quant_config.json",
+        "mtp_nvfp4_build_report.json",
         "MXFP4",
-        "NVFP4"
+        "NVFP4",
+        "spec_decode_num_accepted_tokens_total",
+        "spec_decode_num_draft_tokens_total"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8173,6 +9211,7 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "/metrics",
+        "num_requests_running",
         "NVFP4"
       ],
       "diagnostic_modalities": [
@@ -8251,7 +9290,10 @@
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
         "/metrics",
-        "NVFP4"
+        "CUDA",
+        "GB10",
+        "NVFP4",
+        "Q4_K_XL"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8314,19 +9356,21 @@
       "diagnostic_fingerprints": [
         "/health",
         "/v1/models",
-        "AUTHFAILED",
-        "AUTHREQUIRED",
-        "CAPABILITYFAILED",
-        "CAPABILITYOK",
+        "AUTH_FAILED",
+        "AUTH_REQUIRED",
+        "CAPABILITY_FAILED",
+        "CAPABILITY_OK",
+        "checks/endpoint_readiness_hierarchy_probe.py",
         "CUDA",
-        "GENERATIONFAILED",
-        "GENERATIONOK",
+        "GENERATION_FAILED",
+        "GENERATION_OK",
         "HTTP",
         "INCONCLUSIVE",
-        "MODELLISTOK",
-        "NORESPONSE",
-        "WRAPPERHEALTHONLY",
-        "WRONGMODEL"
+        "MODEL_LIST_OK",
+        "NCCL",
+        "NO_RESPONSE",
+        "WRAPPER_HEALTH_ONLY",
+        "WRONG_MODEL"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8408,8 +9452,16 @@
       "check": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLE_MARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDED_TO_USER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
       "contributor": "@wqh17101 and Blackwellboy",
       "diagnostic_fingerprints": [
+        "/tokenize",
+        "26e1bd6e011feb778d25ae34b09b07074139d92d",
+        "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+        "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
         "AMBIGUOUS",
+        "b4734de4facf877f85769a911abafc5283eab3d9",
+        "d494266a4affc0d2995ba1fa35c8481cbd84294b",
         "DROPPED",
+        "f0e1c1e04d40177e4673a22097036854f536e9c0",
+        "f710177d938eff80b684d42c5aa84b382612f21f",
         "HTTP",
         "INCONCLUSIVE",
         "LATESYS",
@@ -8473,9 +9525,12 @@
       "check": "1. On each rank host, dump the GID table for the HCA you intend to use and record which index holds the address family you need. 2. If indices differ, do not force one global number without per-host mapping. 3. Prefer automatic GID selection for bring-up unless you have a pinned, per-host, verified index map checked into the recipe. 4. Confirm success with the same collective on the same hosts after switching from forced-fail to auto (or to the correct per-host indices). Offline triage of changed transport/env paths can use checks/upstream_change_triage.py as a prioritisation hint only; it does not replace live GID inspection.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "checks/upstream_change_triage.py",
+        "ibv_devinfo",
         "NCCL",
         "NCCL_IB_GID_INDEX",
-        "RDMA"
+        "RDMA",
+        "show_gids"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8535,11 +9590,13 @@
       "diagnostic_fingerprints": [
         "CLIENT_TIMEOUT",
         "CUDA",
+        "cudaMalloc",
+        "docs/failure-cause-taxonomy.md",
         "HARNESS_ERROR",
+        "kill -9",
         "SIGKILL",
         "UNKNOWN",
-        "UNKNOWN_UNADJUDICATED",
-        "UNKNOWNUNADJUDICATED"
+        "UNKNOWN_UNADJUDICATED"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8598,7 +9655,12 @@
       "category": "runtime",
       "check": "1. After load success, issue a bounded first-forward / short generate before declaring the serve healthy. 2. If first forward fails in an embed/dtype helper, record load success and forward failure as separate facts. 3. After a candidate fix, require positive proof of the corrected boundary (instrumented enter/ok or completed decode), not only absence of the prior error string. 4. Keep attribution: patch author vs hardware qualifier. Related readiness hierarchy: 112 (resident != first forward != generation complete).",
       "contributor": "Blackwellboy",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "embed_token",
+        "embed_token failed",
+        "forward: embed_token failed",
+        "PASS"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -8673,10 +9735,27 @@
       "check": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause.",
       "contributor": "tonyd2wild",
       "diagnostic_fingerprints": [
+        "'fuse_gemm_comms': False",
         "--compilation-config",
         "--distributed-executor-backend",
+        "--distributed-executor-backend mp",
+        ".get(121)",
+        "determine_available_memory",
+        "fp8_ds_mla",
+        "fuse_gemm_comms",
+        "fused_matmul_reduce_scatter",
         "GB10",
-        "SP_MIN_HIDDEN_SIZE"
+        "get_sequence_parallelism_threshold()",
+        "hidden_size",
+        "hidden_size < 8192",
+        "hidden_size: 6144",
+        "Initializing a V1 LLM engine",
+        "QuantTrio/GLM-5.2-Int4-Int8Mix",
+        "SP_MIN_HIDDEN_SIZE",
+        "sp_min_token_num",
+        "v0.23.1rc1.dev190+gab6660699.d20260704",
+        "vllm/compilation/passes/fusion/sequence_parallelism.py",
+        "vllm/config/vllm.py"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8754,12 +9833,17 @@
       "contributor": "tonyd2wild",
       "diagnostic_fingerprints": [
         "--distributed-executor-backend",
+        "--distributed-executor-backend ray",
         "--include-log-monitor",
-        "--sort",
+        "--include-log-monitor=false",
+        "4.0/4.0 GPU",
         "CUDA",
+        "fp8_ds_mla",
         "GB10",
         "INFO",
         "NCCL",
+        "shm_broadcast",
+        "v0.1.dev17863+ge232d2623.d20260715",
         "W4W8"
       ],
       "diagnostic_modalities": [
@@ -8836,8 +9920,16 @@
       "contributor": "tonyd2wild",
       "diagnostic_fingerprints": [
         "CUDA",
+        "cudaMemGetInfo",
+        "fp8_ds_mla",
         "GB10",
+        "MemAvailable",
+        "MemFree",
         "NCCL",
+        "QuantTrio/GLM-5.2-Int4-Int8Mix",
+        "sendBytes",
+        "v0.1.dev17863+ge232d2623.d20260715",
+        "v0.23.1rc1.dev190+gab6660699",
         "W4W8"
       ],
       "diagnostic_modalities": [
@@ -8919,7 +10011,12 @@
       "check": "Do not use a short 512-token smoke prompt for this trap; that cannot exercise a block-table defect at the end of a 200K sequence. First make a prompt whose length has been measured with the same tokenizer used by the server and that leaves only a small, valid completion budget below max_model_len (for example 32–64 output tokens). Record the measured prompt token count and the server's block size. Then ramp concurrency with that exact near-boundary request: ```bash",
       "contributor": "tonyd2wild",
       "diagnostic_fingerprints": [
-        "GB10"
+        "expanded_block_table_buffer",
+        "fp8_ds_mla",
+        "GB10",
+        "max_model_len",
+        "max_tokens",
+        "QuantTrio/GLM-5.2-Int4-Int8Mix"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -8989,7 +10086,8 @@
         "--hf-overrides",
         "--speculative-config",
         "GB10",
-        "JSON"
+        "JSON",
+        "POSIX"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9069,15 +10167,24 @@
       "check": "Do not diagnose this trap from MTP-on versus MTP-off alone; that only proves that speculation changes the outcome. Run a three-arm control on the same model, runtime build, KV dtype, request, sampling settings, and memory configuration: 1. FULL cell: static MTP under the vLLM 0.27.1 default FULL_AND_PIECEWISE mode. Record graph-mode startup output and MTP acceptance counters. 2. PIECEWISE cell: keep MTP enabled but add dynamic speculative decoding, e.g. \"num_speculative_tokens_per_batch_size\": [[1,4,3]], so vLLM steps FULL capture down to PIECEWISE. Confirm that downgrade in the startup log. 3. No-spec control: same launch with MTP disabled. For each arm run at least: one short non-repetition prompt, one structured tool call whose name and JSON arguments are checked, and one needle-recall prompt. This trap is supported when the FULL cell corrupts while PIECEWISE and no-spec controls are clean, with the graph-mode transition actually observed. If FULL and PIECEWISE both fail, or the graph mode was not verified, the result is inconclusive for Trap 122.",
       "contributor": "ayayalar (A Y)",
       "diagnostic_fingerprints": [
+        "\"num_speculative_tokens_per_batch_size\": [[1,4,3]]",
+        "--enforce-eager",
         "/v1/models",
+        "Accepted: 0",
         "CUDA",
+        "finish_reason: stop",
         "FULL",
         "FULL_AND_PIECEWISE",
         "GB202",
         "HTTP",
         "JSON",
         "NVFP4",
-        "PIECEWISE"
+        "PASS",
+        "PIECEWISE",
+        "query_start_loc.tolist()",
+        "turboquant_4bit_nc",
+        "TurboQuantAttentionImpl.forward()",
+        "unsloth/Qwen3.8-27B-NVFP4"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9157,11 +10264,19 @@
       "check": "Identify the same EngineCore PID in both the process table and GPU process accounting before and after killing only the outer API-server PID: ```bash",
       "contributor": "vcruz305 (Victor Cruz)",
       "diagnostic_fingerprints": [
+        "--gpu-memory-utilization",
+        "0.1.dev1+g75231eff2.d20260809",
+        "checks/vllm_enginecore_orphan_probe.py",
         "GB10",
+        "kill -9 <api_server_pid>",
+        "NemotronHForCausalLM",
         "NVFP4",
+        "NVIDIA",
         "SIGKILL",
         "SIGTERM",
-        "VLLM"
+        "VLLM",
+        "vllm/v1/engine/utils.py",
+        "VLLM::EngineCore"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9245,12 +10360,21 @@
       "check": "Do not diagnose this from token/s alone. Under a sustained compute load, capture utilization, SM/graphics clock, applications/default clock, power, P-state, temperature, and throttle reasons together: If a field is unsupported on the installed driver, capture full nvidia-smi -q and use the available SM/graphics and power telemetry instead. Pair that telemetry with a sustained low-level compute workload and one unchanged serving canary. This trap is strongly indicated when all of the following line up: 1. sustained utilization is high (the measured case was ~96%); 2. P-state is nominal (P0 in the measured case); 3. no ordinary thermal / software power-cap reason is active; 4. SM/graphics clock stays far below the normal sustained applications/boost range; 5. power draw is abnormally low for the same workload; 6. low-level compute and LLM serving are both degraded; 7. a complete AC power removal restores clock, power, low-level throughput, and serving throughput together. A single low clock sample from a short kernel is not enough. The measured diagnosis used sustained load because short kernels can leave telemetry stale or sampled between boosts.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "0.5.18.dev760+ge5a3e4d30",
+        "2.13.0+cu130",
+        "6.17.0-1029-nvidia",
         "BF16",
         "BIOS",
+        "CLOCK",
+        "FIRST",
         "GB10",
         "LOW_POWER_RECURRENCE",
+        "LOW_POWER_RECURRENCE=NO",
         "NVFP4",
         "NVIDIA",
+        "nvidia-smi -lgc 2418,2418",
+        "ornith-ai/Ornith-1.5-35B-A3B-NVFP4",
+        "PARTY",
         "TFLOP"
       ],
       "diagnostic_modalities": [
@@ -9324,10 +10448,18 @@
       "diagnostic_fingerprints": [
         "--scope",
         "--user",
+        "/proc/meminfo",
         "CUDA",
         "GB10",
+        "MemAvailable",
         "MemoryMax",
-        "NVIDIA"
+        "MemorySwapMax=0",
+        "NVIDIA",
+        "oom_kill",
+        "OOMKilled=false",
+        "SIGTERM",
+        "sm_121",
+        "systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9398,9 +10530,14 @@
       "check": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under response_format: {\"type\": \"json_object\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        "chat_template_kwargs: {\"thinking\": false}",
         "GB10",
+        "inclusionAI/Ling-3.0-flash-int4",
         "JSON",
-        "NVIDIA"
+        "ling_3_0",
+        "NVIDIA",
+        "response_format: {\"type\": \"json_object\"}",
+        "vllm-ling-v3"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9469,8 +10606,11 @@
       "check": "1. Audit every compose mount that targets a file inside the image, not a directory the image expects to be filled from outside: `docker compose config and look for :ro` entries whose source is a flat file and whose target sits inside the installed package tree. 2. Before updating the image of any such container, extract the mounted module from the NEW image and diff it against the mounted file, then test-import the mounted file in a throwaway container with the new image. Do this before the live container is touched. 3. Alert on container restart count. A crash loop writes itself in restart counts and no TCP health probe can see it.",
       "contributor": "@sethforprivacy",
       "diagnostic_fingerprints": [
+        "./patches/foo.py:/opt/venv/.../foo.py:ro",
         "GB10",
-        "ImportError"
+        "ImportError",
+        "ImportError: cannot import name 'SomeClass'",
+        "PriorityRouter"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9555,8 +10695,21 @@
       "contributor": "@sethforprivacy",
       "diagnostic_fingerprints": [
         "--max-num-batched-tokens",
+        "--max-num-batched-tokens 8192",
+        "--max-num-partial-prefills",
+        "--max-num-partial-prefills 2",
         "--max-num-seqs",
-        "GB10"
+        "--max-num-seqs 4",
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "dspark-vllm-gx10:0.1.1",
+        "GB10",
+        "max_num_batched_tokens",
+        "max_num_partial_prefills",
+        "max_num_seqs",
+        "max_num_seqs = 8",
+        "num_new_tokens == 0",
+        "num_preemptions",
+        "SchedulerConfig.max_num_partial_prefills"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9643,8 +10796,12 @@
       "contributor": "@sethforprivacy",
       "diagnostic_fingerprints": [
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "dspark-vllm-gx10:0.1.1",
         "GB10",
         "NVFP4",
+        "nvfp4_ds_mla",
         "VLLM_PREFIX_CACHE_RETENTION_INTERVAL"
       ],
       "diagnostic_modalities": [
@@ -9730,10 +10887,16 @@
       "contributor": "@sethforprivacy",
       "diagnostic_fingerprints": [
         "--max-num-seqs",
+        "--max-num-seqs 4",
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "4 x 6 = 24",
         "CUDA",
-        "cudagraphcapturesizes: [1,2,4,8,16,24]",
+        "cudagraph_capture_sizes",
+        "dspark-vllm-gx10:0.1.1",
         "FULL",
-        "GB10"
+        "GB10",
+        "max_num_seqs",
+        "max_num_seqs x (spec_tokens + 1)"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9810,8 +10973,12 @@
       "check": "1. Inspect the exact bytes of every refs/* file used by the deployment. A branch ref should contain exactly the expected commit id, with no accidental whitespace/newline bytes. 2. Record the revision form production will actually request: exact commit, branch/tag, or bare/default revision. If production will resolve main, verify that refs/main exists and maps exactly to the intended snapshot; if production uses an exact SHA, verify that exact snapshot directly rather than inventing an unnecessary branch ref. 3. Compare required ref bytes and snapshot checksums across staging and every node before the first offline load. Resolution-mode parity is the gate; an online staging success is not.",
       "contributor": "@sethforprivacy",
       "diagnostic_fingerprints": [
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "dspark-vllm-gx10:0.1.1",
         "GB10",
-        "HF_HUB_OFFLINE"
+        "HF_HUB_OFFLINE",
+        "HF_HUB_OFFLINE=1",
+        "huggingface_hub"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -9896,9 +11063,17 @@
       "contributor": "@tonyd2wild; original scheduler-guard root-cause fix credited to @Roady001",
       "diagnostic_fingerprints": [
         "--max-model-len",
+        "--max-model-len 1000000",
         "--max-num-batched-tokens",
+        "--max-num-batched-tokens 8192",
         "--max-num-seqs",
+        "--max-num-seqs 6",
+        "0.21.1rc1",
+        "fraserprice/DeepSeek-V4-Flash-DSpark",
         "GB10",
+        "is_prefill_chunk",
+        "num_speculative_tokens=5",
+        "nvfp4_ds_mla",
         "NVIDIA"
       ],
       "diagnostic_modalities": [
@@ -9986,6 +11161,12 @@
       "check": "Compare the target loader's stacked-parameter mapping with the DSpark draft loader's mapping on the exact installed build. The affected draft path is missing the shared-expert w1 and w3 rows. Then enable debug logging for one load and look for unknown DSpark-weight skips. Finally scrape the server's speculative counters under a fixed workload; a clean target with abnormally low accepted tokens per step is the signature this bug can hide behind. Do not estimate decode tok/s from SSE chunk count on this stack: one streamed chunk can contain all tokens accepted in one speculative step. Use completion-token accounting against wall time, and keep steps/s separate from tokens/s.",
       "contributor": "@tonyd2wild",
       "diagnostic_fingerprints": [
+        ".shared_experts.w1",
+        ".shared_experts.w3",
+        "0.21.1rc1.dev339+g1967a5627bc3",
+        "_STACKED_PARAM_NAME_MAPPING",
+        "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "dspark_block_size: 5",
         "GB10",
         "NVFP4"
       ],
@@ -10048,7 +11229,20 @@
       "check": "Before recording any transport-labelled performance result, require path proof against the actual benchmark peer, not a generic gateway: 1. Route lookup to the peer: which interface / gateway is selected. 2. Source / interface bind where the OS supports it: bind to the intended address and show success; bind to the wrong source and show failure or a different path rather than silent fallback. 3. ARP / neighbour evidence where applicable. 4. Before/after TX/RX counter deltas on the intended interface during a known traffic burst. 5. Peer-side counter or path evidence when available. 6. Negative / discriminator: intentionally remove or mis-bind the intended path and prove the result changes or fails rather than silently continuing on the alternate path. A green ping alone is insufficient. Preserve path_class, local_interface, peer path, route proof, counter proof, and fallback state beside every transport-labelled number.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "1e952ace4be94f90b88b850188e99f0493036424",
+        "checks/benchmark_attribution_preflight.py",
+        "END_TO_END_COMPOSITE_ONLY",
         "ICMP",
+        "local_interface",
+        "max_defensible_claim=TRANSPORT",
+        "MODEL",
+        "PASS",
+        "path_class",
+        "path_proof",
+        "PRESENT",
+        "RDMA",
+        "SERVING_ENGINE",
+        "TRANSPORT",
         "VLAN"
       ],
       "diagnostic_modalities": [
@@ -10108,7 +11302,12 @@
       "check": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrency_execution_proof_preflight.py.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
-        "HTTP"
+        "--parallel",
+        "checks/concurrency_execution_proof_preflight.py",
+        "HTTP",
+        "max_num_seqs",
+        "n_parallel",
+        "TTFT"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10174,7 +11373,9 @@
       "diagnostic_fingerprints": [
         "FileNotFoundError",
         "GB10",
-        "PIPESTATUS"
+        "PIPESTATUS",
+        "PIPESTATUS[0]",
+        "rc=0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10242,10 +11443,14 @@
       "contributor": "vcruz305 (Victor Cruz)",
       "diagnostic_fingerprints": [
         "CUDA",
+        "dispatch_id",
         "EXL3",
         "GB10",
         "GEMM",
-        "NVIDIA"
+        "kernel_variant",
+        "NVIDIA",
+        "rc == 0",
+        "return == 0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10320,7 +11525,9 @@
       "check": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        ".choices[0].message.content",
         "BF16",
+        "finish_reason: stop",
         "GB10",
         "HTTP",
         "JSON",
@@ -10388,9 +11595,25 @@
       "check": "Before serving on a switchless multi-NIC cycle, run a value-checked multi-rank collective inside the exact runtime image with NCCL debug logging enabled. For every rank-to-peer relationship, map the selected network device to the physical neighbour that device can actually reach.",
       "contributor": "@btcxoomer. Independent public implementation and qualification evidence by Alex Ellis (@alexellisuk)",
       "diagnostic_fingerprints": [
+        "73cf112295c33aee2b895f329f592f2a9b4b0f97",
+        "ABSENT",
+        "BROKEN_PIN",
+        "BROKEN_PIN=UNKNOWN",
         "GB10",
+        "KNOWN_GOOD_PIN",
+        "KNOWN_GOOD_PIN=UNKNOWN",
         "NCCL",
-        "NVIDIA"
+        "NCCL_IB_GID_INDEX",
+        "NCCL_IB_GID_INDEX=3",
+        "NVIDIA",
+        "PASS",
+        "PRESENT",
+        "REPRO_BEFORE",
+        "REPRO_BEFORE=PASS",
+        "TRAP",
+        "UNKNOWN",
+        "v0.0.1",
+        "v2.30.7-1"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10469,10 +11692,34 @@
       "check": "Before the gather, validate both request-row and block-column geometry rather than checking only tensor existence or dtype: Then use focused fixtures where the block table has one request row while metadata attempts to address request rows 0 and 1, and a separate fixture where a valid request row carries a block-column selector outside the logical column range.",
       "contributor": "Blackwellboy",
       "diagnostic_fingerprints": [
+        "0.25.2.dev0+g752a3a504.d20260714",
+        "9cc7793e32f8340e111a6c822f231aa526a8ea21",
+        "_C::scaled_fp4_quant",
+        "ABSENT",
+        "block_indices",
+        "block_table",
+        "BROKEN_PIN",
+        "BROKEN_PIN=vLLM 0.25.2.dev0+g752a3a504.d20260714",
         "CUDA",
+        "cudaErrorIllegalAddress",
+        "FIXED_BY",
+        "FIXED_BY=historical lane hardened locally; current upstream consumer fix still open",
         "GB10",
+        "KNOWN_GOOD_PIN",
+        "KNOWN_GOOD_PIN=UNKNOWN",
         "NCCL",
-        "NULL_BLOCK_ID"
+        "NULL_BLOCK_ID",
+        "num_reqs_padded",
+        "PASS",
+        "PRESENT",
+        "REPRO_AFTER",
+        "REPRO_AFTER=PASS",
+        "REPRO_BEFORE",
+        "REPRO_BEFORE=PASS",
+        "req_idx",
+        "token_to_req_indices",
+        "TRAP",
+        "UNKNOWN"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10551,10 +11798,14 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "/v1/responses",
+        "0.0.0.dev1+g5f55db35e",
+        "ABSENT",
         "GB10",
         "HTTP",
         "NVFP4",
-        "NVIDIA"
+        "NVIDIA",
+        "PRESENT",
+        "TRAP"
       ],
       "diagnostic_modalities": [
         "endpoint_probe",
@@ -10620,7 +11871,13 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "--mount",
-        "--volume"
+        "--mount type=bind",
+        "--volume",
+        ".State.Error",
+        "ABSENT",
+        "create_host_path: false",
+        "PRESENT",
+        "TRAP"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10691,7 +11948,29 @@
       "check": "Reconstruct the config and inspect the effective per-layer types rather than reading the raw sliding_window key. For a small positive/negative fixture: On the pinned implementation, both bad1 and bad2 resolve all five layers to full_attention; good1 and good2 provide all-sliding positive controls.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
-        "NVIDIA"
+        "ABSENT",
+        "bad1",
+        "bad2",
+        "config.json",
+        "full_attention",
+        "good1",
+        "good2",
+        "layer_types",
+        "max_window_layers",
+        "max_window_layers=0",
+        "max_window_layers=28",
+        "max_window_layers=5",
+        "max_window_layers=num_hidden_layers",
+        "NVIDIA",
+        "PRESENT",
+        "Qwen3Config",
+        "sliding_attention",
+        "sliding_window",
+        "sliding_window=2048",
+        "transformers==5.12.1",
+        "TRAP",
+        "use_sliding_window",
+        "use_sliding_window=true"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10767,9 +12046,12 @@
       "check": "Pin the serving build, inspect the deterministic branch for a workspace-size setter, then compare matched deterministic-on/off long-prefill requests while recording the required workspace bytes. Do not infer safety from short prompts.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        "0.0.0.dev1+g5f55db35e",
+        "5f55db35e",
         "GB10",
         "NVFP4",
-        "SGLANG_FLASHINFER_WORKSPACE_SIZE"
+        "SGLANG_FLASHINFER_WORKSPACE_SIZE",
+        "SGLANG_FLASHINFER_WORKSPACE_SIZE.set(2048 * 1024 * 1024)"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -10964,6 +12246,7 @@
         "--gpus all",
         "--rm",
         "/run",
+        "/run/nvidia-ctk-hook",
         "CUDA",
         "GB10",
         "NVIDIA"
@@ -11036,7 +12319,9 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "ASCII",
+        "ensure_ascii=True",
         "JSON",
+        "json.dumps(..., ensure_ascii=True)",
         "NVFP4"
       ],
       "diagnostic_modalities": [
@@ -11105,9 +12390,12 @@
       "check": "Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        "finish_reason=stop",
         "GB10",
         "JSON",
-        "NVFP4"
+        "json_schema",
+        "NVFP4",
+        "response_format=json_schema"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11173,6 +12461,8 @@
       "check": "Identify the image store, measure free space on the Docker data-root filesystem, and watch the daemon temp directory during a small multi-second docker save control.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        "/var/lib/docker",
+        "DOCKER_TMPDIR",
         "IMAGE"
       ],
       "diagnostic_modalities": [
@@ -11298,7 +12588,8 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "CUDA",
-        "GB10"
+        "GB10",
+        "MemAvailable"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11364,7 +12655,9 @@
       "category": "reasoning",
       "check": "Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.",
       "contributor": "@scottleimroth",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "Qwen3ThinkingBudgetLogitProcessor"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -11432,6 +12725,10 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "--precision",
+        "--precision checkpoint|full",
+        "--precision full",
+        "17c73e1...",
+        "c464617...",
         "GB10",
         "NVFP4"
       ],
@@ -11502,7 +12799,9 @@
       "check": "Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
-        "--parallel"
+        "--parallel",
+        "--parallel 2",
+        "cached_tokens"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11572,7 +12871,15 @@
       "category": "evaluation",
       "check": "Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.",
       "contributor": "@scottleimroth",
-      "diagnostic_fingerprints": [],
+      "diagnostic_fingerprints": [
+        "047ce72...",
+        "be74bf0",
+        "finish_reason=length",
+        "max_tokens",
+        "new_tokens",
+        "rq_new_tokens",
+        "usage.completion_tokens"
+      ],
       "diagnostic_modalities": [
         "static_config",
         "log_scan",
@@ -11642,6 +12949,7 @@
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
         "GB10",
+        "max_num_seqs=2",
         "NVFP4"
       ],
       "diagnostic_modalities": [
@@ -11708,7 +13016,10 @@
       "check": "Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
-        "NVFP4"
+        "a19cfe00",
+        "NVFP4",
+        "nvidia/Gemma-4-26B-A4B-NVFP4",
+        "reasoning_tokens == 0"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11774,7 +13085,9 @@
       "check": "Feed identical synthetic shapes through the byte transform under both aliases and require equal nonzero accounting. Also verify a complete synthetic tower and keep a control for the renamed namespace.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
-        "NVFP4"
+        "c464617...",
+        "NVFP4",
+        "vision_tower.*"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11847,12 +13160,17 @@
       "check": "At the first sustained-load stall, capture stacks on both ranks twice, separated by roughly 45 to 60 seconds. Preserve the actually loaded libnccl.so identity from each live process (for example from /proc/<pid>/maps plus build ID/hash), plus vLLM and FlashInfer identities. A single stack shows only where a rank was; two frame-identical captures prove it stayed there.",
       "contributor": "@scottleimroth",
       "diagnostic_fingerprints": [
+        "/proc/<pid>/maps",
         "EngineDeadError",
         "GB10",
+        "libnccl.so",
         "NCCL",
         "NCCL_CUMEM_ENABLE",
+        "NCCL_CUMEM_ENABLE=0",
+        "ncclAllGather",
         "QSFP",
-        "RDMA"
+        "RDMA",
+        "sample_tokens"
       ],
       "diagnostic_modalities": [
         "static_config",
@@ -11926,9 +13244,12 @@
       "diagnostic_fingerprints": [
         "--speculative-num-draft-tokens",
         "/health",
+        "0.0.0.dev1+g5f55db35e",
         "COME",
         "CUDA",
         "GB10",
+        "is_contiguous()",
+        "lmsysorg/sglang:dev-cu13-qwen38-27b-dflash2",
         "NVFP4"
       ],
       "diagnostic_modalities": [
