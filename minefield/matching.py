@@ -262,6 +262,17 @@ def _normalise_fingerprint_text(value: str) -> str:
     return re.sub(r"\s+", " ", value.strip().lower())
 
 
+def _looks_like_machine_evidence(value: str) -> bool:
+    return bool(
+        "\n" in value
+        or re.search(r"(?<!\w)--[A-Za-z0-9][A-Za-z0-9_-]+", value)
+        or re.search(r"\b[A-Za-z_][A-Za-z0-9_]{3,}\s*=\s*[^\s,]+", value)
+        or re.search(r"\b[A-Z][A-Za-z0-9_]*(?:Error|Exception)\b", value)
+        or re.search(r"\bHTTP\s+[45]\d\d\b", value, re.I)
+        or re.search(r"\b[A-Z][A-Z0-9_]{4,}\b", value)
+    )
+
+
 def _fingerprint_hits(
     entry: dict[str, Any],
     text: str,
@@ -391,7 +402,11 @@ def search(
         context = _concept_overlap(context_concepts, searchable_context_tokens)
         is_explicit = entry["id"] in explicit_ids
         signature = signatures.get(entry["id"])
-        fingerprint_hits = _fingerprint_hits(entry, symptom_text_for_match, fingerprint_df)
+        fingerprint_hits = (
+            _fingerprint_hits(entry, symptom_text_for_match, fingerprint_df)
+            if _looks_like_machine_evidence(symptom_text_for_match)
+            else []
+        )
 
         # Two independently supplied meaningful symptom/log concepts are the
         # minimum for ordinary textual admission. Direct-probe IDs bypass this
