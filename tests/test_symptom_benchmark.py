@@ -108,7 +108,7 @@ class DiagnosticFingerprintMatching(unittest.TestCase):
         return results[0]
 
     def test_memorymax_routes_to_125(self):
-        top = self.top("vllm systemd MemoryMax guard never fires")
+        top = self.top("vllm systemd MemoryMax=120G guard never fires")
         self.assertEqual(top["trap_ids"][0], "125")
         self.assertIn("MemoryMax", top["fingerprint_matches"])
 
@@ -123,7 +123,7 @@ class DiagnosticFingerprintMatching(unittest.TestCase):
         self.assertIn("fuse_gemm_comms", top["fingerprint_matches"])
 
     def test_fingerprint_match_is_still_not_confirmed(self):
-        top = self.top("vllm systemd MemoryMax")
+        top = self.top("vllm systemd MemoryMax=120G")
         self.assertTrue(top["fingerprint_matches"])
         self.assertNotIn("CONFIRMED", top["diagnosis_level"])
 
