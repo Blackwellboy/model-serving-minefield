@@ -103,6 +103,8 @@ class StructuredFingerprints(unittest.TestCase):
         ("19", "auto tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set"),
         ("125", "systemd unit has MemoryMax=120G around the vllm serve"),
         ("143", "Qwen config has sliding_window=4096 and max_window_layers=0"),
+        ("100", "RuntimeError: HIP error: hipErrorInvalidImage while launching the first kernel"),
+        ("130", "resolved cudagraph_capture_sizes=[1, 2, 4, 8, 16] for this serve"),
     )
 
     @classmethod
