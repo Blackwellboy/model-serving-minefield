@@ -37,6 +37,17 @@ class RegistryPlatformTests(unittest.TestCase):
             self.assertTrue(entry["check"])
             self.assertTrue(entry["evidence_strength"])
 
+    def test_diagnostic_fingerprints_are_machine_facing_and_deterministic(self):
+        by_id = {entry["id"]: entry for entry in self.registry["entries"]}
+        for entry in self.registry["entries"]:
+            fps = entry["diagnostic_fingerprints"]
+            self.assertEqual(fps, sorted(set(fps), key=lambda item: (item.lower(), item)))
+            self.assertTrue(all(len(item) >= 4 for item in fps))
+        # Known operator identifiers from independent trap families.
+        self.assertIn("MemoryMax", by_id["125"]["diagnostic_fingerprints"])
+        self.assertIn("sliding_window", by_id["143"]["diagnostic_fingerprints"])
+        self.assertIn("fuse_gemm_comms", by_id["117"]["diagnostic_fingerprints"])
+
     def test_doctor_coverage_is_derived(self):
         mapped = [entry for entry in self.registry["entries"]
                   if entry["doctor_coverage"]["implemented"]]
