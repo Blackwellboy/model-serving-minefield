@@ -31,6 +31,8 @@ def strength(match: dict[str, Any]) -> str:
     # match, so the overlap scale does not describe it.
     if match.get("log_signature"):
         return "log line match"
+    if match.get("fingerprint_matches"):
+        return "exact fingerprint match"
     weight = float(match.get("evidence_weight") or 0.0)
     if weight >= STRONG:
         return "strong match"
@@ -78,7 +80,7 @@ class _Style:
         return self._wrap("2", text)
 
     def strength(self, label: str) -> str:
-        code = {"strong match": "32", "log line match": "32", "possible match": "33"}.get(label, "2")
+        code = {"strong match": "32", "log line match": "32", "exact fingerprint match": "36", "possible match": "33"}.get(label, "2")
         return self._wrap(code, label)
 
 
@@ -121,6 +123,8 @@ def render_diagnosis(result: dict[str, Any], *, limit: int = 5, stream: TextIO |
             )
             if match.get("log_signature"):
                 out += wrap("why:   ", _clip(match["log_signature"], 260))
+            elif match.get("fingerprint_matches"):
+                out += wrap("why:   ", "exact machine fingerprint: " + ", ".join(match["fingerprint_matches"][:4]))
             out += wrap("check: ", _check_text(match.get("confirmation_check", ""), 260))
             if match.get("source_path"):
                 # Never wrap a URL: a wrapped link is not clickable.
