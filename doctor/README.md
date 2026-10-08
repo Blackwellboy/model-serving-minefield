@@ -21,7 +21,7 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 31 checks cluster almost entirely on one region of the registry: reasoning
+Its 32 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
