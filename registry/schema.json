@@ -26,7 +26,7 @@
           "check", "mitigation", "status", "evidence_strength", "contributor",
           "affected_stacks", "affected_models", "affected_versions_builds",
           "exact_conditions", "public_evidence_links", "doctor_coverage",
-          "diagnostic_modalities", "known_limitations", "related_traps",
+          "diagnostic_modalities", "diagnostic_fingerprints", "known_limitations", "related_traps",
           "supersession", "applicability"
         ],
         "properties": {
@@ -35,6 +35,11 @@
           "source_path": {"type": "string", "pattern": "^traps/[^/]+/\\d{2,}-"},
           "symptom": {"type": "string", "minLength": 1},
           "check": {"type": "string", "minLength": 1},
+          "diagnostic_fingerprints": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 4},
+            "uniqueItems": true
+          },
           "evidence_strength": {
             "type": "array",
             "minItems": 1,
