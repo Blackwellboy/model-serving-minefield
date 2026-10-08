@@ -267,6 +267,7 @@ def _looks_like_machine_evidence(value: str) -> bool:
         "\n" in value
         or re.search(r"(?<!\w)--[A-Za-z0-9][A-Za-z0-9_-]+", value)
         or re.search(r"\b[A-Za-z_][A-Za-z0-9_]{3,}\s*=\s*[^\s,]+", value)
+        or re.search(r"\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]{3,}\b", value)
         or re.search(r"\b[A-Z][A-Za-z0-9_]*(?:Error|Exception)\b", value)
         or re.search(r"\bHTTP\s+[45]\d\d\b", value, re.I)
         or re.search(r"\b[A-Z][A-Z0-9_]{4,}\b", value)
