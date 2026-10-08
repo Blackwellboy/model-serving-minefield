@@ -19,7 +19,7 @@ from typing import Any
 MAX_RESULTS_BYTES = 64 * 1024 * 1024
 MAX_RECORDS = 200_000
 
-IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64", "137", "149", "155", "156", "158"})
+IMPLEMENTED_TRAPS = frozenset({"12", "16", "36", "37", "42", "64", "106", "108", "110", "135", "137", "149", "155", "156", "158"})
 
 _FINISH = ("finish_reason", "stop_reason", "done_reason")
 _CONTENT = ("content", "response", "output", "completion", "answer", "prediction", "generated_text")
@@ -221,6 +221,27 @@ def _valid_json_text(value: Any) -> bool:
         return False
 
 
+def _finite_number(record: dict[str, Any], names: tuple[str, ...]) -> float | None:
+    value = _get(record, names)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        value = float(value)
+        if math.isfinite(value):
+            return value
+    return None
+
+
+def _occupancy_fraction(record: dict[str, Any]) -> float | None:
+    value = _finite_number(
+        record,
+        ("kv_cache_occupancy", "kv_cache_usage", "gpu_cache_usage_perc", "cache_occupancy"),
+    )
+    if value is None or value < 0:
+        return None
+    if value > 1.0 and value <= 100.0:
+        value /= 100.0
+    return value if value <= 1.0 else None
+
+
 def _normalise(record: dict[str, Any]) -> dict[str, Any]:
     envelope = _choice(record)
     content = envelope.get("content") if envelope else _get(record, _CONTENT)
@@ -255,6 +276,18 @@ def _normalise(record: dict[str, Any]) -> dict[str, Any]:
         "selector_rc": record.get("rc", record.get("return_code")),
         "reference_ok": record.get("reference_ok", record.get("allclose")),
         "conversation_id": _short_scalar(record.get("conversation_id") or record.get("session_id")),
+        "kv_occupancy": _occupancy_fraction(record),
+        "preemptions": _finite_number(record, ("preemptions", "num_preemptions", "preemption_count")),
+        "canary_hash": _short_scalar(record.get("canary_sha256")),
+        "concurrency": _finite_number(record, ("concurrency", "clients", "parallel_requests")),
+        "batch_wall": _finite_number(record, ("batch_wall_s", "batch_wall", "wall_seconds")),
+        "aggregate_tps": _finite_number(record, ("aggregate_tps", "aggregate_tok_s", "completed_tok_s")),
+        "requests_running_before": _finite_number(
+            record, ("requests_running_before", "num_requests_running_before")
+        ),
+        "other_requests_finished": _finite_number(
+            record, ("other_requests_finished", "foreign_requests_finished")
+        ),
     }
 
 
@@ -285,7 +318,13 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
     findings = report["findings"]
     understood = [
         row for row in rows
-        if row["finish"] or row["score"] is not None or row["content"] is not None
+        if (
+            row["finish"] or row["score"] is not None or row["content"] is not None
+            or row["kv_occupancy"] is not None or row["canary_hash"]
+            or row["concurrency"] is not None
+            or row["requests_running_before"] is not None
+            or row["other_requests_finished"] is not None
+        )
     ]
     if not understood:
         report["notes"].append(
@@ -389,6 +428,60 @@ def inspect_results(path: str | Path) -> dict[str, Any]:
             "155", f"{len(thrash)} conversation(s) show cached_tokens pinned to one constant while prompt "
             "length grows materially; inspect prefix-slot residency/victim selection rather than attributing "
             "the repeated prefill to model speed.", evidence=str(thrash[:5])))
+
+    occupancy_rows = [
+        row for row in understood
+        if row["kv_occupancy"] is not None and row["preemptions"] is not None
+    ]
+    if len(occupancy_rows) >= 6 and all(row["preemptions"] == 0 for row in occupancy_rows):
+        vals = [row["kv_occupancy"] for row in occupancy_rows]
+        tail = vals[-3:]
+        if vals[-1] >= 0.70 and vals[-1] - vals[0] >= 0.05 and max(tail) - min(tail) <= 0.02:
+            findings.append(_finding(
+                "106", f"KV cache occupancy rose from {vals[0]:.1%} to {vals[-1]:.1%}, then plateaued "
+                f"within {max(tail)-min(tail):.1%} while preemptions stayed zero. That is the cache-fill "
+                "shape; do not call the occupancy level itself a leak."))
+
+    canary = [row["canary_hash"] for row in understood if row["canary_hash"]]
+    if len(canary) >= 8 and len(set(canary)) == 2:
+        transitions = sum(a != b for a, b in zip(canary, canary[1:]))
+        if transitions >= 2:
+            findings.append(_finding(
+                "108", f"A fixed canary produced exactly 2 hashes across {len(canary)} samples with "
+                f"{transitions} transitions. A consecutive-pair detector will report every switch as "
+                "degradation even though the output set is stable."))
+
+    contended = [
+        row for row in understood
+        if (row["requests_running_before"] or 0) > 0
+        or (row["other_requests_finished"] or 0) > 0
+    ]
+    if contended:
+        findings.append(_finding(
+            "110", f"{_items(len(contended))} timed benchmark row(s) show another request already running "
+            "or another request finishing inside the window. Treat the endpoint as contended and discard "
+            "those single-stream measurements."))
+
+    by_concurrency: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in understood:
+        if (
+            row["concurrency"] is not None and row["batch_wall"] is not None
+            and row["aggregate_tps"] is not None
+        ):
+            ci = int(row["concurrency"])
+            if ci in (1, 2, 4) and abs(row["concurrency"] - ci) < 1e-9:
+                by_concurrency[ci].append(row)
+    if all(by_concurrency.get(ci) for ci in (1, 2, 4)):
+        def med(ci, key):
+            values = sorted(float(row[key]) for row in by_concurrency[ci])
+            return values[len(values) // 2]
+        w1, w2, w4 = med(1, "batch_wall"), med(2, "batch_wall"), med(4, "batch_wall")
+        t1, t2, t4 = med(1, "aggregate_tps"), med(2, "aggregate_tps"), med(4, "aggregate_tps")
+        if w2 >= 1.6 * w1 and w4 >= 3.0 * w1 and t4 <= 1.25 * t1:
+            findings.append(_finding(
+                "135", f"Concurrency 1/2/4 batch wall scales {w1:.3g}/{w2:.3g}/{w4:.3g}s while aggregate "
+                f"throughput stays {t1:.3g}/{t2:.3g}/{t4:.3g} tok/s. HTTP concurrency is rising but "
+                "completed model work is effectively serialized."))
 
     arms: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in understood:
