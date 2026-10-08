@@ -80,6 +80,12 @@ RULES = (
     ("152", r"(?:(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM)|(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM))",
      "CUDA-extension compilation overlaps model-weight loading and is followed by memory pressure. A warm kernel "
      "cache can hide this first-start UMA peak."),
+    ("124", r"(?:(?:P0|pstate\s*[:=]\s*P0)[\s\S]{0,2500}(?:utilization[^\n]{0,80}(?:9[0-9]|100)%)[\s\S]{0,2500}(?:graphics|SM) clock[^\n]{0,80}(?:[1-8][0-9]{2})\s*MHz|(?:graphics|SM) clock[^\n]{0,80}(?:[1-8][0-9]{2})\s*MHz[\s\S]{0,2500}(?:P0|pstate\s*[:=]\s*P0))",
+     "P0/high utilization appears together with an abnormally low sustained SM/graphics clock. Capture power and "
+     "throttle reasons before assigning the GB10 low-power-state trap."),
+    ("133", r"(?:(?:unknown|skip|skipping)[^\n]{0,240}shared_experts\.(?:w1|w3)|shared_experts\.(?:w1|w3)[^\n]{0,240}(?:unknown|skip|skipping))",
+     "The draft loader is skipping a shared-expert weight name. Compare its stacked-parameter mapping with the "
+     "target loader before interpreting low speculative acceptance as model quality."),
 )
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
