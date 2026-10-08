@@ -11,7 +11,7 @@ python benchmarks/run_symptom_benchmark.py --misses   # every query not in the t
 
 ## The data
 
-[`symptom_queries.json`](symptom_queries.json) holds, for each of the 143
+[`symptom_queries.json`](symptom_queries.json) holds, for each of the 161
 canonical traps, **two plain-language questions written the way a user would
 type them** ("streaming shows blank replies"), not copied from the entry text.
 One is in the `tune` split and one in `holdout`. There are also 40 off-domain
@@ -47,7 +47,7 @@ weight or threshold was chosen by looking at a holdout miss.
 
 ## Results
 
-Holdout split: 143 written queries, then the 12 reported cases, then both
+Holdout split: 161 written queries, then the 12 reported cases, then both
 together; 20 off-domain negatives.
 
 | matcher | written top1 | written top5 | reported top1 | reported top5 | all top1 | all top5 | false alarms |
@@ -55,6 +55,7 @@ together; 20 off-domain negatives.
 | 0.2.0 (before) | 70.6% | 86.0% | | | | | 70% |
 | 0.2.1, part 1 | 83.2% | 92.3% | 33.3% | 58.3% | 79.4% | 89.7% | 0% |
 | 0.2.1 | **88.8%** | **92.3%** | **50.0%** | **58.3%** | **85.8%** | **89.7%** | **0%** |
+| structured fingerprints | **88.8%** | **93.2%** | **50.0%** | **58.3%** | **86.1%** | **90.8%** | **0%** |
 
 The reported column is the honest headline for people with a real problem:
 on reporters' own words the right trap is first half the time and in the top
@@ -97,13 +98,28 @@ also checked with its line breaks joined, because terminals and issue editors
 wrap long lines.
 
 `pasted_lines` holds 6 log lines copied verbatim from reports (wrapping kept),
-scored on their own and not split. 2 are ranked first and 3 are in the top
-five, the same as before signatures were used: the two lines that have a
-signature (traps 117 and 119) were already found by their words, and the other
-four have no signature at all, so the gap there is missing signatures, not
-routing. On the 12 signature lines in the detector fixtures the right trap is
+scored on their own and not split. With the first structured-fingerprint batch,
+**all 6 rank first**. Two already had contextual log signatures; the other four
+now match exact error/identifier shapes rather than generic prose: the vLLM
+unknown-environment-variable diagnostic, the `shm_broadcast.py:705` line, the
+`max_total_tokens ... larger than the profiled value` line, and the explicit
+auto-tool-choice/parser requirement. Fingerprints remain leads, not proof. On the 12 signature lines in the detector fixtures the right trap is
 now first 12 times, up from 8; those lines were written with the rules, so
 that shows the routing works, not how often a real paste will match.
+
+
+### Structured fingerprints
+
+Fingerprints are a deliberately small layer above ordinary word matching and
+below direct probing. They represent **concrete diagnostic shapes** such as an
+exact error prefix, flag requirement, function/field identifier, or runtime
+message. They can admit and strongly rank a candidate even when the surrounding
+natural language shares few words with the registry entry.
+
+They are not reporter-prose aliases. Generic phrases such as "30% slower after
+startup" are intentionally left to the ordinary matcher rather than memorised
+from one issue. A fingerprint hit is labelled separately in CLI/JSON output and
+never upgrades a candidate to confirmed.
 
 ### Tried and not kept: indexing reporters' phrasings
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - structured diagnostic fingerprints
+
+- Added a high-specificity fingerprint routing layer for exact diagnostic identifiers/error shapes. Fingerprint hits bypass the ordinary two-concept admission threshold, receive a strong ranking boost, are labelled separately from log-signature and prose matches, and **remain leads rather than confirmations**.
+- First batch is benchmark-grounded and intentionally small: Trap 77's vLLM unknown-environment-variable diagnostic, Trap 118's `shm_broadcast.py:705` line, Trap 119's `max_total_tokens ... larger than the profiled value` diagnostic, and Trap 19's explicit auto-tool-choice/parser requirement.
+- Real pasted-report benchmark moves from **2/6 top-1 and 3/6 top-5 to 6/6 top-1 and 6/6 top-5**. Written holdout remains **88.8% top-1 / 93.2% top-5**, reported-wording holdout remains **50.0% / 58.3%**, and off-domain false alarms remain **0%**.
+- Deliberately not added: fingerprints for generic reporter prose such as "30% below steady state" or "403 seconds and no answer". Those stay with the ordinary matcher rather than overfitting the benchmark.
+
 ## 2026-10-08 - Doctor 30 and automatic coverage 119
 
 - Added live Doctor coverage for [58](traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md), [80](traps/runtime/80-reasoning-parser-batches-sse-deltas.md), and [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md). Doctor moves **27 -> 30 of 161**.

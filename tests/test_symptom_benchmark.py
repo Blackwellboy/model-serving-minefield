@@ -72,8 +72,8 @@ class SymptomBenchmarkFloor(unittest.TestCase):
     def test_pasted_lines_floor(self):
         # Log lines copied verbatim from reports. Small n: one case below measured.
         pasted = self.report["pasted_lines"]["all"]
-        self.assertGreaterEqual(pasted["top1"], 0.30, pasted)
-        self.assertGreaterEqual(pasted["top5"], 0.45, pasted)
+        self.assertGreaterEqual(pasted["top1"], 0.80, pasted)
+        self.assertGreaterEqual(pasted["top5"], 0.80, pasted)
 
     def test_off_domain_questions_never_nominate_a_trap(self):
         for name, negatives in self.report["negatives"].items():
@@ -93,6 +93,43 @@ class MatcherTokens(unittest.TestCase):
     def test_compound_identifier_is_still_one_concept(self):
         concepts = _concepts("--tool-call-parser")
         self.assertEqual(len(concepts), 1, concepts)
+
+
+class StructuredFingerprints(unittest.TestCase):
+    CASES = (
+        ("77", "Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND"),
+        ("118", "INFO ... [shm_broadcast.py:705] No available shared memory broadcast block found in 60 seconds"),
+        ("119", "max_total_tokens=200000 is larger than the profiled value 163089. Use the profiled value instead."),
+        ("19", "auto tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set"),
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        from minefield.registry import load_registry
+        cls.registry = load_registry()
+
+    def test_each_real_pasted_fingerprint_ranks_owner_first(self):
+        from minefield.matching import search
+        for trap, text in self.CASES:
+            with self.subTest(trap=trap):
+                results = search(self.registry, text, limit=10)
+                self.assertTrue(results, text)
+                self.assertEqual(results[0]["trap_ids"][0], trap, results[:3])
+                self.assertTrue(results[0]["fingerprint_match"], results[0])
+
+    def test_fingerprint_match_stays_a_lead(self):
+        from minefield.matching import search
+        for trap, text in self.CASES:
+            top = search(self.registry, text, limit=1)[0]
+            self.assertNotIn("CONFIRMED", top["diagnosis_level"])
+            self.assertEqual(top["trap_ids"][0], trap)
+
+    def test_render_labels_fingerprint_separately(self):
+        from minefield.matching import search
+        from minefield.render import strength
+
+        top = search(self.registry, self.CASES[0][1], limit=1)[0]
+        self.assertEqual(strength(top), "fingerprint match")
 
 
 class PastedLogLines(unittest.TestCase):
