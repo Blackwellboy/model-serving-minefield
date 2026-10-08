@@ -158,7 +158,7 @@ RULES = tuple(Rule(*rule) for rule in (
      "A probe is piped through a log consumer; without pipefail or explicit producer-status capture the wrapper can "
      "report success after the probe crashed.",
      None, r"(?:pipefail|PIPESTATUS)"),
-    ("159", r"(?:resident|weight|byte|admission)[^\n]{0,300}vision_tower",
+    ("159", r"(?:resident|weight|byte|admission)[\s\S]{0,400}startswith\(\s*[\"']vision_tower\.",
      "suspicious",
      "Vision-byte accounting references vision_tower.* while the same source also knows the model.visual.* alias. "
      "Feed identical synthetic shapes through both aliases before trusting admission bytes.",
