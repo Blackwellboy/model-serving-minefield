@@ -215,8 +215,8 @@ _INDEX_CACHE: dict[str, tuple[list[tuple[set[str], set[str], set[str]]], dict[st
 # still a lead: the signature says the line is present, not that the trap is
 # the cause, and no score reaches a confirmed level without a direct probe.
 LOG_SIGNATURE_BOOST = 40
-FINGERPRINT_BASE_BOOST = 18
-FINGERPRINT_MAX_BOOST = 54
+FINGERPRINT_BASE_BOOST = 9
+FINGERPRINT_MAX_BOOST = 24
 MAX_PASTE_CHARS = 64 * 1024
 
 # A word that matches the trap's title counts for more than one buried in the
