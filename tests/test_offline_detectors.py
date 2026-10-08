@@ -411,6 +411,85 @@ class Phase4ResultsRules(TempDirCase):
         self.assertEqual({"137", "149", "155", "156"} & found, set())
 
 
+PHASE5_RISKY_CONFIG = """\
+if doc_id in expected_ids:
+    score -= 1000
+model = AutoModel.from_pretrained(name, device_map="auto")
+weights = dequant_fp4(q, scales, swizzle=True)
+speculative_config = {"num_speculative_tokens": 4, "draft_model": "draft"}
+"""
+PHASE5_SAFE_CONFIG = """\
+expected_ids = set(gold)
+assert expected_ids.isdisjoint(retrieved_ids)
+CUDA_VISIBLE_DEVICES = "0,1"
+model = AutoModel.from_pretrained(name, device_map="auto")
+weights = dequant_fp4(q, scales, swizzle=False)
+speculative_config = {"method": "dflash", "num_speculative_tokens": 4, "draft_model": "draft"}
+"""
+PHASE5_CONFIG_TRAPS = {"31", "39", "44", "62"}
+
+
+class Phase5ConfigRules(TempDirCase):
+    def test_phase5_static_rules_fire(self):
+        found = _ids(inspect_files([str(self.write("phase5.py", PHASE5_RISKY_CONFIG))]))
+        self.assertEqual(PHASE5_CONFIG_TRAPS - found, set())
+
+    def test_phase5_static_controls_stay_quiet(self):
+        found = _ids(inspect_files([str(self.write("phase5-safe.py", PHASE5_SAFE_CONFIG))]))
+        self.assertEqual(PHASE5_CONFIG_TRAPS & found, set())
+
+
+class Phase5ResultRules(TempDirCase):
+    def test_kv_cache_fill_plateau_fires_106(self):
+        rows = [
+            {"kv_cache_occupancy": value, "preemptions": 0}
+            for value in (0.55, 0.68, 0.79, 0.91, 0.955, 0.962, 0.964)
+        ]
+        self.assertIn("106", _ids(inspect_results(self.write("kv.json", json.dumps(rows)))))
+
+    def test_bistable_canary_fires_108(self):
+        hashes = ["a", "a", "b", "a", "a", "b", "b", "a", "a"]
+        rows = [{"canary_sha256": h} for h in hashes]
+        self.assertIn("108", _ids(inspect_results(self.write("canary.json", json.dumps(rows)))))
+
+    def test_shared_endpoint_contention_fires_110(self):
+        rows = [
+            {"finish_reason": "stop", "content": "ok",
+             "requests_running_before": 1, "other_requests_finished": 0},
+            {"finish_reason": "stop", "content": "ok",
+             "requests_running_before": 0, "other_requests_finished": 2},
+        ]
+        self.assertIn("110", _ids(inspect_results(self.write("contended.json", json.dumps(rows)))))
+
+    def test_serialized_concurrency_fires_135(self):
+        rows = [
+            {"concurrency": 1, "batch_wall_s": 10.0, "aggregate_tps": 60.0},
+            {"concurrency": 2, "batch_wall_s": 18.0, "aggregate_tps": 64.0},
+            {"concurrency": 4, "batch_wall_s": 36.0, "aggregate_tps": 66.0},
+        ]
+        self.assertIn("135", _ids(inspect_results(self.write("serial.json", json.dumps(rows)))))
+
+    def test_phase5_result_controls_stay_quiet(self):
+        rows = [
+            {"concurrency": 1, "batch_wall_s": 10.0, "aggregate_tps": 60.0,
+             "kv_cache_occupancy": 0.90, "preemptions": 0, "canary_sha256": "a",
+             "requests_running_before": 0, "other_requests_finished": 0},
+            {"concurrency": 2, "batch_wall_s": 11.0, "aggregate_tps": 112.0,
+             "kv_cache_occupancy": 0.91, "preemptions": 0, "canary_sha256": "a",
+             "requests_running_before": 0, "other_requests_finished": 0},
+            {"concurrency": 4, "batch_wall_s": 12.0, "aggregate_tps": 205.0,
+             "kv_cache_occupancy": 0.90, "preemptions": 0, "canary_sha256": "a",
+             "requests_running_before": 0, "other_requests_finished": 0},
+            {"kv_cache_occupancy": 0.91, "preemptions": 0, "canary_sha256": "a"},
+            {"kv_cache_occupancy": 0.90, "preemptions": 0, "canary_sha256": "a"},
+            {"kv_cache_occupancy": 0.91, "preemptions": 0, "canary_sha256": "a"},
+            {"kv_cache_occupancy": 0.90, "preemptions": 0, "canary_sha256": "a"},
+            {"kv_cache_occupancy": 0.91, "preemptions": 0, "canary_sha256": "a"},
+        ]
+        found = _ids(inspect_results(self.write("phase5-controls.json", json.dumps(rows))))
+        self.assertEqual({"106", "108", "110", "135"} & found, set())
+
+
 DEFECTIVE_TEMPLATE = """\
 {%- if messages[0].role == 'system' %}{% set sys = messages[0].content %}{% set rest = messages[1:] %}\
 {% else %}{% set sys = 'You are a helpful assistant created by Probe Labs. Always answer carefully and politely.' %}\
