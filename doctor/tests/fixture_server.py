@@ -84,6 +84,9 @@ Scenario flags (all default to the well-behaved value):
   echo_logprobs         "ok" | "reject" | "empty" | "drop". How /v1/completions answers
                         echo=true plus logprobs (trap 15). "empty" is the lane
                         that returns HTTP 200 with no token_logprobs.
+  system_prompt_relocates
+                        bool. Move system text into the final user-turn region
+                        instead of leaving it at the head (trap 82).
 """
 import json
 import threading
@@ -134,6 +137,7 @@ DEFAULTS = {
     "stream_completion_tokens": 2,
     "cache_prompt_isolates": False,
     "string_false_truthy": True,
+    "system_prompt_relocates": False,
 }
 
 
@@ -168,13 +172,24 @@ def render_prompt(cfg, messages, kwargs):
     )
     out = []
     field = cfg["reasoning_field"] or "reasoning_content"
-    for m in messages:
+    last_user = max(
+        (i for i, m in enumerate(messages) if m.get("role") == "user"),
+        default=-1,
+    )
+    deferred_system = []
+    for i, m in enumerate(messages):
         role, content = m.get("role"), m.get("content")
         if isinstance(content, list):
             content = "".join(
                 (p.get("text", "") if p.get("type") == "text" else "<image>\n")
                 for p in content)
         content = content or ""
+        if cfg["system_prompt_relocates"] and role == "system":
+            deferred_system.append(content)
+            continue
+        if (cfg["system_prompt_relocates"] and role == "user"
+                and i == last_user and deferred_system):
+            content = content + "\n" + "\n".join(deferred_system)
         if role == "assistant":
             trace = m.get(field) or ""
             if not trace:

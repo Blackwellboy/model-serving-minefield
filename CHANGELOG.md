@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - half batch: two fingerprints + Doctor 32
+
+- Added high-specificity routing fingerprints for `hipErrorInvalidImage` -> Trap 100 and `cudagraph_capture_sizes` -> Trap 130. They are routing leads only and do not confirm mechanism by themselves.
+- Added zero-generation live Doctor coverage for [82](traps/template/82-system-prompt-relocates-to-last-user-turn.md): render a marked multi-turn conversation and directly inspect whether the unique system marker stays ahead of the first user turn or migrates into the final-user region.
+- Doctor moves **31 -> 32 of 161** with no increase to the chat-generation request ceiling. Automatic coverage remains **119/161** because Trap 82 already had offline/template automation.
+- Corrected the Doctor README render-path dependency list so it now includes the render-dependent checks added in the previous batches as well as Trap 82.
+
 ## 2026-10-08 - half batch: two fingerprints + Doctor 31
 
 - Added two high-specificity routing fingerprints: `MemoryMax=` -> Trap 125 and the paired `sliding_window` / `max_window_layers` Qwen config shape -> Trap 143. Both remain routing leads and never confirm a mechanism by themselves.

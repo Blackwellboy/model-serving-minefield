@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "894abfcb644ddac8dea634a13e21cbc2cae6e3c124af6a62eba89ee4d30102be",
-  "doctor_implemented_trap_count": 31,
+  "content_sha256": "8a3315e8b587f2453dcf58911197b73cd78294b57554887f3da2816caf703282",
+  "doctor_implemented_trap_count": 32,
   "entries": [
     {
       "affected_models": [
@@ -5628,14 +5628,15 @@
       "check": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompt_tokens_details.cached_tokens.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/82-system-prompt-relocates-to-last-user-turn.md"
       },
       "evidence_strength": [
         "reproduced here"

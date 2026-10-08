@@ -3,7 +3,7 @@
   "summary": {
     "any_automated_check": 119,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 31,
+    "endpoint_checks_implemented": 32,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
     "log_checks_implemented": 31,
@@ -6063,16 +6063,18 @@
       "id": "82",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "If SYS comes back next to U2 rather than at the head of the string, this lane cannot share a prefix across turns. Confirm the consequence with two sequential chat requests and read prompt_tokens_details.cached_tokens.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "Measured on one Mistral-family Q80 GGUF of unstated provenance, served on llama.cpp. The behaviour is a property of the embedded template, so expect it wherever this template shape travels, and expect it NOT to hold for templates that emit the system block once at the head. We make no claim about Mistral checkpoints generally, about any named model, or about any product.",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
