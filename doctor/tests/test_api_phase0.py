@@ -105,6 +105,20 @@ class HardBudget(unittest.TestCase):
             self.assertFalse(result.budget_exceeded)
 
 
+class PlannerCostAccounting(unittest.TestCase):
+    def test_reasoning_fields_is_priced_at_worst_case_four_requests(self):
+        spec = next(p for p in md.PROBE_SPECS if p.id == "reasoning_fields")
+        self.assertEqual(spec.request_cost, 4)
+
+    def test_full_catalogue_conservative_request_ceiling_is_24(self):
+        plan = plan_checks(
+            base_url="http://127.0.0.1:1/v1",
+            mode="doctor",
+            detect=False,
+        )
+        self.assertEqual(plan.expected_requests, 24)
+
+
 class DoctorSharedCore(unittest.TestCase):
     def test_doctor_mode_uses_catalog(self):
         plan = plan_checks(base_url="http://127.0.0.1:1/v1", mode="doctor", detect=False)
