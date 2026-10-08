@@ -80,6 +80,18 @@ RULES = (
     ("152", r"(?:(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM)|(?:loading checkpoint|loading weights|checkpoint shards)[\s\S]{0,5000}(?:ninja|nvcc|torch extension|building .*extension)[\s\S]{0,5000}(?:out of memory|low memory|watchdog|SIGTERM))",
      "CUDA-extension compilation overlaps model-weight loading and is followed by memory pressure. A warm kernel "
      "cache can hide this first-start UMA peak."),
+    ("19", r"auto tool choice requires\s+--enable-auto-tool-choice\s+and\s+--tool-call-parser",
+     "The server rejected auto tool choice because its parser/gate flags are missing; this is the loud form of "
+     "the structured-tool configuration trap."),
+    ("77", r"Unknown vLLM environment variable detected:\s*[A-Z][A-Z0-9_]+",
+     "vLLM explicitly rejected an unknown environment variable. Treat the name as invalid for this build rather "
+     "than assuming the setting took effect."),
+    ("118", r"No available shared memory broadcast block found in 60 seconds",
+     "Ray/vLLM emitted the shared-memory broadcast wait line that can make a healthy multi-node boot look deadlocked "
+     "when driver-side log forwarding is disabled."),
+    ("119", r"max_total_tokens\s*=\s*\d+\s+is larger than the profiled value\s+\d+",
+     "The requested max_total_tokens exceeded the capacity profiled from current free memory; the effective pool is "
+     "being clipped to the profiled value."),
 )
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
 
