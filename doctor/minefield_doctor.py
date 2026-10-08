@@ -72,11 +72,13 @@ TRAP_PATHS = {
     "22": "evaluation/22-family-card-budget-floors-differ-by-size.md",
     "23": "reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
     "25": "template/25-empty-think-blocks-poison-prefix-cache.md",
+    "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
     "78": "tools/78-tool-choice-accepted-and-ignored.md",
+    "80": "runtime/80-reasoning-parser-batches-sse-deltas.md",
     "29": "reasoning/29-server-reasoning-off-is-not-an-off-switch.md",
     "77": "reasoning/77-only-one-request-field-is-validated.md",
     "141": "evaluation/141-sglang-python-chat-model-name-not-validated.md",
@@ -742,6 +744,210 @@ def check_streaming(doc, base, key):
         doc.skip(["23"], "streaming delta placement", f"stream failed: {e}",
                  code="STREAM_FAILED",
                  asserts=[A("stream request completed", str(e), held=False)])
+
+
+def check_reasoning_effort_top_level(doc, base, key):
+    """Trap 58: top-level reasoning_effort can enable thinking and edit prompt."""
+    if doc.stack != "vllm":
+        doc.skip(
+            ["58"], "top-level reasoning_effort behaviour",
+            f"trap 58 was reproduced on vLLM and this bounded probe is scoped there; "
+            f"detected stack={doc.stack!r}",
+            code="REASONING_EFFORT_SCOPE_NOT_VLLM",
+            asserts=[A("detected stack is vLLM", doc.stack, held=False)])
+        return
+
+    messages = [{"role": "user", "content": "Reply with exactly: OK"}]
+    arms = {}
+    for name, extra in (
+        ("baseline", {}),
+        ("low", {"reasoning_effort": "low"}),
+        ("max", {"reasoning_effort": "max"}),
+    ):
+        st, choice, raw = chat(
+            doc, base, key, doc.model, messages, max_tokens=32, **extra)
+        if st != 200 or choice is None or not isinstance(raw, dict):
+            arms[name] = {"status": st, "error": "no parseable completion"}
+            continue
+        content, rc, rr, _tc, _msg = msg_fields(choice)
+        usage = raw.get("usage") if isinstance(raw.get("usage"), dict) else {}
+        arms[name] = {
+            "status": st,
+            "prompt_tokens": usage.get("prompt_tokens"),
+            "reasoning": bool(rc or rr or "<think>" in content or "</think>" in content),
+            "content_len": len(content),
+            "finish": choice.get("finish_reason"),
+        }
+    doc.evidence["trap58_arms"] = arms
+
+    if any("error" in arm for arm in arms.values()):
+        doc.skip(
+            ["58"], "top-level reasoning_effort behaviour",
+            f"one or more matched arms failed: {arms}",
+            code="REASONING_EFFORT_ARMS_INCOMPLETE",
+            asserts=[A("baseline, low and max all return parseable HTTP 200 completions",
+                       arms, held=False)])
+        return
+
+    baseline, low, high = arms["baseline"], arms["low"], arms["max"]
+    if baseline["reasoning"]:
+        doc.inconclusive(
+            ["58"], "top-level reasoning_effort behaviour",
+            "the baseline already reasons, so this lane does not satisfy Trap 58's "
+            "reasoning-off precondition and the probe cannot attribute reasoning in "
+            "the low/max arms to reasoning_effort",
+            code="REASONING_EFFORT_BASELINE_ALREADY_ON",
+            asserts=[A("baseline is reasoning-off", baseline, held=False)])
+        return
+
+    enabled = low["reasoning"] or high["reasoning"]
+    token_values = [baseline["prompt_tokens"], low["prompt_tokens"], high["prompt_tokens"]]
+    have_usage = all(isinstance(value, int) for value in token_values)
+    prompt_changed = have_usage and (
+        low["prompt_tokens"] != baseline["prompt_tokens"]
+        or high["prompt_tokens"] != baseline["prompt_tokens"]
+    )
+    if enabled or prompt_changed:
+        doc.problem(
+            ["58"],
+            "top-level reasoning_effort changes this reasoning-off lane: "
+            f"reasoning baseline/low/max={baseline['reasoning']}/{low['reasoning']}/{high['reasoning']}, "
+            f"prompt_tokens={token_values}",
+            "Treat reasoning_effort as a prompt/budget control on this lane, not a "
+            "harmless hint. Strip it at the gateway unless you deliberately qualify "
+            "the resulting thinking/prompt mode.",
+            code="REASONING_EFFORT_CHANGES_LANE",
+            asserts=[
+                A("low/max do not enable reasoning on a reasoning-off baseline",
+                  {"baseline": baseline, "low": low, "max": high}, held=not enabled),
+                A("low/max leave prompt token accounting unchanged",
+                  {"prompt_tokens": token_values}, held=not prompt_changed if have_usage else False),
+            ])
+        return
+
+    if not have_usage:
+        doc.inconclusive(
+            ["58"], "top-level reasoning_effort prompt effect",
+            "reasoning stayed off in all three arms, but prompt_tokens usage is missing "
+            "from at least one response, so the hidden-preamble half of Trap 58 could "
+            "not be ruled out",
+            code="REASONING_EFFORT_USAGE_MISSING",
+            asserts=[A("all three arms expose prompt_tokens", token_values, held=False)])
+        return
+
+    doc.ok(
+        ["58"],
+        "on this reasoning-off vLLM lane, reasoning_effort low/max neither enables "
+        "reasoning nor changes prompt_tokens relative to the matched baseline",
+        code="REASONING_EFFORT_NO_EFFECT",
+        asserts=[
+            A("baseline, low and max all remain reasoning-off",
+              {"baseline": baseline, "low": low, "max": high}),
+            A("baseline, low and max have identical prompt_tokens",
+              {"prompt_tokens": token_values}),
+        ])
+
+
+def check_stream_batching(doc, base, key):
+    """Trap 80: text-delta count far below completion-token count."""
+    if doc.stack != "vllm":
+        doc.skip(
+            ["80"], "stream delta batching ratio",
+            f"trap 80 is scoped to a measured vLLM reasoning-parser path; "
+            f"detected stack={doc.stack!r}",
+            code="STREAM_BATCHING_SCOPE_NOT_VLLM",
+            asserts=[A("detected stack is vLLM", doc.stack, held=False)])
+        return
+
+    body = {
+        "model": doc.model or "default",
+        "messages": [{"role": "user", "content":
+                      "List the integers 1 through 40, comma separated, and nothing else."}],
+        "stream": True,
+        "stream_options": {"include_usage": True},
+        "max_tokens": 128,
+        "temperature": 0,
+        "chat_template_kwargs": {"enable_thinking": True},
+    }
+    doc.consume_request()
+    delta_count = 0
+    completion_tokens = None
+    try:
+        req = urllib.request.Request(
+            base + "/chat/completions", json.dumps(body).encode(),
+            {"Content-Type": "application/json"})
+        if key:
+            req.add_header("Authorization", f"Bearer {key}")
+        with urllib.request.urlopen(req, timeout=120) as response:
+            for line in response:
+                line = line.decode("utf-8", "replace").strip()
+                if not line.startswith("data: {"):
+                    continue
+                event = json.loads(line[6:])
+                usage = event.get("usage")
+                if isinstance(usage, dict) and isinstance(usage.get("completion_tokens"), int):
+                    completion_tokens = usage["completion_tokens"]
+                choices = event.get("choices")
+                if not isinstance(choices, list) or not choices:
+                    continue
+                delta = choices[0].get("delta") or {}
+                if any(delta.get(field) for field in ("content", "reasoning", "reasoning_content")):
+                    delta_count += 1
+    except Exception as exc:
+        doc.skip(
+            ["80"], "stream delta batching ratio",
+            f"stream probe failed: {exc}",
+            code="STREAM_BATCHING_FAILED",
+            asserts=[A("stream probe completed", str(exc), held=False)])
+        return
+
+    evidence = {"text_deltas": delta_count, "completion_tokens": completion_tokens}
+    doc.evidence["trap80_stream_ratio"] = evidence
+    if not isinstance(completion_tokens, int) or completion_tokens <= 0:
+        doc.skip(
+            ["80"], "stream delta batching ratio",
+            "the stream did not expose a positive usage.completion_tokens value, so "
+            "delta arrival count cannot be compared with generated-token count",
+            code="STREAM_BATCHING_USAGE_MISSING",
+            asserts=[A("stream reports positive completion_tokens", evidence, held=False)])
+        return
+    ratio = delta_count / completion_tokens
+    evidence["ratio"] = ratio
+    if completion_tokens < 10:
+        doc.inconclusive(
+            ["80"], "stream delta batching ratio",
+            f"only {completion_tokens} completion tokens were generated; that is too "
+            "small to classify parser batching reliably",
+            code="STREAM_BATCHING_SAMPLE_TOO_SMALL",
+            asserts=[A("probe generated at least 10 completion tokens", evidence, held=False)])
+        return
+    if ratio < 0.5:
+        doc.problem(
+            ["80"],
+            f"only {delta_count} non-empty text deltas arrived for {completion_tokens} "
+            f"completion tokens (ratio {ratio:.2f}); stream timing describes parser "
+            "flushes rather than token generation",
+            "Do not derive TTFT/inter-token/decode rate from delta arrival timing on "
+            "this lane. Use wall-clock plus a non-streaming prefill control as in Trap 80.",
+            code="STREAM_DELTAS_BATCHED",
+            asserts=[A("text-delta/token ratio is at least 0.5", evidence, held=False)])
+        return
+    if ratio >= 0.9:
+        doc.ok(
+            ["80"],
+            f"stream produced {delta_count} non-empty text deltas for "
+            f"{completion_tokens} completion tokens (ratio {ratio:.2f}); the severe "
+            "delta-batching signature is absent on this probe",
+            code="STREAM_DELTAS_NEAR_TOKEN_RATE",
+            asserts=[A("text-delta/token ratio is at least 0.9", evidence)])
+        return
+    doc.inconclusive(
+        ["80"], "stream delta batching ratio",
+        f"stream produced {delta_count} non-empty text deltas for {completion_tokens} "
+        f"completion tokens (ratio {ratio:.2f}). That is below near-token flushing "
+        "but not low enough for this bounded probe to assign Trap 80.",
+        code="STREAM_DELTAS_BORDERLINE",
+        asserts=[A("text-delta/token ratio is at least 0.9", evidence, held=False)])
 
 
 def _vllm_render(doc, root, key, messages, kwargs):
@@ -2618,6 +2824,14 @@ def _probe_streaming(doc, base, root, args):
     check_streaming(doc, base, args.api_key)
 
 
+def _probe_reasoning_effort_top_level(doc, base, root, args):
+    check_reasoning_effort_top_level(doc, base, args.api_key)
+
+
+def _probe_stream_batching(doc, base, root, args):
+    check_stream_batching(doc, base, args.api_key)
+
+
 def _probe_history_assembly(doc, base, root, args):
     check_history_assembly(doc, root, args.api_key)
 
@@ -2683,6 +2897,16 @@ PROBE_SPECS = (
         "streaming", ("23",), 1, True, 90, ("streaming",),
         _probe_streaming,
         "streaming content deltas",
+    ),
+    ProbeSpec(
+        "reasoning_effort_top_level", ("58",), 3, False, 35, (),
+        _probe_reasoning_effort_top_level,
+        "top-level reasoning_effort prompt/thinking effect",
+    ),
+    ProbeSpec(
+        "stream_batching", ("80",), 1, False, 25, ("streaming",),
+        _probe_stream_batching,
+        "stream delta count versus completion-token count",
     ),
     ProbeSpec(
         "history_assembly", ("04", "20", "25"), 0, True, 70, (),
