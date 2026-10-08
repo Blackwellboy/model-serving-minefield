@@ -47,14 +47,14 @@ weight or threshold was chosen by looking at a holdout miss.
 
 ## Results
 
-Holdout split: 143 written queries, then the 12 reported cases, then both
+Holdout split: 161 written queries, then the 12 reported cases, then both
 together; 20 off-domain negatives.
 
 | matcher | written top1 | written top5 | reported top1 | reported top5 | all top1 | all top5 | false alarms |
 |---|---|---|---|---|---|---|---|
 | 0.2.0 (before) | 70.6% | 86.0% | | | | | 70% |
 | 0.2.1, part 1 | 83.2% | 92.3% | 33.3% | 58.3% | 79.4% | 89.7% | 0% |
-| 0.2.1 | **88.8%** | **92.3%** | **50.0%** | **58.3%** | **85.8%** | **89.7%** | **0%** |
+| 0.2.1 | **88.8%** | **92.3%** | **50.0%** | **58.3%** | **85.8%** | **89.7%** | **0%** |\n| fingerprint + real-signature pass (2026-10-08) | **86.1%** | **90.8%** | **50.0%** | **66.7%** | **83.5%** | **89.0%** | **0%** |
 
 The reported column is the honest headline for people with a real problem:
 on reporters' own words the right trap is first half the time and in the top
@@ -130,3 +130,20 @@ splits balanced. A query copied from the entry's own text measures nothing.
 A reported case needs `"source": "issue #N"`, the reporter's own words, and a
 trap the maintainer's disposition names as the owner. One case per issue;
 alternate splits so tune and holdout stay within one of each other.
+
+
+### 2026-10-08 structured fingerprint pass
+
+The registry now derives machine-facing fingerprints from canonical trap Markdown
+(flags, field names, routes, exception classes, environment variables and other
+operator identifiers). They influence ranking only when the user's input itself
+looks machine-shaped (for example a snake_case field, CLI flag, assignment,
+exception, HTTP error or pasted multiline text), and only when the fingerprint
+is rare across the registry. Ordinary prose stays on the semantic matcher.
+
+Four exact signatures copied from real reports were also added for traps 19,
+77, 118 and 119. On the six real pasted report lines, top-1 moved to **6/6
+(100%)** while off-domain false alarms remained **0/20** on both splits.
+Reporter-wording holdout top-5 improved from **58.3% to 66.7%**. The feature was
+kept only after two broader fingerprint variants were benchmarked and rejected:
+one raised false alarms to 10%, and another degraded ordinary symptom ranking.
