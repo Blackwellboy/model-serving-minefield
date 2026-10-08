@@ -298,7 +298,11 @@ def compile_registry(root: Path = ROOT) -> dict[str, Any]:
                 "source": f"doctor/{doctor[trap_id]}" if trap_id in doctor else None,
             },
             "diagnostic_modalities": [],
-            "diagnostic_fingerprints": _diagnostic_fingerprints(text),
+            "diagnostic_fingerprints": _diagnostic_fingerprints(
+                "\n".join((
+                    title_match.group(2), symptom, mechanism, check, stacks_text
+                ))
+            ),
             "known_limitations": _section(
                 text, ("Limitations", "What this does and does not say", "Scope"), ""
             ),
