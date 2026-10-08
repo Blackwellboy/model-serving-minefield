@@ -33,6 +33,8 @@ def strength(match: dict[str, Any]) -> str:
         return "log line match"
     if match.get("fingerprint_match"):
         return "fingerprint match"
+    if match.get("identifier_match"):
+        return "identifier match"
     weight = float(match.get("evidence_weight") or 0.0)
     if weight >= STRONG:
         return "strong match"
@@ -84,6 +86,7 @@ class _Style:
             "strong match": "32",
             "log line match": "32",
             "fingerprint match": "36",
+            "identifier match": "36",
             "possible match": "33",
         }.get(label, "2")
         return self._wrap(code, label)
@@ -130,6 +133,11 @@ def render_diagnosis(result: dict[str, Any], *, limit: int = 5, stream: TextIO |
                 out += wrap("why:   ", _clip(match["log_signature"], 260))
             elif match.get("fingerprint_match"):
                 out += wrap("why:   ", _clip(match["fingerprint_match"], 260))
+            elif match.get("identifier_match"):
+                out += wrap(
+                    "why:   ",
+                    f"unique canonical identifier: {match['identifier_match']}",
+                )
             out += wrap("check: ", _check_text(match.get("confirmation_check", ""), 260))
             if match.get("source_path"):
                 # Never wrap a URL: a wrapped link is not clickable.
