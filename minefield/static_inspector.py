@@ -133,6 +133,36 @@ RULES = tuple(Rule(*rule) for rule in (
      "TensorFold 0.6.1 is selected for an NVFP4 lane without an explicit precision mode. That version changed the "
      "default arithmetic; pin --precision and requalify long greedy output.",
      r"(?:NVFP4|nvfp4)", r"(?:--precision\b|precision\s*[:=])"),
+    ("121", r"ssh\b[^\n]{0,500}(?:docker|python|vllm|sglang)[^\n]{0,500}(?:\{.*\}|--[^\s]+=['\"]?\{)",
+     "suspicious",
+     "Structured arguments are flattened into an SSH command string. Compare the worker's received argv with the "
+     "known-good local argv; an extra shell parse can alter JSON, mounts, env values or application arguments.",
+     None, r"(?:printf '%q'|argv|set -x)"),
+    ("125", r"\bMemoryMax\s*=\s*\S+",
+     "requiring-runtime-confirmation",
+     "A cgroup/systemd MemoryMax guard is used around CUDA-serving work. On GB10 unified memory this may not charge "
+     "CUDA allocations proportionally; prove the limiter with host and CUDA allocation controls.",
+     r"(?:CUDA|nvidia|vllm|sglang|GB10|DGX)"),
+    ("128", r"(?:--max-num-partial-prefills|max_num_partial_prefills)\b",
+     "requiring-runtime-confirmation",
+     "max_num_partial_prefills is configured. On the affected vLLM scheduler build the value was accepted but never "
+     "read by the waiting-admission loop; source-read proof is required before treating the flag as an active limit.",
+     r"(?:vllm|SchedulerConfig|scheduler)"),
+    ("132", r"(?:speculative|draft|placeholder)[^\n]{0,300}(?:prefill|chunk)",
+     "suspicious",
+     "Speculative placeholder logic touches chunked-prefill code without the known is_prefill_chunk guard in the "
+     "same file. Cold-prefill A/B is still required.",
+     r"(?:scheduler|request)", r"is_prefill_chunk"),
+    ("136", r"(?:python\S*|pytest|bash|sh)\b[^\n|]{0,240}\|\s*(?:tail|head|tee)\b",
+     "suspicious",
+     "A probe is piped through a log consumer; without pipefail or explicit producer-status capture the wrapper can "
+     "report success after the probe crashed.",
+     None, r"(?:pipefail|PIPESTATUS)"),
+    ("159", r"(?:resident|weight|byte|admission)[^\n]{0,300}vision_tower",
+     "suspicious",
+     "Vision-byte accounting references vision_tower.* while the same source also knows the model.visual.* alias. "
+     "Feed identical synthetic shapes through both aliases before trusting admission bytes.",
+     r"model\.visual"),
 ))
 
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
