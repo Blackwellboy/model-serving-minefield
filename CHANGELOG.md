@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-08 - Doctor 30 and automatic coverage 116
+
+- Added live Doctor coverage for [58](traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md), [80](traps/runtime/80-reasoning-parser-batches-sse-deltas.md), and [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md). Doctor moves **27 -> 30 of 161**.
+- Added automatic checks for [121](traps/runtime/121-ssh-fanout-reparses-structured-argv.md), [124](traps/runtime/124-gb10-stuck-low-power-state.md), [125](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md), [128](traps/runtime/128-max-num-partial-prefills-is-dead-config.md), [132](traps/runtime/132-speculative-placeholder-corrupts-cold-prefill.md), [133](traps/runtime/133-dspark-draft-loader-drops-shared-expert-weights.md), [136](traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md), [137](traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md), [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md), [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md), [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md), and [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md).
+- Expected generated coverage after this batch: **116/161** with any automatic check, **78** static/offline checks, **31** log signatures, and **30/161** live Doctor.
+- New Doctor semantics remain bounded: accepted-but-inert-looking reasoning_effort stays inconclusive, stream batching requires a completion-token denominator, and cache_prompt isolation is scoped to llama.cpp with an observed cached-token counter.
+
 ## 2026-10-08 - Doctor 27 and automatic coverage 104
 
 - Added three zero-generation-request Doctor checks: [63](traps/reasoning/63-reasoning-round-trip-one-correct-shape.md) (four-arm reasoning field x preservation-gate render matrix), [86](traps/template/86-final-assistant-turn-bypasses-the-template-branch.md) (llama.cpp final-vs-mid assistant render delimiters), and [87](traps/runtime/87-llamacpp-props-reports-per-slot-context.md) (GET-only `/props` versus `/slots` context semantics). Live Doctor coverage moves **24 -> 27 of 161** without increasing the generation-request ceiling.
