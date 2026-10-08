@@ -168,9 +168,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **27 of these 161 entries**, weighted toward reasoning fields, templates,
+for **29 of these 161 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
-the other 134. It runs
+the other 132. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
