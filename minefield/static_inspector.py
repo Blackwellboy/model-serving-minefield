@@ -163,6 +163,24 @@ RULES = tuple(Rule(*rule) for rule in (
      "Vision-byte accounting references vision_tower.* while the same source also knows the model.visual.* alias. "
      "Feed identical synthetic shapes through both aliases before trusting admission bytes.",
      r"model\.visual"),
+    ("31", r"if\s+[^\n]{0,120}(?:doc[_]?id|candidate[_]?id)[^\n]{0,80}\bin\s+(?:expected|gold)[A-Za-z0-9_]*[\s\S]{0,240}score\s*[-+]=\s*(?:1\d{2,}|\d{4,})",
+     "suspicious",
+     "Ranking source adjusts a candidate score when its id appears in expected/gold answer metadata. That is an "
+     "oracle re-ranker, not retrieval quality; run the answer-field injection control before trusting the metric."),
+    ("39", r"device_map\s*=\s*[\"']auto[\"']",
+     "requiring-runtime-confirmation",
+     "Transformers device_map=auto can place layers on every visible accelerator. Confirm CUDA_VISIBLE_DEVICES is "
+     "set before torch import and assert every parameter device before generation.",
+     None, r"CUDA_VISIBLE_DEVICES"),
+    ("44", r"(?:(?:fp4|dequant)[\s\S]{0,300}swizzle\s*=\s*True|swizzle\s*=\s*True[\s\S]{0,300}(?:fp4|dequant))",
+     "requiring-runtime-confirmation",
+     "FP4 dequantization explicitly enables swizzled scale layout. Verify the checkpoint's stored scale layout "
+     "with per-row float64 cosine and a discriminative generation control before using the result."),
+    ("62", r"(?:speculative_config|--speculative-config|num_speculative_tokens)[^\n]{0,500}",
+     "requiring-runtime-confirmation",
+     "Speculative decoding is configured without an explicit draft sampling/method selector in this file. Confirm "
+     "the engine's resolved startup summary and the sampler backend inside the serving container.",
+     r"(?:draft|dflash|speculative)", r"(?:[\"']method[\"']\s*:|draft[_-]?sampling[_-]?method|speculative[_-]?method)"),
 ))
 
 IMPLEMENTED_TRAPS = frozenset(rule[0] for rule in RULES)
