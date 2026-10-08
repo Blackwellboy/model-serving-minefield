@@ -72,8 +72,8 @@ class SymptomBenchmarkFloor(unittest.TestCase):
     def test_pasted_lines_floor(self):
         # Log lines copied verbatim from reports. Small n: one case below measured.
         pasted = self.report["pasted_lines"]["all"]
-        self.assertGreaterEqual(pasted["top1"], 0.30, pasted)
-        self.assertGreaterEqual(pasted["top5"], 0.45, pasted)
+        self.assertGreaterEqual(pasted["top1"], 0.80, pasted)
+        self.assertGreaterEqual(pasted["top5"], 0.80, pasted)
 
     def test_off_domain_questions_never_nominate_a_trap(self):
         for name, negatives in self.report["negatives"].items():
