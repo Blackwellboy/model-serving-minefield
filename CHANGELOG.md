@@ -1,10 +1,10 @@
 # Changelog
 
-## 2026-10-08 - Doctor 30 and automatic coverage 116
+## 2026-10-08 - Doctor 30 and automatic coverage 119
 
 - Added live Doctor coverage for [58](traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md), [80](traps/runtime/80-reasoning-parser-batches-sse-deltas.md), and [88](traps/runtime/88-cache-prompt-false-does-isolate-here.md). Doctor moves **27 -> 30 of 161**.
 - Added automatic checks for [121](traps/runtime/121-ssh-fanout-mangles-json-args.md), [124](traps/runtime/124-dgx-spark-gb10-stuck-low-power-state-under-load.md), [125](traps/memory/125-cgroup-memorymax-does-not-account-gb10-cuda-uma.md), [128](traps/runtime/128-admission-flag-never-read-decode-starvation.md), [132](traps/runtime/132-cold-prefill-spec-placeholder-corrupts-prompt-tail.md), [133](traps/runtime/133-dspark-loader-drops-shared-expert.md), [136](traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md), [137](traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md), [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md), [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md), [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md), and [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md).
-- Expected generated coverage after this batch: **116/161** with any automatic check, **78** static/offline checks, **31** log signatures, and **30/161** live Doctor.
+- Expected generated coverage after this batch: **119/161** with any automatic check, **78** static/offline checks, **31** log signatures, and **30/161** live Doctor.
 - New Doctor semantics remain bounded: accepted-but-inert-looking reasoning_effort stays inconclusive, stream batching requires a completion-token denominator, and cache_prompt isolation is scoped to llama.cpp with an observed cached-token counter.
 
 ## 2026-10-08 - Doctor 27 and automatic coverage 104
