@@ -287,6 +287,31 @@ class EmptyThoughtMarkerResults(TempDirCase):
         self.assertNotIn("158", _ids(report))
 
 
+REPORT_PASTE_LOG = """\
+Unknown vLLM environment variable detected: VLLM_FLASHINFER_MOE_BACKEND
+No available shared memory broadcast block found in 60 seconds
+auto tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set
+max_total_tokens=200000 is larger than the profiled value 163089. Use the profiled value instead.
+"""
+REPORT_PASTE_SAFE = """\
+vLLM environment loaded successfully
+shared memory broadcast initialized
+auto tool choice enabled with parser
+max_total_tokens=160000 accepted
+"""
+REPORT_PASTE_TRAPS = {"19", "77", "118", "119"}
+
+
+class RealReportLogSignatures(TempDirCase):
+    def test_real_report_lines_are_detected(self):
+        found = _ids(inspect_logs([str(self.write("reported.log", REPORT_PASTE_LOG))]))
+        self.assertEqual(REPORT_PASTE_TRAPS - found, set())
+
+    def test_nearby_safe_lines_do_not_fire(self):
+        found = _ids(inspect_logs([str(self.write("reported-safe.log", REPORT_PASTE_SAFE))]))
+        self.assertEqual(REPORT_PASTE_TRAPS & found, set())
+
+
 DEFECTIVE_TEMPLATE = """\
 {%- if messages[0].role == 'system' %}{% set sys = messages[0].content %}{% set rest = messages[1:] %}\
 {% else %}{% set sys = 'You are a helpful assistant created by Probe Labs. Always answer carefully and politely.' %}\
