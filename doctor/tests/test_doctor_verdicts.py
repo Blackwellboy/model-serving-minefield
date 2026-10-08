@@ -953,6 +953,27 @@ class TestStreamingAndMultimodal(DoctorVerdictCase):
         self.assertEqual(f["level"], "UNKNOWN")
 
 
+class TestStringFalseTruthiness(DoctorVerdictCase):
+
+    def test_string_false_turns_thinking_on_is_problem(self):
+        with FixtureLane(string_false_truthy=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "STRING_FALSE_TURNS_THINKING_ON")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("57", f["traps"])
+
+    def test_string_false_parsed_as_false_is_clean(self):
+        with FixtureLane(string_false_truthy=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "STRING_FALSE_PARSED_AS_FALSE")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertIn("57", f["traps"])
+
+
 # --------------------------------------------------------------------------
 # The contract itself. Three separate hardening passes each converted the
 # false CLEANs they happened to look at and each missed others, so the guard
@@ -963,6 +984,9 @@ class TestStreamingAndMultimodal(DoctorVerdictCase):
 # --------------------------------------------------------------------------
 
 CLEAN_CONTRACT = {
+    "STRING_FALSE_PARSED_AS_FALSE":
+        'boolean true and boolean false render differently, and string "false" '
+        "matches the boolean-false render, ruling out trap 57's truthiness coercion",
     "ECHO_LOGPROBS_SUPPORTED":
         "echo+logprobs returned non-empty token_logprobs, which is the exact "
         "field lm-eval loglikelihood scoring reads; an HTTP 200 alone is not "
@@ -1214,6 +1238,7 @@ SWEEP = [
      "slots": [{"id": i, "n_ctx": 32768} for i in range(4)]},
     {"reasoning_effort_mode": "reject"},
     {"props": llamacpp_props(), "cache_prompt_isolates": True},
+    {"string_false_truthy": False},
 ]
 
 
