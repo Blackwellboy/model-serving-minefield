@@ -75,6 +75,7 @@ TRAP_PATHS = {
     "57": "reasoning/57-thinking-kwarg-truthiness-coercion.md",
     "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
+    "82": "template/82-system-prompt-relocates-to-last-user-turn.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
@@ -119,7 +120,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "86", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "82", "86", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -952,6 +953,81 @@ def check_thinking_string_false(doc, root, key):
         code="STRING_FALSE_DISTINCT_RENDER",
         asserts=[A('string "false" matches either established boolean arm',
                    {"matches_true": False, "matches_false": False}, held=False)])
+
+
+def check_system_prompt_relocation(doc, root, key):
+    """Trap 82: system text must not migrate into the final user-turn region."""
+    markers = {
+        "system": "MF82_SYSTEM_7F3C",
+        "user1": "MF82_USER1_7F3C",
+        "assistant1": "MF82_ASSISTANT1_7F3C",
+        "user2": "MF82_USER2_7F3C",
+    }
+    messages = [
+        {"role": "system", "content": markers["system"]},
+        {"role": "user", "content": markers["user1"]},
+        {"role": "assistant", "content": markers["assistant1"]},
+        {"role": "user", "content": markers["user2"]},
+    ]
+    rendered, how = render_paths(
+        doc, root, key, messages, {"enable_thinking": False}
+    )
+    if rendered is None:
+        doc.skip(
+            ["82"], "system-prompt placement in a multi-turn render",
+            "no render path was available, so the doctor cannot observe where the "
+            "template placed the system text",
+            code="SYSTEM_PROMPT_RENDER_UNAVAILABLE",
+            asserts=[A("the multi-turn prompt can be rendered",
+                       "all supported render paths returned nothing", held=False)])
+        return
+
+    counts = {name: rendered.count(marker) for name, marker in markers.items()}
+    doc.evidence["trap82_render_path"] = how
+    doc.evidence["trap82_marker_counts"] = counts
+    if any(count != 1 for count in counts.values()):
+        doc.inconclusive(
+            ["82"], "system-prompt placement in a multi-turn render",
+            "the render did not preserve every unique marker exactly once, so its "
+            "relative positions cannot safely adjudicate system relocation",
+            code="SYSTEM_PROMPT_MARKERS_AMBIGUOUS",
+            asserts=[A("each system/user/assistant marker appears exactly once",
+                       counts, held=False)])
+        return
+
+    pos = {name: rendered.index(marker) for name, marker in markers.items()}
+    doc.evidence["trap82_marker_positions"] = pos
+    if pos["system"] < pos["user1"] < pos["assistant1"] < pos["user2"]:
+        doc.ok(
+            ["82"],
+            f"the system marker stays at the head of the rendered conversation via {how}; "
+            "it is not relocated into the last user turn",
+            code="SYSTEM_PROMPT_STAYS_AT_HEAD",
+            asserts=[A("system marker precedes user1, assistant1 and user2",
+                       pos)])
+        return
+
+    if (pos["user1"] < pos["assistant1"]
+            and pos["system"] > pos["assistant1"]
+            and pos["user2"] > pos["assistant1"]):
+        doc.problem(
+            ["82"],
+            f"the system marker appears in the final-user region of the rendered prompt "
+            f"via {how}, after the prior assistant turn instead of at the head",
+            "treat the template as prefix-unstable across turns; inspect or replace the "
+            "template before attributing zero prefix-cache reuse to the cache engine",
+            code="SYSTEM_PROMPT_RELOCATED_TO_LAST_USER",
+            asserts=[A("system marker remains before the first user turn",
+                       pos, held=False)])
+        return
+
+    doc.inconclusive(
+        ["82"], "system-prompt placement in a multi-turn render",
+        "all markers were present, but their order was neither the stable-head control "
+        "nor the documented last-user relocation shape",
+        code="SYSTEM_PROMPT_PLACEMENT_OTHER",
+        asserts=[A("render matches either the stable-head or last-user placement shape",
+                   pos, held=False)])
 
 
 def check_history_assembly(doc, root, key):
@@ -2889,6 +2965,10 @@ def _probe_thinking_string_false(doc, base, root, args):
     check_thinking_string_false(doc, root, args.api_key)
 
 
+def _probe_system_prompt_relocation(doc, base, root, args):
+    check_system_prompt_relocation(doc, root, args.api_key)
+
+
 def _probe_history_assembly(doc, base, root, args):
     check_history_assembly(doc, root, args.api_key)
 
@@ -2972,6 +3052,11 @@ PROBE_SPECS = (
         "thinking_string_false", ("57",), 0, True, 68, (),
         _probe_thinking_string_false,
         'rendered boolean false versus string "false" thinking control',
+    ),
+    ProbeSpec(
+        "system_prompt_relocation", ("82",), 0, True, 67, (),
+        _probe_system_prompt_relocation,
+        "multi-turn system-marker placement in the rendered prompt",
     ),
     ProbeSpec(
         "reasoning_roundtrip_shape", ("63",), 0, True, 69, (),
