@@ -72,6 +72,7 @@ TRAP_PATHS = {
     "22": "evaluation/22-family-card-budget-floors-differ-by-size.md",
     "23": "reasoning/23-streaming-answer-lands-in-reasoning-channel.md",
     "25": "template/25-empty-think-blocks-poison-prefix-cache.md",
+    "57": "reasoning/57-thinking-kwarg-truthiness-coercion.md",
     "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
@@ -118,7 +119,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "63", "86", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "86", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -874,6 +875,83 @@ def render_paths(doc, root, key, messages, kwargs):
         except Exception:
             pass
     return None, None
+
+
+def check_thinking_string_false(doc, root, key):
+    """Trap 57: JSON string "false" must not behave like boolean true."""
+    messages = [{"role": "user", "content": "Reply with OK."}]
+    arms = {}
+    for label, value in (("true", True), ("bool_false", False), ("string_false", "false")):
+        rendered, how = render_paths(
+            doc, root, key, messages, {"enable_thinking": value}
+        )
+        arms[label] = rendered
+        if rendered is not None:
+            doc.evidence.setdefault("trap57_render_path", how)
+    doc.evidence["trap57_render_arms"] = {
+        name: None if value is None else len(value)
+        for name, value in arms.items()
+    }
+    if any(value is None for value in arms.values()):
+        doc.skip(
+            ["57"], 'string "false" thinking coercion',
+            "the check needs all three server/template renders (true, boolean false, "
+            'string "false"); at least one render path was unavailable',
+            code="STRING_FALSE_RENDER_INCOMPLETE",
+            asserts=[A("all three render arms returned",
+                       {name: value is not None for name, value in arms.items()},
+                       held=False)])
+        return
+
+    on = arms["true"]
+    off = arms["bool_false"]
+    string_false = arms["string_false"]
+    if on == off:
+        doc.inconclusive(
+            ["57"], 'string "false" thinking coercion',
+            "boolean true and boolean false render identically, so the lane did not "
+            "establish that enable_thinking controls this prompt. Without a working "
+            'typed control, the string "false" arm cannot be interpreted.',
+            code="STRING_FALSE_NO_TYPED_CONTROL",
+            asserts=[A("boolean true and boolean false render differently",
+                       {"identical": True}, held=False)])
+        return
+    if string_false == on:
+        doc.problem(
+            ["57"],
+            'enable_thinking="false" renders exactly like boolean true, while JSON '
+            "boolean false renders differently: the string is truthy and turns thinking on",
+            'normalise caller values to real booleans before they reach the template; reject '
+            'string booleans instead of passing them through',
+            code="STRING_FALSE_TURNS_THINKING_ON",
+            asserts=[
+                A("boolean true and boolean false render differently",
+                  {"identical": False}),
+                A('string "false" renders like boolean false',
+                  {"string_matches_true": True, "string_matches_false": False},
+                  held=False),
+            ])
+        return
+    if string_false == off:
+        doc.ok(
+            ["57"],
+            'string "false" renders exactly like JSON boolean false and unlike boolean true; '
+            "the truthiness-coercion failure is not present on this render path",
+            code="STRING_FALSE_PARSED_AS_FALSE",
+            asserts=[
+                A("boolean true and boolean false render differently",
+                  {"identical": False}),
+                A('string "false" renders like boolean false',
+                  {"string_matches_false": True}),
+            ])
+        return
+    doc.inconclusive(
+        ["57"], 'string "false" thinking coercion',
+        'the string "false" render differs from both boolean arms. The value is doing '
+        "something, but this is not the trap-57 truthiness shape and is not clean.",
+        code="STRING_FALSE_DISTINCT_RENDER",
+        asserts=[A('string "false" matches either established boolean arm',
+                   {"matches_true": False, "matches_false": False}, held=False)])
 
 
 def check_history_assembly(doc, root, key):
@@ -2807,6 +2885,10 @@ def _probe_streaming(doc, base, root, args):
     check_streaming(doc, base, args.api_key)
 
 
+def _probe_thinking_string_false(doc, base, root, args):
+    check_thinking_string_false(doc, root, args.api_key)
+
+
 def _probe_history_assembly(doc, base, root, args):
     check_history_assembly(doc, root, args.api_key)
 
@@ -2885,6 +2967,11 @@ PROBE_SPECS = (
         "history_assembly", ("04", "20", "25"), 0, True, 70, (),
         _probe_history_assembly,
         "history / empty-think shell render inspection",
+    ),
+    ProbeSpec(
+        "thinking_string_false", ("57",), 0, True, 68, (),
+        _probe_thinking_string_false,
+        'rendered boolean false versus string "false" thinking control',
     ),
     ProbeSpec(
         "reasoning_roundtrip_shape", ("63",), 0, True, 69, (),

@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "d2b17517a1e8daa5d27aa633f3860bf71ae2cfb08307ad7586c6977ff220c4b1",
-  "doctor_implemented_trap_count": 30,
+  "content_sha256": "894abfcb644ddac8dea634a13e21cbc2cae6e3c124af6a62eba89ee4d30102be",
+  "doctor_implemented_trap_count": 31,
   "entries": [
     {
       "affected_models": [
@@ -3845,14 +3845,15 @@
       "check": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with return_token_strs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/57-thinking-kwarg-truthiness-coercion.md"
       },
       "evidence_strength": [
         "reproduced here"

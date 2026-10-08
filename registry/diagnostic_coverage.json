@@ -3,7 +3,7 @@
   "summary": {
     "any_automated_check": 119,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 30,
+    "endpoint_checks_implemented": 31,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
     "log_checks_implemented": 31,
@@ -4195,16 +4195,18 @@
       "id": "57",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "No generation needed and it takes a minute. Post your message list to the server's tokenize endpoint with return_token_strs, once with the thinking kwarg as a JSON boolean false and once as the string \"false\", and compare the final token of each render. If they differ, your lane coerces. Then send a deliberately misspelled kwarg name and confirm you get 200 rather than an error, which tells you the surface is unvalidated and that spelling mistakes in your own callers are silent.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
