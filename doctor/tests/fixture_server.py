@@ -133,6 +133,9 @@ DEFAULTS = {
     "reasoning_effort_mode": "ignored",
     "stream_completion_tokens": 2,
     "cache_prompt_isolates": False,
+    "cache_hit_changes_answer": False,
+    "force_nonempty_content_works": False,
+    "ling_thinking_false_spills": False,
 }
 
 
@@ -244,6 +247,26 @@ def _make_lane_handler(cfg):
             msg = {"role": "assistant", "content": "OK"}
             if fires:
                 msg[cfg["reasoning_field"]] = "a brief trace"
+
+            if cfg["cache_hit_changes_answer"] and cfg["_cache_warm"]:
+                msg["content"] = "WARM_CHANGED"
+
+            if cfg["force_nonempty_content_works"] and fires:
+                trace_key = cfg["reasoning_field"] or "reasoning_content"
+                msg["content"] = ""
+                msg[trace_key] = "hidden parser trace"
+                if kw.get("force_nonempty_content") is True:
+                    msg["content"] = msg[trace_key]
+                    msg[trace_key] = ""
+
+            if cfg["ling_thinking_false_spills"]:
+                trace_key = cfg["reasoning_field"] or "reasoning_content"
+                if body.get("thinking") is False:
+                    msg.pop(trace_key, None)
+                    msg["content"] = "private chain of thought </think> final answer"
+                elif body.get("thinking") is True:
+                    msg["content"] = "final answer"
+                    msg[trace_key] = "private chain of thought"
 
             if body.get("tools"):
                 forced = body.get("tool_choice") not in (None, "none", "auto")
@@ -439,8 +462,14 @@ def _make_lane_handler(cfg):
                     else:
                         cached_tokens = 64 if cfg["_cache_warm"] else 0
                         cfg["_cache_warm"] = True
-            usage = {"prompt_tokens": prompt_tokens, "completion_tokens": 2,
-                     "total_tokens": prompt_tokens + 2}
+            completion_tokens = 2
+            if cfg["ling_thinking_false_spills"]:
+                if body.get("thinking") is True:
+                    completion_tokens = 81
+                elif body.get("thinking") is False:
+                    completion_tokens = 80
+            usage = {"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens,
+                     "total_tokens": prompt_tokens + completion_tokens}
             if cached_tokens is not None:
                 usage["cached_tokens"] = cached_tokens
                 usage["cache_n"] = cached_tokens
