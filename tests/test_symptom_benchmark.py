@@ -95,6 +95,39 @@ class MatcherTokens(unittest.TestCase):
         self.assertEqual(len(concepts), 1, concepts)
 
 
+class DiagnosticFingerprintMatching(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from minefield.registry import load_registry
+        cls.registry = load_registry()
+
+    def top(self, query):
+        from minefield.matching import search
+        results = search(self.registry, query, limit=5)
+        self.assertTrue(results, query)
+        return results[0]
+
+    def test_memorymax_routes_to_125(self):
+        top = self.top("vllm systemd MemoryMax guard never fires")
+        self.assertEqual(top["trap_ids"][0], "125")
+        self.assertIn("MemoryMax", top["fingerprint_matches"])
+
+    def test_sliding_window_routes_to_143(self):
+        top = self.top("Qwen3 sliding_window config but every layer is full attention")
+        self.assertEqual(top["trap_ids"][0], "143")
+        self.assertIn("sliding_window", top["fingerprint_matches"])
+
+    def test_fuse_gemm_comms_routes_to_117(self):
+        top = self.top("vllm startup says fuse_gemm_comms enabled but resolved config says false")
+        self.assertEqual(top["trap_ids"][0], "117")
+        self.assertIn("fuse_gemm_comms", top["fingerprint_matches"])
+
+    def test_fingerprint_match_is_still_not_confirmed(self):
+        top = self.top("vllm systemd MemoryMax")
+        self.assertTrue(top["fingerprint_matches"])
+        self.assertNotIn("CONFIRMED", top["diagnosis_level"])
+
+
 class PastedLogLines(unittest.TestCase):
     """A pasted error line goes through the same signatures as a log scan."""
 
