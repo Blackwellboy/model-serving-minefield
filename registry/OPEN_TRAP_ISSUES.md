@@ -8,6 +8,23 @@ Coverage snapshot: the doctor implements checks for **33 of 161** entries.  128 
 
 ## OPEN
 
+### Q197. Qwen3.8 TP=2 GB10 startup can hang at the first PYNCCL collective
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/197
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** Reproduce a bounded startup hang on the same two-node GB10 topology with the exact pinned model, weights, image/build, launch flags, CUDA/NCCL versions and interface routing recorded. Capture timestamped logs and Python/native stacks for **both ranks** at the collective boundary, including NCCL channel/interface/peer selection; run a minimal value-checked cross-node collective and a same-image known-good model control. Then isolate whether the model-specific GDN/state initialization actually reaches or blocks that collective. The observed startup hang may be confirmed independently of the hypothesised GDN mechanism.
+- **REFUTE.** The four-message or earlier startup pattern reaches a serving-ready bounded generation under matching conditions; the hang is attributable to a different rank/process, a transport-path or interface mismatch, missing loaded artifacts, or an image/build-specific failure; or controlled GDN-path changes do not change the stalled boundary. Do not equate one successful alternative model with proof that every fabric path is healthy.
+- **Boundary.** Reported five repeated hangs across several builds, but no preserved raw logs or rank stacks. GDN causality is **unproven**. Do not promote a model-specific suspected mechanism from the final printed PYNCCL line alone. Dedupe against Trap 160's post-startup rank divergence and existing transport/startup failure classes before adjudication.
+
+### Q198. NGC GB10 PyTorch image plus Unsloth --no-deps lacks transformers
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/198
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** In a fresh digest-pinned `nvcr.io/nvidia/pytorch:25.11-py3` container on GB10/aarch64, inventory installed packages first, apply the exact documented `pip install --no-deps unsloth unsloth_zoo bitsandbytes` procedure, preserve install output and capture the failing `import unsloth` with the missing `transformers` dependency. In a clean matched container, install the stated HF dependencies before the identical --no-deps command and require import, a bounded model-load/generation smoke test, and a package-version inventory.
+- **REFUTE.** The pristine pinned image already includes an importable compatible transformers stack, the documented sequence installs it, the baseline Unsloth import succeeds, or the matched HF-first setup fails on the same package/build pins. Distinguish missing dependency from incompatible version or another transitive import failure.
+- **Boundary.** This is a **fine-tune toolchain setup** issue, not a serving failure. User-reported successful workaround is not a universal version-compatibility guarantee. Keep original and resolved package versions, platform and container digest attached to any promotion; dedupe against versioning/dependency traps before creating a canonical entry.
+
+
 
 
 ### Q113. GB10 page cache can impose a large calibration slowdown while `MemAvailable` barely moves
