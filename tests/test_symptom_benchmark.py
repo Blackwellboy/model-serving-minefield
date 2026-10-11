@@ -105,6 +105,8 @@ class StructuredFingerprints(unittest.TestCase):
         ("143", "Qwen config has sliding_window=4096 and max_window_layers=0"),
         ("100", "RuntimeError: HIP error: hipErrorInvalidImage while launching the first kernel"),
         ("130", "resolved cudagraph_capture_sizes=[1, 2, 4, 8, 16] for this serve"),
+        ("99", "gfx1151: RuntimeError: hipErrorInvalidValue from SDPA causal attention"),
+        ("114", "NCCL_IB_GID_INDEX=3 applied to every rank"),
     )
 
     @classmethod

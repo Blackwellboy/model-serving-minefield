@@ -61,6 +61,16 @@ FINGERPRINTS = (
         r"\bcudagraph_capture_sizes\b",
         "effective CUDA-graph capture-size list identifier",
     ),
+    Fingerprint(
+        "99",
+        r"\b(?:hipErrorInvalidValue\b[\s\S]{0,200}\bgfx1151\b|\bgfx1151\b[\s\S]{0,200}\bhipErrorInvalidValue\b)",
+        "ROCm invalid-value failure on gfx1151",
+    ),
+    Fingerprint(
+        "114",
+        r"\bNCCL_IB_GID_INDEX\s*=\s*\d+\b",
+        "explicitly pinned NCCL GID selection setting",
+    ),
 )
 
 

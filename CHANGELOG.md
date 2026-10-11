@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-11 - half batch: two fingerprints + Doctor 33
+
+- Added structured routing fingerprints for combined `hipErrorInvalidValue` / `gfx1151` -> Trap 99 and pinned `NCCL_IB_GID_INDEX=N` -> Trap 114. Fingerprint hits remain diagnostic leads, never proof of cause.
+- Added zero-generation, llama.cpp `/apply-template` Doctor check for [84](traps/template/84-tool-roundtrip-then-user-turn-is-unrenderable.md), with paired baseline, rejected four-message sequence and rescued five-message control. CLEAN requires both tool and subsequent user markers in the successful render; unavailable or ambiguous controls do not clear the trap.
+- Doctor **32 -> 33/161**, automatic coverage remains **119/161**; request-generation ceiling unchanged.
+
 ## 2026-10-08 - half batch: two fingerprints + Doctor 32
 
 - Added high-specificity routing fingerprints for `hipErrorInvalidImage` -> Trap 100 and `cudagraph_capture_sizes` -> Trap 130. They are routing leads only and do not confirm mechanism by themselves.

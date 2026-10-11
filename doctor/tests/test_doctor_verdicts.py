@@ -1078,6 +1078,25 @@ CLEAN_CONTRACT = {
 
 class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
+    def test_trap84_tool_followup_400_is_problem(self):
+        with FixtureLane(props=llamacpp_props(), tool_followup_400=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "TOOL_FOLLOWUP_400_BRIDGED_OK")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        self.assertIn("84", f["traps"])
+
+    def test_trap84_tool_followup_preserved_is_clean(self):
+        with FixtureLane(props=llamacpp_props()) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "TOOL_FOLLOWUP_RENDERS")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "OK")
+        self.assertIn("84", f["traps"])
+
+
     def test_trap82_system_relocation_is_detected(self):
         with FixtureLane(system_prompt_relocates=True) as base:
             doc = diagnose(base)
@@ -1160,6 +1179,10 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
 
 CLEAN_CONTRACT.update({
+    "TOOL_FOLLOWUP_RENDERS":
+        "a llama.cpp four-message tool roundtrip render returns 200 with both "
+        "the tool-result marker and the following user marker, ruling out "
+        "the trap 84 missing-next-user render failure",
     "SYSTEM_PROMPT_STAYS_AT_HEAD":
         "all four unique markers appear exactly once and the system marker precedes "
         "both user turns and the intervening assistant turn, directly ruling out "
@@ -1262,6 +1285,7 @@ SWEEP = [
     {"props": llamacpp_props(), "cache_prompt_isolates": True},
     {"string_false_truthy": False},
     {"system_prompt_relocates": True},
+    {"props": llamacpp_props(), "tool_followup_400": True},
 ]
 
 
