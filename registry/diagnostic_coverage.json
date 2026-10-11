@@ -3,7 +3,7 @@
   "summary": {
     "any_automated_check": 119,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 32,
+    "endpoint_checks_implemented": 33,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
     "log_checks_implemented": 31,
@@ -6213,16 +6213,18 @@
       "id": "84",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Send the four-message sequence in row four to /apply-template. If it 400s, your agent loop needs the intervening assistant turn.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "One Mistral-family Q80 GGUF of unstated provenance on llama.cpp. The alternation-plus-exemption shape is the portable part; check your own template for it.",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,

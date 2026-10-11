@@ -138,6 +138,7 @@ DEFAULTS = {
     "cache_prompt_isolates": False,
     "string_false_truthy": True,
     "system_prompt_relocates": False,
+    "tool_followup_400": False,
 }
 
 
@@ -352,6 +353,11 @@ def _make_lane_handler(cfg):
             if path == "/apply-template":
                 if not (cfg["render"] and cfg["props"]):
                     return self._send(404, {"error": "not found"})
+                roles = [m.get("role") for m in msgs]
+                if (cfg["tool_followup_400"] and roles ==
+                        ["user", "assistant", "tool", "user"]
+                        and msgs[1].get("tool_calls")):
+                    return self._send(400, {"error": "template role alternation failed"})
                 if cfg["assistant_prefill_bypass"] and msgs and msgs[-1].get("role") == "assistant":
                     prompt = render_prompt(cfg, msgs[:-1], kw) + str(msgs[-1].get("content") or "")
                 else:

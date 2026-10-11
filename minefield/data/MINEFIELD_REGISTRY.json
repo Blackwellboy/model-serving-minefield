@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "8a3315e8b587f2453dcf58911197b73cd78294b57554887f3da2816caf703282",
-  "doctor_implemented_trap_count": 32,
+  "content_sha256": "eff788b7a03a8d2c3a4adc63faaf4ca6b6471afdbad0d762375b82039972c6df",
+  "doctor_implemented_trap_count": 33,
   "entries": [
     {
       "affected_models": [
@@ -5751,14 +5751,15 @@
       "check": "Send the four-message sequence in row four to /apply-template. If it 400s, your agent loop needs the intervening assistant turn.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/84-tool-roundtrip-then-user-turn-is-unrenderable.md"
       },
       "evidence_strength": [
         "reproduced here"
