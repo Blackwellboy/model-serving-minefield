@@ -76,6 +76,7 @@ TRAP_PATHS = {
     "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
     "82": "template/82-system-prompt-relocates-to-last-user-turn.md",
+    "83": "template/83-template-carries-a-baked-default-system-prompt.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
@@ -121,7 +122,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "82", "86", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "82", "83", "86", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -955,6 +956,61 @@ def check_thinking_string_false(doc, root, key):
         asserts=[A('string "false" matches either established boolean arm',
                    {"matches_true": False, "matches_false": False}, held=False)])
 
+
+
+
+def check_baked_default_system(doc, root, key):
+    """Trap 83: compare no-system and explicit empty-system renders."""
+    marker = "MF83_USER_8C7A"
+    variants = (
+        ("omitted", [{"role": "user", "content": marker}]),
+        ("empty", [{"role": "system", "content": ""}, {"role": "user", "content": marker}]),
+    )
+    arms = {}
+    for label, messages in variants:
+        rendered, how = render_paths(doc, root, key, messages, {})
+        arms[label] = rendered
+        if rendered is not None:
+            doc.evidence.setdefault("trap83_render_path", how)
+    if any(v is None for v in arms.values()) or any(
+            v is not None and v.count(marker) != 1 for v in arms.values()):
+        doc.skip(["83"], "default-system-prompt render comparison",
+                 "both renders must be available and preserve the user marker exactly once",
+                 code="DEFAULT_SYSTEM_RENDER_UNAVAILABLE",
+                 asserts=[A("two complete marked renders", {
+                     k: v is not None and v.count(marker) == 1
+                     for k, v in arms.items()}, held=False)])
+        return
+    a, b = arms["omitted"], arms["empty"]
+    # A larger no-system arm is a lead, not proof of a baked instruction.
+    # Only a literal identifiable system span can substantiate that mechanism.
+    if len(a) > len(b) and (
+            re.search(r"<\|im_start\|>system\b", a)
+            or re.search(r"\[INST\]\s*<<SYS>>", a)):
+        doc.problem(["83"],
+                    "omitting the system role inserts additional rendered text "
+                    "with a recognizable system delimiter",
+                    "inspect the resolved template's default/else branch before "
+                    "using absent-system prompts as an evaluation control",
+                    code="DEFAULT_SYSTEM_INJECTED",
+                    asserts=[A("omitted system does not add a system-marked payload",
+                               {"omitted_len":len(a),"empty_len":len(b)},
+                               held=False)])
+    elif a == b:
+        doc.inconclusive(["83"], "default system prompt",
+                         "the two renders are identical, which does not prove that "
+                         "the template has no baked prompt in other role paths",
+                         code="DEFAULT_SYSTEM_IDENTICAL",
+                         asserts=[A("a differential control identifies the default branch",
+                                    {"same":True}, held=False)])
+    else:
+        doc.inconclusive(["83"], "default system prompt",
+                         "the renders differ, but the difference does not establish "
+                         "the specific baked-system-prompt failure",
+                         code="DEFAULT_SYSTEM_DIFFERENCE_UNATTRIBUTED",
+                         asserts=[A("default system payload established",
+                                    {"omitted_len":len(a),"empty_len":len(b)},
+                                    held=False)])
 
 
 def check_tool_roundtrip_followup(doc, root, key):
@@ -3037,6 +3093,10 @@ def _probe_thinking_string_false(doc, base, root, args):
     check_thinking_string_false(doc, root, args.api_key)
 
 
+def _probe_baked_default_system(doc, base, root, args):
+    check_baked_default_system(doc, root, args.api_key)
+
+
 def _probe_tool_roundtrip_followup(doc, base, root, args):
     check_tool_roundtrip_followup(doc, root, args.api_key)
 
@@ -3133,6 +3193,11 @@ PROBE_SPECS = (
         "system_prompt_relocation", ("82",), 0, True, 67, (),
         _probe_system_prompt_relocation,
         "multi-turn system-marker placement in the rendered prompt",
+    ),
+    ProbeSpec(
+        "baked_default_system", ("83",), 0, True, 22, (),
+        _probe_baked_default_system,
+        "omitted versus explicit-empty system-role render comparison",
     ),
     ProbeSpec(
         "tool_roundtrip_followup", ("84",), 0, False, 21, (),

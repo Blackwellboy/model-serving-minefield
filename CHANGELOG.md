@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-12 - Doctor 34 small diagnostic batch
+
+- Added routing fingerprints for Trap 101 transformers input_embeds/create_causal_mask errors and Trap 147 NVIDIA container hook read-only scratch errors. These remain candidates, not confirmations.
+- Added zero-generation render-only Doctor check for [83](traps/template/83-template-carries-a-baked-default-system-prompt.md), comparing no-system versus explicit-empty-system prompts. A directly visible added system-marked payload is a PROBLEM; all ambiguous or merely different renders remain INCONCLUSIVE, never CLEAN.
+- Doctor **33 -> 34 / 161**. Automatic coverage remains **119 / 161**.
+
 ## 2026-10-11 - half batch: two fingerprints + Doctor 33
 
 - Added structured routing fingerprints for combined `hipErrorInvalidValue` / `gfx1151` -> Trap 99 and pinned `NCCL_IB_GID_INDEX=N` -> Trap 114. Fingerprint hits remain diagnostic leads, never proof of cause.
