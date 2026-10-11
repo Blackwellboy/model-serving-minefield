@@ -76,6 +76,7 @@ TRAP_PATHS = {
     "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
     "82": "template/82-system-prompt-relocates-to-last-user-turn.md",
+    "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
     "26": "tools/26-tool-call-inside-unclosed-think.md",
@@ -953,6 +954,77 @@ def check_thinking_string_false(doc, root, key):
         code="STRING_FALSE_DISTINCT_RENDER",
         asserts=[A('string "false" matches either established boolean arm',
                    {"matches_true": False, "matches_false": False}, held=False)])
+
+
+
+def check_tool_roundtrip_followup(doc, root, key):
+    """Trap 84: a tool round trip must not make the next user turn unrenderable."""
+    if doc.stack != "llama.cpp":
+        doc.skip(
+            ["84"], "tool-roundtrip follow-up render",
+            "the published failure is a llama.cpp /apply-template role-alternation case",
+            code="TOOL_FOLLOWUP_STACK_NOT_APPLICABLE",
+            asserts=[A("llama.cpp /apply-template available", doc.stack, held=False)])
+        return
+    call = {"id": "callabc12", "type": "function",
+            "function": {"name": "lookup", "arguments": '{"city":"Paris"}'}}
+    user = {"role": "user", "content": "M84 first user"}
+    assistant_call = {"role": "assistant", "content": "", "tool_calls": [call]}
+    tool_result = {"role": "tool", "tool_call_id": "callabc12",
+                   "name": "lookup", "content": "M84 tool reply"}
+    next_user = {"role": "user", "content": "M84 next user"}
+    bridge = {"role": "assistant", "content": "M84 bridge"}
+    sequences = (
+        ("baseline", [user]),
+        ("followup", [user, assistant_call, tool_result, next_user]),
+        ("bridged", [user, assistant_call, tool_result, bridge, next_user]),
+    )
+    results = {}
+    for name, msgs in sequences:
+        status, raw = post(root + "/apply-template", {"messages": msgs}, key, timeout=30)
+        try:
+            data = json.loads(raw)
+        except (TypeError, ValueError):
+            data = {}
+        prompt = data.get("prompt") if isinstance(data, dict) else None
+        results[name] = (status, prompt if isinstance(prompt, str) else None)
+    doc.evidence["trap84_render_statuses"] = {k: v[0] for k, v in results.items()}
+    baseline, followup, bridged = (results[n] for n in ("baseline", "followup", "bridged"))
+    if (baseline[0] != 200 or baseline[1] is None or
+            bridged[0] != 200 or bridged[1] is None or
+            "M84 next user" not in bridged[1] or "M84 bridge" not in bridged[1]):
+        doc.inconclusive(
+            ["84"], "tool-roundtrip follow-up render",
+            "baseline or bridged control failed; follow-up status alone cannot "
+            "establish the alternation-specific failure",
+            code="TOOL_FOLLOWUP_CONTROL_INCOMPLETE",
+            asserts=[A("baseline and bridged controls both render with their markers",
+                       doc.evidence["trap84_render_statuses"], held=False)])
+    elif followup[0] == 400:
+        doc.problem(
+            ["84"], "four-message tool round trip is rejected while the bridged "
+            "five-message control renders correctly",
+            "inspect role-alternation/exemption rules in the template; do not "
+            "attribute the 400 to model generation or a missing GPU kernel",
+            code="TOOL_FOLLOWUP_400_BRIDGED_OK",
+            asserts=[A("unbridged tool follow-up renders successfully",
+                       doc.evidence["trap84_render_statuses"], held=False)])
+    elif (followup[0] == 200 and followup[1] is not None
+          and "M84 next user" in followup[1] and "M84 tool reply" in followup[1]):
+        doc.ok(
+            ["84"], "the tool result and following user turn both survive the "
+            "four-message render on this llama.cpp template",
+            code="TOOL_FOLLOWUP_RENDERS",
+            asserts=[A("unbridged follow-up successfully renders both marker contents",
+                       doc.evidence["trap84_render_statuses"])])
+    else:
+        doc.inconclusive(
+            ["84"], "tool-roundtrip follow-up render",
+            "follow-up was not the documented 400 shape, but was not proven "
+            "to preserve tool and user contents either",
+            code="TOOL_FOLLOWUP_OTHER",
+            asserts=[A("follow-up render returns 200 with both markers",
+                       doc.evidence["trap84_render_statuses"], held=False)])
 
 
 def check_system_prompt_relocation(doc, root, key):
@@ -2965,6 +3037,10 @@ def _probe_thinking_string_false(doc, base, root, args):
     check_thinking_string_false(doc, root, args.api_key)
 
 
+def _probe_tool_roundtrip_followup(doc, base, root, args):
+    check_tool_roundtrip_followup(doc, root, args.api_key)
+
+
 def _probe_system_prompt_relocation(doc, base, root, args):
     check_system_prompt_relocation(doc, root, args.api_key)
 
@@ -3057,6 +3133,11 @@ PROBE_SPECS = (
         "system_prompt_relocation", ("82",), 0, True, 67, (),
         _probe_system_prompt_relocation,
         "multi-turn system-marker placement in the rendered prompt",
+    ),
+    ProbeSpec(
+        "tool_roundtrip_followup", ("84",), 0, False, 21, (),
+        _probe_tool_roundtrip_followup,
+        "llama.cpp tool-result then next user /apply-template",
     ),
     ProbeSpec(
         "reasoning_roundtrip_shape", ("63",), 0, True, 69, (),
