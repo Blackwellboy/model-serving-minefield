@@ -107,6 +107,8 @@ class StructuredFingerprints(unittest.TestCase):
         ("130", "resolved cudagraph_capture_sizes=[1, 2, 4, 8, 16] for this serve"),
         ("99", "gfx1151: RuntimeError: hipErrorInvalidValue from SDPA causal attention"),
         ("114", "NCCL_IB_GID_INDEX=3 applied to every rank"),
+        ("101", "TypeError: forward() got an unexpected keyword argument 'input_embeds'"),
+        ("147", "nvidia-ctk-hook: mkdir /run/nvidia-ctk-hook: read-only file system"),
     )
 
     @classmethod

@@ -5,7 +5,7 @@
     "summary": {
       "any_automated_check": 119,
       "counts_overlap": true,
-      "endpoint_checks_implemented": 33,
+      "endpoint_checks_implemented": 34,
       "guided_experiments_specified": 161,
       "human_review_possible": 161,
       "log_checks_implemented": 31,
@@ -6141,16 +6141,18 @@
         "id": "83",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "One Mistral-family Q80 GGUF of unstated provenance. A template is free to do this and some do; the class is \"read the template's else branch before calling any arm a control\".",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -17219,8 +17221,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 161,
-    "content_sha256": "eff788b7a03a8d2c3a4adc63faaf4ca6b6471afdbad0d762375b82039972c6df",
-    "doctor_implemented_trap_count": 33,
+    "content_sha256": "140fe1ce970a8b5a991ff57c375dba260e605dfa0bb678547c2161a6ccb18929",
+    "doctor_implemented_trap_count": 34,
     "entries": [
       {
         "affected_models": [
@@ -22906,14 +22908,15 @@
         "check": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/template/83-template-carries-a-baked-default-system-prompt.md"
         },
         "evidence_strength": [
           "reproduced here"

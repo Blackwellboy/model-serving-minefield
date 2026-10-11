@@ -139,6 +139,7 @@ DEFAULTS = {
     "string_false_truthy": True,
     "system_prompt_relocates": False,
     "tool_followup_400": False,
+    "baked_default_system": False,
 }
 
 
@@ -172,6 +173,8 @@ def render_prompt(cfg, messages, kwargs):
         or kwargs.get("include_reasoning") is True
     )
     out = []
+    if cfg["baked_default_system"] and not any(m.get("role") == "system" for m in messages):
+        out.append("<|im_start|>system\\nBe helpful and cheerful.<|im_end|>\\n")
     field = cfg["reasoning_field"] or "reasoning_content"
     last_user = max(
         (i for i, m in enumerate(messages) if m.get("role") == "user"),

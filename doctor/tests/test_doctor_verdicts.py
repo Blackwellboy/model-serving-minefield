@@ -1078,6 +1078,22 @@ CLEAN_CONTRACT = {
 
 class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
+    def test_trap83_baked_system_is_problem(self):
+        with FixtureLane(baked_default_system=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        finding = find(doc, "DEFAULT_SYSTEM_INJECTED")
+        self.assertIsNotNone(finding)
+        self.assertEqual(finding["level"], "PROBLEM")
+        self.assertIn("83", finding["traps"])
+
+    def test_trap83_no_baked_system_stays_inconclusive(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "83")
+
+
     def test_trap84_tool_followup_400_is_problem(self):
         with FixtureLane(props=llamacpp_props(), tool_followup_400=True) as base:
             doc = diagnose(base)
@@ -1285,6 +1301,7 @@ SWEEP = [
     {"props": llamacpp_props(), "cache_prompt_isolates": True},
     {"string_false_truthy": False},
     {"system_prompt_relocates": True},
+    {"baked_default_system": True},
     {"props": llamacpp_props(), "tool_followup_400": True},
 ]
 

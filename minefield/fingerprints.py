@@ -71,6 +71,16 @@ FINGERPRINTS = (
         r"\bNCCL_IB_GID_INDEX\s*=\s*\d+\b",
         "explicitly pinned NCCL GID selection setting",
     ),
+    Fingerprint(
+        "101",
+        r"\b(?:unexpected keyword argument ['\"]input_embeds['\"]|cannot import name ['\"]create_causal_mask['\"])",
+        "transformers input_embeds/create_causal_mask compatibility failure",
+    ),
+    Fingerprint(
+        "147",
+        r"(?:nvidia-ctk-hook|nvidia-container-cli)[^\n]{0,160}(?:read.only|permission denied|mkdir)|(?:read.only|permission denied)[^\n]{0,160}nvidia-ctk-hook",
+        "NVIDIA container hook scratch-directory error",
+    ),
 )
 
 
