@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "eff788b7a03a8d2c3a4adc63faaf4ca6b6471afdbad0d762375b82039972c6df",
-  "doctor_implemented_trap_count": 33,
+  "content_sha256": "140fe1ce970a8b5a991ff57c375dba260e605dfa0bb678547c2161a6ccb18929",
+  "doctor_implemented_trap_count": 34,
   "entries": [
     {
       "affected_models": [
@@ -5688,14 +5688,15 @@
       "check": "If the first render is materially longer than the second, your no-system-prompt arm has a system prompt. Sending an explicit empty system message is the workaround on this template, because the if branch then assigns the empty string.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/83-template-carries-a-baked-default-system-prompt.md"
       },
       "evidence_strength": [
         "reproduced here"
