@@ -140,6 +140,9 @@ DEFAULTS = {
     "system_prompt_relocates": False,
     "tool_followup_400": False,
     "baked_default_system": False,
+    "strip_toggle_paths": False,
+    "history_text_repr": False,
+    "inline_system_mode": "preserve",
 }
 
 
@@ -188,6 +191,16 @@ def render_prompt(cfg, messages, kwargs):
                 (p.get("text", "") if p.get("type") == "text" else "<image>\n")
                 for p in content)
         content = content or ""
+        if i > 0 and role == "system" and cfg["inline_system_mode"] != "preserve":
+            if cfg["inline_system_mode"] == "drop":
+                continue
+            if cfg["inline_system_mode"] == "weld":
+                role = "user"
+        if cfg["strip_toggle_paths"] and role == "user":
+            content = content.replace("/no_think", "").replace("/think", "")
+        if cfg["history_text_repr"] and (role == "assistant" or
+                                           (role == "system" and i == 0)):
+            content = repr([{"type": "text", "text": content}])
         if cfg["system_prompt_relocates"] and role == "system":
             deferred_system.append(content)
             continue
