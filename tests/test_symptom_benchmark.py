@@ -109,6 +109,8 @@ class StructuredFingerprints(unittest.TestCase):
         ("114", "NCCL_IB_GID_INDEX=3 applied to every rank"),
         ("101", "TypeError: forward() got an unexpected keyword argument 'input_embeds'"),
         ("147", "nvidia-ctk-hook: mkdir /run/nvidia-ctk-hook: read-only file system"),
+        ("116", "all ranks loaded okay then forward: embed_token failed on first F16 generation"),
+        ("128", "max_num_partial_prefills=2 but preemptions=0 throughout stalled concurrent prefills"),
     )
 
     @classmethod

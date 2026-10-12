@@ -81,6 +81,17 @@ FINGERPRINTS = (
         r"(?:nvidia-ctk-hook|nvidia-container-cli)[^\n]{0,160}(?:read.only|permission denied|mkdir)|(?:read.only|permission denied)[^\n]{0,160}nvidia-ctk-hook",
         "NVIDIA container hook scratch-directory error",
     ),
+    Fingerprint(
+        "116",
+        r"\b(?:forward\s*:\s*)?embed_token\s+failed\b",
+        "first-forward embedding helper failure after successful model load",
+    ),
+    Fingerprint(
+        "128",
+        r"\bmax_num_partial_prefills\b[\s\S]{0,360}\bpreemptions?\b|\bpreemptions?\b[\s\S]{0,360}\bmax_num_partial_prefills\b",
+        "admission-flag and preemption-counter starvation evidence together",
+    ),
+
 )
 
 

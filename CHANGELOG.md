@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-13 - Doctor 37 render-path coverage expansion
+
+- Added three zero-generation live Doctor probes: [66](traps/template/66-in-text-thinking-toggle-mutates-user-text.md) for thinking-marker path deletion, [67](traps/template/67-history-rendered-as-object-repr.md) for Python text-part object repr in multi-turn history, and [113](traps/template/113-inline-system-role-is-not-a-stable-contract.md) for distinct inline-system role preservation, dropping or welding into a user role.
+- Added positive and matched-clean fixture controls for all three, plus unavailable-render controls. CLEAN claims remain specific to the exact inspected render and template dialect. No generation-request ceiling increase.
+- Added routing fingerprints for first-forward `embed_token failed` (Trap 116) and paired `max_num_partial_prefills` / preemption evidence (Trap 128). These remain unconfirmed leads.
+- Doctor **34 -> 37 / 161**. Automatic diagnostic coverage remains **119 / 161** because all three trap IDs already had offline automation.
+
+# Changelog
+
 ## 2026-10-12 - Doctor 34 small diagnostic batch
 
 - Added routing fingerprints for Trap 101 transformers input_embeds/create_causal_mask errors and Trap 147 NVIDIA container hook read-only scratch errors. These remain candidates, not confirmations.
