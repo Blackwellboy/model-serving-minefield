@@ -75,6 +75,9 @@ TRAP_PATHS = {
     "57": "reasoning/57-thinking-kwarg-truthiness-coercion.md",
     "58": "reasoning/58-reasoning-effort-injects-hidden-preamble.md",
     "63": "reasoning/63-reasoning-round-trip-one-correct-shape.md",
+    "66": "template/66-in-text-thinking-toggle-mutates-user-text.md",
+    "67": "template/67-history-rendered-as-object-repr.md",
+    "113": "template/113-inline-system-role-is-not-a-stable-contract.md",
     "82": "template/82-system-prompt-relocates-to-last-user-turn.md",
     "83": "template/83-template-carries-a-baked-default-system-prompt.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
@@ -122,7 +125,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "82", "83", "86", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "66", "67", "82", "83", "86", "113", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -957,6 +960,178 @@ def check_thinking_string_false(doc, root, key):
                    {"matches_true": False, "matches_false": False}, held=False)])
 
 
+
+
+
+def check_in_text_thinking_toggle(doc, root, key):
+    """Trap 66: compare magic substring paths against a non-magic control."""
+    paths = (
+        ("control", "src/reason/main.py", False),
+        ("think", "src/think/main.py", False),
+        ("no_think", "src/no_think/util.py", True),
+    )
+    output = {}
+    for label, path, thinking in paths:
+        text, how = render_paths(
+            doc, root, key, [{"role": "user", "content": "Read " + path}],
+            {"enable_thinking": thinking})
+        output[label] = text
+        if text is not None:
+            doc.evidence.setdefault("trap66_render_path", how)
+    intact = {label: output[label] is not None and path in output[label]
+              for label, path, _ in paths}
+    doc.evidence["trap66_paths_intact"] = intact
+    if any(v is None for v in output.values()) or not intact["control"]:
+        doc.skip(["66"], "user path thinking-toggle substring preservation",
+                 "render path or unaffected control is unavailable",
+                 code="THINK_PATH_CONTROL_UNAVAILABLE",
+                 asserts=[A("all render controls available", intact, held=False)])
+        return
+    stripped = {
+        "think": not intact["think"] and "src/main.py" in output["think"],
+        "no_think": not intact["no_think"] and "src/util.py" in output["no_think"],
+    }
+    if any(stripped.values()):
+        doc.problem(["66"], "the rendered user path lost a literal /think "
+                    "or /no_think directory component",
+                    "inspect the served chat template for substring-based "
+                    "thinking mode switches and message rewriting",
+                    code="THINK_PATH_SUBSTRING_DELETED",
+                    asserts=[A("thinking-toggle path remains verbatim",
+                               {"intact": intact, "stripped": stripped},
+                               held=False)])
+    elif intact["think"] and intact["no_think"]:
+        doc.ok(["66"], "both magic-substring paths and the control path "
+               "survived this rendered-prompt check",
+               code="THINK_PATHS_PRESERVED",
+               asserts=[A("three submitted paths survived exactly", intact)])
+    else:
+        doc.inconclusive(["66"], "user path thinking-toggle substrings",
+                         "a path changed, but not into the documented deletion shape",
+                         code="THINK_PATH_UNCLASSIFIED",
+                         asserts=[A("paths intact or specific deletion observed",
+                                    {"intact": intact, "stripped": stripped},
+                                    held=False)])
+
+
+def check_history_object_repr(doc, root, key):
+    """Trap 67: detect normalized content-part lists printed as Python repr."""
+    markers = ("MF67_SYS_4A2", "MF67_ASSIST_4A2", "MF67_USER_4A2")
+    messages = [
+        {"role": "system", "content": markers[0]},
+        {"role": "user", "content": "MF67 starting query"},
+        {"role": "assistant", "content": markers[1]},
+        {"role": "user", "content": markers[2]},
+    ]
+    output, how = render_paths(doc, root, key, messages, {})
+    if output is None or any(output.count(m) != 1 for m in markers):
+        doc.skip(["67"], "Python representation in rendered chat history",
+                 "multi-turn render missing or markers not preserved uniquely",
+                 code="HISTORY_REPR_RENDER_UNAVAILABLE",
+                 asserts=[A("three unique markers preserved",
+                            {m: None if output is None else output.count(m)
+                             for m in markers}, held=False)])
+        return
+    doc.evidence["trap67_render_path"] = how
+    has_repr = bool(re.search(
+        r"\[\{\s*['\"]type['\"]\s*:\s*['\"]text['\"]\s*,\s*['\"]text['\"]\s*:",
+        output))
+    doc.evidence["trap67_object_repr_seen"] = has_repr
+    if has_repr:
+        doc.problem(["67"], "rendered history includes Python dictionary/list "
+                    "syntax from an unhandled text-part content list",
+                    "inspect server normalization and the template's "
+                    "content-is-string branches",
+                    code="HISTORY_PYTHON_REPR",
+                    asserts=[A("no Python content-part repr in rendered history",
+                               {"found": True}, held=False)])
+    else:
+        doc.ok(["67"], "no Python text-part object representation appeared in "
+               "this complete marked history render",
+               code="HISTORY_NO_PYTHON_REPR",
+               asserts=[A("content-part object repr absent",
+                          {"found": False})])
+
+
+def check_inline_system_role(doc, root, key):
+    """Trap 113: classify inline system role using exact rendered controls."""
+    early = "MF113_EARLY_4D9"
+    late = "MF113_LATE_4D9"
+    q, q2 = "MF113_Q_4D9", "MF113_Q2_4D9"
+    cases = {
+        "plain": [{"role": "user", "content": q},
+                  {"role": "user", "content": q2}],
+        "leading": [{"role": "system", "content": early},
+                    {"role": "user", "content": q}],
+        "inline": [{"role": "user", "content": q},
+                   {"role": "system", "content": late},
+                   {"role": "user", "content": q2}],
+    }
+    arms = {}
+    for name, messages in cases.items():
+        output, how = render_paths(doc, root, key, messages, {})
+        arms[name] = output
+        if output is not None:
+            doc.evidence.setdefault("trap113_render_path", how)
+    valid = all(v is not None for v in arms.values())
+    if valid:
+        valid = (arms["plain"].count(q) == 1 and arms["plain"].count(q2) == 1
+                 and arms["leading"].count(early) == 1
+                 and arms["inline"].count(q) == 1
+                 and arms["inline"].count(q2) == 1)
+    if not valid:
+        doc.skip(["113"], "inline system message role contract",
+                 "baseline, leading-system and inline-system renders must all "
+                 "retain their independent markers",
+                 code="INLINE_SYSTEM_CONTROL_UNAVAILABLE",
+                 asserts=[A("three complete controlled renders", {
+                     k: v is not None for k, v in arms.items()}, held=False)])
+        return
+    # Never call unrecognized template delimiter dialects clean.
+    spans = lambda s: re.findall(
+        r"<\|im_start\|>(system|user)\s*\n([\s\S]*?)<\|im_end\|>", s)
+    lead_ok = any(role == "system" and early in body
+                  for role, body in spans(arms["leading"]))
+    inline_sys = any(role == "system" and late in body
+                     for role, body in spans(arms["inline"]))
+    inline_usr = any(role == "user" and late in body
+                     for role, body in spans(arms["inline"]))
+    count = arms["inline"].count(late)
+    doc.evidence["trap113_role_checks"] = {
+        "leading_system_marked": lead_ok,
+        "inline_system_marked": inline_sys,
+        "inline_user_marked": inline_usr,
+        "inline_marker_count": count,
+        "identical_to_plain": arms["inline"] == arms["plain"],
+    }
+    if count == 0 and arms["inline"] == arms["plain"]:
+        doc.problem(["113"], "inline system content disappeared and the render "
+                    "became byte-identical to a no-system control",
+                    "do not trust inline system roles without a pinned "
+                    "constructor; reject or explicitly normalize the message list",
+                    code="INLINE_SYSTEM_DROPPED",
+                    asserts=[A("inline system marker must survive",
+                               {"count": count}, held=False)])
+    elif lead_ok and count == 1 and inline_usr and not inline_sys:
+        doc.problem(["113"], "inline system text is welded into a user span",
+                    "do not silently lower a privileged system instruction "
+                    "to the user tier",
+                    code="INLINE_SYSTEM_WELDED_TO_USER",
+                    asserts=[A("inline system marker inside system role",
+                               {"under_user": True}, held=False)])
+    elif lead_ok and count == 1 and inline_sys and not inline_usr:
+        doc.ok(["113"], "inline system marker remains in a distinct system "
+               "role span on this rendered constructor",
+               code="INLINE_SYSTEM_ROLE_PRESERVED",
+               asserts=[A("leading and inline system spans are explicit",
+                          {"leading": True, "inline": True})])
+    else:
+        doc.inconclusive(["113"], "inline system role render contract",
+                         "role boundaries are absent, conflicting, or "
+                         "unclassifiable in this template dialect",
+                         code="INLINE_SYSTEM_AMBIGUOUS",
+                         asserts=[A("unambiguous system role classification",
+                                    doc.evidence["trap113_role_checks"], held=False)])
 
 
 def check_baked_default_system(doc, root, key):
@@ -3089,6 +3264,18 @@ def _probe_streaming(doc, base, root, args):
     check_streaming(doc, base, args.api_key)
 
 
+def _probe_in_text_thinking_toggle(doc, base, root, args):
+    check_in_text_thinking_toggle(doc, root, args.api_key)
+
+
+def _probe_history_object_repr(doc, base, root, args):
+    check_history_object_repr(doc, root, args.api_key)
+
+
+def _probe_inline_system_role(doc, base, root, args):
+    check_inline_system_role(doc, root, args.api_key)
+
+
 def _probe_thinking_string_false(doc, base, root, args):
     check_thinking_string_false(doc, root, args.api_key)
 
@@ -3183,6 +3370,21 @@ PROBE_SPECS = (
         "history_assembly", ("04", "20", "25"), 0, True, 70, (),
         _probe_history_assembly,
         "history / empty-think shell render inspection",
+    ),
+    ProbeSpec(
+        "in_text_thinking_toggle", ("66",), 0, True, 64, (),
+        _probe_in_text_thinking_toggle,
+        "literal thinking-marker substrings in rendered user paths",
+    ),
+    ProbeSpec(
+        "history_object_repr", ("67",), 0, True, 63, (),
+        _probe_history_object_repr,
+        "Python content-part representations in rendered history",
+    ),
+    ProbeSpec(
+        "inline_system_role", ("113",), 0, False, 20, (),
+        _probe_inline_system_role,
+        "inline system-role placement or instruction loss",
     ),
     ProbeSpec(
         "thinking_string_false", ("57",), 0, True, 68, (),

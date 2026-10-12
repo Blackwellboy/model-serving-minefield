@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "140fe1ce970a8b5a991ff57c375dba260e605dfa0bb678547c2161a6ccb18929",
-  "doctor_implemented_trap_count": 34,
+  "content_sha256": "23e306297a3f3a3a82735bf98a42cba5ecd0d0a44cb1242fdd0208b25e6cd07f",
+  "doctor_implemented_trap_count": 37,
   "entries": [
     {
       "affected_models": [
@@ -4553,14 +4553,15 @@
       "check": "Send a prompt containing /think or /no_think as part of an ordinary path, with the opposite enable_thinking keyword. Render the prompt and compare it to what you sent, character for character. Then check which way the generation prompt ends. Cheaper still, and offline: grep -c \"/no_think\" chat_template.jinja next to the weights. Any hit means your users' text is being scanned.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/66-in-text-thinking-toggle-mutates-user-text.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -4623,14 +4624,15 @@
       "check": "Render a three-turn history and look at the assembled prompt, not the response. If it contains [{'type': or 'text': you have it. On vLLM, POST /tokenize with return_token_strs: true is the cheapest route and shows it unambiguously; POST /v1/chat/completions/render plus POST /detokenize also works. Put the system message first in the probe, because a non-first system message renders correctly and will mask the finding.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/67-history-rendered-as-object-repr.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -7807,14 +7809,15 @@
       "check": "Capture three renders from the same immutable constructor: two user turns with no system message, a leading system message plus one user turn, and the inline sequence above. Add the same inline message after a tool result. Preserve raw text, token strings and IDs where available. Then run: DROPPED requires the target to be absent and the render to exactly match the no-system control. ROLE_MARKED requires the target to sit inside a system span whose marker also bounds the leading-system control. WELDED_TO_USER requires every target occurrence to sit inside a user span. A marker copied from user content, conflicting decoded forms, missing controls, or unclear boundaries must remain AMBIGUOUS or INCONCLUSIVE.",
       "contributor": "@wqh17101 and Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/113-inline-system-role-is-not-a-stable-contract.md"
       },
       "evidence_strength": [
         "reproduced here"

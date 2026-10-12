@@ -1076,6 +1076,52 @@ CLEAN_CONTRACT = {
 }
 
 
+
+class TestRenderCoverageExpansion(DoctorVerdictCase):
+    def test_66_rewrite_and_control(self):
+        for bad, expected in ((True, "THINK_PATH_SUBSTRING_DELETED"),
+                              (False, "THINK_PATHS_PRESERVED")):
+            with self.subTest(bad=bad), FixtureLane(strip_toggle_paths=bad) as base:
+                doc = diagnose(base)
+                self.check_structure(doc)
+                f = find(doc, expected)
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], "PROBLEM" if bad else "OK")
+                self.assertIn("66", f["traps"])
+
+    def test_67_repr_and_control(self):
+        for bad, expected in ((True, "HISTORY_PYTHON_REPR"),
+                              (False, "HISTORY_NO_PYTHON_REPR")):
+            with self.subTest(bad=bad), FixtureLane(history_text_repr=bad) as base:
+                doc = diagnose(base)
+                self.check_structure(doc)
+                f = find(doc, expected)
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], "PROBLEM" if bad else "OK")
+                self.assertIn("67", f["traps"])
+
+    def test_113_preserve_drop_weld(self):
+        for mode, code, level in (
+            ("preserve", "INLINE_SYSTEM_ROLE_PRESERVED", "OK"),
+            ("drop", "INLINE_SYSTEM_DROPPED", "PROBLEM"),
+            ("weld", "INLINE_SYSTEM_WELDED_TO_USER", "PROBLEM"),
+        ):
+            with self.subTest(mode=mode), FixtureLane(inline_system_mode=mode) as base:
+                doc = diagnose(base)
+                self.check_structure(doc)
+                f = find(doc, code)
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], level)
+                self.assertIn("113", f["traps"])
+
+    def test_missing_render_cannot_clear_new_traps(self):
+        with FixtureLane(render=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        for trap_id in ("66", "67", "113"):
+            self.no_clean_for(doc, trap_id)
+
+
 class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
     def test_trap83_baked_system_is_problem(self):
@@ -1195,6 +1241,19 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
 
 CLEAN_CONTRACT.update({
+    "THINK_PATHS_PRESERVED":
+        "both thinking substring paths and an unaffected control survive "
+        "the assembled prompt, ruling out the specific deletion shape",
+    "HISTORY_NO_PYTHON_REPR":
+        "a complete marked multi-turn render has no Python content-part dict "
+        "representation, ruling out Trap 67 on the tested request",
+    "INLINE_SYSTEM_ROLE_PRESERVED":
+        "an inline system message is preserved once with the same explicit "
+        "system delimiters as the leading-system control",
+})
+
+
+CLEAN_CONTRACT.update({
     "TOOL_FOLLOWUP_RENDERS":
         "a llama.cpp four-message tool roundtrip render returns 200 with both "
         "the tool-result marker and the following user marker, ruling out "
@@ -1302,6 +1361,10 @@ SWEEP = [
     {"string_false_truthy": False},
     {"system_prompt_relocates": True},
     {"baked_default_system": True},
+    {"strip_toggle_paths": True},
+    {"history_text_repr": True},
+    {"inline_system_mode": "drop"},
+    {"inline_system_mode": "weld"},
     {"props": llamacpp_props(), "tool_followup_400": True},
 ]
 
