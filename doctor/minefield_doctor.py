@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 35 generation requests, each capped at 512 output
+    completions (at most 40 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -2342,11 +2342,14 @@ def check_prompt_target_tokens(doc, root, key, args):
                     asserts=[A("served token count agrees with benchmark target",
                                doc.evidence["trap49_count"], held=False)])
     else:
-        doc.ok(["49"], "the exact supplied prompt's served token count is "
-               "within 2% of its declared target on this tokenize route",
-               code="PROMPT_TARGET_MATCHES_TOKENIZER",
-               asserts=[A("prompt tokenization within 2% of target",
-                          doc.evidence["trap49_count"])])
+        doc.inconclusive(["49"], "declared benchmark token target checked",
+                         "the supplied text tokenizes within 2% of its target "
+                         "on this route; the actual benchmark row and cache "
+                         "accounting were not independently checked",
+                         code="PROMPT_TARGET_TOKENIZER_ONLY",
+                         asserts=[A("benchmark's executed prompt and cache "
+                                    "accounting independently verified",
+                                    doc.evidence["trap49_count"], held=False)])
 
 
 def _reported_cached_tokens(payload):
