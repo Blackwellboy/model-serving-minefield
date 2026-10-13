@@ -297,6 +297,7 @@ def main(argv: list[str] | None = None) -> int:
             {str(t).zfill(2) for probe in candidate.selected for t in probe.traps},
             key=int,
         )
+        unselected_preferred = sorted(set(preferred) - set(selected_traps), key=int)
         report = {
             "kind": "doctor_plan",
             "execution": "NOT_RUN",
@@ -310,6 +311,8 @@ def main(argv: list[str] | None = None) -> int:
             "selected_probe_count": len(candidate.selected),
             "skipped_probe_count": len(candidate.skipped),
             "planned_trap_ids": selected_traps,
+            "requested_preferred_trap_ids": preferred,
+            "unselected_preferred_trap_ids": unselected_preferred,
             "planned_trap_count": len(selected_traps),
             "registered_doctor_traps": build_coverage(registry)["summary"]["endpoint_checks_implemented"],
             "canonical_trap_count": len(known_ids),
@@ -338,7 +341,11 @@ def main(argv: list[str] | None = None) -> int:
                 "Capabilities and model are assumptions until checked against the actual endpoint.",
                 "Selected checks are only planned, never executed or CLEAN; unselected and unimplemented traps remain untested.",
                 "A live run requires operator authority and a separately enforced --max-requests budget.",
-            ],
+            ] + ([
+                "Preferred trap IDs not selected: "
+                + ", ".join(unselected_preferred)
+                + ". They may be ineligible for lite mode, require a higher budget, or lack an implemented Doctor check."
+            ] if unselected_preferred else []),
         }
         if args.text:
             print(
@@ -348,6 +355,8 @@ def main(argv: list[str] | None = None) -> int:
                 f"(budget={report['chat_request_budget']})."
             )
             print("Selected probes: " + ", ".join(p["id"] for p in report["selected_probes"]))
+            if unselected_preferred:
+                print("Preferred traps NOT selected: " + ", ".join(unselected_preferred))
             print("No network calls. No live verdicts. A budget covers chat calls, not GET/render/HF requests.")
         else:
             _emit(report)
