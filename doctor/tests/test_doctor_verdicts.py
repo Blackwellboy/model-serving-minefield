@@ -1121,7 +1121,17 @@ class TestMiniCPMV47Doctor(DoctorVerdictCase):
             with self.subTest(present=present), \
                     FixtureHub(test_repo(present)) as hub, \
                     FixtureLane() as base:
-                doc = diagnose(base, hf_repo=repo, hf_revision="main", hub=hub)
+                doc = md.Doc()
+                old_hf = md.HF_BASE
+                try:
+                    md.HF_BASE = hub
+                    args = SimpleNamespace(api_key=None, hf_repo=repo,
+                                           hf_revision="main")
+                    root = base[:-3].rstrip("/")
+                    md.run(doc, base, root, args,
+                           only_ids=("minicpm_processor_metadata",))
+                finally:
+                    md.HF_BASE = old_hf
             self.check_structure(doc)
             finding = find(doc, code)
             self.assertIsNotNone(finding)
