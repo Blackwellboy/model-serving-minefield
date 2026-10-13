@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "23e306297a3f3a3a82735bf98a42cba5ecd0d0a44cb1242fdd0208b25e6cd07f",
-  "doctor_implemented_trap_count": 37,
+  "content_sha256": "b169c97aea4d9627ece1ba7f93cc797a68b97afb2f6272ca1e82bb91eda1233a",
+  "doctor_implemented_trap_count": 43,
   "entries": [
     {
       "affected_models": [
@@ -2144,14 +2144,15 @@
       "check": "Do not infer this from behavior; read it: 1. Pull chat_template.jinja (or the chat_template field of tokenizer_config.json) from the exact checkpoint your server loads, not from the family's canonical repo. 2. md5sum the template and record it next to your results; compare against the build you published against before comparing numbers (trap 03 is what happens when you do not). 3. Grep for the default system message and read the branch that guards it: does a caller system message replace it, merge with it, or leave it? Render all three arms (none, empty, real) through your serving path and diff the assembled prompts.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/30-default-system-message-silently-replaced.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -2658,14 +2659,15 @@
       "check": "Take one generation from your offline pipeline and count the tags: Run it on the first rollout, not after the first training run. More generally, before trusting any offline pass rate, render one conversation through apply_chat_template with add_generation_prompt=True and read the tail of the string. Whatever the template appends after the assistant header is text your pipeline must reproduce.",
       "contributor": "@Hikari07jp",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/38-template-owns-the-opening-think-tag.md"
       },
       "evidence_strength": [
         "reported by others"
@@ -2979,14 +2981,15 @@
       "check": "Render the template twice with the same logical call, once with arguments as an object and once as a JSON string, and assert both produce a non-empty parameter body. Runnable: mode that sends a real tools array to an endpoint and asserts structured tool_calls come back rather than prose or an empty call.",
       "contributor": "TheTom",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/43-tool-args-string-not-mapping.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"
@@ -4751,14 +4754,15 @@
       "check": "Render a prompt and read it. Specifically: render with no system message and grep for a system block; render with a tool message first and count <|im_start|> against <|im_end|>; render anything and look at the first character. The registry doctor's tag-balance check catches the second one on any lane with a render path, which since this session includes vLLM lanes.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/template/69-minor-template-defects.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -5820,14 +5824,15 @@
       "check": "Send the string form and the bool form of enable_thinking and compare status codes; then grep the template for the kwarg name. The pair of answers is the finding. Clients that build kwargs from environment variables, YAML, or query strings produce strings by default, which is what makes the string row the common one in production.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/85-enable-thinking-typechecked-though-never-read.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -7598,14 +7603,15 @@
       "check": "Screening is two reads of /metrics, and it is cheap enough to run around every timed request: 1. Before each timed run, read the engine's running-request gauge (num_requests_running or your engine's equivalent) and do not start until it is zero. 2. After each timed run, read the request-finished counters. If any request other than yours finished inside the window, discard the run and repeat it. Count discards; if you are discarding often, the lane is not benchmarkable right now and the honest output is \"contended\", not a number. Our clean suite passed 12 of 12 windows under this screen. The earlier unscreened suite on the same lane and config is the 41 to 77 tok/s figure above, and it was nearly published as a checkpoint comparison.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/110-unscreened-bench-on-a-shared-endpoint.md"
       },
       "evidence_strength": [
         "measured here, raw not published"
