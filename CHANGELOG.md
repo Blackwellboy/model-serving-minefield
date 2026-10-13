@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-13 - faster CI fixtures and six bounded Doctor probes
+
+- Accelerated the local fixture-server stop polling interval from 0.5s to 0.01s. The full verdict suite and mutation suite still gate merging.
+- Added live Doctor checks for [112](traps/runtime/112-process-liveness-is-not-model-readiness.md) (authenticated model identity plus actual generation), [64](traps/reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md) (matched text-toggle answer-field routing), [65](traps/reasoning/65-parser-only-rescue-kwarg.md) (force_nonempty_content under a confirmed empty-at-cap precondition), [149](traps/evaluation/149-thinking-on-json-schema-can-runaway.md) (thinking-on/off strict JSON), [156](traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md) (reported completion usage versus retokenized output), and [158](traps/reasoning/158-empty-thought-markers-count-as-reasoning.md) (post-tool empty-text two-reasoning-token signature).
+- New conditional inference probes use at most nine additional chat-completion requests in a full run; lite prioritization remains bounded. No new claims about untested causes; ambiguous/unavailable evidence remains inconclusive.
+- Doctor 43 -> 49 / 161; automatic diagnostic coverage expected 120 -> 121 / 161 once regenerated, with one previously unautomated trap now having a bounded live test.
+
+# Changelog
+
 ## 2026-10-13 - double batch: Doctor 43 and four exact fingerprints
 
 - Added six bounded Doctor checks: Trap [30](traps/template/30-default-system-message-silently-replaced.md) (default system replacement three-arm render), [38](traps/template/38-template-owns-the-opening-think-tag.md) (template-owned think prefill, inconclusive on offline-rollout effects), [43](traps/template/43-tool-args-string-not-mapping.md) (tool-arguments mapping-versus-string replay), [69](traps/template/69-minor-template-defects.md) (empty system header and tool-first tag mismatch; negative remains inconclusive because the entry has additional subcases), [85](traps/reasoning/85-enable-thinking-typechecked-though-never-read.md) (llama.cpp type rejection for an unused kwarg), and [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) (read-only request contention snapshot; never CLEAN).

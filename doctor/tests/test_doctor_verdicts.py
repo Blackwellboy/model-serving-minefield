@@ -1078,6 +1078,86 @@ CLEAN_CONTRACT = {
 
 
 
+
+class TestReadinessAndInferenceDiagnostics(DoctorVerdictCase):
+    def test_112_auth_model_generation_ladder(self):
+        for bad, code, level in (
+            (True, "READINESS_GENERATION_FAILED", "PROBLEM"),
+            (False, "READINESS_GENERATION_CONFIRMED", "OK"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                    readiness_generation_fails=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            item = find(doc, code)
+            self.assertIsNotNone(item)
+            self.assertEqual(item["level"], level)
+            self.assertIn("112", item["traps"])
+
+    def test_64_toggle_conflict_field_spill(self):
+        for bad, code, level in (
+            (True, "TOGGLE_CONFLICT_ANSWER_MOVED", "PROBLEM"),
+            (False, "TOGGLE_CONFLICT_CONTENT_PRESERVED", "OK"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                    toggle_conflict_moves_answer=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            item = find(doc, code)
+            self.assertIsNotNone(item)
+            self.assertEqual(item["level"], level)
+            self.assertIn("64", item["traps"])
+
+    def test_65_rescue_requires_cap_hit(self):
+        with FixtureLane(parser_rescue=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        item = find(doc, "PARSER_RESCUE_OBSERVED")
+        self.assertIsNotNone(item)
+        self.assertEqual(item["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "65")
+        self.assertIsNotNone(find(doc, "PARSER_RESCUE_PRECONDITION_ABSENT"))
+
+    def test_149_matched_json_schema_controls(self):
+        for bad, code, level in (
+            (True, "JSON_SCHEMA_THINKING_ON_RUNAWAY", "PROBLEM"),
+            (False, "JSON_SCHEMA_BOTH_MODES_VALID", "OK"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                    schema_thinking_runaway=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            item = find(doc, code)
+            self.assertIsNotNone(item)
+            self.assertEqual(item["level"], level)
+
+    def test_156_retokenized_usage_undercount(self):
+        with FixtureLane(requeue_usage_undercount=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        item = find(doc, "OUTPUT_USAGE_UNDERCOUNT_OBSERVED")
+        self.assertIsNotNone(item)
+        self.assertEqual(item["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.no_clean_for(doc, "156")
+
+    def test_158_empty_post_tool_reasoning_tokens(self):
+        with FixtureLane(post_tool_two_reasoning_tokens=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        item = find(doc, "POST_TOOL_EMPTY_REASONING_TWO_TOKENS")
+        self.assertIsNotNone(item)
+        self.assertEqual(item["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "158")
+
+
 class TestDoctor43Batch(DoctorVerdictCase):
     def test_30_default_identity_replaced(self):
         with FixtureLane(baked_default_system=True) as base:
@@ -1322,6 +1402,19 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
 
 CLEAN_CONTRACT.update({
+    "READINESS_GENERATION_CONFIRMED":
+        "authenticated served-model identity matches response model and "
+        "a bounded real generation produced nonempty content",
+    "TOGGLE_CONFLICT_CONTENT_PRESERVED":
+        "a matched baseline and /no_think conflict sample both had nonempty "
+        "assistant content, ruling out the exact observed null-content shape",
+    "JSON_SCHEMA_BOTH_MODES_VALID":
+        "thinking-on and thinking-off both returned stop with valid JSON "
+        "meeting the preregistered minimal schema",
+})
+
+
+CLEAN_CONTRACT.update({
     "TOOL_ARGS_BOTH_FORMS_PRESERVED":
         "matched object and JSON-string historical tool argument arms both "
         "render the exact distinctive parameter marker",
@@ -1466,6 +1559,12 @@ SWEEP = [
     {"props": llamacpp_props("{% for message in messages %}{{ message.content }}{% endfor %}")},
     {"metrics_running": 3},
     {"metrics_running": 0},
+    {"readiness_generation_fails": True},
+    {"toggle_conflict_moves_answer": True},
+    {"parser_rescue": True},
+    {"schema_thinking_runaway": True},
+    {"requeue_usage_undercount": True},
+    {"post_tool_two_reasoning_tokens": True},
     {"props": llamacpp_props(), "tool_followup_400": True},
 ]
 

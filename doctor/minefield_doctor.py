@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 29 generation requests, each capped at 512 output
+    completions (at most 28 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -162,6 +162,12 @@ TRAPS_NEVER_CLEAN = {
           "establishes the LABEL. Trap 10 is about the kernel path the engine "
           "actually took, which needs a runtime tell, so this check can reach "
           "INCONCLUSIVE but never CLEAN",
+    "65": "force_nonempty_content can be observed only under a demonstrated "
+          "empty-at-cap baseline, so absence of that shape never clears the trap",
+    "156": "one bounded request without a retokenized undercount cannot clear "
+           "long-running requeue accounting on ExLlamaV3",
+    "158": "a single post-tool reply lacking empty markers cannot refute a "
+           "probabilistic template branch observed under longer workloads",
     "22": "a budget floor is a distribution across sizes and budgets; this "
           "tool sends one request at one budget, so it never reaches a "
           "trap-22 verdict in either direction",
@@ -4063,11 +4069,6 @@ def _probe_configs(doc, base, root, args):
 # Order matches historical run(): validation first, then behavioural probes.
 PROBE_SPECS = (
     ProbeSpec(
-        "generation_readiness", ("112",), 1, True, 99, (),
-        _probe_generation_readiness,
-        "authenticated model identity plus bounded real generation",
-    ),
-    ProbeSpec(
         "toggle_conflict_routing", ("64",), 2, False, 30, (),
         _probe_toggle_conflict_routing,
         "answer field lost after /no_think text-marker conflict",
@@ -4096,6 +4097,11 @@ PROBE_SPECS = (
         "request_validation", ("77",), 2, True, 100, (),
         _probe_request_validation,
         "request-field validation (unknown field acceptance)",
+    ),
+    ProbeSpec(
+        "generation_readiness", ("112",), 1, True, 99, (),
+        _probe_generation_readiness,
+        "authenticated model identity plus bounded real generation",
     ),
     ProbeSpec(
         "model_identity", ("141",), 2, False, 95, (),
