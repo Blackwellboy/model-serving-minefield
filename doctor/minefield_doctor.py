@@ -102,6 +102,14 @@ TRAP_PATHS = {
     "153": "reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md",
     "155": "runtime/155-prefix-slot-policy-thrashes-long-conversations.md",
     "157": "runtime/157-ngram-speculation-disables-async-scheduling.md",
+    "49": "evaluation/49-prompt-not-tokenized-to-target.md",
+    "60": "runtime/60-cold-prefill-and-cache-hit-disagree.md",
+    "91": "runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md",
+    "96": "memory/96-list-devices-reports-host-memory-as-device-free-memory.md",
+    "106": "memory/106-kv-occupancy-ceiling-is-not-a-leak.md",
+    "117": "runtime/117-fuse-gemm-comms-accepted-then-disabled.md",
+    "130": "runtime/130-cudagraph-clamp-runs-top-shape-eager.md",
+    "135": "evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md",
     "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
@@ -2286,6 +2294,331 @@ def check_ngram_async_scheduling(doc, root, key):
                                 doc.evidence["trap157_config"], held=False)])
 
 
+
+def check_prompt_target_tokens(doc, root, key, args):
+    """Trap 49: assert an operator-provided exact benchmark prompt token count."""
+    target = getattr(args, "benchmark_target_tokens", None)
+    prompt = getattr(args, "benchmark_prompt_text", None)
+    if not isinstance(target, int) or target < 1 or not isinstance(prompt, str) or not prompt:
+        doc.skip(["49"], "benchmark prompt target token count",
+                 "pass --benchmark-target-tokens and --benchmark-prompt-text "
+                 "to check the actual prompt; no synthetic prompt stands in "
+                 "for the operator's benchmark",
+                 code="PROMPT_TARGET_UNDECLARED",
+                 asserts=[A("both target token count and benchmark text supplied",
+                            {"target": target, "text_supplied": bool(prompt)}, held=False)])
+        return
+    if len(prompt) > 8192:
+        doc.skip(["49"], "benchmark prompt target token count",
+                 "inline text exceeds the conservative 8192-character probe limit",
+                 code="PROMPT_TARGET_TOO_LARGE",
+                 asserts=[A("prompt length within bounded request",
+                            {"chars": len(prompt)}, held=False)])
+        return
+    st, body = post(root + "/tokenize", {
+        "model": doc.model, "messages": [{"role": "user", "content": prompt}],
+        "add_generation_prompt": True}, key, timeout=20)
+    try:
+        data = json.loads(body) if st == 200 else {}
+        count = data.get("count")
+    except (TypeError, ValueError):
+        count = None
+    if not isinstance(count, int) or count < 1:
+        doc.skip(["49"], "benchmark prompt target token count",
+                 "this endpoint did not return an authoritative token count",
+                 code="PROMPT_TOKEN_COUNT_UNAVAILABLE",
+                 asserts=[A("tokenizer returned an integer count",
+                            {"status": st, "count": count}, held=False)])
+        return
+    drift = abs(count - target) / target
+    doc.evidence["trap49_count"] = {"target": target, "observed": count,
+                                   "relative_error": round(drift, 4)}
+    if drift > 0.02:
+        doc.problem(["49"], "served tokenization differs by more than 2% "
+                    "from the operator's declared benchmark target",
+                    "construct and label benchmark rows using the served "
+                    "tokenizer's actual prompt count, not text length",
+                    code="PROMPT_TARGET_TOKEN_MISMATCH",
+                    asserts=[A("served token count agrees with benchmark target",
+                               doc.evidence["trap49_count"], held=False)])
+    else:
+        doc.ok(["49"], "the exact supplied prompt's served token count is "
+               "within 2% of its declared target on this tokenize route",
+               code="PROMPT_TARGET_MATCHES_TOKENIZER",
+               asserts=[A("prompt tokenization within 2% of target",
+                          doc.evidence["trap49_count"])])
+
+
+def _reported_cached_tokens(payload):
+    usage = payload.get("usage") if isinstance(payload, dict) else {}
+    usage = usage if isinstance(usage, dict) else {}
+    details = usage.get("prompt_tokens_details") or {}
+    details = details if isinstance(details, dict) else {}
+    value = details.get("cached_tokens")
+    return value if isinstance(value, int) else usage.get("cached_tokens", usage.get("cache_n"))
+
+
+def check_cache_hit_answer_consistency(doc, base, key):
+    """Trap 60: a same-payload pair can expose cache-correlated divergence."""
+    prompt = ("MF60 fact: The access code is GARNET. " * 35 +
+              "What is the access code? Respond with the one word only.")
+    observations = []
+    for _ in range(2):
+        st, choice, raw = chat(doc, base, key, doc.model,
+            [{"role": "user", "content": prompt}],
+            max_tokens=24, seed=42)
+        observations.append((st, choice, raw))
+    if any(st != 200 or not isinstance(choice, dict)
+           for st, choice, _ in observations):
+        doc.skip(["60"], "cold-versus-warm identical prompt",
+                 "two usable completions are required",
+                 code="CACHE_PAIR_UNAVAILABLE",
+                 asserts=[A("two identical requests returned choices",
+                            [st for st, _, _ in observations], held=False)])
+        return
+    signatures = [((choice.get("message") or {}).get("content"),
+                   choice.get("finish_reason"))
+                  for _, choice, _ in observations]
+    cached = [_reported_cached_tokens(raw) for _, _, raw in observations]
+    doc.evidence["trap60_pair"] = {"cache_tokens": cached,
+                                   "output_equal": signatures[0] == signatures[1]}
+    if (all(isinstance(x, int) for x in cached) and
+            cached[0] <= 5 and cached[1] >= 16 and
+            signatures[0] != signatures[1]):
+        doc.problem(["60"], "byte-identical greedy seeded prompt returned "
+                    "different outputs across a reported cold/cache-hit pair",
+                    "record concurrency and cache/slot state before attributing "
+                    "the difference to prefix-cache reuse alone",
+                    code="CACHE_CORRELATED_OUTPUT_DIVERGENCE",
+                    asserts=[A("cold and warm equivalent request outputs agree",
+                               doc.evidence["trap60_pair"], held=False)])
+    else:
+        doc.inconclusive(["60"], "cold/cache-hit response equivalence",
+                         "the pair did not show both a verified cold-to-warm "
+                         "cache transition and output divergence; a matched "
+                         "controlled cache experiment was not established",
+                         code="CACHE_PAIR_NOT_DISCRIMINATING",
+                         asserts=[A("cold/warm equivalence characterized with "
+                                    "positive cache evidence",
+                                    doc.evidence["trap60_pair"], held=False)])
+
+
+def check_greedy_repetition_screen(doc, base, key):
+    """Trap 91: serial temperature-zero observations cannot certify C>=2."""
+    prompt = ("MF91 concurrency repeatability probe. " * 25 +
+              "Reply with the name of the sixth month of the year.")
+    output = []
+    for _ in range(2):
+        st, choice, _ = chat(doc, base, key, doc.model,
+            [{"role": "user", "content": prompt}],
+            max_tokens=24, seed=7, cache_prompt=False)
+        if st != 200 or not isinstance(choice, dict):
+            doc.skip(["91"], "single-stream greedy repeatability",
+                     "one or both bounded responses failed",
+                     code="GREEDY_REPEAT_CONTROL_UNAVAILABLE",
+                     asserts=[A("two repeats succeeded", st, held=False)])
+            return
+        output.append(((choice.get("message") or {}).get("content"),
+                       choice.get("finish_reason")))
+    doc.evidence["trap91_pair_equal"] = output[0] == output[1]
+    doc.inconclusive(["91"], "concurrency-dependent greedy divergence",
+                     ("even serial greedy replies differed; "
+                      if output[0] != output[1] else
+                      "two serial greedy replies matched; ")
+                     + "a C1-versus-C2/C4 controlled long-prompt grid "
+                     "is required to identify concurrency as the mechanism",
+                     code="GREEDY_SERIAL_SCREEN_ONLY",
+                     asserts=[A("concurrent batched repeatability measured",
+                                {"pair_equal": output[0] == output[1]}, held=False)])
+
+
+def check_device_memory_reporting(doc, root, key):
+    """Trap 96: inspect a populated server device-info surface only."""
+    st, raw = get(root + "/props", key, timeout=8)
+    try:
+        data = json.loads(raw) if st == 200 else {}
+    except (TypeError, ValueError):
+        data = {}
+    devices = data.get("devices") if isinstance(data, dict) else None
+    if not isinstance(devices, list) or not devices:
+        doc.skip(["96"], "device listing memory arithmetic",
+                 "server does not expose a per-device total/free listing",
+                 code="DEVICE_LIST_UNAVAILABLE",
+                 asserts=[A("live device total/free pairs provided", False,
+                            held=False)])
+        return
+    pairs = []
+    for row in devices[:16]:
+        if not isinstance(row, dict):
+            continue
+        total = row.get("total_memory_mib")
+        free = row.get("free_memory_mib")
+        if isinstance(total, (int, float)) and isinstance(free, (int, float)):
+            pairs.append({"total_mib": total, "free_mib": free})
+    if not pairs:
+        doc.skip(["96"], "device listing memory arithmetic",
+                 "device entries contain no comparable total/free MiB fields",
+                 code="DEVICE_MEMORY_UNAVAILABLE",
+                 asserts=[A("per-device comparable counters present", False,
+                            held=False)])
+        return
+    doc.evidence["trap96_pairs"] = pairs
+    if any(p["free_mib"] > p["total_mib"] for p in pairs):
+        doc.problem(["96"], "server device listing reports free memory above "
+                    "the same device's own total memory",
+                    "verify allocation capacity with authoritative GPU accounting; "
+                    "do not size based on the contradicted device banner",
+                    code="DEVICE_FREE_EXCEEDS_TOTAL",
+                    asserts=[A("listed device free memory does not exceed total",
+                               pairs, held=False)])
+    else:
+        doc.inconclusive(["96"], "device listing memory correctness",
+                         "no internally contradictory free/total values were "
+                         "seen, but independent GPU-memory accounting was absent",
+                         code="DEVICE_MEMORY_NEEDS_EXTERNAL_REFERENCE",
+                         asserts=[A("server listing independently reconciled "
+                                    "with GPU accounting", pairs, held=False)])
+
+
+def _parse_metric_values(raw, name):
+    """Parse only exact Prometheus gauge names, never similarly named variants."""
+    result = []
+    for line in (raw or "").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        match = re.match(r"(?:vllm:)?" + re.escape(name) +
+                         r"(?:\{[^}]*\})?\s+"
+                         r"(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)"
+                         r"(?:\s+\S+)?$", line)
+        if match:
+            try:
+                result.append(float(match.group(1)))
+            except ValueError:
+                pass
+    return result
+
+
+def check_kv_cache_pressure(doc, root, key):
+    """Trap 106: a pressure snapshot is not proof of a leak or a plateau."""
+    st, raw = get(root + "/metrics", key, timeout=8)
+    kv = _parse_metric_values(raw, "kv_cache_usage_perc") if st == 200 else []
+    pre = _parse_metric_values(raw, "num_preemptions_total") if st == 200 else []
+    waiting = _parse_metric_values(raw, "num_requests_waiting") if st == 200 else []
+    if not kv or not pre:
+        doc.skip(["106"], "KV-cache occupancy and preemption pressure",
+                 "occupancy and preemption metrics are both required",
+                 code="KV_PRESSURE_METRICS_UNAVAILABLE",
+                 asserts=[A("occupancy plus pressure gauge present",
+                            {"kv": bool(kv), "preemptions": bool(pre)},
+                            held=False)])
+        return
+    info = {"occupancy": max(kv), "preemptions_total": sum(pre),
+            "waiting": sum(waiting) if waiting else None}
+    doc.evidence["trap106_snapshot"] = info
+    doc.inconclusive(["106"], "KV-cache leak versus stable occupancy",
+                     "snapshot occupancy is not a leak claim; use repeated "
+                     "request-count intervals and preemption DELTAS to "
+                     "distinguish stable cache use from pressure",
+                     code="KV_PRESSURE_SNAPSHOT_ONLY",
+                     asserts=[A("occupancy curve and preemption deltas observed",
+                                info, held=False)])
+
+
+def check_compilation_flag_resolution(doc, root, key):
+    """Trap 117: explicit requested/resolved fuse flag contradiction."""
+    st, raw = get(root + "/props", key, timeout=8)
+    try:
+        obj = json.loads(raw) if st == 200 else {}
+    except (TypeError, ValueError):
+        obj = {}
+    requested = obj.get("requested_compilation_config") if isinstance(obj, dict) else None
+    resolved = obj.get("resolved_compilation_config") if isinstance(obj, dict) else None
+    if not isinstance(requested, dict) or not isinstance(resolved, dict):
+        doc.skip(["117"], "requested versus resolved compilation settings",
+                 "both requested and resolved compilation configs must be exposed",
+                 code="COMPILATION_CONFIG_PAIR_UNAVAILABLE",
+                 asserts=[A("requested and resolved configs readable",
+                            {"requested": isinstance(requested, dict),
+                             "resolved": isinstance(resolved, dict)}, held=False)])
+        return
+    a = (requested.get("pass_config") or {}).get("fuse_gemm_comms")
+    b = (resolved.get("pass_config") or {}).get("fuse_gemm_comms")
+    doc.evidence["trap117_flags"] = {"requested": a, "resolved": b}
+    if a is True and b is False:
+        doc.problem(["117"], "fuse_gemm_comms explicitly requested true but "
+                    "the engine's resolved pass config disables it",
+                    "do not attribute speed to an echoed request flag; "
+                    "record the effective pass configuration and its reason",
+                    code="FUSE_GEMM_FLAG_OVERRIDDEN",
+                    asserts=[A("requested fuse GEMM config survives resolution",
+                               doc.evidence["trap117_flags"], held=False)])
+    else:
+        doc.inconclusive(["117"], "fused GEMM communication activation",
+                         "no explicit requested=true/resolved=false pair; "
+                         "activation at runtime is not verified from config alone",
+                         code="FUSE_GEMM_CONFIG_NOT_SETTLED",
+                         asserts=[A("fused pass execution confirmed",
+                                    doc.evidence["trap117_flags"], held=False)])
+
+
+def check_cudagraph_capture_clamp(doc, root, key):
+    """Trap 130: compare requested and effective graph shapes if both exposed."""
+    st, raw = get(root + "/props", key, timeout=8)
+    try:
+        obj = json.loads(raw) if st == 200 else {}
+    except (TypeError, ValueError):
+        obj = {}
+    requested = obj.get("requested_cudagraph_capture_size") if isinstance(obj, dict) else None
+    sizes = obj.get("cudagraph_capture_sizes") if isinstance(obj, dict) else None
+    if not isinstance(requested, int) or not isinstance(sizes, list) or not sizes or (
+            not all(isinstance(i, int) and i > 0 for i in sizes)):
+        doc.skip(["130"], "CUDA graph requested versus effective capture sizes",
+                 "need an explicitly requested capture size plus resolved "
+                 "nonempty integer capture-size list",
+                 code="CUDAGRAPH_CAPTURE_CONFIG_MISSING",
+                 asserts=[A("requested and effective sizes exposed",
+                            {"requested": requested, "sizes": sizes}, held=False)])
+        return
+    effective_max = max(sizes)
+    doc.evidence["trap130_capture"] = {"requested": requested,
+                                       "effective_max": effective_max}
+    if requested > effective_max:
+        doc.problem(["130"], "requested CUDA-graph capture size exceeds the "
+                    "largest effective capture shape",
+                    "ensure the actual decode shape is captured; the "
+                    "highest requested shape may be falling back to eager",
+                    code="CUDAGRAPH_SIZE_CLAMP_OBSERVED",
+                    asserts=[A("requested maximum shape included in capture sizes",
+                               doc.evidence["trap130_capture"], held=False)])
+    else:
+        doc.inconclusive(["130"], "CUDA graph capture effectiveness",
+                         "the effective list reaches the requested maximum, "
+                         "but actual graph use per decode shape was not observed",
+                         code="CUDAGRAPH_EFFECT_NOT_VERIFIED",
+                         asserts=[A("runtime CUDA graph path observed",
+                                    doc.evidence["trap130_capture"], held=False)])
+
+
+def check_execution_concurrency_evidence(doc, root, key):
+    """Trap 135: a running-request gauge is admission, not GPU concurrency."""
+    st, raw = get(root + "/metrics", key, timeout=8)
+    running = _parse_metric_values(raw, "num_requests_running") if st == 200 else []
+    if not running:
+        doc.skip(["135"], "HTTP requests versus real execution concurrency",
+                 "no running-request gauge is available",
+                 code="CONCURRENCY_GAUGE_UNAVAILABLE",
+                 asserts=[A("running-request count exposed", st, held=False)])
+        return
+    doc.evidence["trap135_running"] = max(running)
+    doc.inconclusive(["135"], "client concurrency versus model execution",
+                     "the running-request gauge measures admission, not "
+                     "completed-work throughput or GPU execution overlap",
+                     code="CONCURRENCY_ADMISSION_NOT_EXECUTION",
+                     asserts=[A("C1/C2/C4 completed-work and worker-overlap "
+                                "comparison recorded",
+                                {"running": max(running)}, held=False)])
+
+
 def check_baked_default_system(doc, root, key):
     """Trap 83: compare no-system and explicit empty-system renders."""
     marker = "MF83_USER_8C7A"
@@ -4468,6 +4801,38 @@ def _probe_ngram_async_scheduling(doc, base, root, args):
     check_ngram_async_scheduling(doc, root, args.api_key)
 
 
+def _probe_prompt_target_tokens(doc, base, root, args):
+    check_prompt_target_tokens(doc, root, args.api_key, args)
+
+
+def _probe_cache_hit_answer_consistency(doc, base, root, args):
+    check_cache_hit_answer_consistency(doc, base, args.api_key)
+
+
+def _probe_greedy_repetition_screen(doc, base, root, args):
+    check_greedy_repetition_screen(doc, base, args.api_key)
+
+
+def _probe_device_memory_reporting(doc, base, root, args):
+    check_device_memory_reporting(doc, root, args.api_key)
+
+
+def _probe_kv_cache_pressure(doc, base, root, args):
+    check_kv_cache_pressure(doc, root, args.api_key)
+
+
+def _probe_compilation_flag_resolution(doc, base, root, args):
+    check_compilation_flag_resolution(doc, root, args.api_key)
+
+
+def _probe_cudagraph_capture_clamp(doc, base, root, args):
+    check_cudagraph_capture_clamp(doc, root, args.api_key)
+
+
+def _probe_execution_concurrency_evidence(doc, base, root, args):
+    check_execution_concurrency_evidence(doc, root, args.api_key)
+
+
 def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
@@ -4642,6 +5007,22 @@ PROBE_SPECS = (
               _probe_prefix_slot_residency, "bounded prefix slot cache screen"),
     ProbeSpec("ngram_async_scheduling", ("157",), 0, False, 10, (),
               _probe_ngram_async_scheduling, "reported ngram async scheduler state"),
+    ProbeSpec("prompt_target_tokens", ("49",), 0, False, 19, (),
+              _probe_prompt_target_tokens, "declared target versus served tokenize count"),
+    ProbeSpec("cache_hit_answer_consistency", ("60",), 2, False, 18, (),
+              _probe_cache_hit_answer_consistency, "cold/warm cache-reported output consistency"),
+    ProbeSpec("greedy_repetition_screen", ("91",), 2, False, 17, (),
+              _probe_greedy_repetition_screen, "serial greedy repeatability screening"),
+    ProbeSpec("device_memory_reporting", ("96",), 0, False, 16, (),
+              _probe_device_memory_reporting, "device free-versus-total memory arithmetic"),
+    ProbeSpec("kv_cache_pressure", ("106",), 0, False, 15, (),
+              _probe_kv_cache_pressure, "KV occupancy and preemption gauge snapshot"),
+    ProbeSpec("compilation_flag_resolution", ("117",), 0, False, 14, (),
+              _probe_compilation_flag_resolution, "fused GEMM requested/resolved config"),
+    ProbeSpec("cudagraph_capture_clamp", ("130",), 0, False, 13, (),
+              _probe_cudagraph_capture_clamp, "CUDA graph requested and effective shape"),
+    ProbeSpec("execution_concurrency_evidence", ("135",), 0, False, 12, (),
+              _probe_execution_concurrency_evidence, "running request admission versus execution"),
     ProbeSpec(
         "generation_readiness", ("112",), 1, True, 99, (),
         _probe_generation_readiness,
@@ -4824,6 +5205,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", required=True,
                     help="OpenAI-compatible base, e.g. http://localhost:8000/v1")
+    ap.add_argument("--benchmark-target-tokens", type=int, default=None,
+                    help="target number of served tokens for the supplied benchmark prompt")
+    ap.add_argument("--benchmark-prompt-text", default=None,
+                    help="exact benchmark prompt to check via the local /tokenize route")
     ap.add_argument("--server-max-tokens", type=int, default=None,
                     help="operator-known serve --max-tokens setting; enables Trap 32 check")
     ap.add_argument("--thinking-budget-marker-ids", default=None,
