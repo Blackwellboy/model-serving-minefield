@@ -27,9 +27,36 @@ Do not treat two nominally identical models on different images, templates or GP
 - A failed check must not trigger an automatic fix or restart. Stop when transport errors, timeouts or unexpected resource pressure appear.
 - Do not enable `trust_remote_code` just to bypass missing MiniCPM processor modules.
 
-## 3. Basic endpoint and Doctor pass
+## 3. Budget the Doctor pass before network access
 
-From a checkout of the **exact Minefield main SHA being evaluated**, with an approved local tunnel or trusted endpoint:
+First preview the plan offline, without a host URL or credentials:
+
+```bash
+minefield doctor-plan --mode lite --max-requests 5 --text
+minefield doctor-plan --mode doctor --max-requests 8 > doctor-plan.json
+```
+
+This creates **no** live observations, requests or verdicts. It shows which
+registered checks fit the declared chat-generation budget, and which checks
+will be skipped. A zero-chat-cost check can still make GET/render/metrics/HF
+requests **in a later live run**. The plan cannot prove endpoint capabilities
+or hardware applicability. Do not treat planned trap IDs as checked or CLEAN.
+
+For the **first authorised endpoint pass**, prefer the budget-enforced unified
+front door to the uncapped standalone Doctor:
+
+```bash
+minefield diagnose "baseline endpoint readiness" \\
+  --base-url "$MINEFIELD_BASE_URL" --mode lite --max-requests 5 \\
+  --json > doctor-lane-a.json
+```
+
+Only the operator should set the trusted private URL and credential. Do not
+paste endpoint addresses or unsanitised results into public issues.
+
+## 4. Full standalone Doctor, dedicated test window only
+
+From a checkout of the **exact Minefield main SHA being evaluated**, with an approved local tunnel or trusted endpoint. This standalone command does **not** apply the unified planner's five-chat-request default; use only after reviewing the full budget and confirming an appropriate test window:
 
 ```bash
 export MINEFIELD_BASE_URL="http://127.0.0.1:8000/v1"
@@ -45,7 +72,7 @@ When testing a declared server token limit or benchmark prompt length, opt in to
 
 Run `minefield diagnose` with a redacted symptom and explicit public-safe configuration or log paths only when those files are approved for analysis.
 
-## 4. Controlled matrix, only after first-pass health
+## 5. Controlled matrix, only after first-pass health
 
 | Phase | Evidence | Proceed when |
 |---|---|---|
@@ -58,7 +85,7 @@ Run `minefield diagnose` with a redacted symptom and explicit public-safe config
 
 Do not equate passing A–D with passing E–F. Likewise, a single idle Prometheus sample cannot certify absence of benchmark contention, and a two-turn cache test cannot certify a long-context retention policy.
 
-## 5. Evidence and verdict rules
+## 6. Evidence and verdict rules
 
 For each probe preserve: lane alias, UTC timestamp, exact `main` commit, probe ID, input **shape** (redacted), endpoint/stack/model revision, HTTP status, response field names, finish reason, token usage, rendered-marker checks, duration and the Doctor's assertion-level verdict.
 
