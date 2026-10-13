@@ -112,7 +112,10 @@ FINGERPRINTS = (
         r"\breasoning_tokens\s*[:=]\s*2\b[\s\S]{0,240}<think>\s*</think>|<think>\s*</think>[\s\S]{0,240}\breasoning_tokens\s*[:=]\s*2\b",
         "empty think-marker pair counted as two reasoning tokens",
     ),
-(text: str) -> dict[str, str]:
+)
+
+
+def fingerprints_in_text(text: str) -> dict[str, str]:
     """Return trap id -> human-readable reason for concrete fingerprint hits."""
     joined = " ".join((text or "").splitlines())
     hits: dict[str, str] = {}
