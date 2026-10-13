@@ -46,8 +46,8 @@ For the **first authorised endpoint pass**, prefer the budget-enforced unified
 front door to the uncapped standalone Doctor:
 
 ```bash
-minefield diagnose "baseline endpoint readiness" \\
-  --base-url "$MINEFIELD_BASE_URL" --mode lite --max-requests 5 \\
+minefield diagnose "baseline endpoint readiness" \
+  --base-url "$MINEFIELD_BASE_URL" --mode lite --max-requests 5 \
   --json > doctor-lane-a.json
 ```
 
