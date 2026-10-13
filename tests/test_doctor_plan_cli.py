@@ -79,6 +79,14 @@ class OfflineDoctorPlanTests(unittest.TestCase):
         self.assertFalse(data["capabilities_verified"])
         self.assertTrue(any("Hugging Face" in w for w in data["warnings"]))
 
+    def test_unavailable_lite_preference_is_reported_not_silently_promised(self):
+        rc, out, err = plan("--preferred-trap", "162", "--max-requests", "5")
+        self.assertEqual(rc, 0, err)
+        data = json.loads(out)
+        self.assertIn("162", data["unselected_preferred_trap_ids"])
+        self.assertNotIn("162", data["planned_trap_ids"])
+        self.assertTrue(any("not selected" in w for w in data["warnings"]))
+
     def test_invalid_budget_and_trap_fail_closed(self):
         for args in (("--max-requests", "-1"), ("--preferred-trap", "999")):
             with self.subTest(args=args):
