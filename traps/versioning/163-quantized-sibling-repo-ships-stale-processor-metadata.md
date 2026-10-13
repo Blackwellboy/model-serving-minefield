@@ -70,9 +70,9 @@ import json, urllib.request
 HF = "https://huggingface.co"
 REPOS = {
     "awq":  ("openbmb/MiniCPM-V-4.7-35B-A3B-AWQ",
-             "ea491d008227809c62ff72dce9a5650d5d0576c1"),
+             "ea491d008227809c62ff72dce9a5650d5d0576c1"),  # pragma: allowlist secret  (public Hugging Face revision SHA)
     "base": ("openbmb/MiniCPM-V-4.7-35B-A3B",
-             "17e651151c161dce119cd0ac57570f60da8a0b40"),
+             "17e651151c161dce119cd0ac57570f60da8a0b40"),  # pragma: allowlist secret  (public Hugging Face revision SHA)
 }
 CONFIGS = ("processor_config.json", "preprocessor_config.json",
            "tokenizer_config.json", "config.json")
