@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 28 generation requests, each capped at 512 output
+    completions (at most 35 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -91,6 +91,17 @@ TRAP_PATHS = {
     "149": "evaluation/149-thinking-on-json-schema-can-runaway.md",
     "156": "evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
     "158": "reasoning/158-empty-thought-markers-count-as-reasoning.md",
+    "24": "template/24-official-template-breaks-cpp-jinja.md",
+    "56": "template/56-checkpoint-ships-no-chat-template.md",
+    "59": "reasoning/59-reasoning-roundtrip-confabulation.md",
+    "93": "template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md",
+    "126": "reasoning/126-ling-thinking-false-spills-reasoning-into-content.md",
+    "138": "evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md",
+    "148": "template/148-tool-json-ascii-escaping-changes-prompt.md",
+    "32": "runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md",
+    "153": "reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md",
+    "155": "runtime/155-prefix-slot-policy-thrashes-long-conversations.md",
+    "157": "runtime/157-ngram-speculation-disables-async-scheduling.md",
     "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
@@ -137,7 +148,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "30", "38", "43", "57", "63", "66", "67", "69", "82", "83", "85", "86", "113", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "24", "25", "30", "38", "43", "56", "57", "59", "63", "66", "67", "69", "82", "83", "85", "86", "93", "113", "148", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -822,7 +833,7 @@ def check_streaming(doc, base, key):
                  asserts=[A("stream request completed", str(e), held=False)])
 
 
-def _vllm_render(doc, root, key, messages, kwargs):
+def _vllm_render(doc, root, key, messages, kwargs, tools=None):
     """vLLM's assembled prompt, via /v1/chat/completions/render + /detokenize.
 
     vLLM has exposed a render route since 0.20.0. It returns token ids rather
@@ -835,6 +846,8 @@ def _vllm_render(doc, root, key, messages, kwargs):
     even when the route listing does not advertise it.
     """
     body = {"model": doc.model, "messages": messages, "max_tokens": 1}
+    if tools is not None:
+        body["tools"] = tools
     if kwargs:
         body["chat_template_kwargs"] = kwargs
     st, txt = post(root + "/v1/chat/completions/render", body, key, timeout=30)
@@ -854,6 +867,8 @@ def _vllm_render(doc, root, key, messages, kwargs):
     # fallback: tokenise with per-token strings and reassemble
     tb = {"model": doc.model, "messages": messages,
           "add_generation_prompt": True, "return_token_strs": True}
+    if tools is not None:
+        tb["tools"] = tools
     if kwargs:
         tb["chat_template_kwargs"] = kwargs
     st, txt = post(root + "/tokenize", tb, key, timeout=30)
@@ -870,10 +885,12 @@ def _vllm_render(doc, root, key, messages, kwargs):
     return None, None
 
 
-def render_paths(doc, root, key, messages, kwargs):
+def render_paths(doc, root, key, messages, kwargs, tools=None):
     """Return (prompt, how): llama.cpp /apply-template, vLLM render, or jinja2."""
     if doc.stack == "llama.cpp":
         body = {"messages": messages}
+        if tools is not None:
+            body["tools"] = tools
         if kwargs:
             body["chat_template_kwargs"] = kwargs
         st, txt = post(root + "/apply-template", body, key, timeout=30)
@@ -883,7 +900,7 @@ def render_paths(doc, root, key, messages, kwargs):
             except Exception:
                 pass
     else:
-        prompt, how = _vllm_render(doc, root, key, messages, kwargs)
+        prompt, how = _vllm_render(doc, root, key, messages, kwargs, tools=tools)
         if prompt is not None:
             return prompt, how
     tpl = (doc.evidence.get("props") or {}).get("chat_template")
@@ -894,7 +911,7 @@ def render_paths(doc, root, key, messages, kwargs):
             env.globals["raise_exception"] = lambda m: ""
             env.globals["strftime_now"] = lambda fmt: ""
             return env.from_string(tpl).render(
-                messages=messages, add_generation_prompt=True,
+                messages=messages, tools=tools or [], add_generation_prompt=True,
                 bos_token="", eos_token="", **(kwargs or {})), "local jinja2"
         except Exception:
             pass
@@ -1800,6 +1817,473 @@ def check_post_tool_empty_reasoning_usage(doc, base, key):
                          code="POST_TOOL_REASONING_NOT_SETTLED",
                          asserts=[A("post-tool template branch characterized",
                                     doc.evidence["trap158_post_tool"], held=False)])
+
+
+
+def check_tool_schema_render(doc, root, key):
+    """Trap 24: detect schema fields silently omitted by the served template."""
+    fields = ("mf24_alpha_781", "mf24_beta_614")
+    tool = {"type": "function", "function": {"name": "mf24_lookup_429",
+            "description": "Probe whether tool schemas survive prompt assembly",
+            "parameters": {"type": "object", "properties": {
+                fields[0]: {"type": "string"}, fields[1]: {"type": "integer"}},
+                "required": [fields[0]]}}}
+    message = [{"role": "user", "content": "MF24 query"}]
+    ctrl, how = render_paths(doc, root, key, message, {}, tools=[])
+    text, how2 = render_paths(doc, root, key, message, {}, tools=[tool])
+    if not isinstance(text, str) or not isinstance(ctrl, str) or "MF24 query" not in text:
+        doc.skip(["24"], "served tool-schema render",
+                 "tool-defined and empty-tool rendered controls are unavailable",
+                 code="TOOL_SCHEMA_RENDER_UNAVAILABLE",
+                 asserts=[A("two server renders available", {"control": ctrl is not None,
+                          "with_tool": text is not None}, held=False)])
+        return
+    seen = {x: x in text for x in (tool["function"]["name"],) + fields}
+    doc.evidence["trap24_schema_seen"] = seen
+    # Only the actual server render supports a claim about runtime Jinja behavior.
+    if all(seen.values()):
+        doc.inconclusive(["24"], "tool-schema Jinja portability",
+                         "all distinctive schema strings survived the served "
+                         "render, but Python versus C++ reference parity and "
+                         "parameter delimiters were not established",
+                         code="TOOL_SCHEMA_FIELDS_PRESERVED_NOT_PARITY",
+                         asserts=[A("server and reference Python-Jinja render compared",
+                                    {"server_path": how2}, held=False)])
+    elif how2 and how2.startswith("server") and tool["function"]["name"] not in ctrl:
+        doc.problem(["24"], "served template omitted a named function or "
+                    "parameter key from the supplied tool schema",
+                    "compare this runtime's assembled prompt with a pinned "
+                    "Python-Jinja reference before swapping templates",
+                    code="TOOL_SCHEMA_FIELD_DROPPED",
+                    asserts=[A("all named tool schema fields survive render",
+                               seen, held=False)])
+    else:
+        doc.inconclusive(["24"], "tool-schema Jinja portability",
+                         "missing keys were not tied to an authenticated server "
+                         "render with a discriminating no-tools control",
+                         code="TOOL_SCHEMA_COMPARISON_UNCERTAIN",
+                         asserts=[A("server path and controls establish omission",
+                                    seen, held=False)])
+
+
+def check_python_encoder_role_welding(doc, root, key):
+    """Trap 56: compare inline-system rendering against a marked leading control."""
+    q, q2, late, early = ("MF56_Q_12", "MF56_Q2_12",
+                          "MF56_LATE_12", "MF56_HEAD_12")
+    arms = {}
+    for name, msgs in (
+        ("plain", [{"role": "user", "content": q}, {"role": "user", "content": q2}]),
+        ("head", [{"role": "system", "content": early}, {"role": "user", "content": q}]),
+        ("late", [{"role": "user", "content": q}, {"role": "system", "content": late},
+                  {"role": "user", "content": q2}]),
+    ):
+        rendered, how = render_paths(doc, root, key, msgs, {})
+        arms[name] = rendered
+        if rendered is not None:
+            doc.evidence.setdefault("trap56_render_path", how)
+    if any(not isinstance(x, str) for x in arms.values()) or (
+            q not in arms["late"] or q2 not in arms["late"] or early not in arms["head"]):
+        doc.skip(["56"], "Python-encoder system-role boundary",
+                 "leading and inline role controls failed to render with markers",
+                 code="ENCODER_ROLE_CONTROLS_UNAVAILABLE",
+                 asserts=[A("all render arms preserve markers",
+                            {k: v is not None for k, v in arms.items()}, held=False)])
+        return
+    glued = q + late in arms["late"]
+    doc.evidence["trap56_late_system_glued"] = glued
+    if glued and arms["plain"].count(q) == 1:
+        doc.problem(["56"], "inline system text is concatenated immediately "
+                    "after a user marker with no structural role separator",
+                    "inspect the checkpoint-specific encoder and compare its "
+                    "pinned implementation with the server's actual render",
+                    code="ENCODER_INLINE_SYSTEM_WELDED",
+                    asserts=[A("inline system retains an independent boundary",
+                               {"concatenated": glued}, held=False)])
+    else:
+        doc.inconclusive(["56"], "Python-encoder template provenance",
+                         "the direct welding signature was absent; the live "
+                         "render alone cannot establish whether a checkpoint "
+                         "ships Jinja template data or a Python encoder",
+                         code="ENCODER_PROVENANCE_UNVERIFIED",
+                         asserts=[A("checkpoint template absence and Python "
+                                    "encoder source were independently inspected",
+                                    {"late_glued": glued}, held=False)])
+
+
+def check_reasoning_replay_visibility(doc, root, key):
+    """Trap 59: verify replayed reasoning is visible before trusting recollection."""
+    marker = "MF59_PRIVATE_TRACE_8B7"
+    msgs = [
+        {"role": "user", "content": "MF59 first user"},
+        {"role": "assistant", "content": "MF59 first answer",
+         "reasoning_content": marker, "reasoning": marker},
+        {"role": "user", "content": "MF59 second user"},
+    ]
+    real, how = render_paths(doc, root, key, msgs, {})
+    plain = [dict(x) for x in msgs]
+    plain[1]["content"] = marker
+    plain[1].pop("reasoning", None)
+    plain[1].pop("reasoning_content", None)
+    ctrl, _ = render_paths(doc, root, key, plain, {})
+    if not isinstance(real, str) or not isinstance(ctrl, str) or marker not in ctrl:
+        doc.skip(["59"], "replayed reasoning visibility",
+                 "server/template render or positive content-marker control unavailable",
+                 code="REPLAY_REASONING_CONTROL_UNAVAILABLE",
+                 asserts=[A("content marker visible in render control",
+                            {"render": real is not None, "control": ctrl is not None,
+                             "visible": bool(ctrl and marker in ctrl)}, held=False)])
+        return
+    doc.evidence["trap59_reasoning_visible"] = marker in real
+    if marker not in real:
+        doc.inconclusive(["59"], "prior-turn reasoning not in assembled prompt",
+                         "distinctive replayed reasoning disappeared while identical "
+                         "text supplied as content survived; a model's later "
+                         "claim to remember it would require a separate witness",
+                         code="REPLAY_REASONING_STRIPPED_NOT_CONFABULATION_PROOF",
+                         asserts=[A("replayed reasoning visible to model", False,
+                                    held=False)])
+    else:
+        doc.inconclusive(["59"], "replayed reasoning present in prompt",
+                         "the marker reached the prompt on this history field "
+                         "shape, but the separate confabulated-recall mechanism "
+                         "cannot be cleared from one render",
+                         code="REPLAY_REASONING_VISIBLE_NOT_GENERAL",
+                         asserts=[A("every reasoning field and reply-claim shape tested",
+                                    False, held=False)])
+
+
+def check_clock_prompt_prefix(doc, root, key):
+    """Trap 93: compare relative positions, not infer actual cached tokens."""
+    clock = "MF93_CLOCK_01"
+    system = "MF93_SYS_START_" + clock
+    m1 = [{"role": "system", "content": system},
+          {"role": "user", "content": "MF93_U1"}]
+    m2 = m1 + [{"role": "assistant", "content": "MF93_A1"},
+               {"role": "user", "content": "MF93_U2"}]
+    a, how = render_paths(doc, root, key, m1, {})
+    b, _ = render_paths(doc, root, key, m2, {})
+    if not isinstance(a, str) or not isinstance(b, str) or (
+            a.count(clock) != 1 or b.count(clock) != 1):
+        doc.skip(["93"], "clock placement and prefix stability",
+                 "two marked complete renders are required",
+                 code="CLOCK_PREFIX_RENDER_UNAVAILABLE",
+                 asserts=[A("clock marker appears in both renders",
+                            {"first": bool(a and clock in a),
+                             "second": bool(b and clock in b)}, held=False)])
+        return
+    pos1 = a.index(clock); pos2 = b.index(clock)
+    prefix = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y),
+                  min(len(a), len(b)))
+    doc.evidence["trap93_structure"] = {
+        "first_clock_offset": pos1, "second_clock_offset": pos2,
+        "shared_prefix_characters": prefix}
+    doc.inconclusive(["93"], "clock-prefix caching experiment",
+                     "rendered clock marker "
+                     + ("moved after growing history; " if pos2 > pos1 else
+                        "did not move after growing history; ")
+                     + "the observed prefix is structural, not measured "
+                     "cached_tokens under controlled fresh-server arms",
+                     code="CLOCK_PREFIX_STRUCTURAL_OBSERVATION",
+                     asserts=[A("controlled cache metrics and restart arms recorded",
+                                doc.evidence["trap93_structure"], held=False)])
+
+
+def check_ling_thinking_field_placement(doc, base, key):
+    """Trap 126: scope to a positively named Ling checkpoint."""
+    if "ling" not in (doc.model or "").lower():
+        doc.skip(["126"], "Ling free-text versus schema thinking switch",
+                 "served model is not identified as Ling",
+                 code="LING_MODEL_NOT_IDENTIFIED",
+                 asserts=[A("Ling model identity", doc.model, held=False)])
+        return
+    arms = {}
+    for label, flag in (("on", True), ("off", False)):
+        st, choice, raw = chat(doc, base, key, doc.model,
+            [{"role": "user", "content": "Respond briefly with OK."}],
+            max_tokens=96, chat_template_kwargs={"thinking": flag})
+        arms[label] = (st, choice, raw)
+    if any(v[0] != 200 or not isinstance(v[1], dict) for v in arms.values()):
+        doc.inconclusive(["126"], "Ling thinking free-text gate",
+                         "one or both matched requests could not be read",
+                         code="LING_THINKING_PAIR_INCOMPLETE",
+                         asserts=[A("both thinking arms completed",
+                                    {k:v[0] for k,v in arms.items()}, held=False)])
+        return
+    on = arms["on"][1].get("message") or {}
+    off = arms["off"][1].get("message") or {}
+    on_reason = on.get("reasoning_content") or on.get("reasoning") or ""
+    off_text = off.get("content") or ""
+    bad = bool(on_reason and "</think>" in off_text)
+    doc.evidence["trap126_pair"] = {
+        "on_reasoning": bool(on_reason), "off_close_tag": "</think>" in off_text}
+    if bad:
+        doc.problem(["126"], "Ling thinking:false free-text response contains "
+                    "a visible closing reasoning delimiter while the thinking-on "
+                    "control uses a separate reasoning field",
+                    "run a matched structured-output pair before inferring "
+                    "the switch's shape dependence or token-cost advantage",
+                    code="LING_OFF_REASONING_LEAKED",
+                    asserts=[A("thinking-off content lacks reasoning delimiter",
+                               doc.evidence["trap126_pair"], held=False)])
+    else:
+        doc.inconclusive(["126"], "Ling thinking:false free-text",
+                         "the paired free-text responses do not establish "
+                         "the specific field-placement defect; structured-JSON "
+                         "and repeated token-cost controls remain required",
+                         code="LING_THINKING_NOT_CHARACTERIZED",
+                         asserts=[A("all schema and cost control arms measured",
+                                    doc.evidence["trap126_pair"], held=False)])
+
+
+def check_structured_json_duplication(doc, base, key):
+    """Trap 138: observe structured-output malformedness, not infer n-gram cause."""
+    fmt = {"type": "json_object"}
+    st, choice, raw = chat(doc, base, key, doc.model,
+        [{"role": "user", "content": "Return a JSON object with key answer value OK."}],
+        response_format=fmt, max_tokens=128)
+    if st != 200 or not isinstance(choice, dict):
+        doc.skip(["138"], "n-gram structured-output duplication screen",
+                 "JSON-object request unavailable or unsupported",
+                 code="NGRAM_JSON_REQUEST_UNAVAILABLE",
+                 asserts=[A("JSON-object completion available", st, held=False)])
+        return
+    c = (choice.get("message") or {}).get("content") or ""
+    try:
+        json.loads(c)
+        parse_ok = True
+    except (ValueError, TypeError):
+        parse_ok = False
+    doc.evidence["trap138_json_parse_ok"] = parse_ok
+    doc.inconclusive(["138"], "n-gram speculative structured output",
+                     ("response content was not valid JSON; n-gram ownership "
+                      "requires a matched spec-on/spec-off serve comparison"
+                      if not parse_ok else
+                      "the short structured response parsed; this does not "
+                      "test whether n-gram speculation duplicates tokens "
+                      "under the affected serve configuration"),
+                     code=("NGRAM_JSON_MALFORMED_UNATTRIBUTED" if not parse_ok
+                           else "NGRAM_JSON_SHORT_CONTROL_ONLY"),
+                     asserts=[A("speculation-on/off controlled comparison completed",
+                                {"json_valid": parse_ok}, held=False)])
+
+
+def check_unicode_tool_serialization(doc, root, key):
+    """Trap 148: classify live engine Unicode escaping without pretending a cross-engine A/B."""
+    symbol = "\u03a9\u4e2d\u00e9"
+    field = "mf148_param_6C"
+    schema = {"type": "function", "function": {"name": "mf148_tool_6C",
+        "description": "Lookup " + symbol,
+        "parameters": {"type": "object", "properties": {field: {
+            "type": "string", "description": "Text " + symbol}},
+            "required": [field]}}}
+    msgs = [{"role": "user", "content": "MF148 normal ASCII user marker"}]
+    control, how = render_paths(doc, root, key, msgs, {}, tools=[])
+    target, source = render_paths(doc, root, key, msgs, {}, tools=[schema])
+    if not isinstance(target, str) or not isinstance(control, str) or (
+            "mf148_tool_6C" not in target):
+        doc.skip(["148"], "cross-engine Unicode tool serialization",
+                 "live tool schema render unavailable or missing function-name control",
+                 code="UNICODE_TOOL_SCHEMA_UNAVAILABLE",
+                 asserts=[A("tool schema serialized on live render path",
+                            {"target": target is not None, "source": source},
+                            held=False)])
+        return
+    raw = symbol in target
+    escaped = ("\\u03a9" in target or "\\u4e2d" in target or "\\u00e9" in target)
+    doc.evidence["trap148_serialization"] = {
+        "raw_utf8": raw, "unicode_escape": escaped, "server_path": source}
+    doc.inconclusive(["148"], "engine-dependent tool JSON escaping",
+                     ("this lane renders raw Unicode; " if raw else
+                      "this lane renders escapes or another encoding; ")
+                     + "a second pinned engine and tokenizer are required "
+                     "to establish cross-engine token cost divergence",
+                     code="UNICODE_TOOL_SERIALIZATION_OBSERVED",
+                     asserts=[A("two pinned engine token sequences compared",
+                                doc.evidence["trap148_serialization"], held=False)])
+
+
+
+def check_declared_server_token_cap(doc, base, args):
+    """Trap 32: test a caller-declared server default/cap, never infer the launch flag."""
+    stated = getattr(args, "server_max_tokens", None)
+    if not isinstance(stated, int) or stated < 1 or stated >= 256:
+        doc.skip(["32"], "declared server max-tokens cap",
+                 "pass --server-max-tokens 1..255 to test a known launch-time "
+                 "setting; no default/cap is inferred from the model list",
+                 code="SERVER_MAX_TOKENS_UNDECLARED",
+                 asserts=[A("declared server max_tokens available",
+                            stated, held=False)])
+        return
+    ask = stated + 16
+    st, choice, payload = chat(doc, base, args.api_key, doc.model,
+        [{"role": "user", "content":
+          "Continue this numbered sequence past 100 items. Do not summarize."}],
+        max_tokens=ask)
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    observed = usage.get("completion_tokens") if isinstance(usage, dict) else None
+    doc.evidence["trap32_cap"] = {"declared": stated, "requested": ask,
+                                  "completion_tokens": observed, "status": st}
+    if st == 200 and isinstance(observed, int) and observed > stated:
+        doc.problem(["32"], "request generated more completion tokens "
+                    "than the operator-declared serving flag",
+                    "the server setting is a default, not an enforced limit "
+                    "on the user-supplied max_tokens request",
+                    code="SERVER_FLAG_NOT_HARD_CAP",
+                    asserts=[A("server enforces declared output token cap",
+                               doc.evidence["trap32_cap"], held=False)])
+    else:
+        doc.inconclusive(["32"], "server output budget semantics",
+                         "response did not exceed the declared cap; a naturally "
+                         "short completion or rejected request does not prove "
+                         "the server flag is a hard cap",
+                         code="SERVER_CAP_NOT_SETTLED",
+                         asserts=[A("response demonstrates hard-cap enforcement",
+                                    doc.evidence["trap32_cap"], held=False)])
+
+
+def check_thinking_budget_marker_ids(doc, root, args):
+    """Trap 153: compare user-supplied processor marker IDs against live tokenizer."""
+    configured = getattr(args, "thinking_budget_marker_ids", None)
+    if not configured:
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "pass --thinking-budget-marker-ids START,END from the "
+                 "actual installed budget processor, otherwise no contract "
+                 "exists to compare",
+                 code="THINK_BUDGET_IDS_UNDECLARED",
+                 asserts=[A("processor marker ids supplied",
+                            configured, held=False)])
+        return
+    try:
+        expected = [int(x.strip()) for x in configured.split(",")]
+        if len(expected) != 2:
+            raise ValueError("expected two IDs")
+    except (ValueError, AttributeError):
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "marker ids must be two comma-separated integers",
+                 code="THINK_BUDGET_IDS_INVALID",
+                 asserts=[A("two integer marker ids", configured, held=False)])
+        return
+    seen = []
+    for marker in ("<think>", "</think>"):
+        st, body = post(root + "/tokenize", {"model": doc.model,
+            "prompt": marker, "add_special_tokens": False}, args.api_key,
+            timeout=20)
+        try:
+            data = json.loads(body) if st == 200 else {}
+            ids = data.get("tokens", data.get("token_ids"))
+        except (TypeError, ValueError):
+            ids = None
+        seen.append(ids if isinstance(ids, list) and
+                    all(isinstance(v, int) for v in ids) else None)
+    doc.evidence["trap153_ids"] = {"expected": expected, "tokenized": seen}
+    if any(ids is None or len(ids) != 1 for ids in seen):
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "tokenization did not return one unambiguous token ID "
+                 "for each marker",
+                 code="THINK_BUDGET_TOKENIZER_UNAVAILABLE",
+                 asserts=[A("single-token marker ids returned",
+                            doc.evidence["trap153_ids"], held=False)])
+    elif [ids[0] for ids in seen] != expected:
+        doc.problem(["153"], "processor marker IDs disagree with this "
+                    "endpoint's tokenizer IDs for thinking delimiters",
+                    "derive marker IDs from the checkpoint tokenizer, not "
+                    "from a different model family",
+                    code="THINK_BUDGET_MARKER_ID_MISMATCH",
+                    asserts=[A("installed processor IDs equal live tokenizer IDs",
+                               doc.evidence["trap153_ids"], held=False)])
+    else:
+        doc.inconclusive(["153"], "thinking-budget processor correctness",
+                         "two configured marker IDs match the live tokenizer; "
+                         "processor counting across current turns and histories "
+                         "was not demonstrated",
+                         code="THINK_BUDGET_IDS_MATCH_NOT_EFFECT",
+                         asserts=[A("budget processor behavioral effect verified",
+                                    doc.evidence["trap153_ids"], held=False)])
+
+
+def check_prefix_slot_residency(doc, base, key):
+    """Trap 155: short, bounded prefix-residency screen, not a long-context soak."""
+    requests = (
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 A1"}],
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 B1"}],
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 A1"},
+         {"role": "assistant", "content": "MF155 previous answer"},
+         {"role": "user", "content": "MF155 A2"}],
+    )
+    values = []
+    for msgs in requests:
+        st, choice, payload = chat(doc, base, key, doc.model, msgs,
+                                   max_tokens=16)
+        usage = payload.get("usage") if isinstance(payload, dict) else {}
+        details = usage.get("prompt_tokens_details") or {}
+        cached = details.get("cached_tokens") if isinstance(details, dict) else None
+        if cached is None:
+            cached = usage.get("cached_tokens", usage.get("cache_n"))
+        values.append({"status": st, "cached_tokens": cached,
+                       "prompt_tokens": usage.get("prompt_tokens")})
+    doc.evidence["trap155_cache_sequence"] = values
+    if any(row["status"] != 200 for row in values) or any(
+            not isinstance(row["cached_tokens"], int) for row in values):
+        doc.skip(["155"], "long-conversation slot retention",
+                 "short cache-control requests or per-request cached-token "
+                 "counters are unavailable on this endpoint",
+                 code="PREFIX_SLOT_COUNTERS_MISSING",
+                 asserts=[A("three cached-token counters available",
+                            values, held=False)])
+        return
+    doc.inconclusive(["155"], "long-conversation slot retention",
+                     "three short sequential histories recorded cached-token "
+                     "values; a repeated long two-conversation test plus slot "
+                     "residency evidence is needed before diagnosing victim-policy thrash",
+                     code="PREFIX_SLOT_SHORT_SEQUENCE_ONLY",
+                     asserts=[A("long-conversation retention/eviction mechanism verified",
+                                values, held=False)])
+
+
+def check_ngram_async_scheduling(doc, root, key):
+    """Trap 157: inspect advertised scheduling flags, never infer throughput."""
+    st, raw = get(root + "/props", key, timeout=8)
+    if st != 200:
+        doc.skip(["157"], "n-gram speculation and asynchronous scheduling",
+                 "serving config is not exposed via /props",
+                 code="NGRAM_SCHED_CONFIG_UNAVAILABLE",
+                 asserts=[A("serving config readable", st, held=False)])
+        return
+    try:
+        data = json.loads(raw)
+    except (TypeError, ValueError):
+        data = {}
+    config = data.get("speculative_config") or {}
+    sched = data.get("scheduler_config") or {}
+    if not isinstance(config, dict):
+        config = {}
+    if not isinstance(sched, dict):
+        sched = {}
+    kind = str(config.get("method", config.get("type", ""))).lower()
+    active = bool(kind == "ngram" or config.get("ngram_prompt_lookup_max"))
+    async_flag = sched.get("async_scheduling")
+    doc.evidence["trap157_config"] = {
+        "ngram_speculation": active, "async_scheduling": async_flag}
+    if not active or not isinstance(async_flag, bool):
+        doc.skip(["157"], "n-gram speculation and asynchronous scheduling",
+                 "no positively identified n-gram config together with "
+                 "explicit async-scheduling boolean was exposed",
+                 code="NGRAM_SCHED_FLAGS_NOT_CONFIRMED",
+                 asserts=[A("both speculation and async fields available",
+                            doc.evidence["trap157_config"], held=False)])
+        return
+    doc.inconclusive(["157"], "n-gram speculation versus async scheduling",
+                     ("ngram speculation is configured with async scheduling off"
+                      if not async_flag else
+                      "ngram speculation is configured with async scheduling on")
+                     + "; throughput impact needs matched on/off arms at "
+                     "production concurrency",
+                     code="NGRAM_ASYNC_CONFIG_OBSERVED",
+                     asserts=[A("matched C1/C4 completed-work throughput compared",
+                                doc.evidence["trap157_config"], held=False)])
 
 
 def check_baked_default_system(doc, root, key):
@@ -3940,6 +4424,50 @@ def _probe_post_tool_empty_reasoning_usage(doc, base, root, args):
     check_post_tool_empty_reasoning_usage(doc, base, args.api_key)
 
 
+def _probe_tool_schema_render(doc, base, root, args):
+    check_tool_schema_render(doc, root, args.api_key)
+
+
+def _probe_python_encoder_role_welding(doc, base, root, args):
+    check_python_encoder_role_welding(doc, root, args.api_key)
+
+
+def _probe_reasoning_replay_visibility(doc, base, root, args):
+    check_reasoning_replay_visibility(doc, root, args.api_key)
+
+
+def _probe_clock_prompt_prefix(doc, base, root, args):
+    check_clock_prompt_prefix(doc, root, args.api_key)
+
+
+def _probe_ling_thinking_field_placement(doc, base, root, args):
+    check_ling_thinking_field_placement(doc, base, args.api_key)
+
+
+def _probe_structured_json_duplication(doc, base, root, args):
+    check_structured_json_duplication(doc, base, args.api_key)
+
+
+def _probe_unicode_tool_serialization(doc, base, root, args):
+    check_unicode_tool_serialization(doc, root, args.api_key)
+
+
+def _probe_declared_server_token_cap(doc, base, root, args):
+    check_declared_server_token_cap(doc, base, args)
+
+
+def _probe_thinking_budget_marker_ids(doc, base, root, args):
+    check_thinking_budget_marker_ids(doc, root, args)
+
+
+def _probe_prefix_slot_residency(doc, base, root, args):
+    check_prefix_slot_residency(doc, base, args.api_key)
+
+
+def _probe_ngram_async_scheduling(doc, base, root, args):
+    check_ngram_async_scheduling(doc, root, args.api_key)
+
+
 def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
@@ -4092,6 +4620,28 @@ PROBE_SPECS = (
         _probe_post_tool_empty_reasoning_usage,
         "post-tool empty thought-channel token accounting",
     ),
+    ProbeSpec("tool_schema_render", ("24",), 0, True, 21, (),
+              _probe_tool_schema_render, "tool schema fields in served prompt"),
+    ProbeSpec("python_encoder_role_welding", ("56",), 0, True, 21, (),
+              _probe_python_encoder_role_welding, "inline system role concatenation"),
+    ProbeSpec("reasoning_replay_visibility", ("59",), 0, True, 21, (),
+              _probe_reasoning_replay_visibility, "reasoning replay visibility"),
+    ProbeSpec("clock_prompt_prefix", ("93",), 0, False, 12, (),
+              _probe_clock_prompt_prefix, "structural clock-prefix stability"),
+    ProbeSpec("ling_thinking_field_placement", ("126",), 2, False, 18, (),
+              _probe_ling_thinking_field_placement, "Ling thinking-off answer routing"),
+    ProbeSpec("structured_json_duplication", ("138",), 1, False, 18, (),
+              _probe_structured_json_duplication, "structured JSON content parsing"),
+    ProbeSpec("unicode_tool_serialization", ("148",), 0, True, 20, (),
+              _probe_unicode_tool_serialization, "Unicode tool schema serialization"),
+    ProbeSpec("declared_server_token_cap", ("32",), 1, False, 13, (),
+              _probe_declared_server_token_cap, "user-declared maximum token cap"),
+    ProbeSpec("thinking_budget_marker_ids", ("153",), 0, False, 11, (),
+              _probe_thinking_budget_marker_ids, "processor/tokenizer marker IDs"),
+    ProbeSpec("prefix_slot_residency", ("155",), 3, False, 10, (),
+              _probe_prefix_slot_residency, "bounded prefix slot cache screen"),
+    ProbeSpec("ngram_async_scheduling", ("157",), 0, False, 10, (),
+              _probe_ngram_async_scheduling, "reported ngram async scheduler state"),
     ProbeSpec(
         "generation_readiness", ("112",), 1, True, 99, (),
         _probe_generation_readiness,
@@ -4274,6 +4824,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", required=True,
                     help="OpenAI-compatible base, e.g. http://localhost:8000/v1")
+    ap.add_argument("--server-max-tokens", type=int, default=None,
+                    help="operator-known serve --max-tokens setting; enables Trap 32 check")
+    ap.add_argument("--thinking-budget-marker-ids", default=None,
+                    help="two processor start/end marker token IDs, e.g. 151667,151668")
     ap.add_argument("--model", default=None)
     ap.add_argument("--api-key", default=None)
     ap.add_argument("--hf-repo", default=None,

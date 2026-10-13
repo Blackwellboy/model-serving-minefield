@@ -3,9 +3,9 @@
   "coverage": {
     "schema_version": "1.0",
     "summary": {
-      "any_automated_check": 121,
+      "any_automated_check": 123,
       "counts_overlap": true,
-      "endpoint_checks_implemented": 49,
+      "endpoint_checks_implemented": 60,
       "guided_experiments_specified": 161,
       "human_review_possible": 161,
       "log_checks_implemented": 31,
@@ -1749,16 +1749,18 @@
         "id": "24",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Render one tool-defined request through your actual serving path and read the assembled prompt, not the request: are the tool names and every argument key present and correctly delimited? Then diff that render against a reference Python Jinja2 render of the same template and messages (checks/preflighttemplate.py does the local reference render). Any divergence means the engine is part of your unit under test.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -2349,16 +2351,18 @@
         "id": "32",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Send one request with max_tokens greater than the server flag and read usage.completion_tokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -4129,16 +4133,18 @@
         "id": "56",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Do not read the checkpoint; ask the server what it built. Run it for four cases: user only; system plus user; a system message placed after a user message; and a conversation carrying tools. If the second and third produce the same shape of thing, you have a role marker. If the third silently welds the system text onto the user's, you have this trap. Separately, hash the checkpoint's encoder module and record the hash next to your results, because that file, not a template, is what a re-upload changes.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -4355,16 +4361,18 @@
         "id": "59",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Two steps, and do not skip the second, because step one alone is what produces false confidence. 1. Read one real response body and list the message keys. Do not assume either field name, including the one in the vendor's own API documentation. 2. Resend a prior turn's reasoning and then look at the assembled prompt, not the model's answer. Use the server's render endpoint if it has one (/v1/chat/completions/render here) and search it for a distinctive string you planted in the reasoning. If the string is absent, the reasoning is not reaching the model no matter how convincingly the model discusses it. Asking the model whether it remembers is not a test; on this lane it answers yes either way.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -6909,16 +6917,18 @@
         "id": "93",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cached_tokens per turn, with a server restart between the arms.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "llama.cpp b9878-2da668617 serving one Mistral-family Q80 GGUF of unstated provenance. The relocation is a property of the embedded template, so expect this inversion wherever that template shape travels, and expect the original advice to be correct on templates that emit the system block at the head. The measured figures are this build and this file. We make no claim about Mistral checkpoints generally, about any named model, or about any product. Related. Trap 82 establishes the relocation this entry measures the cost of. Trap 25 is the other way a template can silently cost you a prefix. Trap 92 is why every arm above was run against a fresh process. Found. 2026-07-28, second coverage pass on this file.",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -9357,16 +9367,18 @@
         "id": "126",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under response_format: {\"type\": \"json_object\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -10245,16 +10257,18 @@
         "id": "138",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -10987,16 +11001,18 @@
         "id": "148",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Render the checkpoint template locally with the served tokenizer, compare verbatim and ensure_ascii=True tool serialization counts, then compare both with each engine's reported prompt tokens. Include an ASCII-only control.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -11359,16 +11375,18 @@
         "id": "153",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -11507,16 +11525,18 @@
         "id": "155",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -11657,16 +11677,18 @@
         "id": "157",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Benchmark matched speculation-on/off arms at the production concurrency, record batch wall/completed-work throughput and per-stream rates, and preserve the startup line showing whether async scheduling was disabled.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -17251,8 +17273,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 161,
-    "content_sha256": "bc941eb3dc95c8bd6ca9401794423625fb2802ceed8cba06837fe3f718347cea",
-    "doctor_implemented_trap_count": 49,
+    "content_sha256": "96671f24fb0977e86901e168f1f14d899ac3512c5107a256cbb310c8cf8c5411",
+    "doctor_implemented_trap_count": 60,
     "entries": [
       {
         "affected_models": [
@@ -18952,14 +18974,15 @@
         "check": "Render one tool-defined request through your actual serving path and read the assembled prompt, not the request: are the tool names and every argument key present and correctly delimited? Then diff that render against a reference Python Jinja2 render of the same template and messages (checks/preflighttemplate.py does the local reference render). Any divergence means the engine is part of your unit under test.",
         "contributor": "barubary and froggeric (community template fixes; issue filed by @blockoracle)",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/template/24-official-template-breaks-cpp-jinja.md"
         },
         "evidence_strength": [
           "reported by others"
@@ -19505,14 +19528,15 @@
         "check": "Send one request with max_tokens greater than the server flag and read usage.completion_tokens. Cheap, definitive, and worth doing on any stack whose launch flags you are treating as guarantees.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -21011,14 +21035,15 @@
         "check": "Do not read the checkpoint; ask the server what it built. Run it for four cases: user only; system plus user; a system message placed after a user message; and a conversation carrying tools. If the second and third produce the same shape of thing, you have a role marker. If the third silently welds the system text onto the user's, you have this trap. Separately, hash the checkpoint's encoder module and record the hash next to your results, because that file, not a template, is what a re-upload changes.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/template/56-checkpoint-ships-no-chat-template.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -21251,14 +21276,15 @@
         "check": "Two steps, and do not skip the second, because step one alone is what produces false confidence. 1. Read one real response body and list the message keys. Do not assume either field name, including the one in the vendor's own API documentation. 2. Resend a prior turn's reasoning and then look at the assembled prompt, not the model's answer. Use the server's render endpoint if it has one (/v1/chat/completions/render here) and search it for a distinctive string you planted in the reasoning. If the string is absent, the reasoning is not reaching the model no matter how convincingly the model discusses it. Asking the model whether it remembers is not a test; on this lane it answers yes either way.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/reasoning/59-reasoning-roundtrip-confabulation.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -23615,14 +23641,15 @@
         "check": "Render a three-turn history and see where the system text lands: If SYSMARK comes back next to U2 instead of at the head, then the system prompt is not your prefix, and clock-in-system advice does not apply to this lane. Then confirm with two arms, volatile text at the head of the first user turn against the same text held static, reading cached_tokens per turn, with a server restart between the arms.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -25965,14 +25992,15 @@
         "check": "Send the same small free-text prompt twice with every other request field frozen: once with thinking enabled and once with thinking:false. Compare completion tokens and inspect both content and the reasoning field. A failing lane shows near-equal token work while the off arm moves reasoning text into content with a dangling close tag. Then repeat the same pair under response_format: {\"type\": \"json_object\"}. If the structured arm becomes materially cheaper/clean while free text does not, the toggle is response-shape dependent rather than globally broken.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -26826,14 +26854,15 @@
         "check": "Run a matched structured-output A/B in which the only serve variable is the n-gram speculative configuration. Use temperature 0. Preserve the successful raw OpenAI response envelope, require transport and HTTP success before judging model output, then extract and strictly parse the assistant content string: Keep $raw when the final parse fails so the emitted content can be inspected without conflating a transport error, HTTP error, or malformed OpenAI envelope with malformed model content. For attribution, compare malformed content strings token-by-token across the n-gram-on and n-gram-off arms. A repeated ordinary token/key adjacent to an earlier occurrence is the reported signature. A random parse failure, transport error, wrong served model, tool-parser mismatch, or special-token corruption is not enough to call this mechanism.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -27491,14 +27520,15 @@
         "check": "Render the checkpoint template locally with the served tokenizer, compare verbatim and ensure_ascii=True tool serialization counts, then compare both with each engine's reported prompt tokens. Include an ASCII-only control.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/template/148-tool-json-ascii-escaping-changes-prompt.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -27801,14 +27831,15 @@
         "check": "Assert the processor's start/end/newline IDs against the served tokenizer before relying on it, then run a bounded-thinking behavioral witness on both fresh and preserved multi-turn/tool histories.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -27932,14 +27963,15 @@
         "check": "Record cached_tokens per next turn. If it remains a constant equal to the shared system prefix instead of tracking the previous conversation length, inspect slot residency/victim selection rather than model speed.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/155-prefix-slot-policy-thrashes-long-conversations.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -28068,14 +28100,15 @@
         "check": "Benchmark matched speculation-on/off arms at the production concurrency, record batch wall/completed-work throughput and per-stream rates, and preserve the startup line showing whether async scheduling was disabled.",
         "contributor": "@scottleimroth",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/157-ngram-speculation-disables-async-scheduling.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"

@@ -153,6 +153,13 @@ DEFAULTS = {
     "schema_thinking_runaway": False,
     "requeue_usage_undercount": False,
     "post_tool_two_reasoning_tokens": False,
+    "tool_schema_visible": True,
+    "tool_unicode_ascii": False,
+    "encoder_glues_inline_system": False,
+    "ling_reasoning_leak": False,
+    "model_id": MODEL,
+    "marker_token_ids": None,
+    "json_object_valid": True,
     "metrics_running": None,
 }
 
@@ -170,7 +177,7 @@ def llamacpp_props(template=TEMPLATE_WITHOUT_EFFORT, temperature=0.6, top_p=0.95
     return props
 
 
-def render_prompt(cfg, messages, kwargs):
+def render_prompt(cfg, messages, kwargs, tools=None):
     kwargs = kwargs or {}
     thinking_value = kwargs.get("enable_thinking", True)
     if (isinstance(thinking_value, str)
@@ -187,6 +194,9 @@ def render_prompt(cfg, messages, kwargs):
         or kwargs.get("include_reasoning") is True
     )
     out = []
+    if tools:
+        if cfg["tool_schema_visible"]:
+            out.append(json.dumps(tools, ensure_ascii=cfg.get("tool_unicode_ascii", False)))
     if cfg["empty_system_header"] and not any(m.get("role") == "system" for m in messages):
         out.append("<|im_start|>system\n<|im_end|>\n")
     if cfg["baked_default_system"] and not any(m.get("role") == "system" for m in messages):
@@ -204,6 +214,10 @@ def render_prompt(cfg, messages, kwargs):
                 (p.get("text", "") if p.get("type") == "text" else "<image>\n")
                 for p in content)
         content = content or ""
+        if (i > 0 and role == "system" and cfg["encoder_glues_inline_system"]):
+            if out and out[-1].endswith("<|im_end|>\n"):
+                out[-1] = out[-1][:-len("<|im_end|>\n")] + content + "<|im_end|>\n"
+            continue
         if i > 0 and role == "system" and cfg["inline_system_mode"] != "preserve":
             if cfg["inline_system_mode"] == "drop":
                 continue
@@ -281,7 +295,7 @@ def _make_lane_handler(cfg):
                 self.wfile.write(body)
                 return
             if self.path == "/v1/models":
-                model = {"id": MODEL}
+                model = {"id": cfg["model_id"]}
                 if cfg["sglang"]:
                     model["owned_by"] = "sglang"
                 return self._send(200, {"data": [model]})
@@ -393,6 +407,11 @@ def _make_lane_handler(cfg):
             path, msgs = self.path, body.get("messages") or []
             kw = body.get("chat_template_kwargs") or {}
 
+            if (path == "/tokenize" and
+                    cfg["marker_token_ids"] is not None and
+                    body.get("prompt") in ("<think>", "</think>")):
+                ix = 0 if body.get("prompt") == "<think>" else 1
+                return self._send(200, {"tokens": [cfg["marker_token_ids"][ix]]})
             if (path == "/tokenize" and isinstance(body.get("prompt"), str)):
                 p = body["prompt"]
                 return self._send(200, {"count": len(p.split()) + 1,
@@ -400,7 +419,7 @@ def _make_lane_handler(cfg):
             if path in ("/v1/chat/completions/render", "/tokenize"):
                 if not cfg["render"]:
                     return self._send(404, {"error": "not found"})
-                p = render_prompt(cfg, msgs, kw)
+                p = render_prompt(cfg, msgs, kw, tools=body.get("tools"))
                 if path == "/tokenize":
                     return self._send(200, {"count": len(p), "token_strs": list(p)})
                 return self._send(200, {"token_ids": [ord(c) for c in p]})
@@ -423,9 +442,9 @@ def _make_lane_handler(cfg):
                         and msgs[1].get("tool_calls")):
                     return self._send(400, {"error": "template role alternation failed"})
                 if cfg["assistant_prefill_bypass"] and msgs and msgs[-1].get("role") == "assistant":
-                    prompt = render_prompt(cfg, msgs[:-1], kw) + str(msgs[-1].get("content") or "")
+                    prompt = render_prompt(cfg, msgs[:-1], kw, tools=body.get("tools")) + str(msgs[-1].get("content") or "")
                 else:
-                    prompt = render_prompt(cfg, msgs, kw)
+                    prompt = render_prompt(cfg, msgs, kw, tools=body.get("tools"))
                 return self._send(200, {"prompt": prompt})
 
             if path == "/v1/completions":
@@ -456,7 +475,7 @@ def _make_lane_handler(cfg):
                 return self._send(400, {"error": {
                     "message": "reasoning_effort is not supported"}})
 
-            if cfg["validates_model_name"] and body.get("model") not in (None, MODEL):
+            if cfg["validates_model_name"] and body.get("model") not in (None, cfg["model_id"]):
                 return self._send(400, {"error": {
                     "message": "requested model is not served"}})
 
@@ -517,7 +536,10 @@ def _make_lane_handler(cfg):
             if body.get("stream"):
                 return self._stream(body)
 
-            if body.get("response_format", {}).get("type") == "json_schema":
+            if body.get("response_format", {}).get("type") == "json_object":
+                msg, finish = {"role": "assistant", "content":
+                    '{"answer":"OK"}' if cfg["json_object_valid"] else '{"answer":"OK"}{"answer":"OK"}'}, "stop"
+            elif body.get("response_format", {}).get("type") == "json_schema":
                 if (cfg["schema_thinking_runaway"]
                         and (body.get("chat_template_kwargs") or {}).get("enable_thinking") is True):
                     msg, finish = {"role": "assistant", "content": '{"answer":'}, "length"
@@ -532,6 +554,10 @@ def _make_lane_handler(cfg):
             elif cfg["requeue_usage_undercount"] and body.get("max_tokens") == 256:
                 msg, finish = {"role": "assistant",
                                "content": " ".join(f"number-{i}" for i in range(230))}, "length"
+            elif (cfg["ling_reasoning_leak"] and
+                  (body.get("chat_template_kwargs") or {}).get("thinking") is False):
+                msg, finish = {"role": "assistant",
+                               "content": "my reasoning here</think>OK"}, "stop"
             elif (cfg["toggle_conflict_moves_answer"] and any(
                     "/no_think" in str(m.get("content")) for m in msgs)):
                 msg, finish = {"role": "assistant", "content": None,
@@ -565,7 +591,7 @@ def _make_lane_handler(cfg):
                 usage["cache_n"] = cached_tokens
             if has_image:
                 usage["prompt_tokens_details"] = cfg["usage_details"]
-            return self._send(200, {"id": "chatcmpl-fixture", "model": MODEL,
+            return self._send(200, {"id": "chatcmpl-fixture", "model": cfg["model_id"],
                                     "usage": usage,
                                     "choices": [{"index": 0, "message": msg,
                                                  "finish_reason": finish}]})
