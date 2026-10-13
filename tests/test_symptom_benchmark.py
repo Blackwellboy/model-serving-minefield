@@ -111,6 +111,10 @@ class StructuredFingerprints(unittest.TestCase):
         ("147", "nvidia-ctk-hook: mkdir /run/nvidia-ctk-hook: read-only file system"),
         ("116", "all ranks loaded okay then forward: embed_token failed on first F16 generation"),
         ("128", "max_num_partial_prefills=2 but preemptions=0 throughout stalled concurrent prefills"),
+        ("103", "AutoProcessor.from_pretrained failed: Torchvision is required on ROCm"),
+        ("115", "process exited with status 137 but cgroup memory.events oom_kill=0"),
+        ("142", "docker failed to start: not a directory: are you trying to mount a directory onto a file"),
+        ("158", "reasoning_tokens=2 after tools while prompt contains <think></think>"),
     )
 
     @classmethod

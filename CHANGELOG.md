@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-13 - double batch: Doctor 43 and four exact fingerprints
+
+- Added six bounded Doctor checks: Trap [30](traps/template/30-default-system-message-silently-replaced.md) (default system replacement three-arm render), [38](traps/template/38-template-owns-the-opening-think-tag.md) (template-owned think prefill, inconclusive on offline-rollout effects), [43](traps/template/43-tool-args-string-not-mapping.md) (tool-arguments mapping-versus-string replay), [69](traps/template/69-minor-template-defects.md) (empty system header and tool-first tag mismatch; negative remains inconclusive because the entry has additional subcases), [85](traps/reasoning/85-enable-thinking-typechecked-though-never-read.md) (llama.cpp type rejection for an unused kwarg), and [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) (read-only request contention snapshot; never CLEAN).
+- Added matched positive, negative and unavailable-path controls and two tightly scoped CLEAN contracts. Added **zero** chat-generation requests to the existing budget.
+- Added high-specificity routing fingerprints for Traps 103 (AutoProcessor/torchvision), 115 (exit 137 with no oom_kill event), 142 (Docker bind-source mismatch), and 158 (empty thought pair counted as two reasoning tokens). Fingerprints are leads, not confirmed causes.
+- Live Doctor **37 -> 43 / 161**. Automatic diagnostic coverage should be regenerated and derived, not hand-inferred.
+
 ## 2026-10-13 - Doctor 37 render-path coverage expansion
 
 - Added three zero-generation live Doctor probes: [66](traps/template/66-in-text-thinking-toggle-mutates-user-text.md) for thinking-marker path deletion, [67](traps/template/67-history-rendered-as-object-repr.md) for Python text-part object repr in multi-turn history, and [113](traps/template/113-inline-system-role-is-not-a-stable-contract.md) for distinct inline-system role preservation, dropping or welding into a user role.

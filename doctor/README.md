@@ -21,7 +21,7 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 37 checks cluster almost entirely on one region of the registry: reasoning
+Its 43 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
@@ -168,13 +168,13 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **37 of the registry's 161 numbered entries**
-(01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 57, 58, 63,
-66, 67, 68, 72, 73, 77, 78, 80, 82, 83, 84, 86, 87, 88, 113, 141).
+The doctor implements checks for **43 of the registry's 161 numbered entries**
+(01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 30, 38, 43,
+57, 58, 63, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83, 84, 85, 86, 87, 88, 110, 113, 141).
 Every run ends with a coverage line:
 
 ```
-implemented 37/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 124
+implemented 43/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 118
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -192,12 +192,21 @@ depth, and the coverage block says so every time:
   this tool sends one request at one budget, so it is linked from the ceiling
   check purely so you can find the entry, and is never given a verdict by it.
 - **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
-- **04, 20, 25, 57, 63, 66, 67, 68, 82, 83, 86, 113** need a render path. On a stack that exposes none they cannot
+- **04, 20, 25, 30, 38, 43, 57, 63, 66, 67, 68, 69, 82, 83, 85, 86, 113** need a render path. On a stack that exposes none they cannot
   run at all.
 - **66, 67, 113** add only render/tokenize requests and no generation.
   They test exact path rewriting, Python history repr leakage, and inline
   system-role preservation, respectively. Checks that cannot establish
   the exact marker or role boundary remain unknown/inconclusive.
+- **30, 38, 43, 69, 85** add render/template checks rather than chat
+  generation. Trap 38 identifies a template-owned prefill dependency but
+  cannot certify any absent offline-rollout parser; Trap 69 checks only
+  two of its three listed artifacts, so a non-finding stays INCONCLUSIVE.
+  Trap 85's type-gate check is specific to the llama.cpp template-render route.
+- **110** inspects a read-only Prometheus request gauge, if available. One
+  snapshot cannot certify the entire time window of a benchmark; it
+  never produces CLEAN.
+
 - **77** is the newest and the cheapest: one baseline request and one request
   carrying an invented top-level field. It runs first, because it decides
   whether a 200 from this lane carries any information at all about whether a
@@ -216,7 +225,7 @@ depth, and the coverage block says so every time:
   media path reported as 5xx rather than 4xx (72), and a null
   `prompt_tokens_details` that makes media token cost unattributable (73).
   They ran under advisory ids until those entries were published.
-- The remaining **124** numbered traps have no check in this tool. Many are
+- The remaining **118** numbered traps have no check in this tool. Many are
   reachable offline instead: `minefield scan` reads configs, launch scripts,
   model folders, chat templates, logs and eval results.
 
