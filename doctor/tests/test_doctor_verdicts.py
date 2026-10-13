@@ -1174,7 +1174,7 @@ class TestDoctor60BoundedProbes(DoctorVerdictCase):
             doc = md.Doc()
             self.assertTrue(md.detect_stack(doc, base, root, None))
             args = SimpleNamespace(api_key=None, server_max_tokens=1)
-            md.run(doc, base, root, args, only_ids=("32",))
+            md.run(doc, base, root, args, only_ids=("declared_server_token_cap",))
             self.check_structure(doc)
             f = find(doc, "SERVER_FLAG_NOT_HARD_CAP")
             self.assertIsNotNone(f)
@@ -1196,7 +1196,7 @@ class TestDoctor60BoundedProbes(DoctorVerdictCase):
                 self.assertTrue(md.detect_stack(doc, base, root, None))
                 args = SimpleNamespace(api_key=None,
                                        thinking_budget_marker_ids=expected)
-                md.run(doc, base, root, args, only_ids=("153",))
+                md.run(doc, base, root, args, only_ids=("thinking_budget_marker_ids",))
                 self.check_structure(doc)
                 f = find(doc, code)
                 self.assertIsNotNone(f)
