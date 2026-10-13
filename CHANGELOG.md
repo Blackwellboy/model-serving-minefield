@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-13 - MiniCPM-V 4.7 bring-up: traps 162-163
+
+- Added [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md): with thinking on, short multiple-choice answers end the turn without closing the template-opened think block, so `--reasoning-parser qwen3` files the whole answer as reasoning and `content` is null with `finish_reason: stop`. Reproduced here with a five-request procedure; 24/40 short items affected at both temperature 0 and card sampling on a private benchmark slice, 0/40 with thinking off.
+- Added [163](traps/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md): the official AWQ repository still ships `auto_map` and a processor class pointing at remote-code files it does not contain, after the base repository moved to native transformers configs. Reproduced here with a standard-library check against both public repositories at pinned revisions.
+- New model row for MiniCPM-V 4.7 in the [per-model index](models/README.md). Considered and not added as entries: the hybrid model's startup refusal when `max_num_seqs` exceeds its state blocks (the engine's own error names the fix), and an internal throughput probe that measured request overhead.
+- Registry count moves **161 -> 163**. Doctor coverage stays **43**; neither new entry adds a Doctor check.
+
 ## 2026-10-13 - double batch: Doctor 43 and four exact fingerprints
 
 - Added six bounded Doctor checks: Trap [30](traps/template/30-default-system-message-silently-replaced.md) (default system replacement three-arm render), [38](traps/template/38-template-owns-the-opening-think-tag.md) (template-owned think prefill, inconclusive on offline-rollout effects), [43](traps/template/43-tool-args-string-not-mapping.md) (tool-arguments mapping-versus-string replay), [69](traps/template/69-minor-template-defects.md) (empty system header and tool-first tag mismatch; negative remains inconclusive because the entry has additional subcases), [85](traps/reasoning/85-enable-thinking-typechecked-though-never-read.md) (llama.cpp type rejection for an unused kwarg), and [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) (read-only request contention snapshot; never CLEAN).

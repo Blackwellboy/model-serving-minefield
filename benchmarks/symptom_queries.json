@@ -1760,6 +1760,26 @@
    "trap": "161",
    "split": "holdout",
    "query": "draft budget 2 crashes in FP4 quantization while 4 6 and 8 all start normally"
+  },
+  {
+   "trap": "162",
+   "split": "tune",
+   "query": "with thinking enabled the multiple choice answer comes back empty and the letter is in the reasoning field with finish reason stop"
+  },
+  {
+   "trap": "162",
+   "split": "holdout",
+   "query": "thinking on scores much lower than thinking off because short answers have null content and only two completion tokens"
+  },
+  {
+   "trap": "163",
+   "split": "tune",
+   "query": "official AWQ quantized model asks for trust remote code but the base model loads without it"
+  },
+  {
+   "trap": "163",
+   "split": "holdout",
+   "query": "Unrecognized image processor for a quantized vision model whose processor config points at python files that are not in the repo"
   }
  ],
  "negatives": {

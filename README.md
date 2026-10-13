@@ -55,7 +55,7 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-120 of the 161 traps have at least one automatic check
+120 of the 163 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
@@ -72,7 +72,7 @@ minefield diagnose "tp=2 dies after twenty minutes" \
   --base-url http://HOST:8000/v1
 ```
 
-Minefield considers all **161 canonical traps** for routing, scans the supplied
+Minefield considers all **163 canonical traps** for routing, scans the supplied
 files, auto-detects the endpoint stack/model when available, and spends its
 bounded live-probe budget on checks related to the traps already surfaced by
 the symptom/files before falling back to generic lite probes. The output keeps
@@ -122,7 +122,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 161
+Four doors, and which one you want depends on why you are here. All 163
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -157,7 +157,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 161 entries, one row each, sorted by number. It is the
+  directly below, all 163 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -168,9 +168,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **43 of these 161 entries**, weighted toward reasoning fields, templates,
+for **43 of these 163 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
-the other 118. It runs
+the other 120. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -202,7 +202,7 @@ published as if settled.
 
 ## Find your symptom
 
-All 161 entries. If you know what you are running rather than what you are
+All 163 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -285,6 +285,8 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | A vision compatibility patch admits too little model memory on paper | The loader accepts `model.visual.*` but the 0.6.0 resident-byte transform counted only `vision_tower.*` | [159](traps/memory/159-vision-alias-omitted-from-admission-accounting.md) | contributor-measured, conditions as reported |
 | TP=2 serves fine at first, then one rank is stuck inside a collective the other never entered | Sustained-load rank divergence on a build-scoped two-node lane; whole-runtime upgrade removes the measured failure | [160](traps/runtime/160-sustained-tp-rank-divergence-build-scoped.md) | contributor-measured, conditions as reported |
 | Lowering DFlash draft budget from 4 to 2 makes the server never reach health | Build-scoped k=2 draft-worker CUDA-graph FP4 startup cliff | [161](traps/runtime/161-dflash-k2-cuda-graph-fp4-startup-cliff.md) | contributor-measured, conditions as reported |
+| Thinking on, a short multiple-choice answer comes back with `content` null, the letter in the reasoning field, `finish_reason: stop` and 2 completion tokens | The template pre-opened `<think>`, the model answered and ended the turn without `</think>`, so the parser filed the whole answer as reasoning | [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md) | reproduced here |
+| The official quantized build demands `--trust-remote-code` (or fails with "Unrecognized image processor") while its base model loads natively | The quantized repo still ships `auto_map` and a processor class pointing at remote-code files it does not contain; the base repo has moved to native configs | [163](traps/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md) | reproduced here |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -397,7 +399,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 43 of this registry's 161 entries in under a minute:
+against 43 of this registry's 163 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
