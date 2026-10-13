@@ -1,8 +1,8 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
   "canonical_trap_count": 161,
-  "content_sha256": "b169c97aea4d9627ece1ba7f93cc797a68b97afb2f6272ca1e82bb91eda1233a",
-  "doctor_implemented_trap_count": 43,
+  "content_sha256": "bc941eb3dc95c8bd6ca9401794423625fb2802ceed8cba06837fe3f718347cea",
+  "doctor_implemented_trap_count": 49,
   "entries": [
     {
       "affected_models": [
@@ -4410,14 +4410,15 @@
       "check": "Two requests. Send your normal prompt, then send it again with /no_think appended somewhere harmless, both with your usual enable_thinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with `finishreason: \"stop\"` as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -4483,14 +4484,15 @@
       "check": "Two steps, both cheap. 1. Read the parser source. It is small; the Super one is 1909 bytes. Grep it for kwarg reads. The kwargs a parser reads are not in the card, not in the template, and not discoverable from the API. 2. Send a request at a tight budget with and without the kwarg and compare content length.",
       "contributor": "Blackwellboy",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/65-parser-only-rescue-kwarg.md"
       },
       "evidence_strength": [
         "reproduced here"
@@ -7736,14 +7738,15 @@
       "check": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpoint_readiness_hierarchy_probe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE.",
       "contributor": "scottleimroth",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/runtime/112-process-liveness-is-not-model-readiness.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"
@@ -10303,14 +10306,15 @@
       "check": "Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.",
       "contributor": "@scottleimroth",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/149-thinking-on-json-schema-can-runaway.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"
@@ -10746,14 +10750,15 @@
       "check": "Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.",
       "contributor": "@scottleimroth",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"
@@ -10876,14 +10881,15 @@
       "check": "Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.",
       "contributor": "@scottleimroth",
       "diagnostic_modalities": [
+        "endpoint_probe",
         "static_config",
         "log_scan",
         "guided_experiment",
         "human_review"
       ],
       "doctor_coverage": {
-        "implemented": false,
-        "source": null
+        "implemented": true,
+        "source": "doctor/reasoning/158-empty-thought-markers-count-as-reasoning.md"
       },
       "evidence_strength": [
         "contributor-measured, conditions as reported"
