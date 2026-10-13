@@ -158,6 +158,7 @@ DEFAULTS = {
     "encoder_glues_inline_system": False,
     "ling_reasoning_leak": False,
     "model_id": MODEL,
+    "marker_token_ids": None,
     "json_object_valid": True,
     "metrics_running": None,
 }
@@ -406,6 +407,11 @@ def _make_lane_handler(cfg):
             path, msgs = self.path, body.get("messages") or []
             kw = body.get("chat_template_kwargs") or {}
 
+            if (path == "/tokenize" and
+                    cfg["marker_token_ids"] is not None and
+                    body.get("prompt") in ("<think>", "</think>")):
+                ix = 0 if body.get("prompt") == "<think>" else 1
+                return self._send(200, {"tokens": [cfg["marker_token_ids"][ix]]})
             if (path == "/tokenize" and isinstance(body.get("prompt"), str)):
                 p = body["prompt"]
                 return self._send(200, {"count": len(p.split()) + 1,
