@@ -161,6 +161,8 @@ DEFAULTS = {
     "marker_token_ids": None,
     "json_object_valid": True,
     "metrics_running": None,
+    "metrics_extra": "",
+    "cache_response_diverges": False,
 }
 
 
@@ -287,7 +289,8 @@ def _make_lane_handler(cfg):
                 if cfg["metrics_running"] is None:
                     return self._send(404, {"error": "not found"})
                 body = ("# HELP vllm:num_requests_running active requests\n"
-                        "vllm:num_requests_running " + str(cfg["metrics_running"]) + "\n").encode()
+                        "vllm:num_requests_running " + str(cfg["metrics_running"]) + "\n"
+                        + cfg["metrics_extra"]).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain")
                 self.send_header("Content-Length", str(len(body)))
@@ -583,6 +586,13 @@ def _make_lane_handler(cfg):
                      "total_tokens": prompt_tokens + 2}
             if cfg["requeue_usage_undercount"] and body.get("max_tokens") == 256:
                 usage["completion_tokens"] = 20
+            if any("MF60 fact" in str(m.get("content", "")) for m in msgs):
+                cfg["_mf60_count"] += 1
+                cached_tokens = 0 if cfg["_mf60_count"] == 1 else 128
+                usage["cached_tokens"] = cached_tokens
+                usage["cache_n"] = cached_tokens
+                if cfg["cache_response_diverges"] and cfg["_mf60_count"] > 1:
+                    msg["content"] = "SAPPHIRE"
             if cfg["post_tool_two_reasoning_tokens"] and any(
                     m.get("role") == "tool" for m in msgs):
                 usage["completion_tokens_details"] = {"reasoning_tokens": 2}
@@ -608,6 +618,7 @@ class FixtureLane:
             raise TypeError(f"unknown fixture flags: {sorted(unknown)}")
         cfg.update(overrides)
         cfg["_cache_warm"] = False
+        cfg["_mf60_count"] = 0
         self.cfg = cfg
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), _make_lane_handler(cfg))
         self.port = self.httpd.server_address[1]

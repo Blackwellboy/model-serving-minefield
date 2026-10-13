@@ -1080,6 +1080,103 @@ CLEAN_CONTRACT = {
 
 
 
+
+class TestDoctor68Observability(DoctorVerdictCase):
+    def test_49_declared_prompt_target_mismatch_and_omitted(self):
+        with FixtureLane() as base:
+            doc = md.Doc()
+            root = base[:-3].rstrip("/")
+            self.assertTrue(md.detect_stack(doc, base, root, None))
+            args = SimpleNamespace(api_key=None, benchmark_prompt_text="MF49 hello",
+                                   benchmark_target_tokens=3)
+            md.run(doc, base, root, args, only_ids=("prompt_target_tokens",))
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "PROMPT_TARGET_TOKEN_MISMATCH")["level"],
+                         "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(find(doc, "PROMPT_TARGET_UNDECLARED"))
+        self.no_clean_for(doc, "49")
+
+    def test_60_cache_transition_divergence_requires_proof(self):
+        for bad, expected in ((True, "CACHE_CORRELATED_OUTPUT_DIVERGENCE"),
+                              (False, "CACHE_PAIR_NOT_DISCRIMINATING")):
+            with self.subTest(bad=bad), FixtureLane(
+                    cache_response_diverges=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            finding = find(doc, expected)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], "PROBLEM" if bad else "INCONCLUSIVE")
+            self.no_clean_for(doc, "60")
+
+    def test_91_serial_is_never_concurrency_certification(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "GREEDY_SERIAL_SCREEN_ONLY")["level"],
+                         "INCONCLUSIVE")
+        self.no_clean_for(doc, "91")
+
+    def test_96_device_free_exceeds_total_and_absent(self):
+        props = llamacpp_props()
+        props["devices"] = [{"total_memory_mib": 24576,
+                             "free_memory_mib": 43781}]
+        with FixtureLane(props=props) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "DEVICE_FREE_EXCEEDS_TOTAL")["level"],
+                         "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(find(doc, "DEVICE_LIST_UNAVAILABLE"))
+        self.no_clean_for(doc, "96")
+
+    def test_106_pressure_snapshot_not_called_leak(self):
+        metrics = ("vllm:kv_cache_usage_perc 0.965\n"
+                   "vllm:num_preemptions_total 0\n"
+                   "vllm:num_requests_waiting 1\n")
+        with FixtureLane(metrics_running=0, metrics_extra=metrics) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "KV_PRESSURE_SNAPSHOT_ONLY")["level"],
+                         "INCONCLUSIVE")
+        self.no_clean_for(doc, "106")
+
+    def test_117_config_request_resolved_differ(self):
+        props = llamacpp_props()
+        props.update({
+            "requested_compilation_config": {"pass_config": {"fuse_gemm_comms": True}},
+            "resolved_compilation_config": {"pass_config": {"fuse_gemm_comms": False}},
+        })
+        with FixtureLane(props=props) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "FUSE_GEMM_FLAG_OVERRIDDEN")["level"],
+                         "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(find(doc, "COMPILATION_CONFIG_PAIR_UNAVAILABLE"))
+
+    def test_130_effective_graph_clamp(self):
+        props = llamacpp_props()
+        props.update({"requested_cudagraph_capture_size": 64,
+                      "cudagraph_capture_sizes": [1, 2, 4, 8, 16, 32]})
+        with FixtureLane(props=props) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "CUDAGRAPH_SIZE_CLAMP_OBSERVED")["level"],
+                         "PROBLEM")
+        self.no_clean_for(doc, "130")
+
+    def test_135_running_requests_are_not_gpu_execution(self):
+        with FixtureLane(metrics_running=4) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "CONCURRENCY_ADMISSION_NOT_EXECUTION")["level"],
+                         "INCONCLUSIVE")
+        self.no_clean_for(doc, "135")
+
 class TestDoctor60BoundedProbes(DoctorVerdictCase):
     def test_24_tool_schema_fields_present_and_omitted(self):
         for present, code, level in (

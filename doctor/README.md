@@ -21,7 +21,7 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 60 checks cluster almost entirely on one region of the registry: reasoning
+Its 68 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
@@ -168,14 +168,15 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **60 of the registry's 161 numbered entries**
+The doctor implements checks for **68 of the registry's 161 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 29, 30, 32,
-38, 43, 56, 57, 58, 59, 63, 64, 65, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83, 84, 85,
-86, 87, 88, 93, 110, 112, 113, 126, 138, 141, 148, 149, 153, 155, 156, 157, 158).
+38, 43, 49, 56, 57, 58, 59, 60, 63, 64, 65, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83,
+84, 85, 86, 87, 88, 91, 93, 96, 106, 110, 112, 113, 117, 126, 130, 135, 138, 141, 148, 149,
+153, 155, 156, 157, 158).
 Every run ends with a coverage line:
 
 ```
-implemented 60/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 101
+implemented 68/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 93
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -204,6 +205,17 @@ depth, and the coverage block says so every time:
   cannot certify any absent offline-rollout parser; Trap 69 checks only
   two of its three listed artifacts, so a non-finding stays INCONCLUSIVE.
   Trap 85's type-gate check is specific to the llama.cpp template-render route.
+- **49** checks an explicitly supplied benchmark text and claimed target against
+  the endpoint tokenizer; matching alone is not proof of a cold benchmark.
+  **60** records a matched cold/warm output pair only when cache-token
+  evidence supports the transition. **91** sends two serial greedy controls
+  but never certifies concurrent determinism.
+- **96, 117, 130** inspect explicit server-reported device-memory arithmetic,
+  requested/resolved compilation flags and CUDA graph capture shapes. A
+  contradiction is meaningful; missing or matching config is not proof of
+  production execution. **106 and 135** read Prometheus occupancy, pressure
+  and request-admission metrics without confusing snapshots with a leak
+  diagnosis or actual GPU execution concurrency.
 - **24, 56, 59, 93, 148** are rendered-prompt forensics: tool schema completeness, inline system welding, reasoning replay, structural clock placement, and Unicode tool serialization. Several can provide only a scoped or inconclusive result without a second engine, pinned encoder source or cache metrics.
 - **32** requires a caller-known `--server-max-tokens`; **153** requires the installed processor's `--thinking-budget-marker-ids START,END`. Neither setting is inferred from an unrelated server.
 - **126** is gated to Ling-named models. **138** screens JSON parsing without attributing problems to n-gram speculation. **155** samples cache counters across short histories without claiming to reproduce long-context thrash; **157** inspects exposed scheduling flags without a throughput A/B.
@@ -237,7 +249,7 @@ depth, and the coverage block says so every time:
   media path reported as 5xx rather than 4xx (72), and a null
   `prompt_tokens_details` that makes media token cost unattributable (73).
   They ran under advisory ids until those entries were published.
-- The remaining **101** numbered traps have no check in this tool. Many are
+- The remaining **93** numbered traps have no check in this tool. Many are
   reachable offline instead: `minefield scan` reads configs, launch scripts,
   model folders, chat templates, logs and eval results.
 
@@ -270,10 +282,10 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **35 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. 35 is a conservative full-run ceiling including the conditional probes;
+  **40 chat completions**, each capped at 512 output tokens or less, all at
+  temperature 0. 40 is a conservative full-run ceiling including the conditional probes;
   a lane that skips probes issues fewer, and two contributor-measured SGLang
-  runs issued 14. Size rate limits for up to 35, not an observed subset. It also calls render or tokenise routes
+  runs issued 14. Size rate limits for up to 40, not an observed subset. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.
