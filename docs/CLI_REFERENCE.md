@@ -14,6 +14,9 @@ minefield diagnose [SYMPTOM...] [--files PATH...] [--base-url URL]
 minefield bundle [--config FILE] [--log FILE] [--doctor-report FILE]
                  [--output ZIP] [--no-write]
 minefield coverage [--json]
+minefield doctor-plan [--mode lite|doctor] [--max-requests N]
+                      [--preferred-trap ID] [--model NAME] [--hf-repo ORG/MODEL]
+                      [--capability tools|streaming|multimodal] [--text]
 minefield agent-bundle [--verify]
 minefield-mcp
 ```
@@ -22,6 +25,28 @@ All inspection is read-only. `quick` preserves the standalone doctor's exit
 codes: 0 means it ran and the result must be read; 1 means the endpoint was
 unreachable. Argparse usage errors return 2. Other commands return 0 on
 success and non-zero on validation, bounds, path, or generation failures.
+
+## Plan live Doctor checks without contacting a server
+
+`minefield doctor-plan` is an **offline preview** of the shared Doctor
+planner. It does not contact an endpoint or Hugging Face, and never claims a
+diagnosis was executed. The default mode is `lite`, capped at **five**
+chat-completion requests in a future run:
+
+```text
+minefield doctor-plan --preferred-trap 12 --max-requests 5 --text
+minefield doctor-plan --mode doctor --max-requests 8 > doctor-plan.json
+```
+
+JSON includes planned/skipped probe IDs, canonical trap IDs, estimated maximum
+chat completions and assumptions. `--preferred-trap` affects **lite** ordering
+only. A zero-chat-cost check may still call HTTP GET, render, tokenizer, metrics
+or public HF metadata endpoints **when actually run**; no such calls occur
+during planning. `--model`, `--hf-repo` and `--capability` are unverified
+planning hints, not successful detection. Unknown trap IDs and negative budgets
+are rejected. Any preferred trap that is ineligible or does not fit the budget
+is reported as **not selected**, not silently promised. The plan is not an authorization or a replacement for live
+`minefield diagnose --mode lite --max-requests N`.
 
 ## Unified diagnosis
 

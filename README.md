@@ -61,6 +61,13 @@ requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
 [symptom benchmark](benchmarks/README.md).
 
+## Preview Doctor work before connecting a live model
+
+`minefield doctor-plan --mode lite --max-requests 5 --text` lists the
+bounded checks a future live pass would select, without contacting your
+endpoint, Hugging Face or GPU. No planned check is reported as executed.
+See [the CLI reference](docs/CLI_REFERENCE.md#plan-live-doctor-checks-without-contacting-a-server).
+
 ## Diagnose everything you have at once
 
 When you have a symptom plus files and/or a live endpoint, use the unified

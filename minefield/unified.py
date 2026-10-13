@@ -166,6 +166,7 @@ def diagnose_environment(
             item["_score"] += 45.0 + min(10.0, len(findings))
 
     checked_clean: set[str] = set()
+    nonclean_live: set[str] = set()
     live_unknown: set[str] = set()
     if live_result:
         for finding in live_result.get("findings") or []:
@@ -181,8 +182,14 @@ def diagnose_environment(
                         })
                         candidates[trap_id]["_score"] -= 20.0
                     continue
+                if level in {"PROBLEM", "INCONCLUSIVE", "UNKNOWN"}:
+                    nonclean_live.add(trap_id)
                 if level == "UNKNOWN":
                     live_unknown.add(trap_id)
+                    # An unavailable probe supplies no evidence that a trap
+                    # applies. Keep it in could-not-check, not candidate leads.
+                    if trap_id not in candidates:
+                        continue
                 item = row(trap_id)
                 item["signals"].append({
                     "kind": "live_probe",
@@ -195,8 +202,12 @@ def diagnose_environment(
                     item["_score"] += 120.0
                 elif level == "INCONCLUSIVE":
                     item["_score"] += 30.0
-                elif level == "UNKNOWN":
-                    item["_score"] += 5.0
+                # Missing observations carry no confidence weight.
+
+    conflicting_live = checked_clean & nonclean_live
+    # A pass in one probe must never erase a PROBLEM, INCONCLUSIVE or
+    # unavailable result from another probe of the same trap.
+    checked_clean.difference_update(nonclean_live)
 
     ranked = sorted(
         candidates.values(),
@@ -211,12 +222,19 @@ def diagnose_environment(
         )
         if live_problem:
             item["evidence_level"] = "live_probe_problem"
-        elif len(kinds) >= 2:
+        elif {"symptom_match", "file_scan"}.issubset(kinds):
             item["evidence_level"] = "multi_signal_lead"
         elif "file_scan" in kinds:
             item["evidence_level"] = "file_scan_lead"
-        else:
+        elif "symptom_match" in kinds:
             item["evidence_level"] = "symptom_lead"
+        elif any(
+            signal.get("level") == "INCONCLUSIVE"
+            for signal in item["signals"] if signal.get("kind") == "live_probe"
+        ):
+            item["evidence_level"] = "live_probe_inconclusive"
+        else:
+            item["evidence_level"] = "live_probe_unknown"
 
     selected_probe_traps: set[str] = set()
     if live_result:
@@ -229,6 +247,12 @@ def diagnose_environment(
     ]
     if live_warning:
         warnings.append(live_warning)
+    if conflicting_live:
+        warnings.append(
+            "Conflicting live verdicts for trap IDs "
+            + ", ".join(sorted(conflicting_live, key=int))
+            + "; no conflicting trap was marked checked clean."
+        )
 
     return {
         "kind": "unified_diagnosis",
