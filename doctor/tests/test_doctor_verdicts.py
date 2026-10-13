@@ -1079,6 +1079,162 @@ CLEAN_CONTRACT = {
 
 
 
+
+class TestDoctor60BoundedProbes(DoctorVerdictCase):
+    def test_24_tool_schema_fields_present_and_omitted(self):
+        for present, code, level in (
+            (True, "TOOL_SCHEMA_FIELDS_PRESERVED_NOT_PARITY", "INCONCLUSIVE"),
+            (False, "TOOL_SCHEMA_FIELD_DROPPED", "PROBLEM"),
+        ):
+            with self.subTest(present=present), FixtureLane(
+                    tool_schema_visible=present) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            f = find(doc, code)
+            self.assertIsNotNone(f)
+            self.assertEqual(f["level"], level)
+            self.no_clean_for(doc, "24")
+
+    def test_56_late_system_glue_and_normal(self):
+        for bad, code, level in (
+            (True, "ENCODER_INLINE_SYSTEM_WELDED", "PROBLEM"),
+            (False, "ENCODER_PROVENANCE_UNVERIFIED", "INCONCLUSIVE"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                    encoder_glues_inline_system=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            f = find(doc, code)
+            self.assertIsNotNone(f)
+            self.assertEqual(f["level"], level)
+            self.no_clean_for(doc, "56")
+
+    def test_59_replayed_reasoning_stripped_and_visible(self):
+        for preserve, code in (
+            (False, "REPLAY_REASONING_STRIPPED_NOT_CONFABULATION_PROOF"),
+            (True, "REPLAY_REASONING_VISIBLE_NOT_GENERAL"),
+        ):
+            with self.subTest(preserve=preserve), FixtureLane(
+                    preserve_history=preserve) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            self.assertIsNotNone(find(doc, code))
+            self.no_clean_for(doc, "59")
+
+    def test_93_clock_prefix_structural_only(self):
+        with FixtureLane(system_prompt_relocates=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "CLOCK_PREFIX_STRUCTURAL_OBSERVATION")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+        self.no_clean_for(doc, "93")
+
+    def test_126_ling_model_gating_and_leak(self):
+        with FixtureLane(ling_reasoning_leak=True,
+                         model_id="Ling-fixture-model") as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "LING_OFF_REASONING_LEAKED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(find(doc, "LING_MODEL_NOT_IDENTIFIED"))
+        self.no_clean_for(doc, "126")
+
+    def test_138_structured_json_parse_screen(self):
+        for valid, code in (
+            (True, "NGRAM_JSON_SHORT_CONTROL_ONLY"),
+            (False, "NGRAM_JSON_MALFORMED_UNATTRIBUTED"),
+        ):
+            with self.subTest(valid=valid), FixtureLane(
+                    json_object_valid=valid) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            f = find(doc, code)
+            self.assertIsNotNone(f)
+            self.assertEqual(f["level"], "INCONCLUSIVE")
+            self.no_clean_for(doc, "138")
+
+    def test_148_unicode_tool_serialization_controls(self):
+        for ascii_form in (True, False):
+            with self.subTest(ascii_form=ascii_form), FixtureLane(
+                    tool_unicode_ascii=ascii_form) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            f = find(doc, "UNICODE_TOOL_SERIALIZATION_OBSERVED")
+            self.assertIsNotNone(f)
+            self.assertEqual(f["level"], "INCONCLUSIVE")
+            self.no_clean_for(doc, "148")
+
+    def test_32_declared_cap_can_observe_overrun(self):
+        with FixtureLane() as base:
+            root = base[:-3].rstrip("/")
+            doc = md.Doc()
+            self.assertTrue(md.detect_stack(doc, base, root, None))
+            args = SimpleNamespace(api_key=None, server_max_tokens=1)
+            md.run(doc, base, root, args, only_ids=("32",))
+            self.check_structure(doc)
+            f = find(doc, "SERVER_FLAG_NOT_HARD_CAP")
+            self.assertIsNotNone(f)
+            self.assertEqual(f["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertIsNotNone(find(doc, "SERVER_MAX_TOKENS_UNDECLARED"))
+
+    def test_153_configured_processor_ids_are_compared(self):
+        for expected, code, level in (
+            ("11,22", "THINK_BUDGET_MARKER_ID_MISMATCH", "PROBLEM"),
+            ("111,222", "THINK_BUDGET_IDS_MATCH_NOT_EFFECT", "INCONCLUSIVE"),
+        ):
+            with self.subTest(expected=expected), FixtureLane(
+                    marker_token_ids=[111,222]) as base:
+                doc = md.Doc()
+                root = base[:-3].rstrip("/")
+                self.assertTrue(md.detect_stack(doc, base, root, None))
+                args = SimpleNamespace(api_key=None,
+                                       thinking_budget_marker_ids=expected)
+                md.run(doc, base, root, args, only_ids=("153",))
+                self.check_structure(doc)
+                f = find(doc, code)
+                self.assertIsNotNone(f)
+                self.assertEqual(f["level"], level)
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(find(doc, "THINK_BUDGET_IDS_UNDECLARED"))
+
+    def test_155_cache_counters_are_short_screen_only(self):
+        with FixtureLane(cache_prompt_isolates=True,
+                         props=llamacpp_props()) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "PREFIX_SLOT_SHORT_SEQUENCE_ONLY")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+        self.no_clean_for(doc, "155")
+
+    def test_157_scheduler_flag_snapshot_not_perf_claim(self):
+        p = llamacpp_props()
+        p["speculative_config"] = {"method": "ngram"}
+        p["scheduler_config"] = {"async_scheduling": False}
+        with FixtureLane(props=p) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        f = find(doc, "NGRAM_ASYNC_CONFIG_OBSERVED")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["level"], "INCONCLUSIVE")
+        self.no_clean_for(doc, "157")
+
+    def test_unavailable_render_stays_not_clean(self):
+        with FixtureLane(render=False) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        for trap_id in ("24", "56", "59", "93", "148"):
+            self.no_clean_for(doc, trap_id)
+
+
 class TestReadinessAndInferenceDiagnostics(DoctorVerdictCase):
     def test_112_auth_model_generation_ladder(self):
         for bad, code, level in (
