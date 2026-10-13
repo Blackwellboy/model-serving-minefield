@@ -1077,6 +1077,87 @@ CLEAN_CONTRACT = {
 
 
 
+
+class TestDoctor43Batch(DoctorVerdictCase):
+    def test_30_default_identity_replaced(self):
+        with FixtureLane(baked_default_system=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "DEFAULT_SYSTEM_REPLACED")["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "30")
+
+    def test_38_prefill_observed_but_not_offline_rollout_certified(self):
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        finding = find(doc, "THINK_PREFILL_OWNED_BY_TEMPLATE")
+        self.assertIsNotNone(finding)
+        self.assertEqual(finding["level"], "INCONCLUSIVE")
+        self.no_clean_for(doc, "38")
+
+    def test_43_string_args_positive_negative(self):
+        for bad, code, level in (
+            (True, "TOOL_ARGS_STRING_DROPPED", "PROBLEM"),
+            (False, "TOOL_ARGS_BOTH_FORMS_PRESERVED", "OK"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(tool_args_string_dropped=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            finding = find(doc, code)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], level)
+            self.assertIn("43", finding["traps"])
+
+    def test_69_empty_system_header(self):
+        with FixtureLane(empty_system_header=True) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertEqual(find(doc, "TEMPLATE_BOUNDARY_ARTIFACT")["level"], "PROBLEM")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.no_clean_for(doc, "69")
+
+    def test_85_llamacpp_reject_unused_string_kwarg(self):
+        template = "{% for message in messages %}{{ message.content }}{% endfor %}"
+        for bad, code, level in (
+            (True, "THINK_STRING_TYPE_REJECTED", "PROBLEM"),
+            (False, "THINK_STRING_TYPE_ACCEPTED", "OK"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                props=llamacpp_props(template), kwarg_type_reject=bad
+            ) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            finding = find(doc, code)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], level)
+            self.assertIn("85", finding["traps"])
+
+    def test_110_nonzero_snapshot_and_zero_never_clean(self):
+        for count, code in (
+            (3, "BENCH_CONTENDED_AT_SNAPSHOT"),
+            (0, "BENCH_SNAPSHOT_IDLE_NOT_PROOF"),
+        ):
+            with self.subTest(count=count), FixtureLane(metrics_running=count) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            finding = find(doc, code)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], "INCONCLUSIVE")
+            self.no_clean_for(doc, "110")
+
+    def test_six_render_metrics_probes_unavailable_not_clean(self):
+        with FixtureLane(render=False, metrics_running=None) as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        for trap_id in ("30", "38", "43", "69", "85", "110"):
+            self.no_clean_for(doc, trap_id)
+
+
 class TestRenderCoverageExpansion(DoctorVerdictCase):
     def test_66_rewrite_and_control(self):
         for bad, expected in ((True, "THINK_PATH_SUBSTRING_DELETED"),
@@ -1241,6 +1322,17 @@ class TestNewLowCostDoctorProbes(DoctorVerdictCase):
 
 
 CLEAN_CONTRACT.update({
+    "TOOL_ARGS_BOTH_FORMS_PRESERVED":
+        "matched object and JSON-string historical tool argument arms both "
+        "render the exact distinctive parameter marker",
+    "THINK_STRING_TYPE_ACCEPTED":
+        "the unused enable_thinking key is accepted in both boolean and "
+        "string form by llama.cpp /apply-template, ruling out this route's "
+        "string type-rejection failure (not its effect on generation)",
+})
+
+
+CLEAN_CONTRACT.update({
     "THINK_PATHS_PRESERVED":
         "both thinking substring paths and an unaffected control survive "
         "the assembled prompt, ruling out the specific deletion shape",
@@ -1365,6 +1457,15 @@ SWEEP = [
     {"history_text_repr": True},
     {"inline_system_mode": "drop"},
     {"inline_system_mode": "weld"},
+    {"baked_default_system": True},
+    {"tool_args_string_dropped": True},
+    {"empty_system_header": True},
+    {"tool_first_extra_end": True},
+    {"props": llamacpp_props("{% for message in messages %}{{ message.content }}{% endfor %}"),
+     "kwarg_type_reject": True},
+    {"props": llamacpp_props("{% for message in messages %}{{ message.content }}{% endfor %}")},
+    {"metrics_running": 3},
+    {"metrics_running": 0},
     {"props": llamacpp_props(), "tool_followup_400": True},
 ]
 

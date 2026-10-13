@@ -92,6 +92,26 @@ FINGERPRINTS = (
         "admission-flag and preemption-counter starvation evidence together",
     ),
 
+    Fingerprint(
+        "103",
+        r"\bAutoProcessor\b[\s\S]{0,240}\b[Tt]orchvision\b|\b[Tt]orchvision\b[\s\S]{0,240}\bAutoProcessor\b",
+        "AutoProcessor initialization blocked by torchvision dependency",
+    ),
+    Fingerprint(
+        "115",
+        r"\b(?:exit(?:ed)?\s+(?:code|status)?\s*137|status\s*137)\b[\s\S]{0,240}\boom_kill\s*[:=]\s*0\b|\boom_kill\s*[:=]\s*0\b[\s\S]{0,240}\b(?:exit(?:ed)?\s+(?:code|status)?\s*137|status\s*137)\b",
+        "exit 137 with no recorded cgroup OOM-killer event",
+    ),
+    Fingerprint(
+        "142",
+        r"\b(?:docker|container)\b[\s\S]{0,160}\b(?:bind source path does not exist|not a directory: are you trying to mount)\b",
+        "Docker bind-source creation or file-versus-directory mount mismatch",
+    ),
+    Fingerprint(
+        "158",
+        r"\breasoning_tokens\s*[:=]\s*2\b[\s\S]{0,240}<think>\s*</think>|<think>\s*</think>[\s\S]{0,240}\breasoning_tokens\s*[:=]\s*2\b",
+        "empty think-marker pair counted as two reasoning tokens",
+    ),
 )
 
 

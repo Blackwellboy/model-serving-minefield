@@ -80,6 +80,12 @@ TRAP_PATHS = {
     "113": "template/113-inline-system-role-is-not-a-stable-contract.md",
     "82": "template/82-system-prompt-relocates-to-last-user-turn.md",
     "83": "template/83-template-carries-a-baked-default-system-prompt.md",
+    "30": "template/30-default-system-message-silently-replaced.md",
+    "38": "template/38-template-owns-the-opening-think-tag.md",
+    "43": "template/43-tool-args-string-not-mapping.md",
+    "69": "template/69-minor-template-defects.md",
+    "85": "reasoning/85-enable-thinking-typechecked-though-never-read.md",
+    "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
@@ -125,7 +131,7 @@ TRAPS_SHARED_HEURISTIC = {
           "given a verdict by it; see the label-only note below",
 }
 TRAPS_NEED_HF_REPO = {"10", "17", "21"}
-TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "57", "63", "66", "67", "82", "83", "86", "113", "68"}
+TRAPS_NEED_RENDER_PATH = {"04", "20", "25", "30", "38", "43", "57", "63", "66", "67", "69", "82", "83", "85", "86", "113", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
 # advisory: real observations with real fixes, but no trap file, no README row
@@ -1132,6 +1138,309 @@ def check_inline_system_role(doc, root, key):
                          code="INLINE_SYSTEM_AMBIGUOUS",
                          asserts=[A("unambiguous system role classification",
                                     doc.evidence["trap113_role_checks"], held=False)])
+
+
+
+def check_default_system_replacement(doc, root, key):
+    """Trap 30: three-arm omission/empty/explicit-system render experiment."""
+    marker, own = "MF30_USER_8C1", "MF30_OWN_SYSTEM_8C1"
+    arms = {}
+    for label, messages in (
+        ("omitted", [{"role": "user", "content": marker}]),
+        ("empty", [{"role": "system", "content": ""},
+                   {"role": "user", "content": marker}]),
+        ("explicit", [{"role": "system", "content": own},
+                      {"role": "user", "content": marker}]),
+    ):
+        rendered, how = render_paths(doc, root, key, messages, {})
+        arms[label] = rendered
+        if rendered is not None:
+            doc.evidence.setdefault("trap30_render_path", how)
+    if any(x is None or x.count(marker) != 1 for x in arms.values()) or (
+            arms["explicit"] is not None and arms["explicit"].count(own) != 1):
+        doc.skip(["30"], "default-system replacement three-arm render",
+                 "the omitted, empty and explicit-system controls must all "
+                 "render and preserve unique user/system markers",
+                 code="DEFAULT_REPLACE_CONTROLS_MISSING",
+                 asserts=[A("all marked render arms complete",
+                            {k: v is not None for k, v in arms.items()},
+                            held=False)])
+        return
+    # Scoped to an explicit ChatML-style system span. An unmatched template
+    # dialect cannot be called CLEAN merely because a regex misses it.
+    def system_body(rendered):
+        m = re.search(r"<\|im_start\|>system\s*\n(.*?)<\|im_end\|>",
+                      rendered, re.S)
+        return m.group(1) if m else None
+
+    default = system_body(arms["omitted"])
+    empty = system_body(arms["empty"])
+    explicit = system_body(arms["explicit"])
+    doc.evidence["trap30_system_span"] = {
+        "omitted_nonempty": bool(default and default.strip()),
+        "empty_has_content": bool(empty and empty.strip()),
+        "explicit_has_marker": bool(explicit and own in explicit),
+    }
+    if (default is not None and default.strip() and
+            empty is not None and not empty.strip() and
+            explicit is not None and own in explicit and
+            default not in explicit):
+        doc.problem(["30"],
+                    "omitting a system turn inserts non-empty default instructions; "
+                    "an explicit empty system turn suppresses them and a caller "
+                    "system turn replaces rather than preserves them",
+                    "treat absent-system, empty-system and explicit-system "
+                    "prompts as different experimental conditions",
+                    code="DEFAULT_SYSTEM_REPLACED",
+                    asserts=[A("caller system preserves the template default",
+                               doc.evidence["trap30_system_span"], held=False)])
+    else:
+        doc.inconclusive(["30"], "default-system replacement experiment",
+                         "the observed three-arm renders do not prove the "
+                         "specific default-identity replacement mechanism; "
+                         "absence of a recognizable span is not CLEAN",
+                         code="DEFAULT_REPLACE_NOT_ESTABLISHED",
+                         asserts=[A("paired system-span replacement proof",
+                                    doc.evidence["trap30_system_span"], held=False)])
+
+
+def check_template_owned_think_open(doc, root, key):
+    """Trap 38: inspect opening think tag supplied by the template, not generation."""
+    messages = [{"role": "user", "content": "MF38 checking template-owned prefill"}]
+    on, how = render_paths(doc, root, key, messages, {"enable_thinking": True})
+    off, _ = render_paths(doc, root, key, messages, {"enable_thinking": False})
+    if on is None or off is None or "MF38 checking template-owned prefill" not in on:
+        doc.skip(["38"], "thinking tag ownership in generation prefix",
+                 "matched thinking-on/off render controls are not available",
+                 code="THINK_PREFILL_RENDER_UNAVAILABLE",
+                 asserts=[A("thinking-on and -off renders available",
+                            {"on": on is not None, "off": off is not None},
+                            held=False)])
+        return
+    # No inference generated. This finds a template-level contract, not proof
+    # that an external rollout parser actually dropped the prefix.
+    pattern = r"<think>\s*$"
+    template_opens = bool(re.search(pattern, on))
+    changed = on != off and not bool(re.search(pattern, off))
+    doc.evidence["trap38_prefill"] = {
+        "path": how, "thinking_on_ends_with_open": template_opens,
+        "thinking_off_different": changed,
+    }
+    doc.inconclusive(
+        ["38"], "template-owned opening think delimiter",
+        ("thinking-on rendering visibly ends with an open <think> tag "
+         "that thinking-off does not: offline raw-completion parsers must "
+         "preserve this prefill, but no offline rollout was supplied"
+         if template_opens and changed else
+         "the paired render did not establish an opening think prefix owned "
+         "by this template; alternate dialects or offline pipelines remain unknown"),
+        code=("THINK_PREFILL_OWNED_BY_TEMPLATE" if template_opens and changed
+              else "THINK_PREFILL_NOT_CHARACTERISED"),
+        asserts=[A("an offline rollout's opening-tag handling was observed",
+                   doc.evidence["trap38_prefill"], held=False)])
+
+
+def check_tool_argument_dialect(doc, root, key):
+    """Trap 43: identical tool call in object and JSON-string wire shapes."""
+    marker = "MF43_ARG_VALUE_6E1"
+    base = [{"role": "user", "content": "Find a city"}]
+    def history(arguments):
+        return base + [{
+            "role": "assistant", "content": "",
+            "tool_calls": [{"id": "callabc12", "type": "function",
+                            "function": {"name": "lookup",
+                                         "arguments": arguments}}],
+        }, {"role": "tool", "tool_call_id": "callabc12",
+            "name": "lookup", "content": "done"},
+           {"role": "user", "content": "Continue"}]
+    arms = {}
+    for name, value in (
+        ("object", {"city": marker}),
+        ("string", json.dumps({"city": marker})),
+    ):
+        text, how = render_paths(doc, root, key, history(value), {})
+        arms[name] = text
+        if text is not None:
+            doc.evidence.setdefault("trap43_render_path", how)
+    present = {k: v is not None and marker in v for k, v in arms.items()}
+    doc.evidence["trap43_argument_marker"] = present
+    if arms["object"] is None or arms["string"] is None or not present["object"]:
+        doc.skip(["43"], "tool arguments object/string render dialect",
+                 "string/object controls or the positive object-arguments "
+                 "marker were not available on this template",
+                 code="TOOL_ARGS_DIALECT_CONTROL_MISSING",
+                 asserts=[A("object control renders and contains parameter value",
+                            present, held=False)])
+    elif not present["string"]:
+        doc.problem(["43"], "replayed tool argument string silently loses "
+                    "the parameter value that object-form arguments preserve",
+                    "support both JSON strings and mapping objects in the "
+                    "template's tool-call arguments branch",
+                    code="TOOL_ARGS_STRING_DROPPED",
+                    asserts=[A("JSON-string arguments preserve parameter value",
+                               present, held=False)])
+    else:
+        doc.ok(["43"], "tool parameter marker survives both object-form and "
+               "JSON-string-form replay in the assembled prompt",
+               code="TOOL_ARGS_BOTH_FORMS_PRESERVED",
+               asserts=[A("both argument forms preserve the tool parameter value",
+                          present)])
+
+
+def check_minor_template_boundaries(doc, root, key):
+    """Trap 69: empty system header and tool-first malformed control tags."""
+    no_sys, how = render_paths(
+        doc, root, key, [{"role": "user", "content": "MF69 plain"}], {})
+    tool_first, _ = render_paths(
+        doc, root, key, [
+            {"role": "tool", "name": "lookup", "tool_call_id": "callabc12",
+             "content": "MF69_TOOL_RESULT"},
+            {"role": "user", "content": "MF69 next user"},
+        ], {})
+    if no_sys is None or tool_first is None or "MF69 plain" not in no_sys:
+        doc.skip(["69"], "template boundary hygiene",
+                 "both no-system and tool-first rendered controls are required",
+                 code="TEMPLATE_BOUNDARY_CONTROLS_MISSING",
+                 asserts=[A("no-system and tool-first renders available",
+                            {"no_sys": no_sys is not None,
+                             "tool_first": tool_first is not None}, held=False)])
+        return
+    empty_system = bool(re.search(
+        r"<\|im_start\|>system\s*\n\s*<\|im_end\|>", no_sys))
+    # Only call the tool-first malformed branch when we see a specific
+    # closing-tag surplus in the same template dialect. Do not infer errors
+    # from an unsupported/non-ChatML dialect.
+    starts = tool_first.count("<|im_start|>")
+    ends = tool_first.count("<|im_end|>")
+    unbalanced = ends > starts and "MF69_TOOL_RESULT" in tool_first
+    doc.evidence["trap69_boundary"] = {
+        "path": how, "no_system_empty_header": empty_system,
+        "tool_first_open": starts, "tool_first_close": ends,
+    }
+    if empty_system or unbalanced:
+        doc.problem(["69"], "template emits " +
+                    ("an unrequested empty system block" if empty_system
+                     else "unbalanced role delimiters after a tool-first history"),
+                    "audit the template's always-defined system variable "
+                    "or tool-first wrapper guard; do not attribute these "
+                    "render artifacts to the model",
+                    code="TEMPLATE_BOUNDARY_ARTIFACT",
+                    asserts=[A("no redundant empty-system or malformed tool boundary",
+                               doc.evidence["trap69_boundary"], held=False)])
+    else:
+        # Entry 69 also contains whitespace artifacts. These two negative
+        # checks cannot rule out the whole numbered entry.
+        doc.inconclusive(["69"], "template boundary hygiene",
+                         "the two inspected boundary signatures were absent; "
+                         "the entry also includes whitespace defects which "
+                         "this bounded probe cannot adjudicate",
+                         code="TEMPLATE_BOUNDARY_NOT_ESTABLISHED",
+                         asserts=[A("all three Trap 69 submechanisms were tested",
+                                    doc.evidence["trap69_boundary"], held=False)])
+
+
+def check_thinking_kwarg_type_gate(doc, root, key):
+    """Trap 85: llama.cpp template route rejects typed string while bool passes."""
+    if doc.stack != "llama.cpp":
+        doc.skip(["85"], "enable_thinking kwarg type gate",
+                 "Trap 85 documents a llama.cpp-specific argument type gate",
+                 code="THINK_TYPE_STACK_NOT_LLAMA",
+                 asserts=[A("llama.cpp detected", doc.stack, held=False)])
+        return
+    tpl = (doc.evidence.get("props") or {}).get("chat_template")
+    if not isinstance(tpl, str) or "enable_thinking" in tpl:
+        doc.inconclusive(["85"], "enable_thinking kwarg type gate",
+                         "the template is unavailable or reads enable_thinking; "
+                         "this does not demonstrate rejection of an unused knob",
+                         code="THINK_TYPE_TEMPLATE_DEPENDENT",
+                         asserts=[A("template demonstrably never reads enable_thinking",
+                                    bool(tpl) and "enable_thinking" not in tpl,
+                                    held=False)])
+        return
+    url = root + "/apply-template"
+    msgs = [{"role": "user", "content": "MF85 type check"}]
+    statuses = {}
+    texts = {}
+    for name, value in (("boolean", False), ("string", "false")):
+        status, body = post(
+            url, {"messages": msgs,
+                  "chat_template_kwargs": {"enable_thinking": value}},
+            key, timeout=30)
+        statuses[name], texts[name] = status, body or ""
+    doc.evidence["trap85_statuses"] = statuses
+    if statuses["boolean"] != 200:
+        doc.inconclusive(["85"], "enable_thinking kwarg type gate",
+                         "the real-boolean control did not render successfully",
+                         code="THINK_TYPE_BOOLEAN_CONTROL_FAILED",
+                         asserts=[A("real boolean baseline accepted", statuses,
+                                    held=False)])
+    elif (statuses["string"] == 400 and
+          re.search(r"invalid\s+type.*enable_thinking|enable_thinking.*expected\s+boolean",
+                    texts["string"], re.I)):
+        doc.problem(["85"], "unused enable_thinking rejects string 'false' "
+                    "while the boolean form renders successfully",
+                    "normalise client settings to JSON booleans; audit whether "
+                    "this particular route's type gate also applies to chat",
+                    code="THINK_STRING_TYPE_REJECTED",
+                    asserts=[A("unused thinking kwarg string is accepted",
+                               statuses, held=False)])
+    elif statuses["string"] == 200:
+        doc.ok(["85"], "this llama.cpp template-render route accepts both "
+               "real-boolean and string-form enable_thinking, ruling out "
+               "the specific string-type rejection here (not its runtime effect)",
+               code="THINK_STRING_TYPE_ACCEPTED",
+               asserts=[A("both kwarg types are accepted by render route", statuses)])
+    else:
+        doc.inconclusive(["85"], "enable_thinking kwarg type gate",
+                         "string-form kwarg failed but the rejection was not "
+                         "the expected type-check diagnostic",
+                         code="THINK_STRING_REJECTED_OTHER",
+                         asserts=[A("rejection attributable to type gate",
+                                    statuses, held=False)])
+
+
+def check_shared_endpoint_contention(doc, root, key):
+    """Trap 110: read-only immediate contention screening, not a benchmark."""
+    status, body = get(root + "/metrics", key, timeout=8)
+    if status != 200:
+        doc.skip(["110"], "shared endpoint benchmark interference screen",
+                 "Prometheus /metrics unavailable; no interference claim made",
+                 code="BENCH_METRICS_UNAVAILABLE",
+                 asserts=[A("Prometheus metrics available", status, held=False)])
+        return
+    series = {}
+    for line in (body or "").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        match = re.match(
+            r"(?:vllm:)?num_requests_running(?:\{[^}]*\})?\s+"
+            r"(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)\s*$",
+            line)
+        if match:
+            series.setdefault("num_requests_running", []).append(float(match.group(1)))
+    if not series:
+        doc.inconclusive(["110"], "shared endpoint interference screen",
+                         "metrics responded but no compatible running-request "
+                         "gauge was present; a generic HTTP 200 is not a measurement",
+                         code="BENCH_RUNNING_GAUGE_MISSING",
+                         asserts=[A("named running-request gauge recorded",
+                                    {"gauge_found": False}, held=False)])
+        return
+    peak = max(series["num_requests_running"])
+    doc.evidence["trap110_running_requests_snapshot"] = peak
+    # One snapshot, even zero, does not prove the timed experiment was isolated.
+    doc.inconclusive(
+        ["110"], "shared endpoint interference screen",
+        (f"{peak:g} running request(s) on the endpoint at inspection; "
+         "do not start a single-stream benchmark until the lane is idle"
+         if peak > 0 else
+         "running requests were zero at this snapshot, but a valid timed "
+         "benchmark also needs before/after counters for its entire window"),
+        code=("BENCH_CONTENDED_AT_SNAPSHOT" if peak > 0
+              else "BENCH_SNAPSHOT_IDLE_NOT_PROOF"),
+        asserts=[A("entire timed benchmark had no neighbouring work",
+                   {"snapshot_running": peak,
+                    "time_window_verified": False}, held=False)])
 
 
 def check_baked_default_system(doc, root, key):
@@ -3280,6 +3589,30 @@ def _probe_thinking_string_false(doc, base, root, args):
     check_thinking_string_false(doc, root, args.api_key)
 
 
+def _probe_default_system_replacement(doc, base, root, args):
+    check_default_system_replacement(doc, root, args.api_key)
+
+
+def _probe_template_owned_think_open(doc, base, root, args):
+    check_template_owned_think_open(doc, root, args.api_key)
+
+
+def _probe_tool_argument_dialect(doc, base, root, args):
+    check_tool_argument_dialect(doc, root, args.api_key)
+
+
+def _probe_minor_template_boundaries(doc, base, root, args):
+    check_minor_template_boundaries(doc, root, args.api_key)
+
+
+def _probe_thinking_kwarg_type_gate(doc, base, root, args):
+    check_thinking_kwarg_type_gate(doc, root, args.api_key)
+
+
+def _probe_shared_endpoint_contention(doc, base, root, args):
+    check_shared_endpoint_contention(doc, root, args.api_key)
+
+
 def _probe_baked_default_system(doc, base, root, args):
     check_baked_default_system(doc, root, args.api_key)
 
@@ -3385,6 +3718,36 @@ PROBE_SPECS = (
         "inline_system_role", ("113",), 0, False, 20, (),
         _probe_inline_system_role,
         "inline system-role placement or instruction loss",
+    ),
+    ProbeSpec(
+        "default_system_replacement", ("30",), 0, True, 25, (),
+        _probe_default_system_replacement,
+        "omitted/empty/explicit system role replacement matrix",
+    ),
+    ProbeSpec(
+        "template_owned_think_open", ("38",), 0, True, 24, (),
+        _probe_template_owned_think_open,
+        "template-owned opening thinking marker in generation prefill",
+    ),
+    ProbeSpec(
+        "tool_argument_dialect", ("43",), 0, True, 23, (),
+        _probe_tool_argument_dialect,
+        "tool argument object-versus-JSON-string replay render",
+    ),
+    ProbeSpec(
+        "minor_template_boundaries", ("69",), 0, True, 19, (),
+        _probe_minor_template_boundaries,
+        "unrequested empty system and tool-first role-markup checks",
+    ),
+    ProbeSpec(
+        "thinking_kwarg_type_gate", ("85",), 0, False, 18, (),
+        _probe_thinking_kwarg_type_gate,
+        "llama.cpp unused thinking kwarg string-type rejection",
+    ),
+    ProbeSpec(
+        "shared_endpoint_contention", ("110",), 0, False, 17, (),
+        _probe_shared_endpoint_contention,
+        "read-only Prometheus request-contention snapshot",
     ),
     ProbeSpec(
         "thinking_string_false", ("57",), 0, True, 68, (),
