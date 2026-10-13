@@ -160,6 +160,7 @@ DEFAULTS = {
     "model_id": MODEL,
     "marker_token_ids": None,
     "json_object_valid": True,
+    "minicpm_short_answer_spill": False,
     "metrics_running": None,
     "metrics_extra": "",
     "cache_response_diverges": False,
@@ -539,7 +540,15 @@ def _make_lane_handler(cfg):
             if body.get("stream"):
                 return self._stream(body)
 
-            if body.get("response_format", {}).get("type") == "json_object":
+            if (cfg["minicpm_short_answer_spill"] and any(
+                    "Which planet in our solar system is the largest?" in
+                    str(m.get("content", "")) for m in msgs)):
+                if (body.get("chat_template_kwargs") or {}).get("enable_thinking"):
+                    msg, finish = {"role": "assistant", "content": None,
+                                   "reasoning": "B"}, "stop"
+                else:
+                    msg, finish = {"role": "assistant", "content": "B"}, "stop"
+            elif body.get("response_format", {}).get("type") == "json_object":
                 msg, finish = {"role": "assistant", "content":
                     '{"answer":"OK"}' if cfg["json_object_valid"] else '{"answer":"OK"}{"answer":"OK"}'}, "stop"
             elif body.get("response_format", {}).get("type") == "json_schema":
@@ -661,7 +670,11 @@ def _make_hub_handler(repos):
                 spec = repos.get(repo)
                 if not spec or rev not in spec["revisions"]:
                     return self._send(404, {"error": "revision not found"})
-                return self._send(200, {"sha": spec["revisions"][rev]["sha"]})
+                return self._send(200, {
+                    "sha": spec["revisions"][rev]["sha"],
+                    "siblings": [{"rfilename": name}
+                                 for name in spec["revisions"][rev]["files"]],
+                })
             # /<org>/<name>/resolve/<ref>/<file>
             if "resolve" in parts:
                 i = parts.index("resolve")
