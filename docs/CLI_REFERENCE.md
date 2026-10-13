@@ -34,7 +34,7 @@ diagnosis was executed. The default mode is `lite`, capped at **five**
 chat-completion requests in a future run:
 
 ```text
-minefield doctor-plan --preferred-trap 162 --max-requests 5 --text
+minefield doctor-plan --preferred-trap 12 --max-requests 5 --text
 minefield doctor-plan --mode doctor --max-requests 8 > doctor-plan.json
 ```
 
@@ -44,7 +44,8 @@ only. A zero-chat-cost check may still call HTTP GET, render, tokenizer, metrics
 or public HF metadata endpoints **when actually run**; no such calls occur
 during planning. `--model`, `--hf-repo` and `--capability` are unverified
 planning hints, not successful detection. Unknown trap IDs and negative budgets
-are rejected. The plan is not an authorization or a replacement for live
+are rejected. Any preferred trap that is ineligible or does not fit the budget
+is reported as **not selected**, not silently promised. The plan is not an authorization or a replacement for live
 `minefield diagnose --mode lite --max-requests N`.
 
 ## Unified diagnosis
