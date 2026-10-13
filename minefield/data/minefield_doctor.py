@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 40 generation requests, each capped at 512 output
+    completions (at most 42 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -91,6 +91,8 @@ TRAP_PATHS = {
     "149": "evaluation/149-thinking-on-json-schema-can-runaway.md",
     "156": "evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
     "158": "reasoning/158-empty-thought-markers-count-as-reasoning.md",
+    "162": "reasoning/162-thinking-on-short-answer-never-closes-think-block.md",
+    "163": "versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md",
     "24": "template/24-official-template-breaks-cpp-jinja.md",
     "56": "template/56-checkpoint-ships-no-chat-template.md",
     "59": "reasoning/59-reasoning-roundtrip-confabulation.md",
@@ -155,7 +157,7 @@ TRAPS_SHARED_HEURISTIC = {
     "22": "linked from the ceiling check so you can find the entry, but never "
           "given a verdict by it; see the label-only note below",
 }
-TRAPS_NEED_HF_REPO = {"10", "17", "21"}
+TRAPS_NEED_HF_REPO = {"10", "17", "21", "163"}
 TRAPS_NEED_RENDER_PATH = {"04", "20", "24", "25", "30", "38", "43", "56", "57", "59", "63", "66", "67", "69", "82", "83", "85", "86", "93", "113", "148", "68"}
 
 # Ids this tool reports on that are NOT numbered registry entries. They are
@@ -2622,6 +2624,187 @@ def check_execution_concurrency_evidence(doc, root, key):
                                 {"running": max(running)}, held=False)])
 
 
+
+def check_minicpm_short_answer_channel(doc, base, key):
+    """Trap 162: bounded, matched short-answer field placement on MiniCPM V4.7."""
+    name = (doc.model or "").lower()
+    if "minicpm" not in name or "4.7" not in name:
+        doc.skip(["162"], "MiniCPM short-answer thinking channel",
+                 "this failure was measured on MiniCPM-V 4.7; do not "
+                 "generalise it from an unrelated served model",
+                 code="MINICPM_SHORT_ANSWER_MODEL_NOT_MATCHED",
+                 asserts=[A("MiniCPM-V 4.7 model identified",
+                            doc.model, held=False)])
+        return
+    q = ("Which planet in our solar system is the largest?\n"
+         "A. Mars\nB. Jupiter\nC. Venus\nD. Mercury\n"
+         "Answer with only the letter.")
+    records = {}
+    for label, thinking in (("on", True), ("off", False)):
+        st, choice, payload = chat(
+            doc, base, key, doc.model,
+            [{"role": "user", "content": q}],
+            max_tokens=96, chat_template_kwargs={"enable_thinking": thinking})
+        message = (choice or {}).get("message") if isinstance(choice, dict) else {}
+        message = message if isinstance(message, dict) else {}
+        usage = payload.get("usage") if isinstance(payload, dict) else {}
+        records[label] = {
+            "status": st,
+            "finish": choice.get("finish_reason") if isinstance(choice, dict) else None,
+            "content": message.get("content"),
+            "reasoning": message.get("reasoning") or message.get("reasoning_content"),
+            "completion_tokens": usage.get("completion_tokens") if isinstance(usage, dict) else None,
+        }
+    on, off = records["on"], records["off"]
+    viable = all(records[x]["status"] == 200 and
+                 records[x]["finish"] in ("stop", "length") for x in ("on", "off"))
+    doc.evidence["trap162_fields"] = {
+        label: {"status": row["status"], "finish": row["finish"],
+                "content_nonempty": bool(row["content"]),
+                "reasoning_nonempty": bool(row["reasoning"]),
+                "completion_tokens": row["completion_tokens"]}
+        for label, row in records.items()
+    }
+    if not viable:
+        doc.skip(["162"], "MiniCPM-V 4.7 short-answer field placement",
+                 "thinking-on and thinking-off controls did not both return "
+                 "usable completions",
+                 code="MINICPM_SHORT_PAIR_UNAVAILABLE",
+                 asserts=[A("matched on/off controls both completed",
+                            doc.evidence["trap162_fields"], held=False)])
+    elif (on["finish"] == "stop" and not on["content"] and
+          isinstance(on["reasoning"], str) and
+          on["reasoning"].strip().upper() == "B" and
+          isinstance(off["content"], str) and
+          off["content"].strip().upper() == "B"):
+        doc.problem(
+            ["162"], "MiniCPM-V 4.7 thinking-on returned stop with null "
+            "answer content while the correct answer landed in reasoning; "
+            "the matched thinking-off control returned the answer in content",
+            "bucket stop-finished reasoning-only answers separately from "
+            "length-capped traces; confirm the raw missing-close-tag "
+            "mechanism before changing parsers",
+            code="MINICPM_SHORT_ANSWER_IN_REASONING",
+            asserts=[A("short thinking-on answer delivered in content",
+                       doc.evidence["trap162_fields"], held=False)])
+    else:
+        doc.inconclusive(
+            ["162"], "MiniCPM-V 4.7 short-answer thinking channel",
+            "this paired item did not reproduce the stop-finished answer "
+            "in reasoning field; the documented failure was intermittent "
+            "and one negative pair cannot prove the model safe",
+            code="MINICPM_SHORT_ANSWER_NOT_REPRODUCED",
+            asserts=[A("repeated short-answer sample rules out intermittent "
+                       "routing defects", doc.evidence["trap162_fields"], held=False)])
+
+
+def check_minicpm_processor_metadata(doc, args):
+    """Trap 163: check pinned public repo auto_map module references, never execute code."""
+    repo = getattr(args, "hf_repo", None)
+    revision = getattr(args, "hf_revision", "main")
+    if not isinstance(repo, str) or not re.fullmatch(
+            r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) or (
+            "minicpm-v-4.7" not in repo.lower()):
+        doc.skip(["163"], "MiniCPM-V 4.7 processor metadata",
+                 "pass --hf-repo org/MiniCPM-V-4.7... for this "
+                 "repository-specific public metadata check",
+                 code="MINICPM_METADATA_REPO_UNAVAILABLE",
+                 asserts=[A("supported MiniCPM-V 4.7 repo supplied",
+                            repo, held=False)])
+        return
+    if not isinstance(revision, str) or not re.fullmatch(
+            r"[A-Za-z0-9_.\-/]{1,128}", revision):
+        doc.skip(["163"], "MiniCPM processor metadata revision",
+                 "revision must be a plain branch/tag/commit ref",
+                 code="MINICPM_METADATA_REVISION_INVALID",
+                 asserts=[A("safe repository revision supplied",
+                            revision, held=False)])
+        return
+    st, txt = get(f"{HF_BASE}/api/models/{repo}/revision/{revision}", timeout=20)
+    try:
+        record = json.loads(txt) if st == 200 else {}
+        sha = record.get("sha")
+        siblings = record.get("siblings")
+    except (TypeError, ValueError):
+        sha, siblings = None, None
+    if (not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha)
+            or not isinstance(siblings, list)):
+        doc.skip(["163"], "MiniCPM processor metadata revision",
+                 "the HF API did not return an immutable revision plus file "
+                 "inventory; do not guess module absence from a 404",
+                 code="MINICPM_METADATA_INVENTORY_UNAVAILABLE",
+                 asserts=[A("pinned revision and sibling inventory received",
+                            {"status": st, "revision_pinned": bool(sha),
+                             "inventory": isinstance(siblings, list)},
+                            held=False)])
+        return
+    available = {item.get("rfilename") for item in siblings
+                 if isinstance(item, dict) and isinstance(item.get("rfilename"), str)}
+    refs = set()
+    def walk(node):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == "auto_map" and isinstance(value, dict):
+                    for target in value.values():
+                        for entry in (target if isinstance(target, list) else [target]):
+                            if not isinstance(entry, str) or "." not in entry:
+                                continue
+                            mod = entry.split("--")[-1].rsplit(".", 1)[0]
+                            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", mod):
+                                refs.add(mod.replace(".", "/") + ".py")
+                else:
+                    walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+    for filename in ("processor_config.json", "preprocessor_config.json",
+                     "tokenizer_config.json"):
+        if filename not in available:
+            continue
+        status, body = get(
+            f"{HF_BASE}/{repo}/resolve/{sha}/{filename}", timeout=20)
+        if status != 200:
+            doc.skip(["163"], "MiniCPM processor metadata configuration",
+                     "a declared metadata JSON could not be read at the "
+                     "pinned revision",
+                     code="MINICPM_METADATA_CONFIG_UNREADABLE",
+                     asserts=[A("all declared processor configs fetched",
+                                {"file": filename, "status": status},
+                                held=False)])
+            return
+        try:
+            walk(json.loads(body))
+        except (TypeError, ValueError):
+            doc.skip(["163"], "MiniCPM processor metadata configuration",
+                     "one referenced processor config was malformed JSON",
+                     code="MINICPM_METADATA_CONFIG_INVALID",
+                     asserts=[A("processor JSON parses", filename, held=False)])
+            return
+    missing = sorted(refs - available)
+    doc.evidence["trap163_modules"] = {
+        "repo": repo, "revision": sha[:12],
+        "referenced": sorted(refs), "missing": missing}
+    if missing:
+        doc.problem(
+            ["163"], "pinned MiniCPM processor auto_map references "
+            "Python modules absent from that same checkpoint repository",
+            "do not enable trust_remote_code to bypass absent source; "
+            "compare pinned base and quantized processor metadata before "
+            "making an explicit, reversible overlay",
+            code="MINICPM_AUTOMAP_MODULE_MISSING",
+            asserts=[A("every auto_map module exists at pinned revision",
+                       doc.evidence["trap163_modules"], held=False)])
+    else:
+        doc.inconclusive(
+            ["163"], "MiniCPM processor metadata provenance",
+            "no missing auto_map modules were established on this pinned "
+            "revision; this does not compare native processor classes, "
+            "base-repo metadata or runtime compatibility",
+            code="MINICPM_METADATA_NO_MISSING_MODULE",
+            asserts=[A("base/quantized processor compatibility verified",
+                       doc.evidence["trap163_modules"], held=False)])
+
+
 def check_baked_default_system(doc, root, key):
     """Trap 83: compare no-system and explicit empty-system renders."""
     marker = "MF83_USER_8C7A"
@@ -4836,6 +5019,14 @@ def _probe_execution_concurrency_evidence(doc, base, root, args):
     check_execution_concurrency_evidence(doc, root, args.api_key)
 
 
+def _probe_minicpm_short_answer_channel(doc, base, root, args):
+    check_minicpm_short_answer_channel(doc, base, args.api_key)
+
+
+def _probe_minicpm_processor_metadata(doc, base, root, args):
+    check_minicpm_processor_metadata(doc, args)
+
+
 def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
@@ -5026,6 +5217,16 @@ PROBE_SPECS = (
               _probe_cudagraph_capture_clamp, "CUDA graph requested and effective shape"),
     ProbeSpec("execution_concurrency_evidence", ("135",), 0, False, 12, (),
               _probe_execution_concurrency_evidence, "running request admission versus execution"),
+    ProbeSpec(
+        "minicpm_short_answer_channel", ("162",), 2, False, 24, (),
+        _probe_minicpm_short_answer_channel,
+        "MiniCPM thinking-on stop-finished answer in reasoning field",
+    ),
+    ProbeSpec(
+        "minicpm_processor_metadata", ("163",), 0, False, 23, ("hf_repo",),
+        _probe_minicpm_processor_metadata,
+        "pinned MiniCPM processor auto_map module inventory",
+    ),
     ProbeSpec(
         "generation_readiness", ("112",), 1, True, 99, (),
         _probe_generation_readiness,
