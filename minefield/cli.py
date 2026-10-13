@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .api import plan_checks
 from .coverage import build_coverage
 from .doctor_adapter import run as run_doctor
 from .generator import build, verify
@@ -101,6 +102,26 @@ def parser() -> argparse.ArgumentParser:
     diag_fmt = diag.add_mutually_exclusive_group()
     diag_fmt.add_argument("--json", action="store_true")
     diag_fmt.add_argument("--text", action="store_true")
+    doctor_plan = sub.add_parser(
+        "doctor-plan",
+        help="offline preview of selected Doctor checks and chat request budget (zero network calls)",
+    )
+    doctor_plan.add_argument("--mode", choices=("lite", "doctor"), default="lite")
+    doctor_plan.add_argument(
+        "--max-requests", type=int,
+        help="max chat-completion calls in the eventual run (lite defaults to 5)",
+    )
+    doctor_plan.add_argument(
+        "--preferred-trap", action="append", default=[], metavar="ID",
+        help="prioritise a canonical trap in lite mode; repeatable",
+    )
+    doctor_plan.add_argument("--model", help="declared model for planning only; not verified")
+    doctor_plan.add_argument("--hf-repo", help="declared public HF repository; not fetched")
+    doctor_plan.add_argument(
+        "--capability", action="append", choices=("streaming", "tools", "multimodal"),
+        help="explicit assumed endpoint capability; repeatable, never probed",
+    )
+    doctor_plan.add_argument("--text", action="store_true", help="compact human-readable preview")
     coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
     agent = sub.add_parser("agent-bundle", help="regenerate (or --verify) the shipped registry and agent bundles")
@@ -251,6 +272,85 @@ def main(argv: list[str] | None = None) -> int:
             _emit(report)
         if args.files and not (report.get("file_scan") or {}).get("accepted_paths"):
             return 2
+    elif args.command == "doctor-plan":
+        # Do not detect an endpoint or read user infrastructure: this command
+        # deliberately never invokes a network path, even when --hf-repo is set.
+        if args.max_requests is not None and args.max_requests < 0:
+            print("--max-requests must be >= 0", file=sys.stderr)
+            return 2
+        known_ids = {str(item["id"]).zfill(2) for item in registry["entries"]}
+        preferred = [str(value).zfill(2) for value in args.preferred_trap]
+        invalid = [value for value in preferred if value not in known_ids]
+        if invalid:
+            print("unknown canonical trap IDs: " + ", ".join(invalid), file=sys.stderr)
+            return 2
+        candidate = plan_checks(
+            mode=args.mode,
+            max_requests=args.max_requests,
+            model=args.model,
+            hf_repo=args.hf_repo,
+            capabilities=tuple(args.capability) if args.capability else None,
+            preferred_trap_ids=preferred,
+            detect=False,
+        )
+        selected_traps = sorted(
+            {str(t).zfill(2) for probe in candidate.selected for t in probe.traps},
+            key=int,
+        )
+        report = {
+            "kind": "doctor_plan",
+            "execution": "NOT_RUN",
+            "network_calls_made": 0,
+            "generation_requests_made": 0,
+            "model_identity_verified": False,
+            "capabilities_verified": False,
+            "mode": candidate.mode,
+            "chat_request_budget": candidate.max_requests,
+            "planned_chat_requests_upper_bound": candidate.expected_requests,
+            "selected_probe_count": len(candidate.selected),
+            "skipped_probe_count": len(candidate.skipped),
+            "planned_trap_ids": selected_traps,
+            "planned_trap_count": len(selected_traps),
+            "registered_doctor_traps": build_coverage(registry)["summary"]["endpoint_checks_implemented"],
+            "canonical_trap_count": len(known_ids),
+            "selected_probes": [
+                {
+                    "id": p.id,
+                    "traps": list(p.traps),
+                    "chat_request_cost": p.request_cost,
+                    "reason": p.reason,
+                    "requires": list(p.requires),
+                }
+                for p in candidate.selected
+            ],
+            "skipped_probes": [
+                {
+                    "id": p.id,
+                    "traps": list(p.traps),
+                    "chat_request_cost": p.request_cost,
+                    "reason": p.reason,
+                }
+                for p in candidate.skipped
+            ],
+            "warnings": [
+                "Planning performed no endpoint, network, or Hugging Face requests.",
+                "Zero chat-request cost does not mean zero HTTP calls in a later run: GET, render, metrics and public HF metadata checks may still run.",
+                "Capabilities and model are assumptions until checked against the actual endpoint.",
+                "Selected checks are only planned, never executed or CLEAN; unselected and unimplemented traps remain untested.",
+                "A live run requires operator authority and a separately enforced --max-requests budget.",
+            ],
+        }
+        if args.text:
+            print(
+                f"Doctor plan only (NOT RUN): {report['selected_probe_count']} probes, "
+                f"{report['planned_trap_count']}/{report['canonical_trap_count']} trap IDs, "
+                f"up to {report['planned_chat_requests_upper_bound']} chat requests "
+                f"(budget={report['chat_request_budget']})."
+            )
+            print("Selected probes: " + ", ".join(p["id"] for p in report["selected_probes"]))
+            print("No network calls. No live verdicts. A budget covers chat calls, not GET/render/HF requests.")
+        else:
+            _emit(report)
     elif args.command == "coverage":
         value = build_coverage(registry)["summary"]
         _emit(value if args.json else "\n".join(f"{k}: {v}" for k, v in value.items()),
