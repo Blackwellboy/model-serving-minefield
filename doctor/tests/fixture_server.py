@@ -147,6 +147,12 @@ DEFAULTS = {
     "empty_system_header": False,
     "tool_first_extra_end": False,
     "kwarg_type_reject": False,
+    "readiness_generation_fails": False,
+    "toggle_conflict_moves_answer": False,
+    "parser_rescue": False,
+    "schema_thinking_runaway": False,
+    "requeue_usage_undercount": False,
+    "post_tool_two_reasoning_tokens": False,
     "metrics_running": None,
 }
 
@@ -387,6 +393,10 @@ def _make_lane_handler(cfg):
             path, msgs = self.path, body.get("messages") or []
             kw = body.get("chat_template_kwargs") or {}
 
+            if (path == "/tokenize" and isinstance(body.get("prompt"), str)):
+                p = body["prompt"]
+                return self._send(200, {"count": len(p.split()) + 1,
+                                        "token_strs": p.split()})
             if path in ("/v1/chat/completions/render", "/tokenize"):
                 if not cfg["render"]:
                     return self._send(404, {"error": "not found"})
@@ -436,6 +446,9 @@ def _make_lane_handler(cfg):
             if path != "/v1/chat/completions":
                 return self._send(404, {"error": "not found"})
 
+            if cfg["readiness_generation_fails"] and any(
+                    "MF112" in str(m.get("content")) for m in msgs):
+                return self._send(503, {"error": {"message": "EngineCore unavailable"}})
             if cfg["reject_everything"]:
                 return self._send(400, {"error": {
                     "message": "model not found or not yet loaded"}})
@@ -504,7 +517,26 @@ def _make_lane_handler(cfg):
             if body.get("stream"):
                 return self._stream(body)
 
-            if body.get("max_tokens") == 512 and not body.get("tools"):
+            if body.get("response_format", {}).get("type") == "json_schema":
+                if (cfg["schema_thinking_runaway"]
+                        and (body.get("chat_template_kwargs") or {}).get("enable_thinking") is True):
+                    msg, finish = {"role": "assistant", "content": '{"answer":'}, "length"
+                else:
+                    msg, finish = {"role": "assistant", "content": '{"answer":"OK"}'}, "stop"
+            elif (cfg["parser_rescue"] and body.get("max_tokens") == 48):
+                if (body.get("chat_template_kwargs") or {}).get("force_nonempty_content"):
+                    msg, finish = {"role": "assistant", "content": "incomplete reasoning"}, "length"
+                else:
+                    msg, finish = {"role": "assistant", "content": "",
+                                   "reasoning_content": "incomplete reasoning"}, "length"
+            elif cfg["requeue_usage_undercount"] and body.get("max_tokens") == 256:
+                msg, finish = {"role": "assistant",
+                               "content": " ".join(f"number-{i}" for i in range(230))}, "length"
+            elif (cfg["toggle_conflict_moves_answer"] and any(
+                    "/no_think" in str(m.get("content")) for m in msgs)):
+                msg, finish = {"role": "assistant", "content": None,
+                               "reasoning_content": "The answer is OK"}, "stop"
+            elif body.get("max_tokens") == 512 and not body.get("tools"):
                 msg, finish = self._ceiling_message()
             else:
                 msg, finish = self._message(body), "stop"
@@ -523,6 +555,11 @@ def _make_lane_handler(cfg):
                         cfg["_cache_warm"] = True
             usage = {"prompt_tokens": prompt_tokens, "completion_tokens": 2,
                      "total_tokens": prompt_tokens + 2}
+            if cfg["requeue_usage_undercount"] and body.get("max_tokens") == 256:
+                usage["completion_tokens"] = 20
+            if cfg["post_tool_two_reasoning_tokens"] and any(
+                    m.get("role") == "tool" for m in msgs):
+                usage["completion_tokens_details"] = {"reasoning_tokens": 2}
             if cached_tokens is not None:
                 usage["cached_tokens"] = cached_tokens
                 usage["cache_n"] = cached_tokens
@@ -548,7 +585,7 @@ class FixtureLane:
         self.cfg = cfg
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), _make_lane_handler(cfg))
         self.port = self.httpd.server_address[1]
-        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+        self.thread = threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
 
     def __enter__(self):
         self.thread.start()
@@ -617,7 +654,7 @@ class FixtureHub:
     def __init__(self, repos):
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), _make_hub_handler(repos))
         self.port = self.httpd.server_address[1]
-        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+        self.thread = threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
 
     def __enter__(self):
         self.thread.start()
