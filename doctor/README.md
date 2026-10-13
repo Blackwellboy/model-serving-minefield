@@ -21,7 +21,7 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 68 checks cluster almost entirely on one region of the registry: reasoning
+Its 70 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
@@ -168,15 +168,15 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **68 of the registry's 163 numbered entries**
+The doctor implements checks for **70 of the registry's 163 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 29, 30, 32,
 38, 43, 49, 56, 57, 58, 59, 60, 63, 64, 65, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83,
 84, 85, 86, 87, 88, 91, 93, 96, 106, 110, 112, 113, 117, 126, 130, 135, 138, 141, 148, 149,
-153, 155, 156, 157, 158).
+153, 155, 156, 157, 158, 162, 163).
 Every run ends with a coverage line:
 
 ```
-implemented 68/163 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 95
+implemented 70/163 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 93
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -193,7 +193,7 @@ depth, and the coverage block says so every time:
   took. Trap 22 is a claim about a distribution across sizes and budgets, and
   this tool sends one request at one budget, so it is linked from the ceiling
   check purely so you can find the entry, and is never given a verdict by it.
-- **10, 17, 21** need `--hf-repo`. Without it they cannot run at all.
+- **10, 17, 21, 163** need `--hf-repo`. Without it they cannot run at all.
 - **04, 20, 24, 25, 30, 38, 43, 56, 57, 59, 63, 66, 67, 68, 69, 82, 83, 85, 86, 93, 113, 148** need a render path. On a stack that exposes none they cannot
   run at all.
 - **66, 67, 113** add only render/tokenize requests and no generation.
@@ -219,6 +219,12 @@ depth, and the coverage block says so every time:
 - **24, 56, 59, 93, 148** are rendered-prompt forensics: tool schema completeness, inline system welding, reasoning replay, structural clock placement, and Unicode tool serialization. Several can provide only a scoped or inconclusive result without a second engine, pinned encoder source or cache metrics.
 - **32** requires a caller-known `--server-max-tokens`; **153** requires the installed processor's `--thinking-budget-marker-ids START,END`. Neither setting is inferred from an unrelated server.
 - **126** is gated to Ling-named models. **138** screens JSON parsing without attributing problems to n-gram speculation. **155** samples cache counters across short histories without claiming to reproduce long-context thrash; **157** inspects exposed scheduling flags without a throughput A/B.
+- **162** uses two short, matched MiniCPM-V 4.7 thinking on/off
+  completions to detect stop-finished answers misplaced in the reasoning
+  channel; one negative pair cannot clear an intermittent issue.
+  **163** is a public, pinned Hugging Face processor-config inspection
+  gated by `--hf-repo`. It reads filenames but never executes remote
+  code. Missing or malformed inventories remain UNKNOWN.
 - **112** verifies authenticated model identity with an actual bounded
   generation. **64, 65, 149, 156, 158** are additional bounded inference
   checks. The parser rescue check stops when its empty-at-cap precondition
@@ -249,7 +255,7 @@ depth, and the coverage block says so every time:
   media path reported as 5xx rather than 4xx (72), and a null
   `prompt_tokens_details` that makes media token cost unattributable (73).
   They ran under advisory ids until those entries were published.
-- The remaining **95** numbered traps have no check in this tool. Many are
+- The remaining **93** numbered traps have no check in this tool. Many are
   reachable offline instead: `minefield scan` reads configs, launch scripts,
   model folders, chat templates, logs and eval results.
 
@@ -282,10 +288,10 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **40 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. 40 is a conservative full-run ceiling including the conditional probes;
+  **42 chat completions**, each capped at 512 output tokens or less, all at
+  temperature 0. 42 is a conservative full-run ceiling including the conditional probes;
   a lane that skips probes issues fewer, and two contributor-measured SGLang
-  runs issued 14. Size rate limits for up to 40, not an observed subset. It also calls render or tokenise routes
+  runs issued 14. Size rate limits for up to 42, not an observed subset. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.

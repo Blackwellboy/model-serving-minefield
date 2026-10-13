@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-13 - MiniCPM Doctor 70 and live qualification protocol
+
+- Two scoped Doctor entries: [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md), matched MiniCPM-V 4.7 thinking on/off short-answer field placement, and [163](traps/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md), pinned public Hugging Face processor `auto_map` module inventory without remote-code execution. Missing preconditions stay UNKNOWN; one negative cannot clear an intermittent failure.
+- Matched faulty/non-faulty and missing-metadata fixtures. Doctor 68→70/163 and any automatic 129→131/163 expected from regenerated coverage. Full-run bounded request ceiling rises by two.
+- Added the [staged live inference qualification protocol](docs/LIVE_MODEL_QUALIFICATION.md) for user-authorised RTX 5090 and DGX Spark testing, including lane identity, resource limits, evidence hygiene and independent concurrence/soak gates.
+
 ## 2026-10-13 - MiniCPM-V 4.7 bring-up: traps 162-163
 
 - Added [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md): with thinking on, short multiple-choice answers end the turn without closing the template-opened think block, so `--reasoning-parser qwen3` files the whole answer as reasoning and `content` is null with `finish_reason: stop`. Reproduced here with a five-request procedure; 24/40 short items affected at both temperature 0 and card sampling on a private benchmark slice, 0/40 with thinking off.

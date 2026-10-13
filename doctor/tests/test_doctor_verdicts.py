@@ -1081,6 +1081,70 @@ CLEAN_CONTRACT = {
 
 
 
+
+class TestMiniCPMV47Doctor(DoctorVerdictCase):
+    def test_162_short_answer_spill_and_nonreproduction(self):
+        name = "MiniCPM-V-4.7-35B-A3B-AWQ"
+        for bad, code, level in (
+            (True, "MINICPM_SHORT_ANSWER_IN_REASONING", "PROBLEM"),
+            (False, "MINICPM_SHORT_ANSWER_NOT_REPRODUCED", "INCONCLUSIVE"),
+        ):
+            with self.subTest(bad=bad), FixtureLane(
+                    model_id=name, minicpm_short_answer_spill=bad) as base:
+                doc = diagnose(base)
+            self.check_structure(doc)
+            finding = find(doc, code)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], level)
+            self.assertIn("162", finding["traps"])
+            self.no_clean_for(doc, "162")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.assertIsNotNone(
+            find(doc, "MINICPM_SHORT_ANSWER_MODEL_NOT_MATCHED"))
+
+    def test_163_missing_public_module_and_present_control(self):
+        repo = "openbmb/MiniCPM-V-4.7-35B-A3B-AWQ"
+        revision = "a" * 40
+        def test_repo(module_present):
+            files = {"processor_config.json": {
+                "auto_map": {"AutoProcessor":
+                             "processing_minicpmv4_7.MiniCPMV47Processor"}}}
+            if module_present:
+                files["processing_minicpmv4_7.py"] = ""
+            return {repo: {"revisions": {
+                "main": {"sha": revision, "files": files}}}}
+        for present, code, level in (
+            (False, "MINICPM_AUTOMAP_MODULE_MISSING", "PROBLEM"),
+            (True, "MINICPM_METADATA_NO_MISSING_MODULE", "INCONCLUSIVE"),
+        ):
+            with self.subTest(present=present), \
+                    FixtureHub(test_repo(present)) as hub, \
+                    FixtureLane() as base:
+                doc = md.Doc()
+                old_hf = md.HF_BASE
+                try:
+                    md.HF_BASE = hub
+                    args = SimpleNamespace(api_key=None, hf_repo=repo,
+                                           hf_revision="main")
+                    root = base[:-3].rstrip("/")
+                    md.run(doc, base, root, args,
+                           only_ids=("minicpm_processor_metadata",))
+                finally:
+                    md.HF_BASE = old_hf
+            self.check_structure(doc)
+            finding = find(doc, code)
+            self.assertIsNotNone(finding)
+            self.assertEqual(finding["level"], level)
+            self.assertIn("163", finding["traps"])
+            self.no_clean_for(doc, "163")
+        with FixtureLane() as base:
+            doc = diagnose(base)
+        self.check_structure(doc)
+        self.assertIsNotNone(
+            find(doc, "MINICPM_METADATA_REPO_UNAVAILABLE"))
+
+
 class TestDoctor68Observability(DoctorVerdictCase):
     def test_49_declared_prompt_target_mismatch_and_omitted(self):
         with FixtureLane() as base:

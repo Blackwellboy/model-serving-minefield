@@ -3,9 +3,9 @@
   "coverage": {
     "schema_version": "1.0",
     "summary": {
-      "any_automated_check": 129,
+      "any_automated_check": 131,
       "counts_overlap": true,
-      "endpoint_checks_implemented": 68,
+      "endpoint_checks_implemented": 70,
       "guided_experiments_specified": 163,
       "human_review_possible": 163,
       "log_checks_implemented": 31,
@@ -12067,16 +12067,18 @@
         "id": "162",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Five requests, no benchmark needed. Replace HOST:PORT and the served model name with your own. ```python import json, urllib.request BASE, MODEL = \"http://HOST:PORT\", \"MiniCPM-V-4.7-35B-A3B-AWQ\" Q = (\"Which planet in our solar system is the largest?\\n\" \"A. Mars\\nB. Jupiter\\nC. Venus\\nD. Mercury\\nAnswer with only the letter.\") MSGS = [{\"role\": \"user\", \"content\": Q}] def post(path, body): req = urllib.request.Request(BASE + path, json.dumps(body).encode(), {\"Content-Type\": \"application/json\"}) return json.load(urllib.request.urlopen(req, timeout=120))",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -12141,16 +12143,18 @@
         "id": "163",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Compare the module names that auto_map references against the files the repository actually contains, for the quantized repo and its base. Standard library only: Recorded 2026-10-13: | Repository | Modules referenced by auto_map | Present in the repository | |---|---|---| | AWQ, ea491d0 | processing_minicpmv4_7.py, image_processing_minicpmv4_7.py, video_processing_minicpmv4_7.py | none of the three | | base, 17e6511 | none | not applicable | The trap is present whenever a referenced module is missing. Run the same check on any quantized, abliterated or otherwise re-uploaded sibling before you serve it, against the base revision your engine's model support targets.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -17485,8 +17489,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 163,
-    "content_sha256": "7953e5ebd5e7e090e727bfcd8e3c2844b856d4909bd1fb38d788de5fd77f57b0",
-    "doctor_implemented_trap_count": 68,
+    "content_sha256": "df0b4ccc21d0a434cd9f90d095d11c753b5d73332f97efe70bf163fb56ba732a",
+    "doctor_implemented_trap_count": 70,
     "entries": [
       {
         "affected_models": [
@@ -28665,14 +28669,15 @@
         "check": "Five requests, no benchmark needed. Replace HOST:PORT and the served model name with your own. ```python import json, urllib.request BASE, MODEL = \"http://HOST:PORT\", \"MiniCPM-V-4.7-35B-A3B-AWQ\" Q = (\"Which planet in our solar system is the largest?\\n\" \"A. Mars\\nB. Jupiter\\nC. Venus\\nD. Mercury\\nAnswer with only the letter.\") MSGS = [{\"role\": \"user\", \"content\": Q}] def post(path, body): req = urllib.request.Request(BASE + path, json.dumps(body).encode(), {\"Content-Type\": \"application/json\"}) return json.load(urllib.request.urlopen(req, timeout=120))",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/reasoning/162-thinking-on-short-answer-never-closes-think-block.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -28741,14 +28746,15 @@
         "check": "Compare the module names that auto_map references against the files the repository actually contains, for the quantized repo and its base. Standard library only: Recorded 2026-10-13: | Repository | Modules referenced by auto_map | Present in the repository | |---|---|---| | AWQ, ea491d0 | processing_minicpmv4_7.py, image_processing_minicpmv4_7.py, video_processing_minicpmv4_7.py | none of the three | | base, 17e6511 | none | not applicable | The trap is present whenever a referenced module is missing. Run the same check on any quantized, abliterated or otherwise re-uploaded sibling before you serve it, against the base revision your engine's model support targets.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md"
         },
         "evidence_strength": [
           "reproduced here"
