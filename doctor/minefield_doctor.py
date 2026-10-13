@@ -2102,6 +2102,190 @@ def check_unicode_tool_serialization(doc, root, key):
                                 doc.evidence["trap148_serialization"], held=False)])
 
 
+
+def check_declared_server_token_cap(doc, base, args):
+    """Trap 32: test a caller-declared server default/cap, never infer the launch flag."""
+    stated = getattr(args, "server_max_tokens", None)
+    if not isinstance(stated, int) or stated < 1 or stated >= 256:
+        doc.skip(["32"], "declared server max-tokens cap",
+                 "pass --server-max-tokens 1..255 to test a known launch-time "
+                 "setting; no default/cap is inferred from the model list",
+                 code="SERVER_MAX_TOKENS_UNDECLARED",
+                 asserts=[A("declared server max_tokens available",
+                            stated, held=False)])
+        return
+    ask = stated + 16
+    st, choice, payload = chat(doc, base, args.api_key, doc.model,
+        [{"role": "user", "content":
+          "Continue this numbered sequence past 100 items. Do not summarize."}],
+        max_tokens=ask)
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    observed = usage.get("completion_tokens") if isinstance(usage, dict) else None
+    doc.evidence["trap32_cap"] = {"declared": stated, "requested": ask,
+                                  "completion_tokens": observed, "status": st}
+    if st == 200 and isinstance(observed, int) and observed > stated:
+        doc.problem(["32"], "request generated more completion tokens "
+                    "than the operator-declared serving flag",
+                    "the server setting is a default, not an enforced limit "
+                    "on the user-supplied max_tokens request",
+                    code="SERVER_FLAG_NOT_HARD_CAP",
+                    asserts=[A("server enforces declared output token cap",
+                               doc.evidence["trap32_cap"], held=False)])
+    else:
+        doc.inconclusive(["32"], "server output budget semantics",
+                         "response did not exceed the declared cap; a naturally "
+                         "short completion or rejected request does not prove "
+                         "the server flag is a hard cap",
+                         code="SERVER_CAP_NOT_SETTLED",
+                         asserts=[A("response demonstrates hard-cap enforcement",
+                                    doc.evidence["trap32_cap"], held=False)])
+
+
+def check_thinking_budget_marker_ids(doc, root, args):
+    """Trap 153: compare user-supplied processor marker IDs against live tokenizer."""
+    configured = getattr(args, "thinking_budget_marker_ids", None)
+    if not configured:
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "pass --thinking-budget-marker-ids START,END from the "
+                 "actual installed budget processor, otherwise no contract "
+                 "exists to compare",
+                 code="THINK_BUDGET_IDS_UNDECLARED",
+                 asserts=[A("processor marker ids supplied",
+                            configured, held=False)])
+        return
+    try:
+        expected = [int(x.strip()) for x in configured.split(",")]
+        if len(expected) != 2:
+            raise ValueError("expected two IDs")
+    except (ValueError, AttributeError):
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "marker ids must be two comma-separated integers",
+                 code="THINK_BUDGET_IDS_INVALID",
+                 asserts=[A("two integer marker ids", configured, held=False)])
+        return
+    seen = []
+    for marker in ("<think>", "</think>"):
+        st, body = post(root + "/tokenize", {"model": doc.model,
+            "prompt": marker, "add_special_tokens": False}, args.api_key,
+            timeout=20)
+        try:
+            data = json.loads(body) if st == 200 else {}
+            ids = data.get("tokens", data.get("token_ids"))
+        except (TypeError, ValueError):
+            ids = None
+        seen.append(ids if isinstance(ids, list) and
+                    all(isinstance(v, int) for v in ids) else None)
+    doc.evidence["trap153_ids"] = {"expected": expected, "tokenized": seen}
+    if any(ids is None or len(ids) != 1 for ids in seen):
+        doc.skip(["153"], "thinking-budget tokenizer marker IDs",
+                 "tokenization did not return one unambiguous token ID "
+                 "for each marker",
+                 code="THINK_BUDGET_TOKENIZER_UNAVAILABLE",
+                 asserts=[A("single-token marker ids returned",
+                            doc.evidence["trap153_ids"], held=False)])
+    elif [ids[0] for ids in seen] != expected:
+        doc.problem(["153"], "processor marker IDs disagree with this "
+                    "endpoint's tokenizer IDs for thinking delimiters",
+                    "derive marker IDs from the checkpoint tokenizer, not "
+                    "from a different model family",
+                    code="THINK_BUDGET_MARKER_ID_MISMATCH",
+                    asserts=[A("installed processor IDs equal live tokenizer IDs",
+                               doc.evidence["trap153_ids"], held=False)])
+    else:
+        doc.inconclusive(["153"], "thinking-budget processor correctness",
+                         "two configured marker IDs match the live tokenizer; "
+                         "processor counting across current turns and histories "
+                         "was not demonstrated",
+                         code="THINK_BUDGET_IDS_MATCH_NOT_EFFECT",
+                         asserts=[A("budget processor behavioral effect verified",
+                                    doc.evidence["trap153_ids"], held=False)])
+
+
+def check_prefix_slot_residency(doc, base, key):
+    """Trap 155: short, bounded prefix-residency screen, not a long-context soak."""
+    requests = (
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 A1"}],
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 B1"}],
+        [{"role": "system", "content": "MF155_SHARED_SYSTEM"},
+         {"role": "user", "content": "MF155 A1"},
+         {"role": "assistant", "content": "MF155 previous answer"},
+         {"role": "user", "content": "MF155 A2"}],
+    )
+    values = []
+    for msgs in requests:
+        st, choice, payload = chat(doc, base, key, doc.model, msgs,
+                                   max_tokens=16)
+        usage = payload.get("usage") if isinstance(payload, dict) else {}
+        details = usage.get("prompt_tokens_details") or {}
+        cached = details.get("cached_tokens") if isinstance(details, dict) else None
+        if cached is None:
+            cached = usage.get("cached_tokens", usage.get("cache_n"))
+        values.append({"status": st, "cached_tokens": cached,
+                       "prompt_tokens": usage.get("prompt_tokens")})
+    doc.evidence["trap155_cache_sequence"] = values
+    if any(row["status"] != 200 for row in values) or any(
+            not isinstance(row["cached_tokens"], int) for row in values):
+        doc.skip(["155"], "long-conversation slot retention",
+                 "short cache-control requests or per-request cached-token "
+                 "counters are unavailable on this endpoint",
+                 code="PREFIX_SLOT_COUNTERS_MISSING",
+                 asserts=[A("three cached-token counters available",
+                            values, held=False)])
+        return
+    doc.inconclusive(["155"], "long-conversation slot retention",
+                     "three short sequential histories recorded cached-token "
+                     "values; a repeated long two-conversation test plus slot "
+                     "residency evidence is needed before diagnosing victim-policy thrash",
+                     code="PREFIX_SLOT_SHORT_SEQUENCE_ONLY",
+                     asserts=[A("long-conversation retention/eviction mechanism verified",
+                                values, held=False)])
+
+
+def check_ngram_async_scheduling(doc, root, key):
+    """Trap 157: inspect advertised scheduling flags, never infer throughput."""
+    st, raw = get(root + "/props", key, timeout=8)
+    if st != 200:
+        doc.skip(["157"], "n-gram speculation and asynchronous scheduling",
+                 "serving config is not exposed via /props",
+                 code="NGRAM_SCHED_CONFIG_UNAVAILABLE",
+                 asserts=[A("serving config readable", st, held=False)])
+        return
+    try:
+        data = json.loads(raw)
+    except (TypeError, ValueError):
+        data = {}
+    config = data.get("speculative_config") or {}
+    sched = data.get("scheduler_config") or {}
+    if not isinstance(config, dict):
+        config = {}
+    if not isinstance(sched, dict):
+        sched = {}
+    kind = str(config.get("method", config.get("type", ""))).lower()
+    active = bool(kind == "ngram" or config.get("ngram_prompt_lookup_max"))
+    async_flag = sched.get("async_scheduling")
+    doc.evidence["trap157_config"] = {
+        "ngram_speculation": active, "async_scheduling": async_flag}
+    if not active or not isinstance(async_flag, bool):
+        doc.skip(["157"], "n-gram speculation and asynchronous scheduling",
+                 "no positively identified n-gram config together with "
+                 "explicit async-scheduling boolean was exposed",
+                 code="NGRAM_SCHED_FLAGS_NOT_CONFIRMED",
+                 asserts=[A("both speculation and async fields available",
+                            doc.evidence["trap157_config"], held=False)])
+        return
+    doc.inconclusive(["157"], "n-gram speculation versus async scheduling",
+                     ("ngram speculation is configured with async scheduling off"
+                      if not async_flag else
+                      "ngram speculation is configured with async scheduling on")
+                     + "; throughput impact needs matched on/off arms at "
+                     "production concurrency",
+                     code="NGRAM_ASYNC_CONFIG_OBSERVED",
+                     asserts=[A("matched C1/C4 completed-work throughput compared",
+                                doc.evidence["trap157_config"], held=False)])
+
+
 def check_baked_default_system(doc, root, key):
     """Trap 83: compare no-system and explicit empty-system renders."""
     marker = "MF83_USER_8C7A"
@@ -4240,6 +4424,50 @@ def _probe_post_tool_empty_reasoning_usage(doc, base, root, args):
     check_post_tool_empty_reasoning_usage(doc, base, args.api_key)
 
 
+def _probe_tool_schema_render(doc, base, root, args):
+    check_tool_schema_render(doc, root, args.api_key)
+
+
+def _probe_python_encoder_role_welding(doc, base, root, args):
+    check_python_encoder_role_welding(doc, root, args.api_key)
+
+
+def _probe_reasoning_replay_visibility(doc, base, root, args):
+    check_reasoning_replay_visibility(doc, root, args.api_key)
+
+
+def _probe_clock_prompt_prefix(doc, base, root, args):
+    check_clock_prompt_prefix(doc, root, args.api_key)
+
+
+def _probe_ling_thinking_field_placement(doc, base, root, args):
+    check_ling_thinking_field_placement(doc, base, args.api_key)
+
+
+def _probe_structured_json_duplication(doc, base, root, args):
+    check_structured_json_duplication(doc, base, args.api_key)
+
+
+def _probe_unicode_tool_serialization(doc, base, root, args):
+    check_unicode_tool_serialization(doc, root, args.api_key)
+
+
+def _probe_declared_server_token_cap(doc, base, root, args):
+    check_declared_server_token_cap(doc, base, args)
+
+
+def _probe_thinking_budget_marker_ids(doc, base, root, args):
+    check_thinking_budget_marker_ids(doc, root, args)
+
+
+def _probe_prefix_slot_residency(doc, base, root, args):
+    check_prefix_slot_residency(doc, base, args.api_key)
+
+
+def _probe_ngram_async_scheduling(doc, base, root, args):
+    check_ngram_async_scheduling(doc, root, args.api_key)
+
+
 def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
@@ -4392,6 +4620,28 @@ PROBE_SPECS = (
         _probe_post_tool_empty_reasoning_usage,
         "post-tool empty thought-channel token accounting",
     ),
+    ProbeSpec("tool_schema_render", ("24",), 0, True, 21, (),
+              _probe_tool_schema_render, "tool schema fields in served prompt"),
+    ProbeSpec("python_encoder_role_welding", ("56",), 0, True, 21, (),
+              _probe_python_encoder_role_welding, "inline system role concatenation"),
+    ProbeSpec("reasoning_replay_visibility", ("59",), 0, True, 21, (),
+              _probe_reasoning_replay_visibility, "reasoning replay visibility"),
+    ProbeSpec("clock_prompt_prefix", ("93",), 0, False, 12, (),
+              _probe_clock_prompt_prefix, "structural clock-prefix stability"),
+    ProbeSpec("ling_thinking_field_placement", ("126",), 2, False, 18, (),
+              _probe_ling_thinking_field_placement, "Ling thinking-off answer routing"),
+    ProbeSpec("structured_json_duplication", ("138",), 1, False, 18, (),
+              _probe_structured_json_duplication, "structured JSON content parsing"),
+    ProbeSpec("unicode_tool_serialization", ("148",), 0, True, 20, (),
+              _probe_unicode_tool_serialization, "Unicode tool schema serialization"),
+    ProbeSpec("declared_server_token_cap", ("32",), 1, False, 13, (),
+              _probe_declared_server_token_cap, "user-declared maximum token cap"),
+    ProbeSpec("thinking_budget_marker_ids", ("153",), 0, False, 11, (),
+              _probe_thinking_budget_marker_ids, "processor/tokenizer marker IDs"),
+    ProbeSpec("prefix_slot_residency", ("155",), 3, False, 10, (),
+              _probe_prefix_slot_residency, "bounded prefix slot cache screen"),
+    ProbeSpec("ngram_async_scheduling", ("157",), 0, False, 10, (),
+              _probe_ngram_async_scheduling, "reported ngram async scheduler state"),
     ProbeSpec(
         "generation_readiness", ("112",), 1, True, 99, (),
         _probe_generation_readiness,
@@ -4574,6 +4824,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", required=True,
                     help="OpenAI-compatible base, e.g. http://localhost:8000/v1")
+    ap.add_argument("--server-max-tokens", type=int, default=None,
+                    help="operator-known serve --max-tokens setting; enables Trap 32 check")
+    ap.add_argument("--thinking-budget-marker-ids", default=None,
+                    help="two processor start/end marker token IDs, e.g. 151667,151668")
     ap.add_argument("--model", default=None)
     ap.add_argument("--api-key", default=None)
     ap.add_argument("--hf-repo", default=None,
