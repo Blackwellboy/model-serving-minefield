@@ -3,9 +3,9 @@
   "coverage": {
     "schema_version": "1.0",
     "summary": {
-      "any_automated_check": 123,
+      "any_automated_check": 129,
       "counts_overlap": true,
-      "endpoint_checks_implemented": 60,
+      "endpoint_checks_implemented": 68,
       "guided_experiments_specified": 161,
       "human_review_possible": 161,
       "log_checks_implemented": 31,
@@ -3615,16 +3615,18 @@
         "id": "49",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server n_tokens, usage.prompt_tokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -4437,16 +4439,18 @@
         "id": "60",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Send one long prompt with a fact at position zero. Record the answer, the finish_reason and the cache-hit delta from the server's metrics. Send the byte-identical prompt again immediately and record the same three. If the cache-hit fraction goes from roughly zero to roughly one and either the answer or the finish reason changes, you have this. Two requests, no configuration change, and it works on any server that exposes prefix-cache counters. To measure a lane honestly afterwards, make every evaluation prompt unique at the front, not just the back. A per-item nonce in the first tokens defeats prefix reuse; varying only the trailing question does not, because the shared head is what gets cached.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -6769,16 +6773,18 @@
         "id": "91",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cache_prompt: false, then hash the completions: ```bash",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "llama.cpp b9878-2da668617 with -np 4 -fa on, one Mistral-family Q80 GGUF of unstated provenance. The mechanism is server-side and we expect it wherever continuous batching changes reduction order, but the length floor and the concurrency shape are measured on this build and this file only, and the floor in particular should be re-measured rather than assumed. We make no claim about Mistral checkpoints generally, about any named model, or about any product. A hardware caveat that matters for anyone reproducing this. The long-prompt result above is not architecture-independent: it holds on sm_120 and does not hold on sm_86 on the same binary and the same weights. See trap 94. Reproducing this on an Ampere card at 444 or more tokens will return a null. Related. Trap 92 is the other divergence source and must be switched off before this one can be characterised. Trap 88 is why cache_prompt: false can be trusted to do that on this build. Found. 2026-07-28, second coverage pass on this file.",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -7141,16 +7147,18 @@
         "id": "96",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "The output contradicts itself, so no external reference is needed: That is a strict inequality violation on this platform, which makes it a clean fail rather than a judgement call. Anything reading free VRAM for capacity decisions should take it from the driver (nvidia-smi --query-gpu=memory.free), not from the serving binary, and should assert the above before trusting either.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "llama.cpp b9878-2da668617 under WSL2, two consumer GPUs. The mechanism is a platform memory-reporting property and we would expect it wherever the CUDA free query returns host availability; we have not checked native Linux, and it may well be correct there. This is not a property of any model, and no model was loaded for the probe. No capability claims. Related. Trap 13 is the allocation-side version of the same confusion between host and device pools. Found. 2026-07-28, incidentally, while capturing device banners for a cross-architecture comparison.",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -7881,16 +7889,18 @@
         "id": "106",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Do not alert on occupancy. Decide with two counters plus the shape of the curve: Sample it on a fixed request-count interval, not a time interval, and read it as: | occupancy | preemptions rising | verdict | |---|---|---| | climbing | no | cache filling. Normal. Wait for the plateau. | | plateaued | no | steady state. This is health, at any percentage. | | any | yes | real pressure. Act on this, not on the percentage. | | climbing | no, but never plateaus and requests slow | investigate; you may genuinely be leaking |",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -8701,16 +8711,18 @@
         "id": "117",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -9665,16 +9677,18 @@
         "id": "130",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraph_capture_sizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -10035,16 +10049,18 @@
         "id": "135",
         "modalities": {
           "endpoint_probe": {
-            "can_prove_clean": false,
+            "can_prove_clean": true,
             "confirm_criterion": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrency_execution_proof_preflight.py.",
             "expected_duration": "under one minute",
-            "implemented_checker": null,
+            "implemented_checker": "doctor/minefield_doctor.py",
             "limitations": "",
-            "possible_match_only": true,
+            "possible_match_only": false,
             "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-            "required_inputs": [],
+            "required_inputs": [
+              "OpenAI-compatible base URL"
+            ],
             "safety_level": "bounded read-only requests",
-            "state": "not_yet_designed"
+            "state": "implemented"
           },
           "guided_experiment": {
             "can_prove_clean": false,
@@ -17273,8 +17289,8 @@
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
     "canonical_trap_count": 161,
-    "content_sha256": "96671f24fb0977e86901e168f1f14d899ac3512c5107a256cbb310c8cf8c5411",
-    "doctor_implemented_trap_count": 60,
+    "content_sha256": "63fabb47217501b4f869fa2e57e5c5cabe8df54cdc65836718e3710ba56abaed",
+    "doctor_implemented_trap_count": 68,
     "entries": [
       {
         "affected_models": [
@@ -20613,14 +20629,15 @@
         "check": "Assert the tokenized length, not the string length, and log the server's own count for every benchmark prompt. The tell that actually caught it: the KV-cache offset read 801 after a run labelled \"4096 context\". Any place your harness can observe a real token count, cache offset, server n_tokens, usage.prompt_tokens on a cold request, should be asserted against the target, not just printed. Related counting trap, same check: on some servers the API's prompt-token field is the delta from the cached prefix, not the absolute prompt length, so a warm request under-reports. Verify on a",
         "contributor": "TheTom",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/evaluation/49-prompt-not-tokenized-to-target.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -21363,14 +21380,15 @@
         "check": "Send one long prompt with a fact at position zero. Record the answer, the finish_reason and the cache-hit delta from the server's metrics. Send the byte-identical prompt again immediately and record the same three. If the cache-hit fraction goes from roughly zero to roughly one and either the answer or the finish reason changes, you have this. Two requests, no configuration change, and it works on any server that exposes prefix-cache counters. To measure a lane honestly afterwards, make every evaluation prompt unique at the front, not just the back. A per-item nonce in the first tokens defeats prefix reuse; varying only the trailing question does not, because the shared head is what gets cached.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/60-cold-prefill-and-cache-hit-disagree.md"
         },
         "evidence_strength": [
           "measured here, raw not published"
@@ -23498,14 +23516,15 @@
         "check": "Send N identical requests at concurrency 2 with a prompt of at least a few hundred tokens, temperature: 0, a fixed seed, and cache_prompt: false, then hash the completions: ```bash",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -23841,14 +23860,15 @@
         "check": "The output contradicts itself, so no external reference is needed: That is a strict inequality violation on this platform, which makes it a clean fail rather than a judgement call. Anything reading free VRAM for capacity decisions should take it from the driver (nvidia-smi --query-gpu=memory.free), not from the serving binary, and should assert the above before trusting either.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/memory/96-list-devices-reports-host-memory-as-device-free-memory.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -24551,14 +24571,15 @@
         "check": "Do not alert on occupancy. Decide with two counters plus the shape of the curve: Sample it on a fixed request-count interval, not a time interval, and read it as: | occupancy | preemptions rising | verdict | |---|---|---| | climbing | no | cache filling. Normal. Wait for the plateau. | | plateaued | no | steady state. This is health, at any percentage. | | any | yes | real pressure. Act on this, not on the percentage. | | climbing | no, but never plateaus and requests slow | investigate; you may genuinely be leaking |",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/memory/106-kv-occupancy-ceiling-is-not-a-leak.md"
         },
         "evidence_strength": [
           "reproduced here"
@@ -25335,14 +25356,15 @@
         "check": "Do not read the \"non-default args\" echo, which reports what you asked for. Read the resolved config, printed by Initializing a V1 LLM engine: 'fuse_gemm_comms': False after you passed true is the trap. Confirm which of the two reasons applies, straight from the shipped source: in table: False, or a model hidden_size below the printed floor, is the cause.",
         "contributor": "tonyd2wild",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/117-fuse-gemm-comms-accepted-then-disabled.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -26304,14 +26326,15 @@
         "check": "Grep the startup log for \"Capturing CUDA graphs\" and the effective cudagraph_capture_sizes list. Compare the largest list entry against the value passed to the capture-size flag (or recompute it as the serve line does). If the flag value exceeds the last list entry, your largest decode shape is eager, and no later log line will tell you.",
         "contributor": "@sethforprivacy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/runtime/130-cudagraph-clamp-runs-top-shape-eager.md"
         },
         "evidence_strength": [
           "contributor-measured, conditions as reported"
@@ -26657,14 +26680,15 @@
         "check": "Require evidence from completed work, not request admission alone. At minimum compare C1 vs C2 vs C4 and record: - batch wall (time to finished batch), - aggregate completed output tokens, - aggregate completed tok/s, - requests/sec, - per-request latency, - active sequences / running requests if the server exposes them, - queue wait if available, - scheduler / slot / lock state where inspectable. Strong serialization signature: - C doubles, - batch wall approaches ~2x, - aggregate throughput remains approximately flat, - active model execution does not materially increase. Optional discriminator: in a safe test build, instrument or temporarily remove the serialization gate and show throughput / execution concurrency change. Do not require private implementation knowledge for the basic check. Offline metadata helper (no endpoint contact): checks/concurrency_execution_proof_preflight.py.",
         "contributor": "Blackwellboy",
         "diagnostic_modalities": [
+          "endpoint_probe",
           "static_config",
           "log_scan",
           "guided_experiment",
           "human_review"
         ],
         "doctor_coverage": {
-          "implemented": false,
-          "source": null
+          "implemented": true,
+          "source": "doctor/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md"
         },
         "evidence_strength": [
           "measured here, raw not published"
