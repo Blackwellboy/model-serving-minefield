@@ -143,6 +143,11 @@ DEFAULTS = {
     "strip_toggle_paths": False,
     "history_text_repr": False,
     "inline_system_mode": "preserve",
+    "tool_args_string_dropped": False,
+    "empty_system_header": False,
+    "tool_first_extra_end": False,
+    "kwarg_type_reject": False,
+    "metrics_running": None,
 }
 
 
@@ -176,8 +181,10 @@ def render_prompt(cfg, messages, kwargs):
         or kwargs.get("include_reasoning") is True
     )
     out = []
+    if cfg["empty_system_header"] and not any(m.get("role") == "system" for m in messages):
+        out.append("<|im_start|>system\n<|im_end|>\n")
     if cfg["baked_default_system"] and not any(m.get("role") == "system" for m in messages):
-        out.append("<|im_start|>system\\nBe helpful and cheerful.<|im_end|>\\n")
+        out.append("<|im_start|>system\nBe helpful and cheerful.<|im_end|>\n")
     field = cfg["reasoning_field"] or "reasoning_content"
     last_user = max(
         (i for i, m in enumerate(messages) if m.get("role") == "user"),
@@ -208,6 +215,19 @@ def render_prompt(cfg, messages, kwargs):
                 and i == last_user and deferred_system):
             content = content + "\n" + "\n".join(deferred_system)
         if role == "assistant":
+            if m.get("tool_calls"):
+                for call in m["tool_calls"]:
+                    args = (call.get("function") or {}).get("arguments")
+                    if isinstance(args, str):
+                        if cfg["tool_args_string_dropped"]:
+                            args = None
+                        else:
+                            try:
+                                args = json.loads(args)
+                            except (TypeError, ValueError):
+                                args = None
+                    if isinstance(args, dict):
+                        out.append("".join(str(v) for v in args.values()))
             trace = m.get(field) or ""
             if not trace:
                 # a well-behaved template emits no wrapper when there is
@@ -221,6 +241,8 @@ def render_prompt(cfg, messages, kwargs):
                            f"{content}<|im_end|>\n")
         else:
             out.append(f"<|im_start|>{role}\n{content}<|im_end|>\n")
+    if cfg["tool_first_extra_end"] and messages and messages[0].get("role") == "tool":
+        out.append("<|im_end|>\n")
     out.append("<|im_start|>assistant\n" + ("<think>\n" if thinking else ""))
     return "".join(out)
 
@@ -241,6 +263,17 @@ def _make_lane_handler(cfg):
             self.wfile.write(body)
 
         def do_GET(self):
+            if self.path == "/metrics":
+                if cfg["metrics_running"] is None:
+                    return self._send(404, {"error": "not found"})
+                body = ("# HELP vllm:num_requests_running active requests\n"
+                        "vllm:num_requests_running " + str(cfg["metrics_running"]) + "\n").encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if self.path == "/v1/models":
                 model = {"id": MODEL}
                 if cfg["sglang"]:
@@ -369,6 +402,11 @@ def _make_lane_handler(cfg):
             if path == "/apply-template":
                 if not (cfg["render"] and cfg["props"]):
                     return self._send(404, {"error": "not found"})
+                if (cfg["kwarg_type_reject"]
+                        and isinstance(kw.get("enable_thinking"), str)):
+                    return self._send(400, {"error": {
+                        "message": 'invalid type for "enable_thinking" '
+                                   '(expected boolean, got string)'}})
                 roles = [m.get("role") for m in msgs]
                 if (cfg["tool_followup_400"] and roles ==
                         ["user", "assistant", "tool", "user"]
