@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-13 - Doctor 60: controlled and evidence-gated live diagnostics
+
+- Eleven numbered live Doctor entries added: [24](traps/template/24-official-template-breaks-cpp-jinja.md), [32](traps/runtime/32-mlx-server-max-tokens-is-a-default-not-a-cap.md), [56](traps/template/56-checkpoint-ships-no-chat-template.md), [59](traps/reasoning/59-reasoning-roundtrip-confabulation.md), [93](traps/template/93-clock-in-system-prompt-is-inert-and-the-mitigation-is-inverted.md), [126](traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md), [138](traps/evaluation/138-ngram-prompt-lookup-duplicates-structured-output-tokens.md), [148](traps/template/148-tool-json-ascii-escaping-changes-prompt.md), [153](traps/reasoning/153-thinking-budget-hardcodes-wrong-marker-ids.md), [155](traps/runtime/155-prefix-slot-policy-thrashes-long-conversations.md), and [157](traps/runtime/157-ngram-speculation-disables-async-scheduling.md).
+- Render helper now accepts tool definitions to inspect the actual schema serialization. All new checks distinguish observed narrow failures from unverified root causes and never infer a CLEAN from absent optional evidence.
+- Two new optional CLI inputs enable evidence-bound checks for server token defaults and thinking-budget marker IDs. Conditional full-run request ceiling documented as 35; selected lite probes retain their existing budget cap.
+- Added synthetic bad/negative/no-evidence regression fixtures for the newly registered probes. Coverage targets: live Doctor 49→60; overall automatic 121→123, pending derived generation and integrity gate.
+
 ## 2026-10-13 - faster CI fixtures and six bounded Doctor probes
 
 - Accelerated the local fixture-server stop polling interval from 0.5s to 0.01s. The full verdict suite and mutation suite still gate merging.
