@@ -16,7 +16,7 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 19 generation requests, each capped at 512 output
+    completions (at most 28 generation requests, each capped at 512 output
     tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
@@ -85,6 +85,12 @@ TRAP_PATHS = {
     "43": "template/43-tool-args-string-not-mapping.md",
     "69": "template/69-minor-template-defects.md",
     "85": "reasoning/85-enable-thinking-typechecked-though-never-read.md",
+    "112": "runtime/112-process-liveness-is-not-model-readiness.md",
+    "64": "reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md",
+    "65": "reasoning/65-parser-only-rescue-kwarg.md",
+    "149": "evaluation/149-thinking-on-json-schema-can-runaway.md",
+    "156": "evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
+    "158": "reasoning/158-empty-thought-markers-count-as-reasoning.md",
     "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
@@ -150,6 +156,12 @@ TRAPS_NEVER_CLEAN = {
           "establishes the LABEL. Trap 10 is about the kernel path the engine "
           "actually took, which needs a runtime tell, so this check can reach "
           "INCONCLUSIVE but never CLEAN",
+    "65": "force_nonempty_content can be observed only under a demonstrated "
+          "empty-at-cap baseline, so absence of that shape never clears the trap",
+    "156": "one bounded request without a retokenized undercount cannot clear "
+           "long-running requeue accounting on ExLlamaV3",
+    "158": "a single post-tool reply lacking empty markers cannot refute a "
+           "probabilistic template branch observed under longer workloads",
     "22": "a budget floor is a distribution across sizes and budgets; this "
           "tool sends one request at one budget, so it never reaches a "
           "trap-22 verdict in either direction",
@@ -1441,6 +1453,353 @@ def check_shared_endpoint_contention(doc, root, key):
         asserts=[A("entire timed benchmark had no neighbouring work",
                    {"snapshot_running": peak,
                     "time_window_verified": False}, held=False)])
+
+
+
+def check_generation_readiness(doc, base, key):
+    """Trap 112: authenticated model-list success is not model generation."""
+    if not doc.model:
+        doc.skip(["112"], "authenticated model readiness",
+                 "the model list did not provide a served-model identity",
+                 code="READINESS_MODEL_UNKNOWN",
+                 asserts=[A("model identity known", None, held=False)])
+        return
+    st, choice, payload = chat(
+        doc, base, key, doc.model,
+        [{"role": "user", "content": "MF112 say READY."}], max_tokens=16)
+    if st != 200:
+        doc.problem(["112"], "model list was available but a bounded "
+                    "first-forward generation returned an HTTP/transport failure",
+                    "classify HTTP/auth/model-list and generation separately; "
+                    "do not report a live wrapper as ready",
+                    code="READINESS_GENERATION_FAILED",
+                    asserts=[A("bounded first forward returns HTTP 200",
+                               {"http_status": st}, held=False)])
+        return
+    if not isinstance(choice, dict):
+        doc.inconclusive(["112"], "authenticated model readiness",
+                         "the generation envelope was malformed or missing a choice",
+                         code="READINESS_ENVELOPE_UNUSABLE",
+                         asserts=[A("response contains a completion choice",
+                                    str(payload)[:100], held=False)])
+        return
+    msg = choice.get("message") or {}
+    text = msg.get("content")
+    returned_model = payload.get("model") if isinstance(payload, dict) else None
+    good = (isinstance(text, str) and bool(text.strip())
+            and choice.get("finish_reason") in ("stop", "length")
+            and returned_model == doc.model)
+    doc.evidence["trap112_readiness"] = {
+        "status": st, "expected_model": doc.model,
+        "response_model": returned_model,
+        "finish_reason": choice.get("finish_reason"),
+        "content_present": isinstance(text, str) and bool(text.strip()),
+    }
+    if good:
+        doc.ok(["112"], "authenticated model identity and one bounded "
+               "generation are both verified on this lane, not just HTTP liveness",
+               code="READINESS_GENERATION_CONFIRMED",
+               asserts=[A("expected model generated nonempty content",
+                          doc.evidence["trap112_readiness"])])
+    else:
+        doc.inconclusive(["112"], "authenticated model readiness",
+                         "the response did not prove expected-model content "
+                         "generation; a 200 alone is not readiness",
+                         code="READINESS_GENERATION_UNPROVEN",
+                         asserts=[A("expected model completed usable generation",
+                                    doc.evidence["trap112_readiness"], held=False)])
+
+
+def check_toggle_conflict_routing(doc, base, key):
+    """Trap 64: a /no_think substring must not move answer to reasoning."""
+    if doc.stack not in ("vllm", "sglang"):
+        doc.skip(["64"], "thinking-toggle answer-field conflict",
+                 "requires a tested template/parser stack; skip generic and "
+                 "llama.cpp routes rather than interpreting their field dialect",
+                 code="TOGGLE_CONFLICT_STACK_UNSUPPORTED",
+                 asserts=[A("supported vLLM/SGLang-like stack",
+                            doc.stack, held=False)])
+        return
+    arms = {}
+    for label, suffix in (("baseline", ""), ("conflict", " /no_think")):
+        st, choice, raw = chat(
+            doc, base, key, doc.model,
+            [{"role": "user", "content": "Name the largest planet." + suffix}],
+            max_tokens=96, chat_template_kwargs={"enable_thinking": True})
+        arms[label] = (st, choice, raw)
+    base_st, baseline, _ = arms["baseline"]
+    bad_st, conflicted, _ = arms["conflict"]
+    if base_st != 200 or not isinstance(baseline, dict):
+        doc.skip(["64"], "thinking-toggle answer-field conflict",
+                 "a usable baseline response was not obtained",
+                 code="TOGGLE_CONFLICT_BASELINE_MISSING",
+                 asserts=[A("baseline response usable", base_st, held=False)])
+        return
+    answer = (baseline.get("message") or {}).get("content") or ""
+    if not isinstance(answer, str) or not answer.strip() or bad_st != 200 or not isinstance(conflicted, dict):
+        doc.inconclusive(["64"], "thinking-toggle answer-field conflict",
+                         "the paired baseline/conflict responses could not be "
+                         "compared for answer-field movement",
+                         code="TOGGLE_CONFLICT_PAIR_INCOMPLETE",
+                         asserts=[A("both responses have usable comparison content",
+                                    {"baseline": bool(answer), "conflict_status": bad_st},
+                                    held=False)])
+        return
+    msg = conflicted.get("message") or {}
+    content = msg.get("content")
+    reasoning = msg.get("reasoning_content") or msg.get("reasoning") or ""
+    moved = (conflicted.get("finish_reason") == "stop" and
+             not content and isinstance(reasoning, str) and
+             answer.strip().casefold() in reasoning.casefold())
+    doc.evidence["trap64_field_pair"] = {
+        "base_content_present": bool(answer),
+        "conflict_content_present": bool(content),
+        "conflict_reasoning_present": bool(reasoning),
+        "baseline_answer_found_in_reasoning": moved,
+    }
+    if moved:
+        doc.problem(["64"], "baseline answer reappeared only inside the "
+                    "reasoning field after the /no_think user-text marker",
+                    "treat 200 with null content as a failure for agent clients; "
+                    "do not silently score an empty answer",
+                    code="TOGGLE_CONFLICT_ANSWER_MOVED",
+                    asserts=[A("answer remains in content after text toggle",
+                               doc.evidence["trap64_field_pair"], held=False)])
+    elif isinstance(content, str) and content.strip():
+        doc.ok(["64"], "paired short request retained nonempty assistant "
+               "content with and without the text toggle",
+               code="TOGGLE_CONFLICT_CONTENT_PRESERVED",
+               asserts=[A("both paired response contents nonempty",
+                          doc.evidence["trap64_field_pair"])])
+    else:
+        doc.inconclusive(["64"], "thinking-toggle answer-field conflict",
+                         "content was empty but the baseline answer was not "
+                         "proven to have moved into the reasoning field",
+                         code="TOGGLE_CONFLICT_UNATTRIBUTED_EMPTY",
+                         asserts=[A("answer movement attributable to parser/template disagreement",
+                                    doc.evidence["trap64_field_pair"], held=False)])
+
+
+def check_parser_nonempty_rescue(doc, base, key):
+    """Trap 65: only test the parser rescue when the baseline actually caps empty."""
+    messages = [{"role": "user", "content": "Explain the detailed steps to solve a puzzle."}]
+    st, original, _ = chat(
+        doc, base, key, doc.model, messages, max_tokens=48,
+        chat_template_kwargs={"enable_thinking": True})
+    if st != 200 or not isinstance(original, dict):
+        doc.skip(["65"], "parser-only force_nonempty_content rescue",
+                 "the bounded control request was unavailable",
+                 code="PARSER_RESCUE_BASELINE_UNAVAILABLE",
+                 asserts=[A("control completion succeeds", st, held=False)])
+        return
+    msg = original.get("message") or {}
+    reason = msg.get("reasoning_content") or msg.get("reasoning") or ""
+    if original.get("finish_reason") != "length" or msg.get("content") or not reason:
+        doc.inconclusive(["65"], "parser-only force_nonempty_content rescue",
+                         "the baseline did not exhibit empty-content-at-cap; "
+                         "a second request cannot establish the rescue semantics",
+                         code="PARSER_RESCUE_PRECONDITION_ABSENT",
+                         asserts=[A("control has empty content and nonempty "
+                                    "reasoning at a length cap", False, held=False)])
+        return
+    st2, rescued, _ = chat(
+        doc, base, key, doc.model, messages, max_tokens=48,
+        chat_template_kwargs={
+            "enable_thinking": True, "force_nonempty_content": True})
+    if st2 == 200 and isinstance(rescued, dict):
+        m2 = rescued.get("message") or {}
+        resc = m2.get("content") or ""
+        if (rescued.get("finish_reason") == "length" and
+                isinstance(resc, str) and resc.strip()
+                and not (m2.get("reasoning_content") or m2.get("reasoning"))):
+            doc.problem(["65"], "empty-content-at-cap occurred in the "
+                        "control and force_nonempty_content moved text into "
+                        "the content field on the matched rescue arm",
+                        "this makes truncated reasoning visible but does not "
+                        "make it a complete answer or prove the parser source",
+                        code="PARSER_RESCUE_OBSERVED",
+                        asserts=[A("control does not lose content at cap",
+                                   {"control_empty": True, "rescue_content": True},
+                                   held=False)])
+            return
+    doc.inconclusive(["65"], "parser-only force_nonempty_content rescue",
+                     "the control capped empty but the rescue arm did not "
+                     "establish the described field relocation",
+                     code="PARSER_RESCUE_NOT_ESTABLISHED",
+                     asserts=[A("rescue arm moves truncated content",
+                                {"status": st2}, held=False)])
+
+
+def check_thinking_json_schema(doc, base, key):
+    """Trap 149: paired off/on strict JSON schema with a minimal fixed contract."""
+    schema = {"type": "object", "properties": {
+                  "answer": {"type": "string", "enum": ["OK"]}},
+              "required": ["answer"], "additionalProperties": False}
+    fmt = {"type": "json_schema", "json_schema": {
+        "name": "minefield_149", "strict": True, "schema": schema}}
+    results = {}
+    for name, flag in (("off", False), ("on", True)):
+        st, choice, payload = chat(
+            doc, base, key, doc.model,
+            [{"role": "user", "content": "Output JSON with answer exactly OK."}],
+            max_tokens=256, response_format=fmt,
+            chat_template_kwargs={"enable_thinking": flag})
+        results[name] = (st, choice)
+    def classify(pair):
+        st, choice = pair
+        if st != 200 or not isinstance(choice, dict):
+            return "unavailable"
+        content = (choice.get("message") or {}).get("content")
+        try:
+            parsed = json.loads(content) if isinstance(content, str) else None
+        except (ValueError, TypeError):
+            parsed = None
+        if (choice.get("finish_reason") == "stop" and
+                isinstance(parsed, dict) and parsed == {"answer": "OK"}):
+            return "valid_stop"
+        if choice.get("finish_reason") == "length" and parsed is None:
+            return "invalid_at_cap"
+        return "other"
+    off = classify(results["off"])
+    on = classify(results["on"])
+    doc.evidence["trap149_arms"] = {"off": off, "on": on}
+    if off != "valid_stop":
+        doc.inconclusive(["149"], "thinking-mode strict JSON-schema control",
+                         "thinking-off did not establish schema enforcement; "
+                         "mode-dependent failure cannot be attributed",
+                         code="JSON_SCHEMA_OFF_CONTROL_NOT_VALID",
+                         asserts=[A("strict schema off-mode returns valid JSON and stop",
+                                    doc.evidence["trap149_arms"], held=False)])
+    elif on == "invalid_at_cap":
+        doc.problem(["149"], "strict JSON schema passes thinking-off but "
+                    "thinking-on emits invalid JSON at the explicit token cap",
+                    "gate structured-output mode per serving stack; do not "
+                    "infer thinking-on correctness from thinking-off success",
+                    code="JSON_SCHEMA_THINKING_ON_RUNAWAY",
+                    asserts=[A("matched strict JSON works in both thinking modes",
+                               doc.evidence["trap149_arms"], held=False)])
+    elif on == "valid_stop":
+        doc.ok(["149"], "both thinking-on and thinking-off produced valid "
+               "schema-conformant JSON with finish_reason=stop on matched requests",
+               code="JSON_SCHEMA_BOTH_MODES_VALID",
+               asserts=[A("both strict-schema render modes valid",
+                          doc.evidence["trap149_arms"])])
+    else:
+        doc.inconclusive(["149"], "thinking-mode strict JSON-schema control",
+                         "thinking-off passed, but thinking-on was neither a "
+                         "valid stop nor the documented invalid-at-cap shape",
+                         code="JSON_SCHEMA_ON_OTHER",
+                         asserts=[A("thinking-on clean or exact runaway signature",
+                                    doc.evidence["trap149_arms"], held=False)])
+
+
+def check_output_token_accounting(doc, base, root, key):
+    """Trap 156: bounded retokenization cross-check, never assume requeue cause."""
+    cap = 256
+    st, choice, payload = chat(
+        doc, base, key, doc.model,
+        [{"role": "user", "content":
+          "Generate a long numbered list of 100 consecutive integers."}],
+        max_tokens=cap)
+    if st != 200 or not isinstance(choice, dict) or not isinstance(payload, dict):
+        doc.skip(["156"], "completion-token usage consistency",
+                 "generation body or usage was not available",
+                 code="OUTPUT_ACCOUNTING_RESPONSE_UNAVAILABLE",
+                 asserts=[A("completion and usage present", st, held=False)])
+        return
+    usage = payload.get("usage") or {}
+    reported = usage.get("completion_tokens")
+    message = choice.get("message") or {}
+    text = (message.get("reasoning_content") or message.get("reasoning") or "") + (
+        message.get("content") or "")
+    if (choice.get("finish_reason") != "length" or
+            not isinstance(reported, int) or reported >= cap // 2 or
+            not text.strip()):
+        doc.inconclusive(["156"], "completion-token usage consistency",
+                         "this bounded request did not exhibit the low-count "
+                         "at-length precondition for the requeue undercount shape",
+                         code="OUTPUT_ACCOUNTING_PRECONDITION_ABSENT",
+                         asserts=[A("length-stop plus low reported count",
+                                    {"finish": choice.get("finish_reason"),
+                                     "reported": reported}, held=False)])
+        return
+    retok_st, retok_raw = post(
+        root + "/tokenize",
+        {"model": doc.model, "prompt": text, "return_token_strs": True},
+        key, timeout=30)
+    try:
+        retok = json.loads(retok_raw) if retok_st == 200 else {}
+        counted = retok.get("count")
+        if not isinstance(counted, int):
+            counted = len(retok.get("tokens") or retok.get("token_ids") or [])
+    except (TypeError, ValueError):
+        counted = None
+    doc.evidence["trap156_usage"] = {
+        "reported": reported, "retokenized": counted, "cap": cap}
+    if counted is not None and counted > max(reported * 2, cap // 2):
+        doc.problem(["156"], "returned text retokenizes to far more tokens "
+                    "than the API reports after a length stop",
+                    "preserve raw text and usage separately; suspected "
+                    "requeue accounting must be confirmed in source or a soak",
+                    code="OUTPUT_USAGE_UNDERCOUNT_OBSERVED",
+                    asserts=[A("reported usage consistent with returned tokens",
+                               doc.evidence["trap156_usage"], held=False)])
+    else:
+        doc.inconclusive(["156"], "completion-token usage consistency",
+                         "retokenization was absent or did not establish the "
+                         "reported-versus-observed undercount",
+                         code="OUTPUT_USAGE_NOT_SETTLED",
+                         asserts=[A("retokenization proves the requeue undercount",
+                                    doc.evidence["trap156_usage"], held=False)])
+
+
+def check_post_tool_empty_reasoning_usage(doc, base, key):
+    """Trap 158: differentiate empty reasoning markers from actual thought."""
+    messages = [
+        {"role": "user", "content": "Call a helper then continue."},
+        {"role": "assistant", "content": None, "tool_calls": [{
+            "id": "callabc12", "type": "function",
+            "function": {"name": "lookup", "arguments": "{}"}}]},
+        {"role": "tool", "tool_call_id": "callabc12",
+         "name": "lookup", "content": "done"},
+        {"role": "user", "content": "Reply OK."},
+    ]
+    st, choice, payload = chat(
+        doc, base, key, doc.model, messages, max_tokens=64,
+        chat_template_kwargs={"enable_thinking": False})
+    if st != 200 or not isinstance(choice, dict) or not isinstance(payload, dict):
+        doc.skip(["158"], "empty-thought reasoning-token usage after tools",
+                 "post-tool request was not supported on this lane",
+                 code="POST_TOOL_REASONING_PROBE_UNAVAILABLE",
+                 asserts=[A("post-tool reply returned usable envelope",
+                            st, held=False)])
+        return
+    usage = payload.get("usage") or {}
+    count = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")
+    if count is None:
+        count = (usage.get("output_tokens_details") or {}).get("reasoning_tokens")
+    msg = choice.get("message") or {}
+    reason = msg.get("reasoning_content") or msg.get("reasoning") or ""
+    doc.evidence["trap158_post_tool"] = {
+        "reasoning_tokens": count,
+        "reasoning_text_present": bool(reason)}
+    if count == 2 and not reason:
+        doc.problem(["158"], "thinking-off post-tool response reports exactly "
+                    "two reasoning tokens while its reasoning text is empty",
+                    "check raw thought markers before treating nonzero token "
+                    "count as substantive reasoning; this observation alone "
+                    "does not prove which two token IDs were emitted",
+                    code="POST_TOOL_EMPTY_REASONING_TWO_TOKENS",
+                    asserts=[A("thinking-off empty reasoning reports zero tokens",
+                               doc.evidence["trap158_post_tool"], held=False)])
+    else:
+        doc.inconclusive(["158"], "empty-thought reasoning-token usage after tools",
+                         "no exact two-token/empty-text mismatch on this single "
+                         "tool-turn sample; lack of counters or one negative "
+                         "sample cannot refute a probabilistic template branch",
+                         code="POST_TOOL_REASONING_NOT_SETTLED",
+                         asserts=[A("post-tool template branch characterized",
+                                    doc.evidence["trap158_post_tool"], held=False)])
 
 
 def check_baked_default_system(doc, root, key):
@@ -3557,6 +3916,30 @@ class ProbeSpec:
         self.title = title
 
 
+def _probe_generation_readiness(doc, base, root, args):
+    check_generation_readiness(doc, base, args.api_key)
+
+
+def _probe_toggle_conflict_routing(doc, base, root, args):
+    check_toggle_conflict_routing(doc, base, args.api_key)
+
+
+def _probe_parser_nonempty_rescue(doc, base, root, args):
+    check_parser_nonempty_rescue(doc, base, args.api_key)
+
+
+def _probe_thinking_json_schema(doc, base, root, args):
+    check_thinking_json_schema(doc, base, args.api_key)
+
+
+def _probe_output_token_accounting(doc, base, root, args):
+    check_output_token_accounting(doc, base, root, args.api_key)
+
+
+def _probe_post_tool_empty_reasoning_usage(doc, base, root, args):
+    check_post_tool_empty_reasoning_usage(doc, base, args.api_key)
+
+
 def _probe_request_validation(doc, base, root, args):
     check_request_validation(doc, base, args.api_key)
 
@@ -3683,6 +4066,36 @@ PROBE_SPECS = (
         "request_validation", ("77",), 2, True, 100, (),
         _probe_request_validation,
         "request-field validation (unknown field acceptance)",
+    ),
+    ProbeSpec(
+        "toggle_conflict_routing", ("64",), 2, False, 30, (),
+        _probe_toggle_conflict_routing,
+        "answer field lost after /no_think text-marker conflict",
+    ),
+    ProbeSpec(
+        "parser_nonempty_rescue", ("65",), 2, False, 15, (),
+        _probe_parser_nonempty_rescue,
+        "force_nonempty_content parser rescue at a demonstrated cap",
+    ),
+    ProbeSpec(
+        "thinking_json_schema", ("149",), 2, False, 31, (),
+        _probe_thinking_json_schema,
+        "paired strict JSON schema on/off thinking controls",
+    ),
+    ProbeSpec(
+        "output_token_accounting", ("156",), 1, False, 14, (),
+        _probe_output_token_accounting,
+        "retokenized text versus low completion usage at cap",
+    ),
+    ProbeSpec(
+        "post_tool_empty_reasoning_usage", ("158",), 1, False, 13, (),
+        _probe_post_tool_empty_reasoning_usage,
+        "post-tool empty thought-channel token accounting",
+    ),
+    ProbeSpec(
+        "generation_readiness", ("112",), 1, True, 99, (),
+        _probe_generation_readiness,
+        "authenticated model identity plus bounded real generation",
     ),
     ProbeSpec(
         "model_identity", ("141",), 2, False, 95, (),

@@ -21,7 +21,7 @@ model capability proof.
 The name says doctor, and the name is bigger than the tool. Read it as a
 **thinking-stack preflight**, not a minefield doctor.
 
-Its 43 checks cluster almost entirely on one region of the registry: reasoning
+Its 49 checks cluster almost entirely on one region of the registry: reasoning
 field names, chat templates and history assembly, thinking control kwargs,
 tool parsing, multimodal handling, and token ceilings. That is not an accident of what got built
 first, it is what a read-only, request-shaped probe can reach in under a
@@ -168,13 +168,13 @@ verdict cannot be added without writing down what it rules out.
 
 ## Coverage, stated plainly
 
-The doctor implements checks for **43 of the registry's 161 numbered entries**
+The doctor implements checks for **49 of the registry's 161 numbered entries**
 (01, 02, 03, 04, 07, 10, 12, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 30, 38, 43,
-57, 58, 63, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83, 84, 85, 86, 87, 88, 110, 113, 141).
+57, 58, 63, 64, 65, 66, 67, 68, 69, 72, 73, 77, 78, 80, 82, 83, 84, 85, 86, 87, 88, 110, 112, 113, 141, 149, 156, 158).
 Every run ends with a coverage line:
 
 ```
-implemented 43/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 118
+implemented 49/161 | executed on this stack N | clean N | problems N | inconclusive N | not implemented 112
 ```
 
 `executed on this stack` counts trap ids that received a CLEAN or PROBLEM
@@ -203,6 +203,14 @@ depth, and the coverage block says so every time:
   cannot certify any absent offline-rollout parser; Trap 69 checks only
   two of its three listed artifacts, so a non-finding stays INCONCLUSIVE.
   Trap 85's type-gate check is specific to the llama.cpp template-render route.
+- **112** verifies authenticated model identity with an actual bounded
+  generation. **64, 65, 149, 156, 158** are additional bounded inference
+  checks. The parser rescue check stops when its empty-at-cap precondition
+  is absent. The output-usage check requires an independently retokenized
+  discrepancy; lack of a long requeue sample never clears Trap 156.
+  Trap 158 likewise cannot be cleared by one negative post-tool sample.
+  The complete Doctor now permits at most 28 chat-completion requests; the
+  lite planner still uses its own budget and selective scheduling.
 - **110** inspects a read-only Prometheus request gauge, if available. One
   snapshot cannot certify the entire time window of a benchmark; it
   never produces CLEAN.
@@ -225,7 +233,7 @@ depth, and the coverage block says so every time:
   media path reported as 5xx rather than 4xx (72), and a null
   `prompt_tokens_details` that makes media token cost unattributable (73).
   They ran under advisory ids until those entries were published.
-- The remaining **118** numbered traps have no check in this tool. Many are
+- The remaining **112** numbered traps have no check in this tool. Many are
   reachable offline instead: `minefield scan` reads configs, launch scripts,
   model folders, chat templates, logs and eval results.
 
@@ -258,10 +266,10 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **17 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. 17 is the reachable budget when every applicable probe runs;
+  **28 chat completions**, each capped at 512 output tokens or less, all at
+  temperature 0. 28 is a conservative full-run ceiling with the new conditional probes;
   a lane that skips probes issues fewer, and two contributor-measured SGLang
-  runs issued 14. Size any rate limit on 17, not on an observed count. It also calls render or tokenise routes
+  runs issued 14. Size rate limits for up to 28, not an observed subset. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
   Total cost: roughly one page of tokens and under a minute on a warm lane.

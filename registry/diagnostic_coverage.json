@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "summary": {
-    "any_automated_check": 120,
+    "any_automated_check": 121,
     "counts_overlap": true,
-    "endpoint_checks_implemented": 43,
+    "endpoint_checks_implemented": 49,
     "guided_experiments_specified": 161,
     "human_review_possible": 161,
     "log_checks_implemented": 31,
@@ -4725,16 +4725,18 @@
       "id": "64",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Two requests. Send your normal prompt, then send it again with /no_think appended somewhere harmless, both with your usual enable_thinking setting. Assert content is a non-empty string on both. More generally: assert non-empty content on every response, and treat a null with `finishreason: \"stop\"` as a hard failure rather than an empty answer, because those are two different things and only one of them is the model's opinion.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -4799,16 +4801,18 @@
       "id": "65",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Two steps, both cheap. 1. Read the parser source. It is small; the Super one is 1909 bytes. Grep it for kwarg reads. The kwargs a parser reads are not in the card, not in the template, and not discoverable from the API. 2. Send a request at a tight budget with and without the kwarg and compare content length.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -8311,16 +8315,18 @@
       "id": "112",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Do not treat container status, unauthenticated 401, or bare /health alone as readiness. Prefer authenticated model list plus a bounded generation. Offline adjudicator: checks/endpoint_readiness_hierarchy_probe.py. Required readiness hierarchy: transport response; authentication interpretation; authenticated model-list response; expected served-model identity; minimal real generation; required capability probe. Machine-readable states: NORESPONSE, AUTHREQUIRED, AUTHFAILED, WRONGMODEL, MODELLISTOK, WRAPPERHEALTHONLY, GENERATIONFAILED, GENERATIONOK, CAPABILITYFAILED, CAPABILITYOK, INCONCLUSIVE.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -11053,16 +11059,18 @@
       "id": "149",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Run the same small strict schema with thinking on and off at a budget large enough to distinguish truncation from a short cap. Require finish_reason=stop, JSON parse success, and schema validation in both modes.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -11571,16 +11579,18 @@
       "id": "156",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Retokenize returned reasoning+content with the served tokenizer and compare against reported completion tokens. A length stop with a reported count far below the explicit cap is a strong signature.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
@@ -11719,16 +11729,18 @@
       "id": "158",
       "modalities": {
         "endpoint_probe": {
-          "can_prove_clean": false,
+          "can_prove_clean": true,
           "confirm_criterion": "Inspect both parsed reasoning text and raw/reported reasoning-token count across single-turn, ordinary multi-turn and post-tool-turn cases. Treat exactly an empty marker pair differently from substantive reasoning.",
           "expected_duration": "under one minute",
-          "implemented_checker": null,
+          "implemented_checker": "doctor/minefield_doctor.py",
           "limitations": "",
-          "possible_match_only": true,
+          "possible_match_only": false,
           "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
-          "required_inputs": [],
+          "required_inputs": [
+            "OpenAI-compatible base URL"
+          ],
           "safety_level": "bounded read-only requests",
-          "state": "not_yet_designed"
+          "state": "implemented"
         },
         "guided_experiment": {
           "can_prove_clean": false,
