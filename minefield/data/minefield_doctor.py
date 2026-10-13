@@ -16,8 +16,8 @@ of health. Findings print Core tier first within each bucket (see CORE.md).
 Safety, up front:
   - READ-ONLY. Never restarts anything, never changes server state, never
     writes to your server. GET probes plus a small, fixed set of chat
-    completions (at most 42 generation requests, each capped at 512 output
-    tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
+    completions (at most 48 generation requests including optional controls,
+    each capped at 512 output tokens), plus render or tokenise calls
     that generate nothing.
   - The two multimodal probes send a GENERATED 8x8 PNG built in-process from
     the standard library, and one deliberately non-existent file path. No file
@@ -271,6 +271,7 @@ class Doc:
         self.request_budget = request_budget
         self.stack, self.model, self.build = "unknown", None, None
         self.evidence = {}
+        self.probe_runs = []
 
     def consume_request(self):
         """Reserve one chat-completion request before the HTTP call is issued."""
@@ -3887,6 +3888,13 @@ def check_request_validation(doc, base, key):
                                   max_tokens=16, **{probe_field: "minefield"})
     doc.evidence["unknown_field_probe_status"] = probe_st
 
+    if probe_st not in (200, 400, 422):
+        doc.skip(["77"], "request-field rejection was not established",
+                 "transport/authentication/rate-limit/server failures are not field validation",
+                 code="VALIDATION_REJECTION_UNPROVEN",
+                 asserts=[A("paired request returns a validation-specific status",
+                            {"status": probe_st}, held=False)])
+        return
     if probe_st != 200:
         doc.ok(["77"],
                f"the request surface is validated: an invented top-level "
@@ -3973,6 +3981,13 @@ def check_model_identity(doc, base, key):
         "wrong_model_status": wrong_st,
     }
 
+    if wrong_st not in (200, 400, 404, 422):
+        doc.skip(["141"], "served-model rejection was not established",
+                 "transport/authentication/rate-limit/server failures do not verify model-name validation",
+                 code="MODEL_IDENTITY_REJECTION_UNPROVEN",
+                 asserts=[A("wrong-name request returns a validation-specific status",
+                            {"status": wrong_st}, held=False)])
+        return
     if wrong_st != 200:
         doc.ok(
             ["141"],
@@ -4143,7 +4158,15 @@ def check_tool_choice_gate(doc, base, key):
         max_tokens=256, tools=TOOLS, tool_choice="none")
     doc.evidence["tool_choice_none_status"] = none_st
 
-    if none_st != 200 or none_choice is None:
+    if none_st not in (200, 400, 422) or (none_st == 200 and none_choice is None):
+        doc.skip(["78"], "tool_choice rejection was not established",
+                 "transport/authentication/rate-limit/server failures or malformed 200 responses "
+                 "do not prove that tool_choice was validated",
+                 code="TOOL_CHOICE_REJECTION_UNPROVEN",
+                 asserts=[A("tool_choice response is a usable completion or validation rejection",
+                            {"status": none_st}, held=False)])
+        return
+    if none_st != 200:
         # A server that REJECTS tool_choice:none is not this trap. It is loud,
         # which is the opposite failure and a safe one.
         doc.ok(["78"], f"tool_choice none is rejected outright (http {none_st}), "
@@ -4755,7 +4778,8 @@ def coverage(doc):
     broad bill of health over the registry."""
     implemented = set(TRAP_PATHS)
     prob = doc.trap_ids("PROBLEM")
-    clean = doc.trap_ids("OK") - prob
+    nonclean = prob | doc.trap_ids("INCONCLUSIVE") | doc.trap_ids("UNKNOWN")
+    clean = doc.trap_ids("OK") - nonclean
     unsure = (doc.trap_ids("INCONCLUSIVE") | doc.trap_ids("UNKNOWN")) - prob - clean
     executed = prob | clean
     return {
@@ -4763,6 +4787,7 @@ def coverage(doc):
         "implemented": sorted(implemented),
         "executed": sorted(executed),
         "clean": sorted(clean),
+        "conflicting_verdicts": sorted(doc.trap_ids("OK") & nonclean),
         "problems": sorted(prob),
         "inconclusive": sorted(unsure),
         "not_implemented_count": REGISTRY_TRAP_COUNT - len(implemented),
@@ -5238,7 +5263,7 @@ PROBE_SPECS = (
         "SGLang served-model identity validation",
     ),
     ProbeSpec(
-        "reasoning_fields", ("01", "02", "03", "29"), 2, True, 80, (),
+        "reasoning_fields", ("01", "02", "03", "29"), 4, True, 80, (),
         _probe_reasoning_fields,
         "reasoning field / thinking toggle map",
     ),
@@ -5248,7 +5273,7 @@ PROBE_SPECS = (
         "streaming content deltas",
     ),
     ProbeSpec(
-        "history_assembly", ("04", "20", "25"), 0, True, 70, (),
+        "history_assembly", ("02", "04", "20", "25"), 0, True, 70, (),
         _probe_history_assembly,
         "history / empty-think shell render inspection",
     ),
@@ -5333,7 +5358,7 @@ PROBE_SPECS = (
         "llama.cpp /props versus /slots context semantics",
     ),
     ProbeSpec(
-        "kwarg_deadness", ("03", "29"), 3, False, 40, (),
+        "kwarg_deadness", ("07",), 3, False, 40, (),
         _probe_kwarg_deadness,
         "thinking kwarg acceptance vs behavioural effect",
     ),
@@ -5348,7 +5373,7 @@ PROBE_SPECS = (
         "tool-call surface",
     ),
     ProbeSpec(
-        "tool_choice_gate", ("19",), 2, False, 30, ("tools",),
+        "tool_choice_gate", ("78",), 2, False, 30, ("tools",),
         _probe_tool_choice_gate,
         "tool_choice=none gate",
     ),
@@ -5386,10 +5411,14 @@ def iter_probe_specs(only_ids=None):
         for spec in PROBE_SPECS:
             yield spec
         return
-    wanted = set(only_ids)
-    for spec in PROBE_SPECS:
-        if spec.id in wanted:
-            yield spec
+    by_id = {spec.id: spec for spec in PROBE_SPECS}
+    wanted = tuple(dict.fromkeys(only_ids))
+    unknown = set(wanted) - set(by_id)
+    if unknown:
+        raise ValueError("unknown probe IDs: " + ", ".join(sorted(unknown)))
+    # The preview order is the execution order, including lite priorities.
+    for probe_id in wanted:
+        yield by_id[probe_id]
 
 
 def run(doc, base, root, args, only_ids=None):
@@ -5401,8 +5430,42 @@ def run(doc, base, root, args, only_ids=None):
     """
     # First probe remains request_validation when included: cheapest qualifier
     # for whether parameters are hypotheses vs settings.
-    for spec in iter_probe_specs(only_ids):
-        spec.invoke(doc, base, root, args)
+    # Materialize and validate selection before invoking even the first probe.
+    for spec in tuple(iter_probe_specs(only_ids)):
+        before, first_finding = doc.requests_made, len(doc.findings)
+        record = {"id": spec.id, "declared_traps": list(spec.traps),
+                  "request_cost": spec.request_cost, "status": "RUNNING"}
+        doc.probe_runs.append(record)
+        try:
+            spec.invoke(doc, base, root, args)
+            current = doc.findings[first_finding:]
+            record["status"] = ("UNAVAILABLE" if current and all(
+                f["level"] == "UNKNOWN" for f in current) else
+                "RETURNED" if current else "NO_FINDINGS")
+        except RequestBudgetExceeded:
+            record["status"] = "BUDGET_EXHAUSTED"
+            doc.skip(spec.traps, "probe did not complete within the request budget",
+                     "partial observations cannot clear the unfinished probe",
+                     code="PROBE_BUDGET_EXHAUSTED",
+                     asserts=[A("selected probe completed", spec.id, held=False)])
+            raise
+        except Exception as exc:
+            record["status"] = "ERROR"
+            # Never echo exception text: server bodies may contain credentials.
+            record["error_type"] = type(exc).__name__
+            doc.skip(spec.traps, "probe did not complete",
+                     "unexpected response shape or execution error; inspect private evidence",
+                     code="PROBE_EXECUTION_ERROR",
+                     asserts=[A("selected probe completed", spec.id, held=False)])
+            raise
+        finally:
+            current = doc.findings[first_finding:]
+            record.update({
+                "requests_made": doc.requests_made - before,
+                "finding_count": len(current),
+                "reported_traps": sorted({t for f in current for t in f["traps"]
+                                          if t in TRAP_PATHS}, key=int),
+            })
 
 
 def main():

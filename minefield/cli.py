@@ -93,6 +93,12 @@ def parser() -> argparse.ArgumentParser:
     diag.add_argument("--model")
     diag.add_argument("--version")
     diag.add_argument("--hf-repo")
+    diag.add_argument("--hf-revision", default="main", help="served HF checkpoint revision, not an inferred family")
+    diag.add_argument("--probe", dest="probe_ids", action="append", help="restrict to named probes; repeatable; does not override lite eligibility")
+    diag.add_argument("--server-max-tokens", type=int, help="known serving token flag, 1..255")
+    diag.add_argument("--benchmark-target-tokens", type=int)
+    diag.add_argument("--benchmark-prompt-text", help="exact approved synthetic prompt, at most 8192 characters")
+    diag.add_argument("--thinking-budget-marker-ids", help="configured START,END token IDs")
     diag.add_argument("--log", dest="log_excerpt", help="short log excerpt to include in symptom matching")
     diag.add_argument("--limit", type=int, default=5)
     diag.add_argument("--mode", choices=("lite", "doctor"), default="lite",
@@ -107,6 +113,7 @@ def parser() -> argparse.ArgumentParser:
         help="offline preview of selected Doctor checks and chat request budget (zero network calls)",
     )
     doctor_plan.add_argument("--mode", choices=("lite", "doctor"), default="lite")
+    doctor_plan.add_argument("--probe", dest="probe_ids", action="append", help="restrict the plan to named probes; repeatable")
     doctor_plan.add_argument(
         "--max-requests", type=int,
         help="max chat-completion calls in the eventual run (lite defaults to 5)",
@@ -251,21 +258,31 @@ def main(argv: list[str] | None = None) -> int:
             if not args.model:
                 args.model = input("Model and revision? ").strip() or None
             print()
-        report = diagnose_environment(
-            registry,
-            " ".join(part for part in symptom_parts if part).strip(),
-            paths=args.files,
-            base_url=args.base_url,
-            api_key=args.api_key,
-            stack=args.stack,
-            model=args.model,
-            version=args.version,
-            hf_repo=args.hf_repo,
-            log_excerpt=args.log_excerpt,
-            limit=max(1, args.limit),
-            mode=args.mode,
-            max_requests=args.max_requests,
-        )
+        try:
+            report = diagnose_environment(
+                registry,
+                " ".join(part for part in symptom_parts if part).strip(),
+                paths=args.files,
+                base_url=args.base_url,
+                api_key=args.api_key,
+                stack=args.stack,
+                model=args.model,
+                version=args.version,
+                hf_repo=args.hf_repo,
+                hf_revision=args.hf_revision,
+                probe_ids=args.probe_ids,
+                server_max_tokens=args.server_max_tokens,
+                benchmark_target_tokens=args.benchmark_target_tokens,
+                benchmark_prompt_text=args.benchmark_prompt_text,
+                thinking_budget_marker_ids=args.thinking_budget_marker_ids,
+                log_excerpt=args.log_excerpt,
+                limit=max(1, args.limit),
+                mode=args.mode,
+                max_requests=args.max_requests,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
         if args.text or (not args.json and sys.stdout.isatty()):
             print(render_unified_diagnosis(report, limit=max(1, args.limit)))
         else:
@@ -284,15 +301,20 @@ def main(argv: list[str] | None = None) -> int:
         if invalid:
             print("unknown canonical trap IDs: " + ", ".join(invalid), file=sys.stderr)
             return 2
-        candidate = plan_checks(
-            mode=args.mode,
-            max_requests=args.max_requests,
-            model=args.model,
-            hf_repo=args.hf_repo,
-            capabilities=tuple(args.capability) if args.capability else None,
-            preferred_trap_ids=preferred,
-            detect=False,
-        )
+        try:
+            candidate = plan_checks(
+                mode=args.mode,
+                max_requests=args.max_requests,
+                model=args.model,
+                hf_repo=args.hf_repo,
+                capabilities=tuple(args.capability) if args.capability else None,
+                preferred_trap_ids=preferred,
+                probe_ids=args.probe_ids,
+                detect=False,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
         selected_traps = sorted(
             {str(t).zfill(2) for probe in candidate.selected for t in probe.traps},
             key=int,

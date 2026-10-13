@@ -96,3 +96,23 @@ offline file findings remain static/log leads, and live Doctor findings remain
 bounded endpoint observations. When a small live request budget is used, probes
 whose trap IDs already matched the symptom or supplied files are prioritised
 before generic lite probes. No API key is copied into the result.
+
+## Targeted, reproducible Doctor runs
+
+`plan_checks(probe_ids=("generation_readiness",), mode="doctor", max_requests=1)`
+restricts selection to the named probes. The plan remains offline unless
+`detect=True` is explicit. Unknown IDs and invalid budgets fail before detection.
+`probe_ids` is an allowlist, not a way to bypass lite eligibility. Execution
+uses the plan's selected order, not a second independently ordered catalogue.
+
+`run_checks` and `diagnose_environment` accept `hf_revision`, `server_max_tokens`,
+`benchmark_target_tokens`, `benchmark_prompt_text`, and
+`thinking_budget_marker_ids`. The benchmark inputs must be paired and text is
+limited to 8192 characters; the declared server token flag must be in 1..255.
+All are validated before endpoint access. The MCP `diagnose_environment` tool
+accepts the same fields and `probe_ids`, without enabling any new network route.
+
+`RunResult.probe_runs` and the JSON adapter distinguish invoked/returned,
+unavailable, failed and budget-interrupted work from probes that were selected
+but never started. Legacy JSON keys remain available. Read `not_run_probes`,
+`budget_exceeded`, `error` and `reachable`; an empty finding list is not a pass.

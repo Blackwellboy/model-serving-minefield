@@ -23,6 +23,7 @@ from types import SimpleNamespace
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 from .registry import ROOT
+from .probe_options import validate_operator_inputs, validate_request_budget
 
 __all__ = [
     "RequestBudgetExceeded",
@@ -108,6 +109,7 @@ class RunResult:
     budget_exceeded: bool = False
     error: Optional[str] = None
     reachable: bool = True
+    probe_runs: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -251,6 +253,7 @@ def plan_checks(
     hf_repo: Optional[str] = None,
     detect: bool = False,
     preferred_trap_ids: Optional[Iterable[str]] = None,
+    probe_ids: Optional[Iterable[str]] = None,
 ) -> ProbePlan:
     """Build a deterministic probe plan. Issues zero chat completions.
 
@@ -261,6 +264,25 @@ def plan_checks(
     mode_norm = (mode or "lite").strip().lower()
     if mode_norm not in {"lite", "doctor"}:
         raise ValueError("mode must be 'lite' or 'doctor'")
+
+    # Invalid budgets/selections must fail before optional target detection.
+    validate_request_budget(max_requests)
+    md = _load_doctor()
+    specs = _probe_meta(md)
+    requested = None
+    if probe_ids is not None:
+        if isinstance(probe_ids, (str, bytes)):
+            raise ValueError("probe_ids must be a sequence, not a string")
+        try:
+            requested_values = tuple(probe_ids)
+        except TypeError as exc:
+            raise ValueError("probe_ids must be a sequence of strings") from exc
+        if any(not isinstance(value, str) for value in requested_values):
+            raise ValueError("probe IDs must be strings")
+        requested = set(requested_values)
+        unknown = requested - {spec.id for spec in specs}
+        if unknown:
+            raise ValueError("unknown probe IDs: " + ", ".join(sorted(unknown)))
 
     if target is None:
         if detect:
@@ -332,6 +354,10 @@ def plan_checks(
         )
 
     for spec in candidates:
+        if requested is not None and spec.id not in requested:
+            skipped.append(SkippedProbe(spec.id, tuple(spec.traps), spec.request_cost,
+                                        spec.title, "not_requested"))
+            continue
         # Doctor mode preserves historical behaviour: every catalog probe runs;
         # individual checks still self-skip when preconditions fail. Lite mode
         # filters on declared requires so budgets stay meaningful.
@@ -415,9 +441,22 @@ def run_checks(
     hf_repo: Optional[str] = None,
     hf_revision: str = "main",
     model: Optional[str] = None,
+    server_max_tokens: Optional[int] = None,
+    benchmark_target_tokens: Optional[int] = None,
+    benchmark_prompt_text: Optional[str] = None,
+    thinking_budget_marker_ids: Optional[str] = None,
 ) -> RunResult:
     """Execute a previously constructed plan in-process with a hard budget."""
+    validate_request_budget(plan.max_requests)
+    options = validate_operator_inputs(
+        hf_revision=hf_revision, server_max_tokens=server_max_tokens,
+        benchmark_target_tokens=benchmark_target_tokens,
+        benchmark_prompt_text=benchmark_prompt_text,
+        thinking_budget_marker_ids=thinking_budget_marker_ids,
+    )
     md = _load_doctor()
+    # Reject stale/unknown selections before GET detection, not during execution.
+    tuple(md.iter_probe_specs(plan.selected_ids))
     BudgetExc = getattr(md, "RequestBudgetExceeded", RuntimeError)
 
     target = plan.target
@@ -455,7 +494,7 @@ def run_checks(
         api_key=api_key,
         model=doc.model,
         hf_repo=hf_repo,
-        hf_revision=hf_revision,
+        **options,
         report=False,
         json=None,
     )
@@ -467,6 +506,8 @@ def run_checks(
     except BudgetExc as exc:
         budget_exceeded = True
         err = str(exc)
+    except Exception as exc:
+        err = "probe_execution_error:" + type(exc).__name__
 
     cov = md.coverage(doc)
     return RunResult(
@@ -480,6 +521,7 @@ def run_checks(
         evidence=dict(doc.evidence),
         coverage=cov,
         coverage_line=md.coverage_line(cov),
+        probe_runs=list(doc.probe_runs),
         budget_exceeded=budget_exceeded,
         error=err,
         reachable=True,
@@ -498,6 +540,10 @@ def summarize(result: RunResult) -> Summary:
         for f in _level(level):
             for t in f.get("traps") or []:
                 out.add(str(t))
+        if level == "OK":
+            out.difference_update(str(t) for f in findings
+                                  if f.get("level") in {"PROBLEM", "INCONCLUSIVE", "UNKNOWN"}
+                                  for t in f.get("traps") or [])
         return tuple(sorted(out))
 
     summary_findings = tuple(
@@ -580,6 +626,13 @@ def result_to_doctor_json(result: RunResult) -> dict[str, Any]:
         "request_budget": result.request_budget,
         "plan_mode": result.plan.mode,
         "selected_probes": [p.id for p in result.plan.selected],
+        "probe_runs": list(result.probe_runs),
+        "invoked_probes": [p["id"] for p in result.probe_runs],
+        "not_run_probes": [p.id for p in result.plan.selected
+                           if p.id not in {item["id"] for item in result.probe_runs}],
+        "budget_exceeded": result.budget_exceeded,
+        "error": result.error,
+        "reachable": result.reachable,
         "skipped_probes": [
             {"id": s.id, "reason": s.reason} for s in result.plan.skipped
         ],

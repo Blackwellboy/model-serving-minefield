@@ -17,6 +17,7 @@ from .api import detect_target, plan_checks, result_to_doctor_json, run_checks
 from .coverage import build_coverage
 from .matching import diagnose
 from .scan import scan
+from .probe_options import validate_operator_inputs, validate_request_budget
 
 
 def _ids_from_finding(finding: dict[str, Any]) -> list[str]:
@@ -38,6 +39,12 @@ def diagnose_environment(
     model: str | None = None,
     version: str | None = None,
     hf_repo: str | None = None,
+    hf_revision: str = "main",
+    server_max_tokens: int | None = None,
+    benchmark_target_tokens: int | None = None,
+    benchmark_prompt_text: str | None = None,
+    thinking_budget_marker_ids: str | None = None,
+    probe_ids: Sequence[str] | None = None,
     log_excerpt: str | None = None,
     limit: int = 5,
     mode: str = "lite",
@@ -49,6 +56,15 @@ def diagnose_environment(
     mode=lite defaults to a five-request live budget. mode=doctor keeps the
     Doctor catalogue semantics and has no implicit request cap.
     """
+    validate_request_budget(max_requests)
+    options = validate_operator_inputs(
+        hf_revision=hf_revision, server_max_tokens=server_max_tokens,
+        benchmark_target_tokens=benchmark_target_tokens,
+        benchmark_prompt_text=benchmark_prompt_text,
+        thinking_budget_marker_ids=thinking_budget_marker_ids,
+    )
+    # Validate mode and explicit probe IDs without a target or any network access.
+    plan_checks(mode=mode, max_requests=max_requests, probe_ids=probe_ids, detect=False)
     entries = registry.get("entries") or []
     by_id = {str(entry["id"]).zfill(2): entry for entry in entries}
     coverage = build_coverage(registry)["summary"]
@@ -101,8 +117,10 @@ def diagnose_environment(
             max_requests=budget,
             hf_repo=hf_repo,
             preferred_trap_ids=preferred,
+            probe_ids=probe_ids,
         )
-        run = run_checks(plan, api_key=api_key, hf_repo=hf_repo, model=effective_model)
+        run = run_checks(plan, api_key=api_key, hf_repo=hf_repo,
+                         model=effective_model, **options)
         live_result = result_to_doctor_json(run)
         live_result["target"] = {
             "stack": target.stack,
@@ -247,6 +265,8 @@ def diagnose_environment(
     ]
     if live_warning:
         warnings.append(live_warning)
+    if live_result and (live_result.get("budget_exceeded") or live_result.get("error")):
+        warnings.append("Live pass stopped early; inspect probe_runs and not_run_probes before interpreting coverage.")
     if conflicting_live:
         warnings.append(
             "Conflicting live verdicts for trap IDs "

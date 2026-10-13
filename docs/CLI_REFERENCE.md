@@ -10,11 +10,11 @@ minefield guide SYMPTOM... [--stack STACK] [--model MODEL] [--version VERSION]
                            [--log EXCERPT] [--limit N] [--text | --json]
 minefield diagnose [SYMPTOM...] [--files PATH...] [--base-url URL]
                    [--stack STACK] [--model MODEL] [--version VERSION]
-                   [--mode lite|doctor] [--max-requests N] [--text | --json]
+                   [--mode lite|doctor] [--max-requests N] [--probe ID] [--text | --json]
 minefield bundle [--config FILE] [--log FILE] [--doctor-report FILE]
                  [--output ZIP] [--no-write]
 minefield coverage [--json]
-minefield doctor-plan [--mode lite|doctor] [--max-requests N]
+minefield doctor-plan [--mode lite|doctor] [--max-requests N] [--probe ID]
                       [--preferred-trap ID] [--model NAME] [--hf-repo ORG/MODEL]
                       [--capability tools|streaming|multimodal] [--text]
 minefield agent-bundle [--verify]
@@ -47,6 +47,31 @@ planning hints, not successful detection. Unknown trap IDs and negative budgets
 are rejected. Any preferred trap that is ineligible or does not fit the budget
 is reported as **not selected**, not silently promised. The plan is not an authorization or a replacement for live
 `minefield diagnose --mode lite --max-requests N`.
+
+### Restrict a future pass to named probes
+
+```text
+minefield doctor-plan --mode doctor --probe generation_readiness --max-requests 1 --text
+minefield doctor-plan --mode doctor --probe minicpm_short_answer_channel --max-requests 2 --text
+```
+
+Repeat `--probe` to form a subset. Unknown names are rejected before network
+access. Lite eligibility is still enforced; use explicit `--mode doctor` for
+non-lite probes. The selected order in a plan is also the invocation order.
+Planning never executes those probes or proves their preconditions.
+
+`diagnose` also accepts `--hf-revision REF`, `--server-max-tokens N` (1..255),
+`--benchmark-target-tokens N` together with `--benchmark-prompt-text TEXT`
+(at most 8192 characters), and `--thinking-budget-marker-ids START,END`.
+These must describe the actual approved test inputs, not inferred defaults.
+The exact HF revision reaches the metadata checks instead of silently reverting
+to mutable `main`. Invalid inputs are usage errors before endpoint detection.
+
+The JSON `live_doctor` block separates selected, invoked and not-run probes.
+`probe_runs` records per-probe generation requests and completion state;
+`budget_exceeded`, `error` and `reachable` must be read alongside findings.
+Request budgets count generation requests including streaming chat and legacy
+completions; they do not cap GET/render/tokenizer/metadata HTTP calls.
 
 ## Unified diagnosis
 

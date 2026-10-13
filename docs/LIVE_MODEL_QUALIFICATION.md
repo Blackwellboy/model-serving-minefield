@@ -36,6 +36,17 @@ minefield doctor-plan --mode lite --max-requests 5 --text
 minefield doctor-plan --mode doctor --max-requests 8 > doctor-plan.json
 ```
 
+For a smaller targeted preview, select named probes explicitly:
+
+```bash
+minefield doctor-plan --mode doctor --probe generation_readiness --max-requests 1 --text
+```
+
+Use the same `--probe` and budget on a later authorised `minefield diagnose`
+call. A MiniCPM-only example is `--mode doctor --probe minicpm_short_answer_channel
+--max-requests 2`. When metadata comparisons are approved, `diagnose` now accepts
+`--hf-revision` and passes that exact revision through to the checks.
+
 This creates **no** live observations, requests or verdicts. It shows which
 registered checks fit the declared chat-generation budget, and which checks
 will be skipped. A zero-chat-cost check can still make GET/render/metrics/HF
@@ -98,3 +109,13 @@ Retain raw internal evidence privately. Promote to the public registry only a de
 Start with one **5090 single-GPU** text or multimodal endpoint for template/processor probes, then a **single DGX Spark** serving endpoint, then one **TP=2 Spark pair**, and only later wider TP or concurrency/soak tests. This is an order of isolation, **not** an assertion about what is currently running. Capture real endpoints and exact served model IDs at test time.
 
 Record the pre-test and post-test `main` SHA and any unresolved issues. Do not run destructive stress, model conversion, GPU resets or distributed launch changes under the Doctor workflow.
+
+## Completion receipt
+
+Before expanding a lane, compare `selected_probes`, `probe_runs` and
+`not_run_probes` in the returned `live_doctor` block. Sum the per-probe
+`requests_made`, check `budget_exceeded`/`error`, and retain the original findings.
+A completed invocation that only returns `UNKNOWN` is unavailable, not verified.
+A timed-out validation request is not a clean validation result. These software
+contracts are tested with synthetic local fixtures; hardware qualification is
+still a separate operator-run phase.

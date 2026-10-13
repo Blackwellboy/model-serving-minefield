@@ -1,3 +1,11 @@
+## 2026-10-13 - offline readiness and exact Doctor execution contracts
+
+- Corrected three stale probe-to-trap declarations from the #210 review and the reasoning-toggle request estimate (four including alternate control). Full conservative catalogue cost is 48 generation requests, not the earlier documented 42; this includes legacy completions.
+- Added explicit probe allowlists and pre-network validation, preserved planned invocation order, and recorded per-probe execution status, actual request counts and unstarted work in API JSON.
+- Threaded pinned HF revisions and existing operator-supplied token/marker inputs through CLI, unified API and MCP without enabling new checks by default.
+- Stopped treating transport/auth/rate-limit/server failures or malformed tool-choice responses as successful validation.
+- Added static catalogue/finding consistency, loopback fixture budgets, interruption/error and option propagation regressions. No model endpoints contacted for development; canonical 163 / Doctor-covered 70 / automatic 131 remain unchanged.
+
 # Changelog
 
 ## 2026-10-13 - MiniCPM Doctor 70 and live qualification protocol
