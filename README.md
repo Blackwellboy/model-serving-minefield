@@ -55,7 +55,7 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-129 of the 163 traps have at least one automatic check
+131 of the 163 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
@@ -91,6 +91,10 @@ configuration:
 
 **Agent cannot access GitHub:** download and upload
 [`dist/MINEFIELD_AGENT_BUNDLE.md`](dist/MINEFIELD_AGENT_BUNDLE.md).
+
+**Preparing live model qualification:** follow the staged
+[live-model qualification protocol](docs/LIVE_MODEL_QUALIFICATION.md)
+before measuring a 5090, Spark or multi-node lane.
 
 **You have a live endpoint:** install the package and run the bounded,
 read-only doctor:
@@ -168,7 +172,7 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **68 of these 163 entries**, weighted toward reasoning fields, templates,
+for **70 of these 163 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
 the other 93. It runs
 in under a minute and prints its own coverage line at the end of every run so
@@ -399,7 +403,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 68 of this registry's 163 entries in under a minute:
+against 70 of this registry's 163 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
