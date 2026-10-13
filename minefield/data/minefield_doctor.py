@@ -91,12 +91,6 @@ TRAP_PATHS = {
     "149": "evaluation/149-thinking-on-json-schema-can-runaway.md",
     "156": "evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
     "158": "reasoning/158-empty-thought-markers-count-as-reasoning.md",
-    "112": "runtime/112-process-liveness-is-not-model-readiness.md",
-    "64": "reasoning/64-answer-lands-in-reasoning-on-toggle-conflict.md",
-    "65": "reasoning/65-parser-only-rescue-kwarg.md",
-    "149": "evaluation/149-thinking-on-json-schema-can-runaway.md",
-    "156": "evaluation/156-exllamav3-requeue-undercounts-output-tokens.md",
-    "158": "reasoning/158-empty-thought-markers-count-as-reasoning.md",
     "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
@@ -4069,6 +4063,11 @@ def _probe_configs(doc, base, root, args):
 # Order matches historical run(): validation first, then behavioural probes.
 PROBE_SPECS = (
     ProbeSpec(
+        "request_validation", ("77",), 2, True, 100, (),
+        _probe_request_validation,
+        "request-field validation (unknown field acceptance)",
+    ),
+    ProbeSpec(
         "toggle_conflict_routing", ("64",), 2, False, 30, (),
         _probe_toggle_conflict_routing,
         "answer field lost after /no_think text-marker conflict",
@@ -4092,11 +4091,6 @@ PROBE_SPECS = (
         "post_tool_empty_reasoning_usage", ("158",), 1, False, 13, (),
         _probe_post_tool_empty_reasoning_usage,
         "post-tool empty thought-channel token accounting",
-    ),
-    ProbeSpec(
-        "request_validation", ("77",), 2, True, 100, (),
-        _probe_request_validation,
-        "request-field validation (unknown field acceptance)",
     ),
     ProbeSpec(
         "generation_readiness", ("112",), 1, True, 99, (),
