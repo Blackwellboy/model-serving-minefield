@@ -11,7 +11,7 @@ python benchmarks/run_symptom_benchmark.py --misses   # every query not in the t
 
 ## The data
 
-[`symptom_queries.json`](symptom_queries.json) holds, for each of the 161
+[`symptom_queries.json`](symptom_queries.json) holds, for each of the 163
 canonical traps, **two plain-language questions written the way a user would
 type them** ("streaming shows blank replies"), not copied from the entry text.
 One is in the `tune` split and one in `holdout`. There are also 40 off-domain
@@ -47,7 +47,7 @@ weight or threshold was chosen by looking at a holdout miss.
 
 ## Results
 
-Holdout split: 161 written queries, then the 12 reported cases, then both
+Holdout split: 163 written queries, then the 12 reported cases, then both
 together; 20 off-domain negatives.
 
 | matcher | written top1 | written top5 | reported top1 | reported top5 | all top1 | all top5 | false alarms |

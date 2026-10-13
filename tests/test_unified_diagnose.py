@@ -33,7 +33,7 @@ class UnifiedDiagnosisTests(unittest.TestCase):
                 paths=[str(path)],
                 limit=10,
             )
-        self.assertEqual(report["registry_traps_considered"], 161)
+        self.assertEqual(report["registry_traps_considered"], 163)
         self.assertIn("161", report["file_scan"]["traps"])
         row = next(item for item in report["candidate_traps"] if item["trap_id"] == "161")
         kinds = {signal["kind"] for signal in row["signals"]}
@@ -42,7 +42,7 @@ class UnifiedDiagnosisTests(unittest.TestCase):
 
     def test_no_evidence_still_reports_full_considered_scope(self):
         report = diagnose_environment(REGISTRY, "how do I bake bread")
-        self.assertEqual(report["registry_traps_considered"], 161)
+        self.assertEqual(report["registry_traps_considered"], 163)
         self.assertEqual(report["candidate_traps"], [])
         self.assertGreaterEqual(report["automatic_coverage"]["any_automated_check"], 93)
 
@@ -84,7 +84,7 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["kind"], "unified_diagnosis")
-        self.assertEqual(payload["registry_traps_considered"], 161)
+        self.assertEqual(payload["registry_traps_considered"], 163)
         self.assertIn("23", [item["trap_id"] for item in payload["candidate_traps"]])
 
 
