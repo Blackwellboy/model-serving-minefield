@@ -231,7 +231,7 @@ depth, and the coverage block says so every time:
   is absent. The output-usage check requires an independently retokenized
   discrepancy; lack of a long requeue sample never clears Trap 156.
   Trap 158 likewise cannot be cleared by one negative post-tool sample.
-  The complete Doctor now permits at most 28 chat-completion requests; the
+  That earlier catalogue permitted at most 28 generation requests; the
   lite planner still uses its own budget and selective scheduling.
 - **110** inspects a read-only Prometheus request gauge, if available. One
   snapshot cannot certify the entire time window of a benchmark; it
@@ -288,13 +288,13 @@ here is everything this one does:
 - **Read-only.** It never restarts anything, never changes server state,
   never writes to your server, never sends your data anywhere.
 - **Bounded.** GET probes (`/models`, `/props`, `/version`) plus at most
-  **42 chat completions**, each capped at 512 output tokens or less, all at
-  temperature 0. 42 is a conservative full-run ceiling including the conditional probes;
+  **48 generation requests**, each capped at 512 output tokens or less, all at
+  temperature 0. 48 is the conservative sum of declared probe costs, including optional controls;
   a lane that skips probes issues fewer, and two contributor-measured SGLang
-  runs issued 14. Size rate limits for up to 42, not an observed subset. It also calls render or tokenise routes
+  runs issued 14. Size rate limits for up to 48, not an observed subset. It also calls render or tokenise routes
   (llama.cpp `/apply-template`, vLLM `/v1/chat/completions/render` plus
   `/detokenize`, or `/tokenize`), which render text and generate nothing.
-  Total cost: roughly one page of tokens and under a minute on a warm lane.
+  This is not a wall-clock guarantee. Review the offline plan and impose an explicit generation-request budget before any live pass.
 - **Media probes are synthetic.** Two requests carry a GENERATED 8x8 PNG
   built in-process from the standard library, and one carries a deliberately
   non-existent file path. No file of yours is read and nothing is uploaded.
@@ -478,3 +478,24 @@ this doctor's own rule applies to it: a result reaches clean only when the
 observation rules the failure mode out, rather than merely failing to observe
 it.
 
+
+## Targeted planning and execution receipts
+
+`minefield doctor-plan --mode doctor --probe generation_readiness --max-requests 1`
+plans only one named probe and makes no network calls. Repeat `--probe` to select
+several checks. It does not enable non-lite probes in lite mode. The same
+selection flag is supported by `minefield diagnose`; it is not a request to
+start a model or acquire a GPU.
+
+Plans now use the actual trap mappings for history assembly (02/04/20/25),
+kwarg deadness (07), and the tool-choice gate (78). The reasoning toggle allows
+four generation requests, including its alternate off-control, not two.
+Budgets count both chat completions (including streaming) and the legacy
+`/completions` probe. GET/render/tokenize/HF metadata requests are separate.
+
+Unified JSON includes `probe_runs` with invocation order, status, per-probe
+request counts and reported trap IDs, plus `not_run_probes`, `budget_exceeded`
+and `error`. `UNAVAILABLE`, `NO_FINDINGS`, `ERROR` and `BUDGET_EXHAUSTED` are not
+clean findings. A selected probe that was never started remains not run.
+Transport failures, authentication failures, rate limits and server errors are
+not credited as successful request-field, model-name or tool-choice validation.
