@@ -1,0 +1,33 @@
+name: one-off-doctor-generated-refresh
+on:
+  push:
+    branches:
+      - feature/doctor-offline-plan-20261013
+permissions:
+  contents: write
+jobs:
+  refresh:
+    if: github.repository == 'Blackwellboy/model-serving-minefield'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: feature/doctor-offline-plan-20261013
+          persist-credentials: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Regenerate and commit deterministic distribution surfaces
+        run: |
+          python -m pip install "jinja2>=3.1"
+          python -m minefield agent-bundle
+          python -m minefield agent-bundle --verify
+          git add dist/ minefield/data/ registry/diagnostic_coverage.json registry/guided_experiments.json web/registry-data.js skills/model-serving-minefield/references/agent-bundle.md
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: regenerate deterministic agent pack for Doctor planning"
+          git push origin HEAD:feature/doctor-offline-plan-20261013
