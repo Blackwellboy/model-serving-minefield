@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-13 - MiniCPM-V 4.7 bring-up: traps 162-163
+
+- Added [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md): with thinking on, short multiple-choice answers end the turn without closing the template-opened think block, so `--reasoning-parser qwen3` files the whole answer as reasoning and `content` is null with `finish_reason: stop`. Reproduced here with a five-request procedure; 24/40 short items affected at both temperature 0 and card sampling on a private benchmark slice, 0/40 with thinking off.
+- Added [163](traps/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md): the official AWQ repository still ships `auto_map` and a processor class pointing at remote-code files it does not contain, after the base repository moved to native transformers configs. Reproduced here with a standard-library check against both public repositories at pinned revisions.
+- New model row for MiniCPM-V 4.7 in the [per-model index](models/README.md). Considered and not added as entries: the hybrid model's startup refusal when `max_num_seqs` exceeds its state blocks (the engine's own error names the fix), and an internal throughput probe that measured request overhead.
+- Registry count moves **161 -> 163**. Doctor coverage stays **43**; neither new entry adds a Doctor check.
+
 ## 2026-10-13 - Doctor 68 runtime visibility and benchmark controls
 
 - Added eight scoped live Doctor entries: [49](traps/evaluation/49-prompt-not-tokenized-to-target.md) (declared exact benchmark text token count), [60](traps/runtime/60-cold-prefill-and-cache-hit-disagree.md) (cache-correlated output divergence), [91](traps/runtime/91-concurrency-nondeterminism-has-a-prompt-length-floor.md) (serial greedy repeatability screen, not concurrency qualification), [96](traps/memory/96-list-devices-reports-host-memory-as-device-free-memory.md) (per-device contradictory memory listing), [106](traps/memory/106-kv-occupancy-ceiling-is-not-a-leak.md) (KV/preemption snapshot), [117](traps/runtime/117-fuse-gemm-comms-accepted-then-disabled.md) (requested vs resolved compilation flags), [130](traps/runtime/130-cudagraph-clamp-runs-top-shape-eager.md) (effective graph capture list), and [135](traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) (request-admission counter versus true concurrent execution).
