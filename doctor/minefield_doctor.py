@@ -85,7 +85,7 @@ TRAP_PATHS = {
     "43": "template/43-tool-args-string-not-mapping.md",
     "69": "template/69-minor-template-defects.md",
     "85": "reasoning/85-enable-thinking-typechecked-though-never-read.md",
-    "110": "evaluation/110-shared-endpoint-neighbours-contaminate-single-stream-benchmark.md",
+    "110": "evaluation/110-unscreened-bench-on-a-shared-endpoint.md",
     "84": "template/84-tool-roundtrip-then-user-turn-is-unrenderable.md",
     "86": "template/86-final-assistant-turn-bypasses-the-template-branch.md",
     "87": "runtime/87-llamacpp-props-reports-per-slot-context.md",
