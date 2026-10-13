@@ -1,0 +1,180 @@
+diff --git a/doctor/minefield_doctor.py b/doctor/minefield_doctor.py
+index 80c128d..2b5e372 100644
+--- a/doctor/minefield_doctor.py
++++ b/doctor/minefield_doctor.py
+@@ -19,2 +19,2 @@ Safety, up front:
+-    completions (at most 42 generation requests, each capped at 512 output
+-    tokens; one uses 512, the rest 16 to 256), plus render or tokenise calls
++    completions (at most 48 generation requests including optional controls,
++    each capped at 512 output tokens), plus render or tokenise calls
+@@ -273,0 +274 @@ class Doc:
++        self.probe_runs = []
+@@ -3889,0 +3891,7 @@ def check_request_validation(doc, base, key):
++    if probe_st not in (200, 400, 422):
++        doc.skip(["77"], "request-field rejection was not established",
++                 "transport/authentication/rate-limit/server failures are not field validation",
++                 code="VALIDATION_REJECTION_UNPROVEN",
++                 asserts=[A("paired request returns a validation-specific status",
++                            {"status": probe_st}, held=False)])
++        return
+@@ -3975,0 +3984,7 @@ def check_model_identity(doc, base, key):
++    if wrong_st not in (200, 400, 404, 422):
++        doc.skip(["141"], "served-model rejection was not established",
++                 "transport/authentication/rate-limit/server failures do not verify model-name validation",
++                 code="MODEL_IDENTITY_REJECTION_UNPROVEN",
++                 asserts=[A("wrong-name request returns a validation-specific status",
++                            {"status": wrong_st}, held=False)])
++        return
+@@ -4146 +4161,9 @@ def check_tool_choice_gate(doc, base, key):
+-    if none_st != 200 or none_choice is None:
++    if none_st not in (200, 400, 422) or (none_st == 200 and none_choice is None):
++        doc.skip(["78"], "tool_choice rejection was not established",
++                 "transport/authentication/rate-limit/server failures or malformed 200 responses "
++                 "do not prove that tool_choice was validated",
++                 code="TOOL_CHOICE_REJECTION_UNPROVEN",
++                 asserts=[A("tool_choice response is a usable completion or validation rejection",
++                            {"status": none_st}, held=False)])
++        return
++    if none_st != 200:
+@@ -4758 +4781,2 @@ def coverage(doc):
+-    clean = doc.trap_ids("OK") - prob
++    nonclean = prob | doc.trap_ids("INCONCLUSIVE") | doc.trap_ids("UNKNOWN")
++    clean = doc.trap_ids("OK") - nonclean
+@@ -4765,0 +4790 @@ def coverage(doc):
++        "conflicting_verdicts": sorted(doc.trap_ids("OK") & nonclean),
+@@ -5241 +5266 @@ PROBE_SPECS = (
+-        "reasoning_fields", ("01", "02", "03", "29"), 2, True, 80, (),
++        "reasoning_fields", ("01", "02", "03", "29"), 4, True, 80, (),
+@@ -5251 +5276 @@ PROBE_SPECS = (
+-        "history_assembly", ("04", "20", "25"), 0, True, 70, (),
++        "history_assembly", ("02", "04", "20", "25"), 0, True, 70, (),
+@@ -5336 +5361 @@ PROBE_SPECS = (
+-        "kwarg_deadness", ("03", "29"), 3, False, 40, (),
++        "kwarg_deadness", ("07",), 3, False, 40, (),
+@@ -5351 +5376 @@ PROBE_SPECS = (
+-        "tool_choice_gate", ("19",), 2, False, 30, ("tools",),
++        "tool_choice_gate", ("78",), 2, False, 30, ("tools",),
+@@ -5389,4 +5414,8 @@ def iter_probe_specs(only_ids=None):
+-    wanted = set(only_ids)
+-    for spec in PROBE_SPECS:
+-        if spec.id in wanted:
+-            yield spec
++    by_id = {spec.id: spec for spec in PROBE_SPECS}
++    wanted = tuple(dict.fromkeys(only_ids))
++    unknown = set(wanted) - set(by_id)
++    if unknown:
++        raise ValueError("unknown probe IDs: " + ", ".join(sorted(unknown)))
++    # The preview order is the execution order, including lite priorities.
++    for probe_id in wanted:
++        yield by_id[probe_id]
+@@ -5404,2 +5433,36 @@ def run(doc, base, root, args, only_ids=None):
+-    for spec in iter_probe_specs(only_ids):
+-        spec.invoke(doc, base, root, args)
++    # Materialize and validate selection before invoking even the first probe.
++    for spec in tuple(iter_probe_specs(only_ids)):
++        before, first_finding = doc.requests_made, len(doc.findings)
++        record = {"id": spec.id, "declared_traps": list(spec.traps),
++                  "request_cost": spec.request_cost, "status": "RUNNING"}
++        doc.probe_runs.append(record)
++        try:
++            spec.invoke(doc, base, root, args)
++            current = doc.findings[first_finding:]
++            record["status"] = ("UNAVAILABLE" if current and all(
++                f["level"] == "UNKNOWN" for f in current) else
++                "RETURNED" if current else "NO_FINDINGS")
++        except RequestBudgetExceeded:
++            record["status"] = "BUDGET_EXHAUSTED"
++            doc.skip(spec.traps, "probe did not complete within the request budget",
++                     "partial observations cannot clear the unfinished probe",
++                     code="PROBE_BUDGET_EXHAUSTED",
++                     asserts=[A("selected probe completed", spec.id, held=False)])
++            raise
++        except Exception as exc:
++            record["status"] = "ERROR"
++            # Never echo exception text: server bodies may contain credentials.
++            record["error_type"] = type(exc).__name__
++            doc.skip(spec.traps, "probe did not complete",
++                     "unexpected response shape or execution error; inspect private evidence",
++                     code="PROBE_EXECUTION_ERROR",
++                     asserts=[A("selected probe completed", spec.id, held=False)])
++            raise
++        finally:
++            current = doc.findings[first_finding:]
++            record.update({
++                "requests_made": doc.requests_made - before,
++                "finding_count": len(current),
++                "reported_traps": sorted({t for f in current for t in f["traps"]
++                                          if t in TRAP_PATHS}, key=int),
++            })
+diff --git a/minefield/api.py b/minefield/api.py
+index cfc93e1..9e45264 100644
+--- a/minefield/api.py
++++ b/minefield/api.py
+@@ -25,0 +26 @@ from .registry import ROOT
++from .probe_options import validate_operator_inputs, validate_request_budget
+@@ -110,0 +112 @@ class RunResult:
++    probe_runs: list[dict[str, Any]] = field(default_factory=list)
+@@ -253,0 +256 @@ def plan_checks(
++    probe_ids: Optional[Iterable[str]] = None,
+@@ -264,0 +268,19 @@ def plan_checks(
++    # Invalid budgets/selections must fail before optional target detection.
++    validate_request_budget(max_requests)
++    md = _load_doctor()
++    specs = _probe_meta(md)
++    requested = None
++    if probe_ids is not None:
++        if isinstance(probe_ids, (str, bytes)):
++            raise ValueError("probe_ids must be a sequence, not a string")
++        try:
++            requested_values = tuple(probe_ids)
++        except TypeError as exc:
++            raise ValueError("probe_ids must be a sequence of strings") from exc
++        if any(not isinstance(value, str) for value in requested_values):
++            raise ValueError("probe IDs must be strings")
++        requested = set(requested_values)
++        unknown = requested - {spec.id for spec in specs}
++        if unknown:
++            raise ValueError("unknown probe IDs: " + ", ".join(sorted(unknown)))
++
+@@ -334,0 +357,4 @@ def plan_checks(
++        if requested is not None and spec.id not in requested:
++            skipped.append(SkippedProbe(spec.id, tuple(spec.traps), spec.request_cost,
++                                        spec.title, "not_requested"))
++            continue
+@@ -417,0 +444,4 @@ def run_checks(
++    server_max_tokens: Optional[int] = None,
++    benchmark_target_tokens: Optional[int] = None,
++    benchmark_prompt_text: Optional[str] = None,
++    thinking_budget_marker_ids: Optional[str] = None,
+@@ -419,0 +450,7 @@ def run_checks(
++    validate_request_budget(plan.max_requests)
++    options = validate_operator_inputs(
++        hf_revision=hf_revision, server_max_tokens=server_max_tokens,
++        benchmark_target_tokens=benchmark_target_tokens,
++        benchmark_prompt_text=benchmark_prompt_text,
++        thinking_budget_marker_ids=thinking_budget_marker_ids,
++    )
+@@ -420,0 +458,2 @@ def run_checks(
++    # Reject stale/unknown selections before GET detection, not during execution.
++    tuple(md.iter_probe_specs(plan.selected_ids))
+@@ -458 +497 @@ def run_checks(
+-        hf_revision=hf_revision,
++        **options,
+@@ -469,0 +509,2 @@ def run_checks(
++    except Exception as exc:
++        err = "probe_execution_error:" + type(exc).__name__
+@@ -482,0 +524 @@ def run_checks(
++        probe_runs=list(doc.probe_runs),
+@@ -500,0 +543,4 @@ def summarize(result: RunResult) -> Summary:
++        if level == "OK":
++            out.difference_update(str(t) for f in findings
++                                  if f.get("level") in {"PROBLEM", "INCONCLUSIVE", "UNKNOWN"}
++                                  for t in f.get("traps") or [])
+@@ -582,0 +629,7 @@ def result_to_doctor_json(result: RunResult) -> dict[str, Any]:
++        "probe_runs": list(result.probe_runs),
++        "invoked_probes": [p["id"] for p in result.probe_runs],
++        "not_run_probes": [p.id for p in result.plan.selected
++                           if p.id not in {item["id"] for item in result.probe_runs}],
++        "budget_exceeded": result.budget_exceeded,
++        "error": result.error,
++        "reachable": result.reachable,
