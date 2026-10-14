@@ -127,3 +127,47 @@ Public source evidence from `tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-K
 PR #24 restored the three-level table from the checkpoint's own encoder and verified distinct live `/tokenize` prompt lengths of **51 / 527 / 577 tokens for low / high / max**. It also documents the behavior change clearly: existing callers of `max` receive a stronger prompt after the fix.
 
 Source: [merged PR #24](https://github.com/tonyd2wild/DeepSeek-v4-Flash-0731-DSpark-1M-NVFP4-KV-2x-DGX-Spark/pull/24), read 2026-08-21. This is **public upstream corroboration, not a first-party reproduction by this registry**. It extends the core lesson beyond "parameter ignored": a field can be accepted, normalized, and partially wired while its labels point at the wrong semantic levels. Dump/render the actual prompt before naming an effort arm.
+
+## Added 2026-10-15: DeepSeek V4.1 served build renders every named level one step low
+
+**Reproduced here by Blackwellboy** on a DeepSeek-V4.1-Flash EXL3 2.9bpw lane
+served by vLLM (`--tokenizer-mode deepseek_v41 --reasoning-parser deepseek_v41`,
+TP=2 on two DGX Spark nodes). The checkpoint's own encoder
+(`encoding/README.md` on `deepseek-ai/DeepSeek-V4.1-Flash`) and the public
+EXL3 recipe both define `low` = 50, `high` = 75 (the default), `max` = 100.
+The served `/tokenize` render on this lane wrote:
+
+| sent | rendered `Reasoning Effort:` |
+|---|---|
+| (nothing) | **50** |
+| `low` | **25** |
+| `high` | **50** |
+| `xhigh` | **75** |
+| `max` | 100 |
+| `90` (integer) | 90 |
+
+So `high` is half the budget a caller reading the card expects, `xhigh` (a
+level the encoder does not define) is the card's default, and leaving the
+field out is not the card's default either. `medium` is rejected with HTTP 400
+(`must be low, high, xhigh, max, or an integer within [1, 100]`), which makes
+the ladder look validated and complete.
+
+Two things made this invisible. Every arm returns 200 with reasoning present,
+and prompt-token counts are identical across arms: 25, 50, 75 and 100 are each
+one token. Only the rendered text shows it. Where the shifted table comes from
+(the served template file or the runtime's encoder override) was **not**
+identified; the public recipe's template file still carries the reference
+table.
+
+Measured effect on that lane, real agent steps replayed from a slow session
+(4 cut points x 2 samples = 8 steps per arm, 38-75k-token contexts,
+temperature 1.0): mean output 788 tokens at `xhigh` (75), 1,315 at `high`
+(50), 1,104 at `low` (25), 271 with thinking off. n=8 per arm with wide
+spread, so read the ordering of the thinking-on arms as noise. The budget number did not order the cost; turning thinking on
+did. Name effort arms by the rendered number, send an integer when depth
+matters, and do not carry level names between builds of the same model.
+
+Doctor check: `reasoning_effort_switch` now reports this as
+`EFFORT_LADDER_DIVERGES_FROM_REFERENCE` from render-only arms.
+
+*Status of this addendum: reproduced here (live `/tokenize` render; raw not published).*

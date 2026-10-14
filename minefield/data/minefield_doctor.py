@@ -3074,6 +3074,36 @@ def check_history_assembly(doc, root, key):
                    code="WRITE_FIELD_SINGLE",
                    asserts=[A("exactly one of the two field names survives", hits)])
     else:
+        # Before blaming a kwarg, try the same history with a tool defined.
+        # DeepSeek V4.x encoders disable drop_thinking whenever tools are
+        # present, so a tool-less render strips prior reasoning while every
+        # agent harness (which always sends tools) keeps all of it. Reporting
+        # "no preservation path" there is backwards for the agent case.
+        tool_hits = {}
+        for field in ("reasoning_content", "reasoning"):
+            r, _ = render_paths(doc, root, key, msgs(field), {"enable_thinking": True},
+                                tools=[HISTORY_PROBE_TOOL])
+            tool_hits[field] = (r is not None and RMARK in r)
+        doc.evidence["write_field_hits_with_tools"] = tool_hits
+        tool_live = [f for f, h in tool_hits.items() if h]
+        if tool_live:
+            doc.problem(["04", "20"], "prior-turn reasoning is stripped from tool-less "
+                        "multi-turn renders but RETAINED once a tool is defined "
+                        f"(write field(s): {', '.join(tool_live)}). Chat-only "
+                        "multi-turn numbers run the stripped arm; agent loops "
+                        "that send tools resend every earlier reasoning block, so "
+                        "their context grows with reasoning length",
+                        "state which arm a multi-turn result ran (tools or not) "
+                        "beside the number; for agent loops, budget context and "
+                        "prefill for the retained reasoning, or turn thinking off "
+                        "where the task does not need it",
+                        code="HISTORY_STRIPPED_UNLESS_TOOLS",
+                        asserts=[A("prior reasoning reaches the tool-less prompt "
+                                   "under either field name", hits, held=False),
+                                 A("prior reasoning reaches the prompt once a tool "
+                                   "is defined", tool_hits)])
+            _check_close_tag_balance(doc, base_render)
+            return
         # No field name works on its own, so the template is gating history
         # reasoning behind a kwarg. Try every preservation kwarg shape we have
         # seen in the wild, in both polarities, under both field names. The
@@ -3126,14 +3156,38 @@ def check_history_assembly(doc, root, key):
                                    "restores it",
                                    [g for g, _ in gates], held=False)])
 
-    o, c = base_render.count("<think>"), base_render.count("</think>")
-    if c > o:
-        doc.problem(["02"], f"assembled prompt has {c} </think> vs {o} <think>: "
-                    "orphaned close tags in history",
+    _check_close_tag_balance(doc, base_render)
+
+
+HISTORY_PROBE_TOOL = {"type": "function", "function": {
+    "name": "get_time", "description": "Return the current time.",
+    "parameters": {"type": "object", "properties": {}}}}
+
+# DeepSeek V4.x encoders open every non-thinking assistant turn with a bare
+# close tag (`<｜Assistant｜></think>answer`): it is how chat mode and dropped
+# history thinking are written, not an orphan. Full-width bars only, so a
+# ChatML `<|im_start|>assistant\n</think>` (the real trap-02 shape) still counts.
+_DEEPSEEK_ASSISTANT_CLOSE = re.compile(r"<｜Assistant｜>\s*</think>")
+
+
+def orphaned_close_count(render):
+    """Excess `</think>` in an assembled prompt, net of encoder-owned prefixes."""
+    o, c = render.count("<think>"), render.count("</think>")
+    owned = len(_DEEPSEEK_ASSISTANT_CLOSE.findall(render))
+    return max(0, c - owned - o), {"open": o, "close": c, "encoder_prefix_close": owned}
+
+
+def _check_close_tag_balance(doc, base_render):
+    excess, counts = orphaned_close_count(base_render)
+    doc.evidence["think_tag_balance"] = counts
+    if excess:
+        doc.problem(["02"], f"assembled prompt has {counts['close']} </think> vs "
+                    f"{counts['open']} <think> ({excess} not explained by an "
+                    "encoder-owned assistant prefix): orphaned close tags in history",
                     "fix template or history assembly",
                     code="ORPHANED_CLOSE_IN_RENDER",
                     asserts=[A("assembled prompt has no excess </think>",
-                               {"open": o, "close": c}, held=False)])
+                               counts, held=False)])
 
 
 def _tiny_png():
@@ -4218,8 +4272,43 @@ def check_tool_choice_gate(doc, base, key):
                       {"tool_calls": len(none_calls)})])
 
 
-def check_reasoning_effort_switch(doc, base, key):
-    """Trap 58: top-level reasoning_effort can enable thinking and rewrite prompt."""
+# DeepSeek's own encoder (deepseek-ai/DeepSeek-V4.1-Flash encoding/README.md):
+# numeric budget 1-100, "low" -> 50, "high" -> 75 (the default), "max" -> 100.
+DEEPSEEK_EFFORT_REFERENCE = {"default": 75, "low": 50, "high": 75, "max": 100}
+_EFFORT_BUDGET = re.compile(r"Reasoning Effort:\s*(\d+)")
+
+
+def _rendered_effort_ladder(doc, root, key, messages):
+    """Render-only arms (no chat budget): the prompt each effort name produces.
+
+    Prompt-token counts cannot see a budget change when the template writes the
+    budget as a number: 25, 50 and 100 are each one token. The rendered text can.
+    """
+    if root is None:
+        return None
+    renders = {}
+    for name, kw in (("default", {}), ("low", {"reasoning_effort": "low"}),
+                     ("high", {"reasoning_effort": "high"}),
+                     ("max", {"reasoning_effort": "max"})):
+        r, _ = render_paths(doc, root, key, messages, kw)
+        renders[name] = r
+    if renders["default"] is None:
+        return None
+    ladder = {}
+    for name, r in renders.items():
+        m = _EFFORT_BUDGET.search(r or "")
+        ladder[name] = int(m.group(1)) if m else None
+    differs = sorted(n for n, r in renders.items()
+                     if r is not None and r != renders["default"])
+    return {"budgets": ladder, "renders_differ_from_default": differs}
+
+
+def check_reasoning_effort_switch(doc, base, key, root=None):
+    """Trap 58: top-level reasoning_effort can enable thinking and rewrite prompt.
+
+    Trap 07: when the template writes a numeric DeepSeek-style budget, also
+    compare the named levels with the encoder's reference ladder.
+    """
     messages = [{"role": "user", "content": "Hi. Reply briefly."}]
     arms = {}
     for name, extra in (
@@ -4265,6 +4354,31 @@ def check_reasoning_effort_switch(doc, base, key):
         bpt, apt = base_arm.get("prompt_tokens"), arm.get("prompt_tokens")
         if isinstance(bpt, int) and isinstance(apt, int) and apt > bpt + 8:
             changed.append(f"{name}:prompt_tokens")
+    ladder = _rendered_effort_ladder(doc, root, key, messages)
+    doc.evidence["reasoning_effort_rendered"] = ladder
+    if ladder:
+        changed += [f"{n}:rendered_prompt" for n in ladder["renders_differ_from_default"]
+                    if n in ("low", "max")]
+        budgets = ladder["budgets"]
+        if all(isinstance(v, int) for v in budgets.values()):
+            off = {n: (budgets[n], ref) for n, ref in DEEPSEEK_EFFORT_REFERENCE.items()
+                   if budgets[n] != ref}
+            if off:
+                doc.problem(
+                    ["07", "58"],
+                    "named reasoning_effort levels render a different numeric budget "
+                    "than the DeepSeek encoder reference: "
+                    + ", ".join(f"{n} -> {got} (reference {ref})"
+                                for n, (got, ref) in off.items())
+                    + f". Served ladder: {budgets}",
+                    "name effort arms by the rendered budget number, not the label; "
+                    "send an explicit integer (chat_template_kwargs.reasoning_effort) "
+                    "when you need a specific depth, and do not port effort names "
+                    "between builds of the same model",
+                    code="EFFORT_LADDER_DIVERGES_FROM_REFERENCE",
+                    asserts=[A("each named level renders the encoder-reference budget",
+                               {"served": budgets,
+                                "reference": DEEPSEEK_EFFORT_REFERENCE}, held=False)])
     if changed:
         doc.problem(
             ["58"],
@@ -5153,7 +5267,7 @@ def _probe_tool_choice_gate(doc, base, root, args):
 
 
 def _probe_reasoning_effort_switch(doc, base, root, args):
-    check_reasoning_effort_switch(doc, base, args.api_key)
+    check_reasoning_effort_switch(doc, base, args.api_key, root=root)
 
 
 def _probe_cache_prompt_isolation(doc, base, root, args):
@@ -5378,7 +5492,7 @@ PROBE_SPECS = (
         "tool_choice=none gate",
     ),
     ProbeSpec(
-        "reasoning_effort_switch", ("58",), 3, False, 25, (),
+        "reasoning_effort_switch", ("58", "07"), 3, False, 25, (),
         _probe_reasoning_effort_switch,
         "top-level reasoning_effort prompt/reasoning effect",
     ),
