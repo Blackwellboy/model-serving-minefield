@@ -46,6 +46,7 @@ Stdlib only. jinja2 is used for one extra render path if installed; never
 required. Exit codes: 0 ran (read the sections), 1 endpoint unreachable.
 """
 import argparse, json, re, sys, urllib.request, urllib.error, zlib
+from minefield.execution import ExecutionStopped, checkpoint, open_request, usage, progress
 
 REG = "https://github.com/Blackwellboy/model-serving-minefield/blob/main/traps"
 
@@ -217,15 +218,17 @@ def _req(url, key=None, data=None, timeout=60):
     if key:
         req.add_header("Authorization", f"Bearer {key}")
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with open_request(req, timeout=timeout) as r:
             return r.status, r.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         try:
             return e.code, e.read().decode("utf-8", "replace")
         finally:
             e.close()
+    except ExecutionStopped:
+        raise
     except Exception as e:
-        return None, str(e)
+        return None, type(e).__name__
 
 def get(url, key=None, timeout=15):
     return _req(url, key, None, timeout)
@@ -763,7 +766,7 @@ def check_streaming(doc, base, key):
                                      {"Content-Type": "application/json"})
         if key:
             req.add_header("Authorization", f"Bearer {key}")
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with open_request(req, timeout=120) as r:
             for line in r:
                 line = line.decode("utf-8", "replace").strip()
                 if not line.startswith("data: {"):
@@ -838,6 +841,8 @@ def check_streaming(doc, base, key):
                     code="STREAM_BATCHING_NOT_PROVEN",
                     asserts=[A("a single stream ratio can prove absence of parser "
                                "buffering", {"ratio": round(ratio, 4)}, held=False)])
+    except ExecutionStopped:
+        raise
     except Exception as e:
         doc.skip(["23", "80"], "streaming checks", f"stream failed: {e}",
                  code="STREAM_FAILED",
@@ -3867,14 +3872,23 @@ def check_request_validation(doc, base, key):
     # the top level, which is where trap 77 measured it; the entry records
     # that placement inside `options` behaved identically.
     probe_field = "__minefield_unvalidated_field_probe__"
-    msgs = [{"role": "user", "content": "hi"}]
+    from minefield.request_templates import validation_requests
+    baseline, experiment = validation_requests(doc.model)
+    msgs = baseline["messages"]
 
-    base_st, _, base_txt = chat(doc, base, key, doc.model, msgs, max_tokens=16)
-    if base_st != 200:
+    base_st, base_obj, base_txt = chat(doc, base, key, doc.model, msgs, max_tokens=baseline["max_tokens"])
+    valid_baseline = (
+        isinstance(base_obj, dict)
+        and isinstance(base_obj.get("message"), dict)
+        and isinstance(base_obj["message"].get("content"), str)
+        and bool(base_obj["message"]["content"].strip())
+        and isinstance(base_txt, dict) and not base_txt.get("error")
+    )
+    if base_st != 200 or not valid_baseline:
         doc.inconclusive(
             ["77"], "request-field validation",
             f"the baseline request (nothing invented, nothing unusual) did "
-            f"not return 200 (http {base_st}), so a rejection of the probe "
+            f"not return a usable completion (http {base_st}), so a rejection of the probe "
             f"below would say nothing about field validation: a lane that "
             f"rejects everything rejects the probe too. Fix the lane, or the "
             f"model name or key, and re-run.",
@@ -3885,7 +3899,7 @@ def check_request_validation(doc, base, key):
         return
 
     probe_st, _, probe_txt = chat(doc, base, key, doc.model, msgs,
-                                  max_tokens=16, **{probe_field: "minefield"})
+                                  max_tokens=experiment["max_tokens"], **{probe_field: experiment[probe_field]})
     doc.evidence["unknown_field_probe_status"] = probe_st
 
     if probe_st not in (200, 400, 422):
@@ -5432,7 +5446,10 @@ def run(doc, base, root, args, only_ids=None):
     # for whether parameters are hypotheses vs settings.
     # Materialize and validate selection before invoking even the first probe.
     for spec in tuple(iter_probe_specs(only_ids)):
+        checkpoint()
         before, first_finding = doc.requests_made, len(doc.findings)
+        before_http, before_wire = usage()
+        progress(spec.id, "RUNNING")
         record = {"id": spec.id, "declared_traps": list(spec.traps),
                   "request_cost": spec.request_cost, "status": "RUNNING"}
         doc.probe_runs.append(record)
@@ -5442,6 +5459,11 @@ def run(doc, base, root, args, only_ids=None):
             record["status"] = ("UNAVAILABLE" if current and all(
                 f["level"] == "UNKNOWN" for f in current) else
                 "RETURNED" if current else "NO_FINDINGS")
+        except ExecutionStopped as exc:
+            record["status"] = str(exc)
+            doc.skip(spec.traps, "probe stopped before completion", "remaining work was not executed",
+                     code="PROBE_STOPPED", asserts=[A("selected probe completed", spec.id, held=False)])
+            raise
         except RequestBudgetExceeded:
             record["status"] = "BUDGET_EXHAUSTED"
             doc.skip(spec.traps, "probe did not complete within the request budget",
@@ -5460,12 +5482,16 @@ def run(doc, base, root, args, only_ids=None):
             raise
         finally:
             current = doc.findings[first_finding:]
+            after_http, after_wire = usage()
             record.update({
+                "http_requests_made": after_http - before_http,
+                "wire_generations_made": after_wire - before_wire,
                 "requests_made": doc.requests_made - before,
                 "finding_count": len(current),
                 "reported_traps": sorted({t for f in current for t in f["traps"]
                                           if t in TRAP_PATHS}, key=int),
             })
+            progress(spec.id, record["status"])
 
 
 def main():
