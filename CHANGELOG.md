@@ -1,3 +1,18 @@
+# Changelog
+
+Newest first. Every pull request that changes behaviour, a check, a trap, the Doctor, the
+CLI/MCP surface or the docs adds an entry at the top of this file, under a
+`## YYYY-MM-DD - short title` heading. CI (`.github/workflows/changelog.yml`) fails a
+pull request that changes those paths without touching this file; label it
+`no-changelog` for a change nobody would look for here (typo, CI-only).
+
+## 2026-10-15 - a menu for people, harnesses, MCP and Hermes
+
+- `minefield` on its own (or `minefield menu`) shows a numbered menu of everything the tool does. Each item says what it touches before it runs (nothing, files you name, or a set number of requests to your endpoint), asks for its inputs, and asks for a yes before a full Doctor. `minefield menu --json` (schema `minefield.menu.v1`) gives harnesses the same catalogue: id, inputs, `argv`, what it touches, and whether it confirms.
+- New read-only MCP tool `list_menu` returns that catalogue (13 tools, was 12).
+- [Hermes setup](docs/HERMES_SETUP.md) rewritten around the `hermes-minefield` plugin's `/minefield` menu, then MCP, then the skill; README points Hermes users there.
+- This file now has one `# Changelog` header (it had three, from entries pasted above it) and a rule, enforced in CI.
+
 ## 2026-10-15 - Doctor reads DeepSeek-V4.1 renders correctly
 
 - Found running the Doctor against a live DeepSeek-v4.1-Flash-EXL3 vLLM lane: three verdicts contradicted that lane's own `/tokenize` render.
@@ -13,8 +28,6 @@
 - Threaded pinned HF revisions and existing operator-supplied token/marker inputs through CLI, unified API and MCP without enabling new checks by default.
 - Stopped treating transport/auth/rate-limit/server failures or malformed tool-choice responses as successful validation.
 - Added static catalogue/finding consistency, loopback fixture budgets, interruption/error and option propagation regressions. No model endpoints contacted for development; canonical 163 / Doctor-covered 70 / automatic 131 remain unchanged.
-
-# Changelog
 
 ## 2026-10-13 - MiniCPM Doctor 70 and live qualification protocol
 
@@ -50,8 +63,6 @@
 - New conditional inference probes use at most nine additional chat-completion requests in a full run; lite prioritization remains bounded. No new claims about untested causes; ambiguous/unavailable evidence remains inconclusive.
 - Doctor 43 -> 49 / 161; automatic diagnostic coverage expected 120 -> 121 / 161 once regenerated, with one previously unautomated trap now having a bounded live test.
 
-# Changelog
-
 ## 2026-10-13 - double batch: Doctor 43 and four exact fingerprints
 
 - Added six bounded Doctor checks: Trap [30](traps/template/30-default-system-message-silently-replaced.md) (default system replacement three-arm render), [38](traps/template/38-template-owns-the-opening-think-tag.md) (template-owned think prefill, inconclusive on offline-rollout effects), [43](traps/template/43-tool-args-string-not-mapping.md) (tool-arguments mapping-versus-string replay), [69](traps/template/69-minor-template-defects.md) (empty system header and tool-first tag mismatch; negative remains inconclusive because the entry has additional subcases), [85](traps/reasoning/85-enable-thinking-typechecked-though-never-read.md) (llama.cpp type rejection for an unused kwarg), and [110](traps/evaluation/110-unscreened-bench-on-a-shared-endpoint.md) (read-only request contention snapshot; never CLEAN).
@@ -65,8 +76,6 @@
 - Added positive and matched-clean fixture controls for all three, plus unavailable-render controls. CLEAN claims remain specific to the exact inspected render and template dialect. No generation-request ceiling increase.
 - Added routing fingerprints for first-forward `embed_token failed` (Trap 116) and paired `max_num_partial_prefills` / preemption evidence (Trap 128). These remain unconfirmed leads.
 - Doctor **34 -> 37 / 161**. Automatic diagnostic coverage remains **119 / 161** because all three trap IDs already had offline automation.
-
-# Changelog
 
 ## 2026-10-12 - Doctor 34 small diagnostic batch
 
@@ -255,7 +264,6 @@ Also corrects the newly merged Trap 10 AutoRound addendum after Codex review: th
 - [**Trap 126**](traps/reasoning/126-ling-thinking-false-spills-reasoning-into-content.md), found by **@scottleimroth**: on inclusionAI's working Ling-3.0 fork, free-text `thinking:false` left reasoning token work essentially unchanged and spilled the trace into `content`, while the same toggle under JSON structured output materially reduced tokens.
 - Issues #57 and #58 remain in the preregistered open queue until the maintainer integration lands and their issue lifecycle can close cleanly.
 
-
 ## 2026-08-21
 
 ### Trap 124: DGX Spark / GB10 can get stuck in a low-power state while reporting P0 and high utilization
@@ -368,7 +376,6 @@ Reported first as issues
 [#45](https://github.com/Blackwellboy/model-serving-minefield/issues/45),
 [#46](https://github.com/Blackwellboy/model-serving-minefield/issues/46).
 
-
 ## 2026-08-15
 
 ### Qwen3.8 reasoning/template configuration traps (first-party extension)
@@ -390,7 +397,6 @@ Public offline check + Apache-2.0 template fixture:
 
 Mining note:
 private evidence archive *(private evidence archived)*.
-
 
 ## 2026-08-11
 
@@ -416,13 +422,11 @@ private evidence archive *(private evidence archived)*.
 - Trap 56 addendum: pinned source/render boundary for DeepSeek and cross-model Jinja classes.
 - CLI: `minefield classify-inline-system`.
 
-
 ## 2026-08-06
 
 - [Trap 77](traps/reasoning/77-only-one-request-field-is-validated.md): startup-configuration unvalidated control addendum (issue #19, @scottleimroth).
 - [Trap 112](traps/runtime/112-process-liveness-is-not-model-readiness.md): process liveness is not authenticated model readiness (issue #21, @scottleimroth).
 - Checks: `vllm_environ_registration_probe`, `endpoint_readiness_hierarchy_probe`.
-
 
 New entries and structural changes, newest first. Cadence: entries land as
 they are verified; issue reports get a first maintainer response within a

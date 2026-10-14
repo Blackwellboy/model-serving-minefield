@@ -27,6 +27,8 @@ TOOLS = {
     "get_stack_checks": "Return declared-context traps and checks for a serving stack.",
     "get_model_risks": "Return declared model-family matches without treating absence as safety.",
     "get_coverage_summary": "Return overlapping diagnostic coverage by modality.",
+    "list_menu": "Return the Minefield menu: every action, what it touches (nothing, named files, "
+                 "or N endpoint requests), its inputs, and the CLI argv / Hermes command that runs it.",
     "interpret_doctor_report": "Separate doctor problem/clean/inconclusive/unavailable scope.",
     "build_reproduction_plan": "Return bounded experiment specifications for trap IDs.",
     "prepare_issue_report": "Prepare a scrubbed Markdown issue draft from supplied text.",
@@ -89,6 +91,7 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
     "get_stack_checks": {"required": ["stack"], "properties": {"stack": {"type": "string"}}},
     "get_model_risks": {"required": ["model"], "properties": {"model": {"type": "string"}}},
     "get_coverage_summary": {"properties": {}},
+    "list_menu": {"properties": {}},
     "interpret_doctor_report": {"required": ["report"], "properties": {"report": {"type": "object"}}},
     "build_reproduction_plan": {"required": ["trap_ids"], "properties": {
         "trap_ids": {"type": "array", "maxItems": 50, "items": {"type": ["string", "integer"]}},
@@ -257,6 +260,10 @@ def call_tool(
         }
     if name == "get_coverage_summary":
         return build_coverage(registry)["summary"]
+    if name == "list_menu":
+        from .menu import as_dict
+
+        return as_dict()
     if name == "interpret_doctor_report":
         report = args.get("report", {})
         findings = report.get("findings", [])
