@@ -110,6 +110,8 @@ class RunResult:
     error: Optional[str] = None
     reachable: bool = True
     probe_runs: list[dict[str, Any]] = field(default_factory=list)
+    http_requests_executed: int | None = None
+    wire_generations_executed: int | None = None
 
 
 @dataclass(frozen=True)
@@ -434,7 +436,50 @@ def plan_checks(
     )
 
 
-def run_checks(
+def preview_requests(plan: ProbePlan) -> dict:
+    """Exact bounded template campaign for the currently supported preview probe.
+
+    Other catalogue probes remain selectable for legacy execution but cannot be
+    approved via this exact-template API until their templates are declared.
+    """
+    from urllib.parse import urlsplit
+    from .request_templates import validation_requests
+    if plan.selected_ids != ("request_validation",) or not plan.target.model:
+        raise ValueError("UNSUPPORTED_REQUEST_PREVIEW")
+    base = urlsplit(plan.target.base_url).path.rstrip("/")
+    root = urlsplit(plan.target.root_url).path.rstrip("/")
+    gets = [base + "/models", root + "/api/version", root + "/props", root + "/version"]
+    requests = [{"method": "GET", "path": path, "body": None} for path in gets]
+    requests += [{"method": "POST", "path": base + "/chat/completions", "body": body}
+                 for body in validation_requests(plan.target.model)]
+    return {"template_version": "request-validation.v1", "requests": requests,
+            "max_http": 6, "max_generations": 2, "max_output_tokens": 16,
+            "note": "Conditional discovery and probe branches may skip requests; never expand scope."}
+
+
+def run_checks(plan: ProbePlan, *, execution=None, **kwargs) -> RunResult:
+    """Run checks, optionally in a single-use bounded ExecutionControl context.
+
+    With execution omitted, the legacy generation-budget contract is unchanged.
+    Cancellation stops future wire activity; in-flight reads end at the configured
+    timeout. Remote compute termination is unknown.
+    """
+    if execution is None:
+        return _run_checks(plan, **kwargs)
+    from .execution import ExecutionStopped
+    with execution.bind():
+        try:
+            result = _run_checks(plan, **kwargs)
+        except ExecutionStopped as exc:
+            result = RunResult(plan=plan, stack=plan.target.stack, model=plan.target.model,
+                requests_planned=plan.expected_requests, requests_executed=execution.generations,
+                request_budget=plan.max_requests, reachable=False, error=str(exc))
+        result.http_requests_executed = execution.http
+        result.wire_generations_executed = execution.generations
+        return result
+
+
+def _run_checks(
     plan: ProbePlan,
     *,
     api_key: Optional[str] = None,
@@ -486,6 +531,8 @@ def run_checks(
             reachable=False,
             error="unreachable:/v1/models",
         )
+    from .execution import verify_model
+    verify_model(doc.model)
     if model or target.model:
         doc.model = model or target.model
 
@@ -507,7 +554,8 @@ def run_checks(
         budget_exceeded = True
         err = str(exc)
     except Exception as exc:
-        err = "probe_execution_error:" + type(exc).__name__
+        from .execution import ExecutionStopped
+        err = str(exc) if isinstance(exc, ExecutionStopped) else "probe_execution_error:" + type(exc).__name__
 
     cov = md.coverage(doc)
     return RunResult(
@@ -607,6 +655,8 @@ def result_to_doctor_json(result: RunResult) -> dict[str, Any]:
         "stack": result.stack,
         "model": result.model,
         "requests_made": result.requests_executed,
+        "http_requests_executed": result.http_requests_executed,
+        "wire_generations_executed": result.wire_generations_executed,
         "coverage": result.coverage,
         "coverage_line": result.coverage_line,
         "findings": findings,
