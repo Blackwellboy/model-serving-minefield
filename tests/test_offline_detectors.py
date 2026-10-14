@@ -58,7 +58,7 @@ SAFE_LAUNCH = """\
 vllm serve Qwen/Qwen3.8 --gpu-memory-utilization 0.95 --kv-cache-memory-bytes 12884901888 --max-num-seqs 4 --speculative-config '{"method": "mtp"}' --enforce-eager
 llama-server -m m.gguf -ngl 99 -fa on -ctk q8_0 -ctv q8_0
 docker run --mount type=bind,source=/models,target=/models vllm/vllm-openai
-BASE_URL=http://192.168.1.20:8000/v1
+BASE_URL=http://203.0.113.20:8000/v1
 """
 NEW_CONFIG_TRAPS = {"13", "18", "32", "33", "45", "48", "97", "98", "114", "117", "118", "122", "130", "138", "142"}
 

@@ -2,7 +2,7 @@
 
 The catalogue is data. `minefield menu` renders it for a terminal (and walks a
 person through one choice), `minefield menu --json` hands it to any harness,
-the MCP server lists it, and the Hermes plugin maps each item to a slash
+the MCP server lists it, and a harness plugin maps each item to a slash
 command. Every item states what it touches before it runs: nothing, files you
 name, or a number of requests to an endpoint you name.
 """
@@ -34,7 +34,7 @@ class MenuItem:
     touches: str                  # "nothing" | "files you name" | "endpoint: up to N requests"
     argv: tuple[str, ...]         # `minefield` argv; {name} placeholders are filled from inputs
     inputs: tuple[MenuInput, ...] = ()
-    hermes: Optional[str] = None  # the matching Hermes slash command, when the plugin has one
+    slash: Optional[str] = None   # the matching chat slash command, when a harness plugin has one
     confirm: bool = False         # ask before running (live traffic beyond a lite check)
     tags: tuple[str, ...] = field(default_factory=tuple)
 
@@ -47,7 +47,7 @@ MENU: tuple[MenuItem, ...] = (
         "nothing",
         ("guide", "--text", "{symptom}"),
         (MenuInput("symptom", "What are you seeing? (one sentence)"),),
-        hermes="/minefield guide <what you see>", tags=("offline",)),
+        slash="/minefield guide <what you see>", tags=("offline",)),
     MenuItem(
         "2", "scan", "Check my config, launch script, logs or eval results",
         "Reads only the files you name and reports possible traps with the line. "
@@ -55,7 +55,7 @@ MENU: tuple[MenuItem, ...] = (
         "files you name",
         ("scan", "--text", "{paths...}"),
         (MenuInput("paths", "File or folder paths (space separated)", repeatable=True),),
-        hermes="/minefield scan [path ...]", tags=("offline",)),
+        slash="/minefield scan [path ...]", tags=("offline",)),
     MenuItem(
         "3", "lite", "Quick live check of my endpoint",
         "A bounded preflight of an OpenAI-compatible endpoint. Sends at most 5 short "
@@ -63,13 +63,13 @@ MENU: tuple[MenuItem, ...] = (
         "endpoint: up to 5 requests",
         ("diagnose", "--text", "--mode", "lite", "--base-url", "{base_url}"),
         (MenuInput("base_url", "Endpoint base URL (e.g. http://localhost:8000/v1)"),),
-        hermes="/minefield check", tags=("live",)),
+        slash="/minefield check", tags=("live",)),
     MenuItem(
         "4", "plan", "Preview a full Doctor run (no network)",
         "Lists every probe a full Doctor would run and its request budget. Sends nothing.",
         "nothing",
         ("doctor-plan", "--mode", "doctor", "--text"),
-        hermes="/minefield doctor", tags=("offline",)),
+        slash="/minefield doctor", tags=("offline",)),
     MenuItem(
         "5", "doctor", "Full Doctor on my endpoint",
         "Runs every applicable live probe (dozens of requests; see option 4 for the "
@@ -78,7 +78,7 @@ MENU: tuple[MenuItem, ...] = (
         ("quick", "--base-url", "{base_url}"),
         (MenuInput("base_url", "Endpoint base URL (e.g. http://localhost:8000/v1)"),
          MenuInput("model", "Model id to test (blank = the server's first)", required=False)),
-        hermes="/minefield doctor --yes", confirm=True, tags=("live",)),
+        slash="/minefield doctor --yes", confirm=True, tags=("live",)),
     MenuItem(
         "6", "coverage", "What can be checked automatically",
         "How many traps have endpoint, file and log checks, and which do not.",
@@ -95,7 +95,7 @@ MENU: tuple[MenuItem, ...] = (
                    required=False, repeatable=True),
          MenuInput("logs", "Log paths (space separated, blank for none)",
                    required=False, repeatable=True)),
-        hermes="/minefield contribute", tags=("offline",)),
+        slash="/minefield contribute", tags=("offline",)),
 )
 
 

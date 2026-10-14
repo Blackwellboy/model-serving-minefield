@@ -119,7 +119,7 @@ chat template actually receives `enable_thinking=false`. Structured
 **Mechanism (sixcat 0.5.0 / GLM TP2 TR3).** Policy field `preclose_think=true`
 is popped inside the client and forces
 `chat_template_kwargs.enable_thinking=False` even when the outer policy says
-thinking on. Hermes equivalent on this lane: send
+thinking on. Client equivalent on this lane: send
 `enable_thinking=false` for effective OFF; send `enable_thinking=true` for
 effective ON. **Omitting the kwarg follows this server's default and is
 effective ON**, so omission must not be used as an OFF control.
@@ -132,16 +132,13 @@ effective ON**, so omission must not be used as an OFF control.
 | Canonical POST | OFF | 75.0 | 60 |
 | Diagnostic TRUE ON (`preclose_think=false`) | ON | 80.8 | 80 |
 
-Canonical OFF scores are **not** rewritten. Hermes aliases after adjudication:
-`glm` (effective OFF) and `glm-think` (effective ON).
+Canonical OFF scores are **not** rewritten. After adjudication the client has
+one route for effective OFF and a separate route for effective ON.
 
 **Lesson.** A requested or labelled reasoning mode is not proof of the
 effective template state. Verify the rendered control **and** actual
 reasoning behavior before budgeting tokens or publishing scores.
 
-**Evidence.** `blackwellbench-lab` commit `694cf89a63fed7eaa377057bfa99613f50d3a035`
-(`campaigns/GLM53_TP2_SIXCAT_77P5_ROOT_CAUSE_20260918/THINKING_ON_FULL_SIXCAT/`).
-Private candidate:
-`model-serving-minefield-evidence-private/findings/2026-09-18-overnight-fleet-glm53-preclose/`.
+**Evidence.** Campaign results and the adjudicated candidate *(private evidence archived)*.
 
 *Status of this extension: measured here, raw not published.*

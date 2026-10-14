@@ -6,6 +6,14 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-10-15 - leak-scan hygiene: stale waivers, a private reference in trap 29, a test IP
+
+- Trap 29's 2026-09-18 extension named two private repositories (an evidence path and a lab commit) and private client route aliases in public text. Replaced with *(private evidence archived)* and neutral wording; the measured table, status and lesson are unchanged.
+- `tests/test_offline_detectors.py` used a private-range LAN address as a fixture; rebuilt as `203.0.113.20` (documentation range). No detector depends on the range.
+- `integrity/_proofs/sanitizer_adjudicated.txt`: waivers are keyed by path and line number, so every insertion or regeneration moved them onto other lines. Of 2,301 waivers, 1,573 pointed at the wrong line and 86 at text or files that no longer exist. New `integrity/rekey_adjudications.py` re-keys each waiver to the line that still carries the exact text it was reviewed for (or drops it), never adding one; run it with the last reviewed commit as its base. Then the Hermes Agent / hermes-minefield integration lines added this week were reviewed line by line and waived with the standard reason.
+- `minefield.menu` field `hermes` renamed `slash` (the matching chat command, any harness); schema `minefield.menu.v1` is days old and has no consumer of that field yet.
+- Remaining scanner hits are pre-existing and listed in the PR: the public `dspark-vllm-gx10` image name in generated mirrors, and style-only dash characters.
+
 ## 2026-10-15 - trap 164: a thinking-token budget that cuts the reasoning hides the answer
 
 - Added [164](traps/reasoning/164-thinking-budget-cut-hides-the-answer.md): on a DeepSeek-V4.1-Flash EXL3 vLLM lane (`deepseek_v41` parsers, DSpark k=3, TP=2 on two DGX Spark), a `thinking_token_budget` that the reasoning reaches stops the reasoning mid-sentence and then spends the rest of `max_tokens` on output that appears in neither `content` nor the reasoning field, streamed or not: 0/6 answers at budgets 32 and 64 against 3/3 uncapped, `finish_reason: length`, about 2.5x slower decode. **Reproduced here**; mechanism not established. Runnable two-request check in the entry.

@@ -28,7 +28,7 @@ TOOLS = {
     "get_model_risks": "Return declared model-family matches without treating absence as safety.",
     "get_coverage_summary": "Return overlapping diagnostic coverage by modality.",
     "list_menu": "Return the Minefield menu: every action, what it touches (nothing, named files, "
-                 "or N endpoint requests), its inputs, and the CLI argv / Hermes command that runs it.",
+                 "or N endpoint requests), its inputs, and the CLI argv / slash command that runs it.",
     "interpret_doctor_report": "Separate doctor problem/clean/inconclusive/unavailable scope.",
     "build_reproduction_plan": "Return bounded experiment specifications for trap IDs.",
     "prepare_issue_report": "Prepare a scrubbed Markdown issue draft from supplied text.",

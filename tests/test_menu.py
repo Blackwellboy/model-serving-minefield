@@ -1,4 +1,4 @@
-"""The numbered menu: one catalogue for people, harnesses, MCP and the Hermes plugin."""
+"""The numbered menu: one catalogue for people, harnesses, MCP and harness plugins."""
 
 from __future__ import annotations
 
