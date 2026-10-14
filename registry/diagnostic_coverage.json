@@ -4,11 +4,11 @@
     "any_automated_check": 131,
     "counts_overlap": true,
     "endpoint_checks_implemented": 70,
-    "guided_experiments_specified": 163,
-    "human_review_possible": 163,
+    "guided_experiments_specified": 164,
+    "human_review_possible": 164,
     "log_checks_implemented": 31,
     "static_checks_implemented": 78,
-    "total_canonical_traps": 163
+    "total_canonical_traps": 164
   },
   "traps": [
     {
@@ -12200,6 +12200,80 @@
         "static_config": {
           "can_prove_clean": false,
           "confirm_criterion": "Compare the module names that auto_map references against the files the repository actually contains, for the quantized repo and its base. Standard library only: Recorded 2026-10-13: | Repository | Modules referenced by auto_map | Present in the repository | |---|---|---| | AWQ, ea491d0 | processing_minicpmv4_7.py, image_processing_minicpmv4_7.py, video_processing_minicpmv4_7.py | none of the three | | base, 17e6511 | none | not applicable | The trap is present whenever a referenced module is missing. Run the same check on any quantized, abliterated or otherwise re-uploaded sibling before you serve it, against the base revision your engine's model support targets.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Static configuration does not prove the live process used it.",
+          "possible_match_only": true,
+          "refute_criterion": "Compare with the effective runtime configuration.",
+          "required_inputs": [
+            "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        }
+      }
+    },
+    {
+      "id": "164",
+      "modalities": {
+        "endpoint_probe": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes.",
+          "expected_duration": "under one minute",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+          "required_inputs": [],
+          "safety_level": "bounded read-only requests",
+          "state": "not_yet_designed"
+        },
+        "guided_experiment": {
+          "can_prove_clean": false,
+          "confirm_criterion": "The failure signature described by trap 164 appears under matching conditions.",
+          "expected_duration": "5-30 minutes unless the entry names a soak",
+          "implemented_checker": null,
+          "limitations": "",
+          "possible_match_only": true,
+          "refute_criterion": "The paired control and test contradict the published failure signature.",
+          "required_inputs": [
+            "A disposable or explicitly authorised test surface",
+            "Raw output capture"
+          ],
+          "safety_level": "unreviewed published procedure; a human must assess impact before running",
+          "state": "specified"
+        },
+        "human_review": {
+          "can_prove_clean": false,
+          "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+          "expected_duration": "variable",
+          "implemented_checker": null,
+          "limitations": "Human review retains the published evidence status.",
+          "possible_match_only": true,
+          "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+          "required_inputs": [
+            "Exact stack, model, versions, and preserved evidence"
+          ],
+          "safety_level": "read-only comparison",
+          "state": "possible"
+        },
+        "log_scan": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes.",
+          "expected_duration": "seconds",
+          "implemented_checker": null,
+          "limitations": "Absence of a signature is not proof of safety.",
+          "possible_match_only": true,
+          "refute_criterion": "Show a later recovery or a contradictory control.",
+          "required_inputs": [
+            "Explicitly supplied bounded log files"
+          ],
+          "safety_level": "read-only",
+          "state": "possible"
+        },
+        "static_config": {
+          "can_prove_clean": false,
+          "confirm_criterion": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes.",
           "expected_duration": "seconds",
           "implemented_checker": null,
           "limitations": "Static configuration does not prove the live process used it.",

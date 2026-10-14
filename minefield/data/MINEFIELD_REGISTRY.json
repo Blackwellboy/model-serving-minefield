@@ -1,7 +1,7 @@
 {
   "canonical_enumeration": "traps/<category>/NN-*.md",
-  "canonical_trap_count": 163,
-  "content_sha256": "df0b4ccc21d0a434cd9f90d095d11c753b5d73332f97efe70bf163fb56ba732a",
+  "canonical_trap_count": 164,
+  "content_sha256": "f9bf109dd5cb60bf6b2f3028229ba5fc4214774b62c862e919625060d09f119a",
   "doctor_implemented_trap_count": 70,
   "entries": [
     {
@@ -11287,6 +11287,84 @@
       "supersession": null,
       "symptom": "You serve the official quantized build of a vision-language model on a current engine, and startup fails before any weights matter. First: The base (unquantized) model from the same publisher, on the same engine build, needs no such flag. If you remove the auto_map entries to get past that, the next failure is: even though preprocessor_config.json does carry an image_processor_type key.",
       "title": "the quantized sibling repo still ships processor metadata the base repo has already replaced"
+    },
+    {
+      "affected_models": [
+        "DeepSeek-V4.1-Flash EXL3 2.9 bpw",
+        "deepseekv41 --reasoning-parser deepseekv41 --tool-call-parser deepseekv41"
+      ],
+      "affected_stacks": [
+        "vLLM"
+      ],
+      "affected_versions_builds": "DeepSeek-V4.1-Flash EXL3 2.9 bpw (a local graft of the public 2.9 bpw pack) served by an EXL3 build of vLLM with `--tokenizer-mode deepseekv41 --reasoning-parser deepseekv41 --tool-call-parser deepseekv41`, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes, chat completions with the field thinking_token_budget in the request body. reasoning_effort was xhigh (budget 75 on this build); the no-budget control used the same request. Not tested: other models, other reasoning parsers, stock vLLM builds, or the max_tokens-relative variants of a thinking cap.",
+      "applicability": {
+        "concurrency_regime": [],
+        "context_regime": [
+          "3 000 tokens"
+        ],
+        "device_class": [
+          "dgx spark",
+          "gb10"
+        ],
+        "exact_checkpoint": [
+          "deepseek-v4.1-flash",
+          "deepseek-v4.1-flash exl3 2.9 bpw",
+          "deepseekv41",
+          "deepseekv41 --reasoning-parser deepseekv41 --tool-call-parser deepseekv41"
+        ],
+        "failure_stage": [],
+        "gpu_architecture": [
+          "blackwell"
+        ],
+        "model_family": [
+          "deepseek"
+        ],
+        "node_count": [],
+        "operating_system": [],
+        "parallelism": [
+          "tp"
+        ],
+        "quantization": [],
+        "serving_stack": [
+          "vllm"
+        ],
+        "stack_version": [],
+        "topology": [
+          "tp"
+        ]
+      },
+      "category": "reasoning",
+      "check": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes.",
+      "contributor": "Blackwellboy",
+      "diagnostic_modalities": [
+        "static_config",
+        "log_scan",
+        "guided_experiment",
+        "human_review"
+      ],
+      "doctor_coverage": {
+        "implemented": false,
+        "source": null
+      },
+      "evidence_strength": [
+        "reproduced here"
+      ],
+      "exact_conditions": "DeepSeek-V4.1-Flash EXL3 2.9 bpw (a local graft of the public 2.9 bpw pack) served by an EXL3 build of vLLM with `--tokenizer-mode deepseekv41 --reasoning-parser deepseekv41 --tool-call-parser deepseekv41`, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes, chat completions with the field thinking_token_budget in the request body. reasoning_effort was xhigh (budget 75 on this build); the no-budget control used the same request. Not tested: other models, other reasoning parsers, stock vLLM builds, or the max_tokens-relative variants of a thinking cap.",
+      "id": "164",
+      "known_limitations": "",
+      "mechanism": "Not established here. What the measurements pin down: the cap is enforced (reasoning stops at exactly the budget, mid-sentence), generation then continues until max_tokens, and none of the continuation is surfaced as content or as reasoning, in streamed or non-streamed responses. Decode after the cut ran at about 17 tokens/s (600 tokens in 35 s; 3,000 in 147-178 s), against about 47 for the uncapped 3,000-token request on the same lane. A plausible reading, not verified, is that the forced end-of-thinking token the budget path inserts is not the marker this model's reasoning parser splits on, so everything after it is held back as unparsed output. Confirming that needs the raw token stream after the cut. How this differs from its neighbours: trap 153 is the opposite failure, a budget that silently never fires. Trap 12 empties content because the reasoning itself used the whole max_tokens; here the reasoning is short and the rest of the budget disappears. Trap 162 files the answer as reasoning with finish_reason: \"stop\"; here there is no answer anywhere and the finish is length.",
+      "mitigation": "Do not use a thinking-token budget on this stack until the check passes. To make a reasoning model faster without it, lower the effort level or switch thinking off for the calls that do not need it (for example, tool-loop continuations in an agent), and verify the answer is present in content on every request rather than trusting the 200.",
+      "public_evidence_links": [],
+      "related_traps": [
+        "12",
+        "153",
+        "162"
+      ],
+      "source_path": "traps/reasoning/164-thinking-budget-cut-hides-the-answer.md",
+      "status": "reproduced here",
+      "supersession": null,
+      "symptom": "You add a per-request reasoning cap, for example \"thinking_token_budget\": 64, to stop a reasoning model thinking for too long. The server accepts it. Requests whose reasoning stays under the cap behave normally. Requests whose reasoning reaches the cap come back with content empty, finish_reason: \"length\" and completion_tokens equal to your max_tokens, after a much longer wait than an uncapped request. The reasoning field holds a sentence cut off mid-thought, and completion_tokens_details.reasoning_tokens equals the cap exactly. The cap did not shorten the request; it removed the answer and made it slower. Measured on one lane, the same short arithmetic question (max_tokens: 600, temperature 1.0, topp 0.95, non-streaming, 3 runs each): | thinking_token_budget | Answer delivered | completion_tokens | reasoning_tokens | finish_reason | Time | |---|---|---|---|---|---| | not sent | 3/3 | 80-129 | 75-124 | stop | 2.2-3.1 s | | 32 | 0/3 | 600 | 32 | length | 35-37 s | | 64 | 0/3 | 600 | 64 | length | 35 s | A harder question with max_tokens: 3000 and budgets of 256, 512 and 1,024 gave the same shape on every run: reasoning_tokens equal to the budget, empty content, length, all 3,000 tokens spent, in 147-178 s where the uncapped request spent the same 3,000 tokens in 64 s. With streaming, the deltas stop after the cut: the capped run emitted 12 reasoning deltas and no content delta at all before finishing at 600 tokens, so the ~568 tokens after the cut appear in neither channel. A run whose reasoning finishes under the cap (125 of 128) answers normally, which is why a quick test with a generous cap looks fine.",
+      "title": "a thinking-token budget that actually cuts the reasoning hides the answer and runs to maxtokens"
     }
   ],
   "schema_version": "1.1"

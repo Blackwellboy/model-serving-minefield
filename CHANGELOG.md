@@ -6,6 +6,12 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-10-15 - trap 164: a thinking-token budget that cuts the reasoning hides the answer
+
+- Added [164](traps/reasoning/164-thinking-budget-cut-hides-the-answer.md): on a DeepSeek-V4.1-Flash EXL3 vLLM lane (`deepseek_v41` parsers, DSpark k=3, TP=2 on two DGX Spark), a `thinking_token_budget` that the reasoning reaches stops the reasoning mid-sentence and then spends the rest of `max_tokens` on output that appears in neither `content` nor the reasoning field, streamed or not: 0/6 answers at budgets 32 and 64 against 3/3 uncapped, `finish_reason: length`, about 2.5x slower decode. **Reproduced here**; mechanism not established. Runnable two-request check in the entry.
+- Neighbours separated in the entry: 153 (budget never fires), 12 (reasoning itself fills `max_tokens`), 162 (answer filed as reasoning, `stop`).
+- Models index row for DeepSeek V4.1 gains 164; symptom benchmark gains its tune and holdout queries. Registry count moves **163 -> 164**; Doctor coverage stays **70** (no Doctor check for 164 yet).
+
 ## 2026-10-15 - a menu for people, harnesses, MCP and Hermes
 
 - `minefield` on its own (or `minefield menu`) shows a numbered menu of everything the tool does. Each item says what it touches before it runs (nothing, files you name, or a set number of requests to your endpoint), asks for its inputs, and asks for a yes before a full Doctor. `minefield menu --json` (schema `minefield.menu.v1`) gives harnesses the same catalogue: id, inputs, `argv`, what it touches, and whether it confirms.
