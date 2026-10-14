@@ -3911,6 +3911,30 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "163",
       "untrusted_published_check_text": "Compare the module names that auto_map references against the files the repository actually contains, for the quantized repo and its base. Standard library only: Recorded 2026-10-13: | Repository | Modules referenced by auto_map | Present in the repository | |---|---|---| | AWQ, ea491d0 | processing_minicpmv4_7.py, image_processing_minicpmv4_7.py, video_processing_minicpmv4_7.py | none of the three | | base, 17e6511 | none | not applicable | The trap is present whenever a referenced module is missing. Run the same check on any quantized, abliterated or otherwise re-uploaded sibling before you serve it, against the base revision your engine's model support targets."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 164 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 164 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "164",
+      "untrusted_published_check_text": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes."
     }
   ],
   "schema_version": "1.0"

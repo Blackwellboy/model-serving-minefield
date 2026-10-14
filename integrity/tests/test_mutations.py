@@ -995,6 +995,22 @@ class DoNotCiteMutations(unittest.TestCase):
         self.assertTrue(any(h["path"] == "NEW_WRITEUP.md" for h in out["hits"]),
                         out)
 
+    def test_46_every_form_of_the_battery_figure_is_still_caught(self):
+        for text in ("We ran the 8,620-case battery.", "8620 cases passed.",
+                     "(8,620 items)", "across 8620."):
+            write(os.path.join(self.root, "NOTES.md"), f"# Notes\n\nBaseline.\n\n{text}\n")
+            rc, out = self.dnc("--base", "HEAD")
+            self.assertEqual(rc, 1, text)
+            self.assertTrue(any(h["id"] == "8620-quality-battery" for h in out["hits"]), text)
+
+    def test_47_hashes_and_longer_numbers_are_not_the_figure(self):
+        """A regenerated manifest line must not fail the build by chance."""
+        for text in ("web/registry-data.js\t1305821\ta9e2aa2cea061fcc62ff69e6f0b15b6b0430aac5e222a6b97d958862020686a7",
+                     "size 1386201 bytes", "commit 3f8620ab", "18,620 rows"):
+            write(os.path.join(self.root, "NOTES.md"), f"# Notes\n\nBaseline.\n\n{text}\n")
+            rc, out = self.dnc("--base", "HEAD")
+            self.assertFalse(any(h["id"] == "8620-quality-battery" for h in out["hits"]), (text, out))
+
 
 
 if __name__ == "__main__":

@@ -50,8 +50,9 @@
     },
     {
       "id": "8620-quality-battery",
-      "pattern": "8,?620",
+      "pattern": "(?<![0-9a-f,])8,?620(?![0-9a-f])",
       "why": "banned phrasing, TWEET_PACK_V3.1: nothing may imply we ran their 8,620-case quality battery. We did not.",
+      "narrowed": "2026-10-15: the bare pattern '8,?620' matched any digit run containing 8620, and fired on a SHA-256 in the regenerated dist/MANIFEST.txt ('...958862020686...') when a new trap changed that line. Every regeneration could trip it at random, which teaches the override reflex. The pattern now refuses to match inside a longer hex or digit run; every form of the figure (8620, 8,620, 8,620-case, 8620 cases) is still caught, verified by integrity/tests test_46 and test_47.",
       "instead": "Cite our own battery by its own case count."
     },
     {

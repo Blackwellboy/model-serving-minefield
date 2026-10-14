@@ -1780,6 +1780,16 @@
    "trap": "163",
    "split": "holdout",
    "query": "Unrecognized image processor for a quantized vision model whose processor config points at python files that are not in the repo"
+  },
+  {
+   "trap": "164",
+   "split": "tune",
+   "query": "I set thinking_token_budget and now capped requests return empty content with finish reason length and use all max tokens"
+  },
+  {
+   "trap": "164",
+   "split": "holdout",
+   "query": "capping reasoning tokens made the answer disappear and the request got much slower instead of shorter"
   }
  ],
  "negatives": {
