@@ -81,4 +81,4 @@ Hermes plugin's `/minefield` menu does not depend on them.)
 `minefield menu --json` prints the catalogue (schema `minefield.menu.v1`) for a
 harness or plugin to render: every item has a stable `id`, the `argv` to pass
 to `minefield`, its `inputs`, what it `touches`, and whether it must `confirm`
-before running.
+before running, plus `slash`, the matching chat command where a plugin provides one.
