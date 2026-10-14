@@ -1,3 +1,11 @@
+## 2026-10-15 - Doctor reads DeepSeek-V4.1 renders correctly
+
+- Found running the Doctor against a live DeepSeek-v4.1-Flash-EXL3 vLLM lane: three verdicts contradicted that lane's own `/tokenize` render.
+- [02](traps/template/02-orphaned-think-close-tag.md): the encoder's `<｜Assistant｜></think>` turn prefix (DeepSeek V4.x chat mode and dropped history thinking) no longer counts as an orphaned close tag. A ChatML `assistant\n</think>` still does.
+- [04](traps/template/04-history-reasoning-stripping.md): before reporting "no preservation path", history is rendered again with one tool defined. DeepSeek V4.x keeps prior reasoning whenever tools are present, so the lane now reports `HISTORY_STRIPPED_UNLESS_TOOLS` (chat-only multi-turn runs the stripped arm; agent loops resend every reasoning block) instead of a verdict that is backwards for agents.
+- [58](traps/reasoning/58-reasoning-effort-injects-hidden-preamble.md) / [07](traps/reasoning/07-reasoning-effort-silently-ignored.md): the effort probe also compares render-only prompts (no extra chat requests). A numeric `Reasoning Effort: N` budget is one token whatever N is, so prompt-token counts reported INCONCLUSIVE on a lane whose budget moved 50 -> 25 -> 100. When the template writes a DeepSeek-style budget, named levels are compared with the encoder reference (default/high 75, low 50, max 100) and a shifted ladder is a trap-07 PROBLEM (`EFFORT_LADDER_DIVERGES_FROM_REFERENCE`).
+- New mock lane `doctor/tests/mock_dsv41_lane.py` follows the checkpoint's Python encoder, with a `served` ladder (as measured) and a `reference` ladder. Seven tests; each fix mutation-checked (reverting it fails a test). Probe count, request ceiling and coverage counts unchanged.
+
 ## 2026-10-13 - offline readiness and exact Doctor execution contracts
 
 - Corrected three stale probe-to-trap declarations from the #210 review and the reasoning-toggle request estimate (four including alternate control). Full conservative catalogue cost is 48 generation requests, not the earlier documented 42; this includes legacy completions.
