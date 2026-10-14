@@ -3,13 +3,14 @@ import threading
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-import pytest
+import unittest
+from contextlib import contextmanager
 
 from minefield.api import plan_checks, run_checks
 from minefield.execution import ExecutionControl, ExecutionStopped
 
 
-@pytest.fixture
+@contextmanager
 def endpoint():
     calls = []
 
@@ -52,40 +53,46 @@ def control(base, **kwargs):
                                   "/v1/chat/completions", "/redirect"), **kwargs)
 
 
-def test_actual_discovery_counts_and_hard_ceiling(endpoint):
-    base, calls = endpoint
-    plan = plan_checks(base_url=base + "/v1", model="fixture", detect=False, max_requests=1)
-    guard = control(base, max_http=2)
-    result = run_checks(plan, execution=guard)
-    assert len(calls) == result.http_requests_executed == 2
-    assert result.error == "BUDGET_EXHAUSTED"
-    assert result.wire_generations_executed == 0
-    assert not result.findings
+class TestExecutionControl(unittest.TestCase):
+    def setUp(self):
+        fixture = endpoint()
+        self.endpoint = fixture.__enter__()
+        self.addCleanup(fixture.__exit__, None, None, None)
+
+    def test_actual_discovery_counts_and_hard_ceiling(self):
+        base, calls = self.endpoint
+        plan = plan_checks(base_url=base + "/v1", model="fixture", detect=False, max_requests=1)
+        guard = control(base, max_http=2)
+        result = run_checks(plan, execution=guard)
+        assert len(calls) == result.http_requests_executed == 2
+        assert result.error == "BUDGET_EXHAUSTED"
+        assert result.wire_generations_executed == 0
+        assert not result.findings
 
 
-def test_cancel_and_redirect_never_follow(endpoint):
-    base, calls = endpoint
-    guard = control(base)
-    with guard.bind():
-        with pytest.raises(ExecutionStopped, match="REDIRECT_REJECTED"):
-            guard.open(urllib.request.Request(base + "/redirect"), 1)
-        guard.cancel()
-        with pytest.raises(ExecutionStopped, match="CANCELLED"):
-            guard.open(urllib.request.Request(base + "/v1/models"), 1)
-    assert calls == ["/redirect"]
-    with pytest.raises(ValueError, match="already used"):
+    def test_cancel_and_redirect_never_follow(self):
+        base, calls = self.endpoint
+        guard = control(base)
         with guard.bind():
-            pass
+            with self.assertRaisesRegex(ExecutionStopped, "REDIRECT_REJECTED"):
+                guard.open(urllib.request.Request(base + "/redirect"), 1)
+            guard.cancel()
+            with self.assertRaisesRegex(ExecutionStopped, "CANCELLED"):
+                guard.open(urllib.request.Request(base + "/v1/models"), 1)
+        assert calls == ["/redirect"]
+        with self.assertRaisesRegex(ValueError, "already used"):
+            with guard.bind():
+                pass
 
 
-def test_wrong_origin_output_cap_and_bool_budget_rejected(endpoint):
-    base, calls = endpoint
-    with pytest.raises(ValueError):
-        control(base, max_http=True)
-    guard = control(base)
-    with guard.bind():
-        with pytest.raises(ExecutionStopped, match="DESTINATION_REJECTED"):
-            guard.open(urllib.request.Request("http://192.0.2.1/v1/models"), 1)
-        with pytest.raises(ExecutionStopped, match="OUTPUT_CAP_REJECTED"):
-            guard.open(urllib.request.Request(base + "/v1/chat/completions", b'{"max_tokens":9999}'), 1)
-    assert calls == []
+    def test_wrong_origin_output_cap_and_bool_budget_rejected(self):
+        base, calls = self.endpoint
+        with self.assertRaises(ValueError):
+            control(base, max_http=True)
+        guard = control(base)
+        with guard.bind():
+            with self.assertRaisesRegex(ExecutionStopped, "DESTINATION_REJECTED"):
+                guard.open(urllib.request.Request("http://192.0.2.1/v1/models"), 1)
+            with self.assertRaisesRegex(ExecutionStopped, "OUTPUT_CAP_REJECTED"):
+                guard.open(urllib.request.Request(base + "/v1/chat/completions", b'{"max_tokens":9999}'), 1)
+        assert calls == []
