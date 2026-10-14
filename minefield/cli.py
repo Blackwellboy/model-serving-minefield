@@ -129,6 +129,12 @@ def parser() -> argparse.ArgumentParser:
         help="explicit assumed endpoint capability; repeatable, never probed",
     )
     doctor_plan.add_argument("--text", action="store_true", help="compact human-readable preview")
+    menu_cmd = sub.add_parser(
+        "menu", help="everything Minefield can do, as a numbered menu (also: bare `minefield`)")
+    menu_fmt = menu_cmd.add_mutually_exclusive_group()
+    menu_fmt.add_argument("--json", action="store_true",
+                          help="machine-readable catalogue for harnesses and plugins")
+    menu_fmt.add_argument("--markdown", action="store_true", help="the menu as Markdown")
     coverage = sub.add_parser("coverage", help="what the doctor, static and log checks cover")
     coverage.add_argument("--json", action="store_true")
     agent = sub.add_parser("agent-bundle", help="regenerate (or --verify) the shipped registry and agent bundles")
@@ -194,8 +200,21 @@ def _command_names() -> set[str]:
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    if argv and argv[0] == "quick":
+    if not argv:
+        argv = ["menu"]
+    if argv[0] == "quick":
         return run_doctor(argv[1:])
+    if argv[0] == "menu":
+        from . import menu
+
+        margs = parser().parse_args(argv)
+        if margs.json:
+            _emit(menu.as_dict())
+            return 0
+        if margs.markdown or not sys.stdin.isatty():
+            print(menu.render("markdown" if margs.markdown else "text"))
+            return 0
+        return menu.interactive(lambda chosen: main(list(chosen)))
     # `minefield empty content when streaming` is shorthand for `minefield guide ...`.
     if argv and argv[0] not in {"-h", "--help"} and argv[0] not in _command_names():
         argv = ["guide", *argv]

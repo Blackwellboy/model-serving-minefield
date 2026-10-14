@@ -313,7 +313,11 @@ equally cheap.
 ## Cadence
 
 Reports get a first maintainer response within a few days. Entries land as
-they are verified. The [CHANGELOG.md](CHANGELOG.md) is the liveness record.
+they are verified. The [CHANGELOG.md](CHANGELOG.md) is the liveness record:
+every pull request that changes behaviour, a check, a trap, the Doctor, the
+CLI/MCP surface or the docs adds a `## YYYY-MM-DD - title` entry at its top.
+The `changelog` workflow fails a pull request that does not; generated files
+and CI-only changes are exempt, and the `no-changelog` label skips it.
 
 ## Contributor reports (process)
 

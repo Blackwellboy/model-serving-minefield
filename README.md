@@ -43,6 +43,10 @@ minefield streaming shows blank replies --stack vllm
 
 (From a clone instead: `python -m pip install .`)
 
+Not sure where to start? Run `minefield` on its own for a numbered menu of
+everything it can do. Each option says what it touches (nothing, files you
+name, or a set number of requests to your endpoint) before it runs.
+
 Describe what you see in plain words. You get the few traps that match, how
 strong each match is, the one check to run next, and a link to the entry.
 
@@ -111,12 +115,13 @@ pipx install msmf
 minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
 ```
 
-**Hermes user:** install the repository-provided skill, then invoke it or
-preload it with `hermes --skills model-serving-minefield`. See
-[verified setup commands](docs/HERMES_SETUP.md).
+**Hermes user:** install the [`hermes-minefield`](https://github.com/Blackwellboy/hermes-minefield)
+plugin and type `/minefield` for the menu; the skill and MCP server also work.
+See [Hermes setup](docs/HERMES_SETUP.md).
 
 **MCP user:** run `minefield-mcp` over stdio. It exposes search,
-report-interpretation, reproduction-plan, and explicit-file inspection tools;
+report-interpretation, reproduction-plan, explicit-file inspection and a
+`list_menu` tool (the same numbered menu as the CLI);
 it cannot restart or modify a server. See [MCP setup](docs/MCP_SETUP.md).
 
 The second badge is the one worth explaining. `surfaces` runs hourly and asks

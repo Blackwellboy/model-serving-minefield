@@ -1,0 +1,54 @@
+name: changelog
+
+# Every pull request that changes what the project does or says adds a dated
+# entry to CHANGELOG.md, so the history of the work is in one place. Generated
+# files (dist/, minefield/data/, web/registry-data.js) and CI-only changes do
+# not need one. A change nobody would look for in a changelog (a typo) can carry
+# the `no-changelog` label.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  changelog-entry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require a CHANGELOG.md entry
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          SKIP: ${{ contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
+        run: |
+          set -euo pipefail
+          if [ "$SKIP" = "true" ]; then
+            echo "no-changelog label set; skipping."
+            exit 0
+          fi
+          changed=$(git diff --name-only "$BASE" "$HEAD")
+          relevant=$(printf '%s\n' "$changed" | grep -Ev '^(dist/|minefield/data/|web/registry-data\.js$|\.github/|CHANGELOG\.md$)' || true)
+          if [ -z "$relevant" ]; then
+            echo "Only generated or CI files changed; no entry needed."
+            exit 0
+          fi
+          if ! printf '%s\n' "$changed" | grep -qx 'CHANGELOG.md'; then
+            echo "::error::This pull request changes:" >&2
+            printf '  %s\n' $relevant >&2
+            echo "::error::but does not add an entry to CHANGELOG.md. Add a '## YYYY-MM-DD - title' entry at the top, or label the PR no-changelog." >&2
+            exit 1
+          fi
+          # The entry must be new text near the top, not an edit buried in history.
+          added=$(git diff "$BASE" "$HEAD" -- CHANGELOG.md | grep -E '^\+## [0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
+          if [ -z "$added" ]; then
+            echo "::error::CHANGELOG.md changed but no new '## YYYY-MM-DD - title' entry was added." >&2
+            exit 1
+          fi
+          echo "Changelog entry found:"
+          printf '%s\n' "$added"
