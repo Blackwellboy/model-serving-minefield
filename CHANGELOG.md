@@ -6,6 +6,11 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-10-15 - release 0.2.2
+
+- Package version **0.2.2** (PyPI `model-serving-minefield`). Since 0.2.1: traps 160-166 (registry 159 -> 166), the numbered `minefield menu` and `--json` catalogue, MCP `list_menu`, Doctor DeepSeek-V4.1 render fixes, offline readiness and Doctor execution contracts, the leak-scan hygiene pass, and the one-changelog rule.
+- Hermes Agent users get it through the `hermes-minefield` plugin (`hermes minefield update --yes`, or Hermes rebuilding its plugin environment), whose `>=0.2.1,<0.3` range already admits it.
+
 ## 2026-10-15 - traps 165 and 166: thinking off for agent speed, and the cache cost of switching
 
 - Added [165](traps/reasoning/165-thinking-off-for-agent-speed-costs-reasoning.md): on a DeepSeek-V4.1-Flash EXL3 vLLM lane inside a real agent harness, thinking off keeps tool follow-ups (14/15), planning (12/12) and final answers (9/9) but fails 16 of 24 in-agent reasoning tasks, so quick checks pass; thinking on every step made an 11-step real stretch take 258 s against 70 s off and 53 s for "think after the user speaks, off on tool continuations". **Measured here, raw not published**; the entry carries a check to run on your own prompt.
