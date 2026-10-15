@@ -1084,11 +1084,11 @@ dist/model-serving-minefield-agent-pack.zip:34548: reviewed public integration r
 dist/model-serving-minefield-agent-pack.zip:34556: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:34624: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:35015: reviewed public integration reference required by this feature; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:46829: reviewed public integration reference required by this feature; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:46830: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:46831: reviewed public integration reference required by this feature; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:46850: reviewed public integration reference required by this feature; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:48029: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:46832: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:46833: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:46852: reviewed public integration reference required by this feature; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:48031: reviewed public integration reference required by this feature; no private deployment data is present.
 
 # 2026-08-25 flashrdma harvest: refresh gx10 line adjudications after registry rebuild
 upstream/U20-gb10-direct-qsfp-single-hca-half-bandwidth.md:13: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
@@ -1145,19 +1145,9 @@ dist/model-serving-minefield-agent-pack.zip:36793: reviewed public vendor/image 
 dist/model-serving-minefield-agent-pack.zip:37103: reviewed public vendor/image string dspark-vllm-gx10 embedded in generated agent-pack zip mirror; not a private hostname.
 dist/model-serving-minefield-agent-pack.zip:36732: reviewed public vendor/image string dspark-vllm-gx10 embedded in generated agent-pack zip mirror; not a private hostname.
 dist/model-serving-minefield-agent-pack.zip:37564: reviewed public vendor/image string dspark-vllm-gx10 embedded in generated agent-pack zip mirror; not a private hostname.
-dist/model-serving-minefield-agent-pack.zip:52213: reviewed public vendor/image string dspark-vllm-gx10 embedded in generated agent-pack zip mirror; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:52215: reviewed public vendor/image string dspark-vllm-gx10 embedded in generated agent-pack zip mirror; not a private hostname.
 
 # 2026-08-25 flashrdma harvest: supplementary remaining mirrors
-CHANGELOG.md:46: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:48: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:10: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:16: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:58: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:60: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:61: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:62: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:63: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-CHANGELOG.md:74: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 llms.txt:63: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 traps/reasoning/03-enable-thinking-default-drift.md:65: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 traps/reasoning/07-reasoning-effort-silently-ignored.md:97: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
@@ -1185,12 +1175,12 @@ dist/model-serving-minefield-agent-pack.zip:37389: reviewed public vendor/image 
 dist/model-serving-minefield-agent-pack.zip:37297: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/model-serving-minefield-agent-pack.zip:37704: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/model-serving-minefield-agent-pack.zip:37577: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:50544: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:50545: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:50551: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:50455: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:51819: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:51919: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:50546: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:50547: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:50552: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:50457: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:51821: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:51921: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 
 # 2026-08-25 flashrdma harvest: supplementary mass refresh after rebuild
 models/qwen3.8-27b.md:35: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1227,10 +1217,10 @@ dist/model-serving-minefield-agent-pack.zip:37605: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:37289: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37766: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37897: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50554: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50104: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50557: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:52487: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50556: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50106: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50559: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:52489: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:26104: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:26415: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:26428: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1244,7 +1234,7 @@ dist/model-serving-minefield-agent-pack.zip:36686: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:36708: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:36795: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37020: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:52501: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:52503: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:7510: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:7551: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:7565: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1337,30 +1327,30 @@ dist/model-serving-minefield-agent-pack.zip:41932: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:41739: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:42180: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:45150: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:46239: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48769: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48804: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49105: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49106: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48591: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48575: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49109: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48778: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48817: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49113: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49126: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48820: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50567: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50568: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50591: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50592: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50643: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50644: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50719: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50194: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:51188: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:51191: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50762: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:46241: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48771: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48806: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49107: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49108: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48593: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48577: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49111: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48780: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48819: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49115: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49128: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48822: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50569: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50570: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50593: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50594: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50645: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50646: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50721: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50196: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:51190: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:51193: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50764: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/MINEFIELD_REGISTRY.json:6825: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/MINEFIELD_REGISTRY.json:6843: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/MINEFIELD_REGISTRY.json:6844: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1459,7 +1449,7 @@ dist/MINEFIELD_AGENT_BUNDLE_LITE.md:489: reviewed style-only punctuation / publi
 dist/MINEFIELD_AGENT_BUNDLE_LITE.md:492: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 checks/reproduce_qwen38_reasoning_config_traps.py:228: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 checks/reproduce_qwen38_reasoning_config_traps.py:263: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:51801: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:51803: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37832: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37361: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:41409: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1468,20 +1458,20 @@ dist/model-serving-minefield-agent-pack.zip:41569: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:41709: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:41816: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:42126: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:46238: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48768: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49075: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:49091: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:48767: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50576: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50599: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50600: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50651: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50652: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50727: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50639: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50745: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50763: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:46240: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48770: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49077: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:49093: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:48769: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50578: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50601: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50602: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50653: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50654: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50729: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50641: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50747: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50765: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37580: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37137: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37232: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
@@ -1490,12 +1480,12 @@ dist/model-serving-minefield-agent-pack.zip:37147: reviewed style-only punctuati
 dist/model-serving-minefield-agent-pack.zip:37304: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37344: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 dist/model-serving-minefield-agent-pack.zip:37740: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50562: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50563: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50103: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:50146: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:51968: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
-dist/model-serving-minefield-agent-pack.zip:52484: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50564: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50565: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50105: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:50148: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:51970: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
+dist/model-serving-minefield-agent-pack.zip:52486: reviewed style-only punctuation / public image label in published evidence or generated package mirror; no private data is present.
 
 # Adjudications for FlashRDMA follow-up regenerate (trap 135) line-number drift
 dist/MINEFIELD_AGENT_BUNDLE.json:12450: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
@@ -1536,10 +1526,10 @@ dist/model-serving-minefield-agent-pack.zip:37493: reviewed regenerated derived 
 dist/model-serving-minefield-agent-pack.zip:37482: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
 dist/model-serving-minefield-agent-pack.zip:37767: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
 dist/model-serving-minefield-agent-pack.zip:38146: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
-dist/model-serving-minefield-agent-pack.zip:50802: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
-dist/model-serving-minefield-agent-pack.zip:50255: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
-dist/model-serving-minefield-agent-pack.zip:50353: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
-dist/model-serving-minefield-agent-pack.zip:50823: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:50804: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:50257: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:50355: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
+dist/model-serving-minefield-agent-pack.zip:50825: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
 dist/MINEFIELD_AGENT_BUNDLE.json:23825: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
 dist/MINEFIELD_AGENT_BUNDLE.json:23881: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
 dist/MINEFIELD_AGENT_BUNDLE.json:23834: reviewed regenerated derived surface (bundle, registry index, skill or generator source) carrying already-adjudicated public entry text; no private data.
@@ -1644,33 +1634,33 @@ dist/model-serving-minefield-agent-pack.zip:41615: reviewed regenerated derived 
 dist/model-serving-minefield-agent-pack.zip:42376: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:42054: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:42428: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:46427: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:46134: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:48436: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49360: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49389: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49390: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:48851: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:48837: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49393: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49010: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49408: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49409: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:46429: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:46136: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48438: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49362: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49391: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49392: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48853: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48839: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49395: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49012: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:49410: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49279: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50815: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50816: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50839: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50840: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50891: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50528: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50967: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51430: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51431: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51434: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51458: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:52363: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
-dist/model-serving-minefield-agent-pack.zip:52908: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:49411: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49412: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49281: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50817: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50818: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50841: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50842: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50893: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50530: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50969: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51432: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51433: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51436: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51460: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:52365: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:52910: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
 dist/MINEFIELD_AGENT_BUNDLE.md:1570: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/MINEFIELD_AGENT_BUNDLE.md:1580: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/MINEFIELD_AGENT_BUNDLE.md:1593: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
@@ -1937,29 +1927,29 @@ dist/model-serving-minefield-agent-pack.zip:41954: reviewed regenerated derived 
 dist/model-serving-minefield-agent-pack.zip:41434: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:41867: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:42685: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:46204: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:46246: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:48788: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49096: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49116: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49129: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49130: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49144: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:48839: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:49147: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50061: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50629: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50630: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50681: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50682: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50757: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51225: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50784: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51229: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:51245: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50736: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:52488: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
-dist/model-serving-minefield-agent-pack.zip:52308: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:46206: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:46248: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48790: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49098: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49118: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49131: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49132: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49146: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:48841: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:49149: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50063: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50631: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50632: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50683: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50684: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50759: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51224: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50786: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51228: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:51244: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50738: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:52490: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
+dist/model-serving-minefield-agent-pack.zip:52310: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
 dist/MINEFIELD_REGISTRY.json:6735: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/MINEFIELD_REGISTRY.json:6753: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/MINEFIELD_REGISTRY.json:6754: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
@@ -1988,9 +1978,9 @@ dist/model-serving-minefield-agent-pack.zip:37277: reviewed regenerated derived 
 dist/model-serving-minefield-agent-pack.zip:37307: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:37716: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 dist/model-serving-minefield-agent-pack.zip:38120: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50593: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50594: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
-dist/model-serving-minefield-agent-pack.zip:50613: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50595: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50596: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
+dist/model-serving-minefield-agent-pack.zip:50615: reviewed regenerated derived surface carrying already-adjudicated public entry text at shifted offsets; no private data.
 integrity/_proofs/sanitizer_adjudicated.txt:1713: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
 integrity/_proofs/sanitizer_adjudicated.txt:1738: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
 integrity/_proofs/sanitizer_adjudicated.txt:1762: reviewed public vendor/image string dspark-vllm-gx10 / GX10-class hardware label in published evidence or generated registry mirrors; not a private hostname.
@@ -2159,11 +2149,6 @@ dist/MINEFIELD_REGISTRY.json:9078: reviewed public vendor/image string dspark-vl
 .github/workflows/agent-platform.yml:89: reviewed public integration reference required by this feature; no private deployment data is present.
 .github/workflows/agent-platform.yml:91: reviewed public integration reference required by this feature; no private deployment data is present.
 .github/workflows/agent-platform.yml:92: reviewed public integration reference required by this feature; no private deployment data is present.
-CHANGELOG.md:19: reviewed public integration reference required by this feature; no private deployment data is present.
-CHANGELOG.md:20: reviewed public integration reference required by this feature; no private deployment data is present.
-CHANGELOG.md:29: reviewed public integration reference required by this feature; no private deployment data is present.
-CHANGELOG.md:33: reviewed public integration reference required by this feature; no private deployment data is present.
-CHANGELOG.md:204: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:118: reviewed public integration reference required by this feature; no private deployment data is present.
 README.md:120: reviewed public integration reference required by this feature; no private deployment data is present.
 dist/MANIFEST.txt:13: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
@@ -2185,8 +2170,8 @@ dist/model-serving-minefield-agent-pack.zip:45473: reviewed generated mirror of 
 dist/model-serving-minefield-agent-pack.zip:45480: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:45515: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:45785: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:54100: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:67205: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:54102: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:67210: reviewed generated mirror of a public integration reference reviewed in source; no private deployment data is present.
 docs/HERMES_SETUP.md:3: reviewed public integration reference required by this feature; no private deployment data is present.
 docs/HERMES_SETUP.md:7: reviewed public integration reference required by this feature; no private deployment data is present.
 docs/HERMES_SETUP.md:9: reviewed public integration reference required by this feature; no private deployment data is present.
@@ -2214,13 +2199,12 @@ dist/model-serving-minefield-agent-pack.zip:45507: reviewed generated mirror of 
 dist/model-serving-minefield-agent-pack.zip:45232: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:45782: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
 dist/model-serving-minefield-agent-pack.zip:45882: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:46082: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:65567: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:65568: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:65569: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
-dist/model-serving-minefield-agent-pack.zip:65588: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:46084: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:65571: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:65572: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:65573: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
+dist/model-serving-minefield-agent-pack.zip:65592: reviewed generated mirror of a source line already adjudicated as a public integration reference; no private deployment data is present.
 # 2026-10-15: public Anemll image name dspark-vllm-gx10 / GX10-class product label (no private host form gx10-<id> anywhere in the tree)
-CHANGELOG.md:21: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/MINEFIELD_AGENT_BUNDLE.json:26615: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/MINEFIELD_AGENT_BUNDLE.json:26671: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/MINEFIELD_AGENT_BUNDLE.json:26696: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
@@ -2258,7 +2242,7 @@ dist/model-serving-minefield-agent-pack.zip:42023: reviewed public vendor/image 
 dist/model-serving-minefield-agent-pack.zip:42449: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/model-serving-minefield-agent-pack.zip:42094: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 dist/model-serving-minefield-agent-pack.zip:42137: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
-dist/model-serving-minefield-agent-pack.zip:67162: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+dist/model-serving-minefield-agent-pack.zip:67167: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 minefield/data/MINEFIELD_REGISTRY.json:8833: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 minefield/data/MINEFIELD_REGISTRY.json:8889: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
 minefield/data/MINEFIELD_REGISTRY.json:8914: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
@@ -2308,10 +2292,33 @@ dist/model-serving-minefield-agent-pack.zip:45517: generated mirror of reviewed 
 dist/model-serving-minefield-agent-pack.zip:45784: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 dist/model-serving-minefield-agent-pack.zip:45787: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 dist/model-serving-minefield-agent-pack.zip:45884: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
-dist/model-serving-minefield-agent-pack.zip:65565: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
-dist/model-serving-minefield-agent-pack.zip:65566: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
-dist/model-serving-minefield-agent-pack.zip:65586: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65569: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65570: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65590: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 dist/model-serving-minefield-agent-pack.zip:67709: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 web/registry-data.js:1: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 web/registry-data.js:2: generated mirror of reviewed source text (trap entries and docs); regenerated for traps 165-166; the source tree adds no new hits.
 dist/model-serving-minefield-agent-pack.zip:67755: zip directory entry for the public docs/HERMES_SETUP.md filename; generated mirror, regenerated for traps 165-166.
+dist/model-serving-minefield-agent-pack.zip:46082: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:54100: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65566: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65567: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65568: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:65587: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:67710: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+dist/model-serving-minefield-agent-pack.zip:67756: generated mirror of reviewed source text (trap entries and docs); regenerated for release 0.2.2; the source tree adds no new hits.
+CHANGELOG.md:25: reviewed public integration reference required by this feature; no private deployment data is present.
+CHANGELOG.md:26: reviewed public integration reference required by this feature; no private deployment data is present.
+CHANGELOG.md:27: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:35: reviewed public integration reference required by this feature; no private deployment data is present.
+CHANGELOG.md:39: reviewed public integration reference required by this feature; no private deployment data is present.
+CHANGELOG.md:52: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:54: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:64: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:66: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:67: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:68: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:69: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:80: reviewed public vendor/image string and generated mirror payload (dspark-vllm-gx10 / GX10-class); not private fleet identity.
+CHANGELOG.md:210: reviewed public integration reference required by this feature; no private deployment data is present.
+CHANGELOG.md:12: reviewed public integration reference required by this feature; no private deployment data is present.
