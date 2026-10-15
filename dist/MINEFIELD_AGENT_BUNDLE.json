@@ -6,11 +6,11 @@
       "any_automated_check": 131,
       "counts_overlap": true,
       "endpoint_checks_implemented": 70,
-      "guided_experiments_specified": 164,
-      "human_review_possible": 164,
+      "guided_experiments_specified": 166,
+      "human_review_possible": 166,
       "log_checks_implemented": 31,
       "static_checks_implemented": 78,
-      "total_canonical_traps": 164
+      "total_canonical_traps": 166
     },
     "traps": [
       {
@@ -12288,6 +12288,154 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "165",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 165 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "166",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 166 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -16227,6 +16375,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "164",
       "untrusted_published_check_text": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 165 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 165 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "165",
+      "untrusted_published_check_text": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 166 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 166 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "166",
+      "untrusted_published_check_text": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap."
     }
   ],
   "possible_unverified_leads": {
@@ -17586,8 +17782,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 164,
-    "content_sha256": "f9bf109dd5cb60bf6b2f3028229ba5fc4214774b62c862e919625060d09f119a",
+    "canonical_trap_count": 166,
+    "content_sha256": "f8b6ee21720b7a546814097b26f982176c282dbce863ac0e58dad9625ff7610c",
     "doctor_implemented_trap_count": 70,
     "entries": [
       {
@@ -28951,6 +29147,164 @@
         "supersession": null,
         "symptom": "You add a per-request reasoning cap, for example \"thinking_token_budget\": 64, to stop a reasoning model thinking for too long. The server accepts it. Requests whose reasoning stays under the cap behave normally. Requests whose reasoning reaches the cap come back with content empty, finish_reason: \"length\" and completion_tokens equal to your max_tokens, after a much longer wait than an uncapped request. The reasoning field holds a sentence cut off mid-thought, and completion_tokens_details.reasoning_tokens equals the cap exactly. The cap did not shorten the request; it removed the answer and made it slower. Measured on one lane, the same short arithmetic question (max_tokens: 600, temperature 1.0, topp 0.95, non-streaming, 3 runs each): | thinking_token_budget | Answer delivered | completion_tokens | reasoning_tokens | finish_reason | Time | |---|---|---|---|---|---| | not sent | 3/3 | 80-129 | 75-124 | stop | 2.2-3.1 s | | 32 | 0/3 | 600 | 32 | length | 35-37 s | | 64 | 0/3 | 600 | 64 | length | 35 s | A harder question with max_tokens: 3000 and budgets of 256, 512 and 1,024 gave the same shape on every run: reasoning_tokens equal to the budget, empty content, length, all 3,000 tokens spent, in 147-178 s where the uncapped request spent the same 3,000 tokens in 64 s. With streaming, the deltas stop after the cut: the capped run emitted 12 reasoning deltas and no content delta at all before finishing at 600 tokens, so the ~568 tokens after the cut appear in neither channel. A run whose reasoning finishes under the cap (125 of 128) answers normally, which is why a quick test with a generous cap looks fine.",
         "title": "a thinking-token budget that actually cuts the reasoning hides the answer and runs to maxtokens"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deep"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deepseek_v41 tokenizer and parsers, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes, thinking switched off with reasoning_effort: \"none\" plus chat_template_kwargs: {\"enable_thinking\": false} (a real boolean), on with reasoning_effort: \"low\". Not tested: other models. A model whose reasoning does not depend on thinking would show no gap, which the check tells you.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [
+            "29k tokens"
+          ],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4.1-flash",
+            "deepseek-v4.1-flash exl3 2.9 bpw served by an exl3 build of vllm with the deep",
+            "deepseek_v41"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "reasoning",
+        "check": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deepseek_v41 tokenizer and parsers, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes, thinking switched off with reasoning_effort: \"none\" plus chat_template_kwargs: {\"enable_thinking\": false} (a real boolean), on with reasoning_effort: \"low\". Not tested: other models. A model whose reasoning does not depend on thinking would show no gap, which the check tells you.",
+        "id": "165",
+        "known_limitations": "",
+        "mechanism": "Most model calls in an agent loop are continuations: the last message is a tool result and the job is to read it and pick the next tool. Thinking adds little there. The calls where thinking changes the answer are the ones right after the user speaks, where the model works out what to do or answers. A single per-lane setting cannot tell the two apart, so it is either slow on every continuation or weak on every answer. The scheduled policy came in under thinking off on this one stretch; the reason was not investigated, so read it as \"about thinking-off speed\", not as faster. How this differs from its neighbours: trap 29 is a server default that does not turn thinking off; here it is really off and that is the problem. Trap 158 is a reporting artifact after tools with thinking off; nothing here is mis-reported. Trap 164 is why a thinking-token budget is not the middle ground on the same lane. Trap 166 is the cache cost of switching per call, which the replay above already includes.",
+        "mitigation": "Do not choose one thinking setting for the whole agent. Think on the first model call after each user message and switch thinking off when the last message is a tool result (a request middleware or a small proxy in front of the server can do this per call). Measure it on your own session replay before trusting the speed numbers above, and keep a way to force thinking on for a hard session.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "07",
+          "29",
+          "58",
+          "158",
+          "164",
+          "166"
+        ],
+        "source_path": "traps/reasoning/165-thinking-off-for-agent-speed-costs-reasoning.md",
+        "status": "measured here, raw not published",
+        "supersession": null,
+        "symptom": "Your agent is slow on a reasoning model: every step waits while the model thinks. You switch thinking off. The agent is suddenly fast, and everything you try looks fine: it reads files, runs commands, follows tool output and plans the next step. Days later it gets a sum, a date difference or a piece of code tracing wrong, inside a turn where it looked confident. Nothing errored; the answer was just worse. Measured on one lane inside a real agent harness (36 tools, about 29k tokens of system prompt), 21 tasks x 3 runs, 60 gradeable calls per arm: | | in-agent reasoning | tool follow-ups | planning | final answers | total | mean per call | |---|---|---|---|---|---|---| | thinking off | 8/24 | 14/15 | 12/12 | 9/9 | 43/60 | 1.7 s | | thinking on, low | 24/24 | 15/15 | 12/12 | 9/9 | 60/60 | 3.3 s | | thinking on, max | 24/24 | 15/15 | 12/12 | 9/9 | 60/60 | 6.4 s | Thinking off loses almost nothing on the calls a quick check exercises (tool follow-ups, planning, final answers) and two thirds of the in-agent reasoning tasks (arithmetic, code tracing, time maths). That is why the switch looks free. The opposite default is the reason the agent was slow. Replaying 11 real steps from a slow session (browser automation, warm cache, the same requests each time): | policy | time | |---|---| | thinking off on every call | 70 s | | thinking on (low) on every call | 258 s | | think on the first call after a user message, off on tool-loop continuations | 53 s |",
+        "title": "turning thinking off to make an agent fast passes the quick checks and fails the reasoning"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deep"
+        ],
+        "affected_stacks": [
+          "vLLM"
+        ],
+        "affected_versions_builds": "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deepseek_v41 tokenizer and parsers and prefix caching on, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes. Settings sent as top-level reasoning_effort: \"low\" / \"high\", and thinking off as reasoning_effort: \"none\" plus chat_template_kwargs: {\"enable_thinking\": false}. Not tested: other families. A template that renders the reasoning switch after the system prompt, or near the end, would share almost all of the prefix; the check tells you which you have.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4.1-flash",
+            "deepseek-v4.1-flash exl3 2.9 bpw served by an exl3 build of vllm with the deep",
+            "deepseek_v41"
+          ],
+          "failure_stage": [
+            "first request"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [
+            "vllm"
+          ],
+          "stack_version": [],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "reasoning",
+        "check": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "reproduced here"
+        ],
+        "exact_conditions": "DeepSeek-V4.1-Flash EXL3 2.9 bpw served by an EXL3 build of vLLM with the deepseek_v41 tokenizer and parsers and prefix caching on, DSpark speculative decoding (k=3), tensor parallel 2 on two DGX Spark (GB10) nodes. Settings sent as top-level reasoning_effort: \"low\" / \"high\", and thinking off as reasoning_effort: \"none\" plus chat_template_kwargs: {\"enable_thinking\": false}. Not tested: other families. A template that renders the reasoning switch after the system prompt, or near the end, would share almost all of the prefix; the check tells you which you have.",
+        "id": "166",
+        "known_limitations": "",
+        "mechanism": "The reasoning setting is rendered into the prompt in front of the shared text. A zero-token hit with an otherwise identical prompt means the two renders already differ inside the first cache block, so no block of the system prompt or history can be shared between settings. On this family the effort instruction sits at the very top of the prompt (trap 58 shows the same placement for the injected max preamble on V4); low and high differ in content but not in length, which is why prompt_tokens hides it. What it costs depends on the pattern. The first use of each setting pays a full cold prefill of the shared prefix. After that, a switch re-prefills only what was added to the conversation since that setting was last used, because each variant's cache still covers its own older prefix. An agent that thinks after a user message and skips thinking on tool steps pays this on every switch, and on the measured lane it still came out at about thinking-off speed (see trap 165): the re-prefill is cheaper than thinking on every step. A client that picks the effort level at random per request pays it far more often. A second effect seen in the same runs, not explained and not part of this trap: in 4 of 10 prompt variants the warm hit stopped at exactly 4,096 tokens and stayed there for every later call of that variant (about 4 s instead of 0.7 s). It appeared on calls that had not switched, so it is not the switch. The shape resembles trap 129 (the hit is the minimum across KV cache groups); that was not tested. Neighbours: trap 82 moves the system prompt so the prefix changes every turn; trap 25 is history think blocks breaking the cache; trap 54 is what this does to a timing comparison that warms only one arm.",
+        "mitigation": "Keep the number of settings small and stable: pick one level for thinking calls and one way of switching it off, rather than varying the level per request. Warm each variant once at startup if the first-call latency matters. When you compare settings for speed, warm both before timing, or the comparison measures the cache rather than the setting. If the switching pattern is frequent and the shared prefix is long, measure the whole session, not single calls, before deciding it is worth it.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "25",
+          "54",
+          "58",
+          "82",
+          "129",
+          "165"
+        ],
+        "source_path": "traps/reasoning/166-per-call-thinking-switch-splits-prefix-cache.md",
+        "status": "reproduced here",
+        "supersession": null,
+        "symptom": "You vary reasoning per request: thinking on for some calls, off for others, or a different effort level for hard questions. The prompt is the same long system prompt and history every time, and prefix caching is on. Yet the first request at each new setting is as slow as a cold start, and its usage.prompt_tokens_details.cached_tokens is 0, even though the request just before it, with a different setting, had the whole prompt cached. This happens between two thinking levels too: low and high render to the",
+        "title": "switching thinking or effort per request gives each setting its own prefix cache, even at the same prompt length"
       }
     ],
     "schema_version": "1.1"

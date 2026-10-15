@@ -3935,6 +3935,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "164",
       "untrusted_published_check_text": "Send one request whose reasoning will exceed the cap and one control, with a small max_tokens so the failure is cheap: You are bitten if the capped request returns empty content, finish_reason: \"length\", completion_tokens equal to max_tokens and reasoning_tokens equal to the budget, while the control answers. Run it more than once: a request whose reasoning happens to finish under the cap passes."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 165 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 165 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "165",
+      "untrusted_published_check_text": "Run the same short reasoning questions inside your agent's real system prompt and tool list, thinking off and on, at least three times each, and grade the final number, not the prose. With a plain endpoint the smallest version is: ```bash Q='A meeting starts at 10:50 and runs 2 h 25 min, then a 35 min break. When does the break end? Reply HH:MM only.' for t in false true; do for i in 1 2 3; do jq -n --rawfile sys youragentsystemprompt.txt --arg q \"$Q\" --arg m \"$MODEL\" --argjson t \"$t\" \\ '{model:$m, maxtokens:2000, messages:[{role:\"system\",content:$sys},{role:\"user\",content:$q}], chattemplatekwargs:{enablethinking:$t}}' \\ | curl -s \"$BASE/chat/completions\" -H 'Content-Type: application/json' -d @- \\ | jq -r --arg t \"$t\" '\"thinking=\\($t) \" + (.choices[0].message.content // \"\")' done; done"
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 166 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 166 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "166",
+      "untrusted_published_check_text": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap."
     }
   ],
   "schema_version": "1.0"

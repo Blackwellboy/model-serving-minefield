@@ -59,7 +59,7 @@ minefield scan docker-compose.yml start.sh ./models/my-model ./logs/
 It checks launch flags, compose mounts, the model's `config.json`, the chat
 template (rendered in Jinja's sandbox against probe conversations), server logs
 and eval result files. Between `scan`, the log checks and the live doctor,
-131 of the 164 traps have at least one automatic check
+131 of the 166 traps have at least one automatic check
 (`any_automated_check` in `minefield coverage`). To run it on your own pull
 requests, see the [example GitHub Action](docs/GITHUB_ACTION_SCAN.md).
 Matching quality is measured, not asserted: see the
@@ -83,7 +83,7 @@ minefield diagnose "tp=2 dies after twenty minutes" \
   --base-url http://HOST:8000/v1
 ```
 
-Minefield considers all **164 canonical traps** for routing, scans the supplied
+Minefield considers all **166 canonical traps** for routing, scans the supplied
 files, auto-detects the endpoint stack/model when available, and spends its
 bounded live-probe budget on checks related to the traps already surfaced by
 the symptom/files before falling back to generic lite probes. The output keeps
@@ -138,7 +138,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 164
+Four doors, and which one you want depends on why you are here. All 166
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](playbooks/)** are ordered checklists
@@ -173,7 +173,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](#find-your-symptom)** is
-  directly below, all 164 entries, one row each, sorted by number. It is the
+  directly below, all 166 entries, one row each, sorted by number. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -184,7 +184,7 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **70 of these 164 entries**, weighted toward reasoning fields, templates,
+for **70 of these 166 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
 the other 93. It runs
 in under a minute and prints its own coverage line at the end of every run so
@@ -218,7 +218,7 @@ published as if settled.
 
 ## Find your symptom
 
-All 164 entries. If you know what you are running rather than what you are
+All 166 entries. If you know what you are running rather than what you are
 seeing, the [per-model index](models/README.md) is the shorter route.
 
 | You are seeing | It may be | Entry | Status |
@@ -304,6 +304,8 @@ seeing, the [per-model index](models/README.md) is the shorter route.
 | Thinking on, a short multiple-choice answer comes back with `content` null, the letter in the reasoning field, `finish_reason: stop` and 2 completion tokens | The template pre-opened `<think>`, the model answered and ended the turn without `</think>`, so the parser filed the whole answer as reasoning | [162](traps/reasoning/162-thinking-on-short-answer-never-closes-think-block.md) | reproduced here |
 | The official quantized build demands `--trust-remote-code` (or fails with "Unrecognized image processor") while its base model loads natively | The quantized repo still ships `auto_map` and a processor class pointing at remote-code files it does not contain; the base repo has moved to native configs | [163](traps/versioning/163-quantized-sibling-repo-ships-stale-processor-metadata.md) | reproduced here |
 | You set `thinking_token_budget` to cap reasoning and capped requests come back with empty `content`, `finish_reason: length`, `completion_tokens` equal to `max_tokens` and `reasoning_tokens` equal to the budget, slower than uncapped | The cap fires mid-sentence, generation continues to `max_tokens`, and none of it is surfaced as content or reasoning | [164](traps/reasoning/164-thinking-budget-cut-hides-the-answer.md) | reproduced here |
+| You turned thinking off to make your agent fast; tool steps and planning still look perfect, but it now gets sums, dates and code tracing wrong inside turns | Thinking off costs little on tool-loop continuations and most of the in-agent reasoning; thinking on every step is what made it slow | [165](traps/reasoning/165-thinking-off-for-agent-speed-costs-reasoning.md) | measured here, raw not published |
+| The first request at each new thinking setting or effort level is a cold start with `cached_tokens` 0, even when `prompt_tokens` is identical to a fully cached request | The reasoning setting renders in front of the shared prompt, so every setting is a separate prefix-cache entry | [166](traps/reasoning/166-per-call-thinking-switch-splits-prefix-cache.md) | reproduced here |
 | Per-layer parity says the final layer exploded and you are ~4.5x off | Dump conventions differ: an off-by-one layer index plus pre-norm compared against post-norm | [50](traps/evaluation/50-hidden-state-dump-convention.md) | contributor-measured, conditions as reported |
 | Perplexity is NaN on one backend and clean on the others with the same file | A fused matmul path on that backend, not a property of the quantization format | [51](traps/quantization/51-single-backend-nan-fused-path.md) | contributor-measured, conditions as reported |
 | An impressive, stable throughput number that evaporates when a correctness gate lands | The fast path was skipping required work, so the broken config is the one that wins | [52](traps/evaluation/52-speed-measured-on-a-broken-config.md) | contributor-measured, conditions as reported |
@@ -416,7 +418,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 70 of this registry's 164 entries in under a minute:
+against 70 of this registry's 166 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py
@@ -523,6 +525,7 @@ otherwise.
 
 ## Recently added
 
+- 2026-10-15: **traps [165](traps/reasoning/165-thinking-off-for-agent-speed-costs-reasoning.md) and [166](traps/reasoning/166-per-call-thinking-switch-splits-prefix-cache.md)** - thinking off as an agent speed fix keeps tool steps (14/15) and loses in-agent reasoning (8/24 vs 24/24), while thinking every step made a real stretch 258 s against 53 s for thinking only after the user speaks (**measured here, raw not published**); each thinking setting or effort level is its own prefix-cache entry, cold on first use even at identical `prompt_tokens` (**reproduced here**). Registry 164→166.
 - 2026-10-15: **trap [164](traps/reasoning/164-thinking-budget-cut-hides-the-answer.md)** - a thinking-token budget that actually cuts the reasoning hides the answer and runs to `max_tokens` (0/6 answers capped vs 3/3 uncapped on a DeepSeek-V4.1 vLLM lane; **reproduced here**). Registry 163→164.
 - 2026-09-02: **traps [136](traps/evaluation/136-pipeline-reports-consumer-status-not-producer-failure.md) and [137](traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md)** - preserve the producer's pipeline status and distinguish native-extension dispatch selectors from process exit codes (**contributor-measured, conditions as reported**); the agentic research playbook gains implementation-path proof gates. Registry 135→137.
 - 2026-08-25: **trap [135](traps/evaluation/135-concurrent-http-clients-are-not-concurrent-model-execution.md) + Trap [134](traps/evaluation/134-link-up-is-not-path-proof-for-the-interface-under-test.md) controlled TRANSPORT addendum** - concurrent HTTP clients are not concurrent model execution (**measured here, raw not published**); Trap 134 gains the positive holds+path-proof TRANSPORT corroboration; offline `concurrency_execution_proof_preflight`. Registry 134→135. Mining note *(private evidence archived)*.
