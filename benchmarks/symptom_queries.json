@@ -1790,6 +1790,26 @@
    "trap": "164",
    "split": "holdout",
    "query": "capping reasoning tokens made the answer disappear and the request got much slower instead of shorter"
+  },
+  {
+   "trap": "165",
+   "split": "tune",
+   "query": "I turned thinking off so my agent would be faster and now it makes arithmetic and date mistakes even though tool calls look fine"
+  },
+  {
+   "trap": "165",
+   "split": "holdout",
+   "query": "agent on a reasoning model is slow because it thinks on every tool step, but with reasoning disabled it gets dumber"
+  },
+  {
+   "trap": "166",
+   "split": "tune",
+   "query": "first request after changing reasoning effort has zero cached tokens even though the prompt is identical"
+  },
+  {
+   "trap": "166",
+   "split": "holdout",
+   "query": "switching thinking on and off per request makes prefix caching miss and every switch is a cold prefill"
   }
  ],
  "negatives": {

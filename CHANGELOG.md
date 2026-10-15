@@ -6,6 +6,13 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-10-15 - traps 165 and 166: thinking off for agent speed, and the cache cost of switching
+
+- Added [165](traps/reasoning/165-thinking-off-for-agent-speed-costs-reasoning.md): on a DeepSeek-V4.1-Flash EXL3 vLLM lane inside a real agent harness, thinking off keeps tool follow-ups (14/15), planning (12/12) and final answers (9/9) but fails 16 of 24 in-agent reasoning tasks, so quick checks pass; thinking on every step made an 11-step real stretch take 258 s against 70 s off and 53 s for "think after the user speaks, off on tool continuations". **Measured here, raw not published**; the entry carries a check to run on your own prompt.
+- Added [166](traps/reasoning/166-per-call-thinking-switch-splits-prefix-cache.md): every thinking setting and effort level is its own prefix-cache entry on that lane. The first call at a new setting had `cached_tokens` 0 in 10 of 10 cases, including `low` to `high` at identical `prompt_tokens`; all 6 returns to an earlier setting hit. **Reproduced here** with a runnable check. A separate, unexplained 4,096-token partial hit is recorded in the entry, not claimed.
+- README symptom rows, models row for DeepSeek V4.1, and symptom benchmark queries (tune and holdout) for both. Registry count moves **164 -> 166**; Doctor coverage stays **70** (no Doctor check for either yet).
+- Sanitizer waivers re-keyed with `integrity/rekey_adjudications.py` against `origin/main`; 48 waivers added, all for new offsets in regenerated mirrors (`dist/`, `web/registry-data.js`). Both scanners report the same per-pattern counts as `main`; the new entries add no hits.
+
 ## 2026-10-15 - leak-scan hygiene: stale waivers, a private reference in trap 29, a test IP
 
 - Trap 29's 2026-09-18 extension named two private repositories (an evidence path and a lab commit) and private client route aliases in public text. Replaced with *(private evidence archived)* and neutral wording; the measured table, status and lesson are unchanged.
