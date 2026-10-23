@@ -6,6 +6,10 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-10-23 - scan notes say when a detector count was capped
+
+- `minefield scan` stops counting after 8 matches per rule and 256 findings per file. That was recorded only in the JSON `truncations` list, so the text view showed a capped rule as `x8` with nothing to say it had been cut. Each detector truncation now also adds a note: for the per-rule cap, that the count shown is a lower bound; for the per-file cap, that later matches in that file were not reported. The scan-truncation regression test asserts the note. Registry count and Doctor coverage are unchanged.
+
 ## 2026-10-15 - release 0.2.2
 
 - Package version **0.2.2** (PyPI `model-serving-minefield`). Since 0.2.1: traps 160-166 (registry 159 -> 166), the numbered `minefield menu` and `--json` catalogue, MCP `list_menu`, Doctor DeepSeek-V4.1 render fixes, offline readiness and Doctor execution contracts, the leak-scan hygiene pass, and the one-changelog rule.
