@@ -6,9 +6,19 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
-## 2026-10-23 - scan notes say when a detector count was capped
+## 2026-11-02 - scan notes say when a detector count was capped
 
 - `minefield scan` stops counting after 8 matches per rule and 256 findings per file. That was recorded only in the JSON `truncations` list, so the text view showed a capped rule as `x8` with nothing to say it had been cut. Each detector truncation now also adds a note: for the per-rule cap, that the count shown is a lower bound; for the per-file cap, that later matches in that file were not reported. The scan-truncation regression test asserts the note. Registry count and Doctor coverage are unchanged.
+
+## 2026-11-02 - open trap queue: issues 219 to 227 preregistered
+
+- `registry/OPEN_TRAP_ISSUES.md` gains queue entries Q219, Q221, Q222, Q223, Q224, Q225 and Q227 for the seven open `[trap]` issues that were missing, each with an issue link and **CONFIRM**, **REFUTE** and **Boundary** criteria drawn from the issue's own text. This clears the open-trap-issue queue step of the `integrity` check, which had been red on `main` since 2026-10-17.
+- No trap number is allocated, nothing is promoted or closed, and no registry or Doctor count changes.
+
+## 2026-11-02 - docs: release state brought up to date
+
+- [Hermes setup](docs/HERMES_SETUP.md) no longer says the `menu` command and `list_menu` MCP tool are unreleased and need a clone of `main`; both shipped in 0.2.2.
+- The 0.2.1-era "PyPI-ready, not yet published" line now points at the publish, and the publishes and the `msmf` alias have their own dated entry below (2026-10-08).
 
 ## 2026-10-15 - release 0.2.2
 
@@ -119,6 +129,12 @@ pull request that changes those paths without touching this file; label it
 - Added zero-generation, llama.cpp `/apply-template` Doctor check for [84](traps/template/84-tool-roundtrip-then-user-turn-is-unrenderable.md), with paired baseline, rejected four-message sequence and rescued five-message control. CLEAN requires both tool and subsequent user markers in the successful render; unavailable or ambiguous controls do not clear the trap.
 - Doctor **32 -> 33/161**, automatic coverage remains **119/161**; request-generation ceiling unchanged.
 
+## 2026-10-08 - on PyPI: model-serving-minefield 0.2.1 and the `msmf` alias
+
+- **model-serving-minefield 0.2.1 published to PyPI** through the tag-triggered release workflow with trusted publishing (no stored token).
+- **New `msmf` alias package, 0.1.0, published to PyPI** (#187): a thin package in `packages/msmf/` that depends on `model-serving-minefield` and exposes the same CLIs, so `pipx install msmf` is a shorter install. It has its own tag-triggered `release-msmf` workflow (tag `msmf-v0.1.0`), also on trusted publishing.
+- README install instructions switched to `pipx install msmf` (#188).
+
 ## 2026-10-08 - half batch: two fingerprints + Doctor 32
 
 - Added high-specificity routing fingerprints for `hipErrorInvalidImage` -> Trap 100 and `cudagraph_capture_sizes` -> Trap 130. They are routing leads only and do not confirm mechanism by themselves.
@@ -198,7 +214,7 @@ pull request that changes those paths without touching this file; label it
 - **The symptom benchmark now includes real reports.** 25 cases in reporters' own words, one per closed trap report or corroboration issue with a single owning trap, split 13 tune / 12 holdout. On them the matcher does much worse than on the written set: holdout top-1 33.3%, top-5 58.3% before this change. Two tokenizer fixes found on tune (sentence punctuation stuck to words; compound identifiers like `--tool-call-parser` could not meet their prose words) take reported holdout top-1 to 50.0% (top-5 unchanged) and written holdout top-1 from 83.2% to 88.8% (top-5 unchanged at 92.3%). Off-domain false alarms stay 0%. CI floors updated, with a separate floor on the reported cases. See [benchmarks/README.md](benchmarks/README.md).
 - **Paste an error line and get its trap.** `minefield <text>`, `--log`, the MCP search tool and `match_symptom()` now check pasted text against the log signatures `minefield scan` uses, including lines a terminal wrapped. A signature hit is ranked first, labelled `log line match` with the reason, and carries a new additive `log_signature` field; it remains a lead, never a confirmation. On the detector fixtures' 12 signature lines the right trap is first 12 times (was 8). On 6 log lines copied from real reports nothing changed, because 4 of them have no signature yet; see [benchmarks/README.md](benchmarks/README.md), which also records an experiment that was not shipped (indexing reporters' phrasings showed no measured gain).
 - **Example GitHub Action** ([docs/GITHUB_ACTION_SCAN.md](docs/GITHUB_ACTION_SCAN.md)) for your own serving repository: runs `minefield scan` on the compose files, launch scripts, Dockerfiles, systemd units and chat templates a pull request changes, and keeps one PR comment updated with the findings. It never fails the build, uses `pull_request` only, and writes to the job summary on fork PRs where the token cannot comment.
-- **PyPI-ready, not yet published.** `pyproject.toml` gains a PyPI description, URLs and classifiers; the README installs with `pipx install model-serving-minefield`. The tag-triggered release workflow now checks the tag against the package version, runs `twine check --strict`, smoke-tests the installed wheel outside the checkout, and has a `publish-pypi` job using trusted publishing (no stored token) behind a `pypi` environment. It also installs jinja2 before the unit tests, which it previously did not. `tests/test_packaging.py` checks every `minefield/data` file is shipped and that the release runs only on a tag.
+- **PyPI-ready** (first published as 0.2.1 on 2026-10-08; see that dated entry). `pyproject.toml` gains a PyPI description, URLs and classifiers; the README installs with `pipx install model-serving-minefield`. The tag-triggered release workflow now checks the tag against the package version, runs `twine check --strict`, smoke-tests the installed wheel outside the checkout, and has a `publish-pypi` job using trusted publishing (no stored token) behind a `pypi` environment. It also installs jinja2 before the unit tests, which it previously did not. `tests/test_packaging.py` checks every `minefield/data` file is shipped and that the release runs only on a tag.
 
 ## 2026-09-25 - 0.2.1 (part 1): readable answers and a measured matcher
 

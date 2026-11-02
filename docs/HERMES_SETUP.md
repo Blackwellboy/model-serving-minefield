@@ -75,9 +75,6 @@ hermes skills uninstall model-serving-minefield
 ## Any other harness
 
 `minefield` on its own (or `minefield menu`) is the same menu in a terminal.
-(The `menu` command and the `list_menu` MCP tool are newer than the 0.2.1
-release on PyPI; until the next release, install from a clone of `main`. The
-Hermes plugin's `/minefield` menu does not depend on them.)
 `minefield menu --json` prints the catalogue (schema `minefield.menu.v1`) for a
 harness or plugin to render: every item has a stable `id`, the `argv` to pass
 to `minefield`, its `inputs`, what it `touches`, and whether it must `confirm`
