@@ -6,6 +6,11 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-11-02 - open trap queue: issues 219 to 227 preregistered
+
+- `registry/OPEN_TRAP_ISSUES.md` gains queue entries Q219, Q221, Q222, Q223, Q224, Q225 and Q227 for the seven open `[trap]` issues that were missing, each with an issue link and **CONFIRM**, **REFUTE** and **Boundary** criteria drawn from the issue's own text. This clears the open-trap-issue queue step of the `integrity` check, which had been red on `main` since 2026-10-17.
+- No trap number is allocated, nothing is promoted or closed, and no registry or Doctor count changes.
+
 ## 2026-10-15 - release 0.2.2
 
 - Package version **0.2.2** (PyPI `model-serving-minefield`). Since 0.2.1: traps 160-166 (registry 159 -> 166), the numbered `minefield menu` and `--json` catalogue, MCP `list_menu`, Doctor DeepSeek-V4.1 render fixes, offline readiness and Doctor execution contracts, the leak-scan hygiene pass, and the one-changelog rule.

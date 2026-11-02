@@ -24,8 +24,61 @@ Coverage snapshot: the doctor implements checks for **70 of 166** entries.  96 u
 - **REFUTE.** The pristine pinned image already includes an importable compatible transformers stack, the documented sequence installs it, the baseline Unsloth import succeeds, or the matched HF-first setup fails on the same package/build pins. Distinguish missing dependency from incompatible version or another transitive import failure.
 - **Boundary.** This is a **fine-tune toolchain setup** issue, not a serving failure. User-reported successful workaround is not a universal version-compatibility guarantee. Keep original and resolved package versions, platform and container digest attached to any promotion; dedupe against versioning/dependency traps before creating a canonical entry.
 
+### Q219. FlashInfer autotuning at vLLM warm-up can take tens of GiB of host memory on a 128 GB unified-memory box
 
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/219
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** On a GB10 (128 GB unified memory) box with the exact pinned vLLM build, checkpoint revision and launch flags recorded, sample `MemAvailable` at one-second resolution through load and warm-up. Run repeated boots with FlashInfer autotuning on and, as the matched control, with `--no-enable-flashinfer-autotune` and nothing else changed. Use a guard set low enough that the run is not killed before the drop settles, or no guard on a disposable box. Confirm a material, repeatable host-memory drop that starts after model loading finishes, coincides with the autotuner's profiling log lines, is absent in the autotune-off control, and is not bounded by `--gpu-memory-utilization`. Report where free memory settles and whether it is released when tuning ends.
+- **REFUTE.** The drop does not repeat across boots; it also occurs with autotuning off; it is attributable to another warm-up step (CUDA graph capture, speculative-decoding setup, KV allocation) or to a different checkpoint, build or flag; or `--gpu-memory-utilization` does bound it under matching conditions.
+- **Boundary.** One failed boot stopped by an 8 GiB guard and one control. "About 32 GiB" is the drop up to the stop and may be a floor, not a settled figure. The allocation pool, whether memory is released after tuning, and the speed autotuning would have bought are all unmeasured. Dedupe against trap 13 and trap 119 (unified-memory headroom) and trap 54 (first-request warm-up) before adjudication.
 
+### Q221. A hybrid Mamba model card's vLLM recipe reuses 0 cached prompt tokens, and the DFlash drafter turns reuse off again
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/221
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** With the pinned checkpoint revision, the card's named vLLM nightly and the stated kernel package, run the same repeated-prompt probe (two identical requests, then a fixed mixed-repeat prompt set) and read both per-request cached tokens and `vllm:prefix_cache_hits_total`, changing one variable per arm: card recipe as written; card recipe plus `--block-size 64 --prefix-match-unit 16 --enable-mamba-shared-prefix-checkpoint`; the same plus the card's DFlash drafter. Repeat each arm. Confirm zero reuse for the card recipe while the boot log reports prefix caching on, material reuse once the three flags are added without a drafter, and zero reuse again when the drafter is added with the same flags.
+- **REFUTE.** The card recipe as written does reuse cached prefixes under matching conditions; the three flags do not change reuse; the drafter arm reuses prefixes with the same flags; or the zero reading is a metrics or probe artefact (for example prompts below the block or match-unit granularity, or a counter that is not populated on this path).
+- **Boundary.** One model, one engine build, one box. The cause of zero reuse under the defaults was not traced, and whether drafter-disabled reuse is intended engine behaviour is unknown. The reported earlier sighting on a sibling hybrid checkpoint is not part of this issue's evidence. The drafter speed figure is context only, not a measured trade-off. Dedupe against trap 47 (prefix caching silently disabled for hybrid and recurrent architectures) before adjudication.
+
+### Q222. SGLang v0.5.20 on a hybrid Mamba model returns different completions for identical temperature-0 requests
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/222
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** With the digest-pinned SGLang v0.5.20 arm64 image, the pinned checkpoint revision and the stated flags, send the same long-generation prompt sequentially at temperature 0, top_p 1 and a fixed seed, at least five times per arm, and hash every completion. Repeat across the issue's arms (card recipe; stochastic rounding off; stochastic rounding and speculation off) on fresh boots, and include short prompts plus a vLLM control with the same harness, prompts and sampling. Confirm multiple distinct completion hashes on the long generation in every SGLang arm while the vLLM control and the short prompts return one hash.
+- **REFUTE.** Repeated SGLang requests under matching conditions return one completion; divergence follows a harness difference (concurrent warm-up traffic, seed or sampling fields not reaching the engine, differing max tokens or stop settings); or the vLLM control also diverges on the same prompts.
+- **Boundary.** One model, one image, one box, five repeats per arm. Only speculation and stochastic rounding are ruled out; the FlashInfer Mamba backend, chunked prefill, batching with warm-up requests and kernel autotuning were not varied, and `--enable-deterministic-inference` was not tried. This is not a claim of an SGLang bug, only that temperature 0 is not repeatable output on this path. Dedupe against trap 87, trap 91 and trap 108 before adjudication.
+
+### Q223. mlx_lm.server ignores the sampling fields of a shipped generation_config.json
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/223
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** Start stock `mlx_lm.server` (version pinned, and repeated on current main) on the pinned checkpoint whose `generation_config.json` carries `top_k` and `top_p`. Send the same prompt N times with no sampling fields, and again N times with a temperature but no `top_k`/`top_p`, at settings where top-k and top-p would bind. Compare the output distributions with an arm that sends the checkpoint's `top_k`/`top_p` explicitly. Confirm that the omitted-field arms match the server's built-in launch defaults (greedy when nothing is sent; plain temperature sampling when only temperature is sent) and differ measurably from the explicit-field arm.
+- **REFUTE.** A live request to stock `mlx_lm.server` shows the shipped sampling fields being applied; the omitted-field and explicit-field distributions are indistinguishable at the tested settings; or the observed behaviour comes from a wrapper rather than the stock server.
+- **Boundary.** Source read plus the shipped file only, not a live request against stock `mlx_lm.server`; the serving path that surfaced it was a custom wrapper. Stop tokens are reported as unaffected on this checkpoint. Scope any claim to the versions read. Treat as a candidate third shape of trap 21 (file present, sampling ignored) and dedupe against it before adjudication.
+
+### Q224. Gemma 3 chat template treats the same system message three different ways depending on position
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/224
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** Render the four message lists from the issue through `apply_chat_template` with the pinned tokenizer, the template identified by its sha256 and `add_generation_prompt=True`, and preserve the rendered strings and token ids. Confirm that a leading system message is merged into the first user turn with no system marker, that an inline system message after a user turn gets a `<start_of_turn>system` header the leading path never uses, and that an inline system message after an assistant turn raises the role-alternation TemplateError. Run `minefield classify-inline-system` on the same template and record its verdict.
+- **REFUTE.** The pinned template and tokenizer render any position differently from the issue; the classifier's verdict contradicts the issue's AMBIGUOUS reading under the entry's rule; or a different template revision is what produced the reported renders.
+- **Boundary.** Template renders only, not a serving-endpoint test; how any server or model responds to these renders is unmeasured. The tool-result variant was not run. One checkpoint build and one transformers version. Treat as a data point for trap 113 on a model family that entry does not yet cover, not a new mechanism, and dedupe against it before adjudication.
+
+### Q225. A single-file read-only bind into a read-only model bind needs the target file to already exist
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/225
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** With a recorded Docker version and runtime, launch a container with a directory bind mounted read-only and a single file bind mounted read-only onto a path inside it, in two arms: the target file already exists in the host directory, and it does not. Preserve the exact Docker error text and the container's view of the mounted file. Confirm the existing-target arm starts with the template visible, and the missing-target arm either fails to start or does not expose the template, and record which. Repeat on a second node or Docker version if available.
+- **REFUTE.** The missing-target arm starts and exposes the file under matching conditions; the failure is caused by something else (a missing host path, mount ordering in a different tool, permissions, or SELinux labelling); or the behaviour depends on a Docker version the issue did not use.
+- **Boundary.** Seen once, with no preserved Docker error text, so which of the two outcomes goes with which ordering is unknown. This is a container mount trap, not a model or engine trap; the checkpoints named are context for why the folder often lacks a template. Dedupe against existing chat-template and deployment-packaging entries before adjudication.
+
+### Q227. TensorFold keys an omitted request seed to the prompt, so repeated sampled requests return identical replies
+
+- **Public issue.** https://github.com/Blackwellboy/model-serving-minefield/issues/227
+- **Criteria provenance.** Drafted for maintainer review; not yet signed off.
+- **CONFIRM.** On the pinned TensorFold version, send the same prompts several times at a temperature above 0 with no `seed` field, and hash every reply and its token and reasoning counts. Confirm byte-identical replies across draws, that the sampled draws differ from a temperature-0 run of the same prompts (so sampling is live), and that sending a different explicit `seed` per draw makes the draws differ. Cite the engine source location that derives the default seed from the prompt.
+- **REFUTE.** Draws without a seed differ under matching conditions; the identity comes from a client or proxy that injects a fixed seed or caches responses; the sampled draws equal the temperature-0 output (sampling not applied); or explicit per-draw seeds also return identical replies.
+- **Boundary.** One engine version, one checkpoint family, one box. Prompt and reply text is not shared; per-item hashes are. The engine behaviour is documented in source as deliberate, so the trap is the silent collapse of best-of-n, voting and median methods ported from engines where an omitted seed means a fresh seed, not an engine defect. Dedupe against trap 91 and trap 108, and contrast with Q222's opposite symptom, before adjudication.
 
 ### Q113. GB10 page cache can impose a large calibration slowdown while `MemAvailable` barely moves
 
