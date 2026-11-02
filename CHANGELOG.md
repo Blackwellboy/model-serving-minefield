@@ -6,6 +6,10 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-11-02 - scan notes say when a detector count was capped
+
+- `minefield scan` stops counting after 8 matches per rule and 256 findings per file. That was recorded only in the JSON `truncations` list, so the text view showed a capped rule as `x8` with nothing to say it had been cut. Each detector truncation now also adds a note: for the per-rule cap, that the count shown is a lower bound; for the per-file cap, that later matches in that file were not reported. The scan-truncation regression test asserts the note. Registry count and Doctor coverage are unchanged.
+
 ## 2026-11-02 - open trap queue: issues 219 to 227 preregistered
 
 - `registry/OPEN_TRAP_ISSUES.md` gains queue entries Q219, Q221, Q222, Q223, Q224, Q225 and Q227 for the seven open `[trap]` issues that were missing, each with an issue link and **CONFIRM**, **REFUTE** and **Boundary** criteria drawn from the issue's own text. This clears the open-trap-issue queue step of the `integrity` check, which had been red on `main` since 2026-10-17.
