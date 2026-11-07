@@ -12,6 +12,7 @@ pull request that changes those paths without touching this file; label it
 - Added [168](traps/runtime/168-bulk-down-all-acts-on-the-first-group-only.md): `rexl3-cluster down --all` (and `up`, `supervise`, `logs`, `exec`, `env`) acts on the first group of a multi-group file and exits 0; a top-level per-rank `min_free_gib` list shorter than a group passes the missing ranks at 0 GiB. **Reproduced here** with a `--dry-run` against the shipped two-group example; reported with a patch as REXL3/REXL3#92.
 - [Agentic research integrity](playbooks/agentic-research-integrity.md) gains a section on a model-run code audit: 10 of 110 high and medium findings survived a source check, the severity label did not predict which, and a second-pass checker's own number was wrong once. **Measured here, raw not published.**
 - Registry 166 to 168. Doctor coverage unchanged at 70; neither new entry has a Doctor check.
+- `registry/OPEN_TRAP_ISSUES.md` gains queue entry Q232 for open trap issue #232 (`thinking_token_budget` enforced, rejected or ignored by server), with **CONFIRM**, **REFUTE** and **Boundary** criteria from the issue's own text. The `integrity` check's open-trap-issue step had gone red on it. No number is allocated.
 
 ## 2026-11-02 - scan notes say when a detector count was capped
 
