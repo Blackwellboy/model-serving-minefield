@@ -1810,6 +1810,26 @@
    "trap": "166",
    "split": "holdout",
    "query": "switching thinking on and off per request makes prefix caching miss and every switch is a cold prefill"
+  },
+  {
+   "trap": "167",
+   "split": "tune",
+   "query": "server is supposed to refuse packs that are not on its validated list but it booted my unlisted pack without the override flag"
+  },
+  {
+   "trap": "167",
+   "split": "holdout",
+   "query": "boot log says the pack was served because allow unvalidated pack was given but I never passed that flag"
+  },
+  {
+   "trap": "168",
+   "split": "tune",
+   "query": "cluster down --all exited 0 but only one group stopped and the other groups are still running on their nodes"
+  },
+  {
+   "trap": "168",
+   "split": "holdout",
+   "query": "after taking every tensor parallel group down with one command the next up fails because a gpu lock is still held"
   }
  ],
  "negatives": {

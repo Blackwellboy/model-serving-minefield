@@ -6,6 +6,13 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-11-08 - traps 167 and 168: a validated-pack gate with a family exemption, and `down --all` that stops one group
+
+- Added [167](traps/runtime/167-validated-pack-gate-carries-a-family-exemption.md): REXL3 v0.1.0 boots any DeepSeek-V4.1 pack without `--allow-unvalidated-pack`, because the gate exempts configs that mention `deepseek_v41` (or `qwen3_5_moe`), and the boot facts then report the operator's flag as the reason. **Reproduced here** with a source check and a CPU-only test against the public v0.1.0 source; confirmed by the maintainers in REXL3/REXL3#86, fix due in the next engine release.
+- Added [168](traps/runtime/168-bulk-down-all-acts-on-the-first-group-only.md): `rexl3-cluster down --all` (and `up`, `supervise`, `logs`, `exec`, `env`) acts on the first group of a multi-group file and exits 0; a top-level per-rank `min_free_gib` list shorter than a group passes the missing ranks at 0 GiB. **Reproduced here** with a `--dry-run` against the shipped two-group example; reported with a patch as REXL3/REXL3#92.
+- [Agentic research integrity](playbooks/agentic-research-integrity.md) gains a section on a model-run code audit: 10 of 110 high and medium findings survived a source check, the severity label did not predict which, and a second-pass checker's own number was wrong once. **Measured here, raw not published.**
+- Registry 166 to 168. Doctor coverage unchanged at 70; neither new entry has a Doctor check.
+
 ## 2026-11-02 - scan notes say when a detector count was capped
 
 - `minefield scan` stops counting after 8 matches per rule and 256 findings per file. That was recorded only in the JSON `truncations` list, so the text view showed a capped rule as `x8` with nothing to say it had been cut. Each detector truncation now also adds a note: for the per-rule cap, that the count shown is a lower bound; for the per-file cap, that later matches in that file were not reported. The scan-truncation regression test asserts the note. Registry count and Doctor coverage are unchanged.

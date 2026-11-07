@@ -6,11 +6,11 @@
       "any_automated_check": 131,
       "counts_overlap": true,
       "endpoint_checks_implemented": 70,
-      "guided_experiments_specified": 166,
-      "human_review_possible": 166,
+      "guided_experiments_specified": 168,
+      "human_review_possible": 168,
       "log_checks_implemented": 31,
       "static_checks_implemented": 78,
-      "total_canonical_traps": 166
+      "total_canonical_traps": 168
     },
     "traps": [
       {
@@ -12436,6 +12436,154 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "167",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 167 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "168",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 168 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -16423,6 +16571,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "166",
       "untrusted_published_check_text": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 167 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 167 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "167",
+      "untrusted_published_check_text": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 168 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 168 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "168",
+      "untrusted_published_check_text": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status."
     }
   ],
   "possible_unverified_leads": {
@@ -17782,8 +17978,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 166,
-    "content_sha256": "f8b6ee21720b7a546814097b26f982176c282dbce863ac0e58dad9625ff7610c",
+    "canonical_trap_count": 168,
+    "content_sha256": "2b3de5484f475c6c0dd481c75bc2686cab531421791cebf3d687a88472bc11d4",
     "doctor_implemented_trap_count": 70,
     "entries": [
       {
@@ -29305,6 +29501,108 @@
         "supersession": null,
         "symptom": "You vary reasoning per request: thinking on for some calls, off for others, or a different effort level for hard questions. The prompt is the same long system prompt and history every time, and prefix caching is on. Yet the first request at each new setting is as slow as a cold start, and its usage.prompt_tokens_details.cached_tokens is 0, even though the request just before it, with a different setting, had the whole prompt cached. This happens between two thinking levels too: low and high render to the",
         "title": "switching thinking or effort per request gives each setting its own prefix cache, even at the same prompt length"
+      },
+      {
+        "affected_models": [],
+        "affected_stacks": [],
+        "affected_versions_builds": "REXL3 v0.1.0 (engine source snapshot afc9b5df, published in the REXL3/REXL3 repository), any host. Reported as REXL3/REXL386; the maintainers confirmed it on their development branch and the fix (the gate takes the operator's flag alone, for every family) ships with the next engine release. Not tested: other engines. Any engine whose validation list has a family switch is a candidate.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [],
+          "failure_stage": [],
+          "gpu_architecture": [],
+          "model_family": [],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "runtime",
+        "check": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "reproduced here"
+        ],
+        "exact_conditions": "REXL3 v0.1.0 (engine source snapshot afc9b5df, published in the REXL3/REXL3 repository), any host. Reported as REXL3/REXL386; the maintainers confirmed it on their development branch and the fix (the gate takes the operator's flag alone, for every family) ships with the next engine release. Not tested: other engines. Any engine whose validation list has a family switch is a candidate.",
+        "id": "167",
+        "known_limitations": "",
+        "mechanism": "The gate had a family-specific exception. In REXL3 v0.1.0, check_pack_dirs (crates/model/src/serve.rs, lines 471-473) read the pack's config.json as text and set the override for any config containing deepseek_v41 or qwen3_5_moe: The code that records the boot facts only sees the combined boolean, so it reports the operator's flag as the reason. The Qwen3.5-MoE families checked the fingerprint a second time with the operator's flag alone, so for them the only effect was the false warning line before a correct refusal. DeepSeek-V4.1 had no second check, so any DeepSeek-V4.1 pack booted. Because the test is a substring match on the whole file, a config that mentions either name in any field got the same pass. The maintainers confirmed it was left over from early bring-up. The general lesson: a \"validated\" guarantee is only as strong as its least checked code path, and a boot fact that names a reason can be naming the wrong one. The sealed recipes were not affected, because they pin the pack's fingerprint themselves. Running the server binary directly with another pack, which is what a tester trying a community quantisation does, was.",
+        "mitigation": "Upgrade past v0.1.0 once the fix is released. Until then, on DeepSeek-V4.1, treat the boot as unvalidated whatever the facts say, and check the pack's fingerprint yourself (`rexl3-serve --print-fingerprints --model <pack> prints validated no` for an unlisted pack, from the headers alone). For any engine: test the refusal path with a pack you know is unlisted, and do not read a boot fact's stated reason as proof of what you passed.",
+        "public_evidence_links": [
+          "https://github.com/REXL3/REXL3/issues/86"
+        ],
+        "related_traps": [],
+        "source_path": "traps/runtime/167-validated-pack-gate-carries-a-family-exemption.md",
+        "status": "reproduced here",
+        "supersession": null,
+        "symptom": "An engine that promises to refuse any model pack not on its validated list boots an unlisted pack anyway. Nothing looks wrong: the boot finishes, /v1/models answers, and the boot facts read pack_validated: no (--allow-unvalidated-pack) with the warning \"served only because --allow-unvalidated-pack was given\". You never passed that flag. The line reads like a record of your own choice, so the natural reaction is to wonder which wrapper script added it, not to suspect the gate.",
+        "title": "a \"validated pack\" gate can carry a per-family exemption, and the boot log then says you passed the override flag when you did not"
+      },
+      {
+        "affected_models": [],
+        "affected_stacks": [],
+        "affected_versions_builds": "rexl3-cluster from REXL3 v0.1.0 (engine source snapshot afc9b5df), any cluster file with two or more groups. Reported with a patch and tests as REXL3/REXL392 (open when this entry was written). Not tested: other cluster launchers.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [],
+          "failure_stage": [],
+          "gpu_architecture": [],
+          "model_family": [],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "runtime",
+        "check": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "reproduced here"
+        ],
+        "exact_conditions": "rexl3-cluster from REXL3 v0.1.0 (engine source snapshot afc9b5df), any cluster file with two or more groups. Reported with a patch and tests as REXL3/REXL392 (open when this entry was written). Not tested: other cluster launchers.",
+        "id": "168",
+        "known_limitations": "",
+        "mechanism": "In REXL3 v0.1.0, pick() (crates/cluster/src/main.rs, line 170) returns every group when --all is given. The usage text says --all is for check, status and validate, but nothing refused it on the other commands, and up, down, supervise, logs, exec and env each take gs[0] from that list (main.rs, lines 513-535). The flag is accepted, the first group is acted on, and the rest of the list is dropped without a message. The same tool had a quieter neighbour. A top-level per-rank \"memory\": {\"min_free_gib\": [...]} list was never checked against a group's rank count, and a rank past the end of the list got a requirement of 0 GiB (schema.rs, line 133), so with [90] and two ranks the second rank's memory check always passed. The general lesson: a bulk command that accepts a scope flag it does not implement is worse than one that rejects it, because exit 0 is what the operator checks.",
+        "mitigation": "On v0.1.0, stop each group by name (--group g0, then --group g1, and so on) and confirm each with status. Give every group its own min_free_gib list, or use one number for all ranks, rather than a top-level per-rank list. The patch in 92 makes --all a usage error on the single-group commands and checks the top-level list against each group that falls back to it.",
+        "public_evidence_links": [
+          "https://github.com/REXL3/REXL3/issues/92"
+        ],
+        "related_traps": [],
+        "source_path": "traps/runtime/168-bulk-down-all-acts-on-the-first-group-only.md",
+        "status": "reproduced here",
+        "supersession": null,
+        "symptom": "You run several tensor-parallel groups from one cluster file and take them all down with rexl3-cluster down --cluster FILE --all. It prints a normal shutdown for one group and exits 0. The other groups keep running and keep their GPUs and memory. The next up on those nodes then fails on a busy GPU lock or a memory check, a long way from the command that caused it, or the \"stopped\" lane goes on answering requests.",
+        "title": "down --all on a multi-group cluster tool stopped one group, said nothing about the others, and exited 0"
       }
     ],
     "schema_version": "1.1"

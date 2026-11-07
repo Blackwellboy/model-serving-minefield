@@ -3983,6 +3983,54 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "166",
       "untrusted_published_check_text": "Needs a server that reports cached_tokens (vLLM does with prefix caching on). Use a fresh prompt so earlier traffic cannot warm it: You are bitten if the first B call shows cached_tokens 0 (or a small number) right after a fully cached A. If it shows nearly the whole prompt cached, your template puts the switch late and per-request switching is cheap."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 167 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 167 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "167",
+      "untrusted_published_check_text": "Feed the gate a pack you know is not on the list, without the override, and require a refusal. A boot proves nothing. On REXL3 without a GPU, from the published source: A match is the exemption. To see it behave, add this test next to an_unvalidated_pack_is_refused_by_name_unless_allowed_and_then_reported_with_the_warning in crates/model/src/serve.rs and run REXL3_NO_CUDA=1 cargo test --locked -p gb-model --lib serve::tests::an_unlisted_pack: On v0.1.0 it fails on the deepseek_v41 case."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 168 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 168 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "168",
+      "untrusted_published_check_text": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status."
     }
   ],
   "schema_version": "1.0"
