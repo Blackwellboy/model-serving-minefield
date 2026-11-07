@@ -11,7 +11,7 @@ python benchmarks/run_symptom_benchmark.py --misses   # every query not in the t
 
 ## The data
 
-[`symptom_queries.json`](symptom_queries.json) holds, for each of the 166
+[`symptom_queries.json`](symptom_queries.json) holds, for each of the 168
 canonical traps, **two plain-language questions written the way a user would
 type them** ("streaming shows blank replies"), not copied from the entry text.
 One is in the `tune` split and one in `holdout`. There are also 40 off-domain
