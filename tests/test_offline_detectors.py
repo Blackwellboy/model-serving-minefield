@@ -661,6 +661,17 @@ class EvalResults(TempDirCase):
             {"finish_reason": "stop", "message": {"content": "x"}}]}, "score": 0}) for _ in range(20)]
         self.assertEqual(_ids(inspect_results(self.write("run.jsonl", "\n".join(lines)))), {"37"})
 
+    def test_utf8_bom_in_json_and_jsonl(self):
+        row = {"finish_reason": "stop", "content": "ok", "score": 1}
+        for name, payload in (
+            ("bom.json", json.dumps({"results": [row]}, indent=2)),
+            ("bom.jsonl", "\n".join((json.dumps(row), json.dumps(row)))),
+        ):
+            with self.subTest(name=name):
+                expected = inspect_results(self.write(name, payload))
+                actual = inspect_results(self.write(name, "\ufeff" + payload))
+                self.assertEqual(actual, expected)
+
     def test_healthy_results(self):
         rows = [{"arm": a, "finish_reason": "stop", "content": "ok", "correct": i % 2 == 0}
                 for a in ("a", "b") for i in range(30)]

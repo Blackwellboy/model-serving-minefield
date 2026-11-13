@@ -37,7 +37,7 @@ def _records(path: Path) -> list[dict[str, Any]]:
     if size > MAX_RESULTS_BYTES:
         raise ValueError(f"results file exceeds {MAX_RESULTS_BYTES} bytes: {path}")
     try:
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError) as exc:
         raise ValueError(f"results file is not valid readable UTF-8: {path}") from exc
     if not text.strip():
