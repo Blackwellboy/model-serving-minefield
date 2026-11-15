@@ -53,6 +53,23 @@ class CatalogueTests(unittest.TestCase):
             self.assertIn(argv[0], names, item.id)
             parser().parse_args(argv)        # raises SystemExit on drift
 
+    def test_chat_commands_only_where_the_chat_command_does_the_same_thing(self):
+        """`slash` is a promise to a harness: typing it does what the item says. The Hermes
+        plugin's chat scan takes no paths, its `doctor` can send requests where `plan` promises
+        none, and `contribute` drafts from an incident rather than previewing named files."""
+        self.assertEqual({i.id: i.slash for i in menu.items()}, {
+            "symptom": "/minefield guide <what you see>",
+            "scan": "/minefield scan",
+            "lite": "/minefield check",
+            "plan": None,
+            "doctor": "/minefield doctor --yes",
+            "coverage": None,
+            "bundle": None,
+        })
+        for item in menu.items():
+            if item.touches == "nothing":
+                self.assertNotIn("doctor", item.slash or "", item.id)
+
     def test_flag_per_value_expansion_and_empty_lists(self):
         bundle = menu.find("bundle")
         self.assertEqual(menu.build_argv(bundle, {"configs": ["c.yaml"], "logs": ["d.log", "e.log"]}),

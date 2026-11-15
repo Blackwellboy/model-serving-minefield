@@ -28,7 +28,7 @@ Minefield has two diagnostic recall layers that must never be conflated:
    logs. Ask whether a live endpoint exists.
 2. Read `references/agent-bundle.md` first when it exists. A direct-URL Hermes
    install copies only this `SKILL.md`; in that mode, use the immutable
-   [lite agent bundle](https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/f539623b9bc21cdc8d16e2a5656e035505015f76/dist/MINEFIELD_AGENT_BUNDLE_LITE.md).
+   [lite agent bundle](https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/fb3acb1fef11db8df2ba61d7946ce778b4ff4b7e/dist/MINEFIELD_AGENT_BUNDLE_LITE.md).
    Search the full repository bundle only when the lite routing evidence is
    insufficient. Never substitute mutable `main` content.
 3. Rank every plausible **canonical** candidate; never stop at the first textual

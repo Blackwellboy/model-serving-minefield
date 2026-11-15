@@ -15,24 +15,43 @@ slash command. Type `/minefield` on its own for a numbered menu, then
 /minefield 1          quick check of the model you are using (at most 5 requests)
 /minefield 3 empty content after a tool call
                       look up a symptom (offline)
-/minefield doctor     full Doctor: shows the plan first, runs only with --yes
+/minefield doctor     full Doctor: says what it would do, runs only with --yes
 ```
 
-Install (opt-in; validated on Hermes Agent 0.21.x):
+Install (opt-in). The plugin declares the Hermes Agent versions it loads on in
+its `plugin.yaml` (`requires_hermes`), and Hermes 0.22 and later refuse to load
+a plugin outside that range, so check the plugin's README for the current range
+before updating Hermes.
 
 ```bash
-# 1) make Minefield 0.2.x importable from the Python that runs Hermes
-pip install "model-serving-minefield>=0.2,<0.3"      # or: pip install -e /path/to/clone
+# Hermes installs the plugin and, with your consent, its Minefield dependency
+hermes plugins install Blackwellboy/hermes-minefield --enable
+```
 
-# 2) link the plugin into Hermes
+Add `--ref <40-character commit SHA>` to install one exact reviewed commit.
+For a development checkout, link a clone instead:
+
+```bash
+pip install "model-serving-minefield>=0.2.1,<0.3"    # into the Python that runs Hermes
 git clone https://github.com/Blackwellboy/hermes-minefield
 ln -sfn "$PWD/hermes-minefield" ~/.hermes/plugins/hermes-minefield
-
-# 3) enable it in ~/.hermes/config.yaml
+# then in ~/.hermes/config.yaml:
 #   plugins:
 #     enabled:
 #       - hermes-minefield
 ```
+
+Where the command works:
+
+| Surface | `/minefield` |
+|---|---|
+| Terminal: `hermes minefield <command>` | always, same output and guards |
+| Classic CLI chat, Telegram, Discord, Slack | yes |
+| Modern TUI and desktop app, Hermes 0.22 | refused by Hermes (its shared gateway ran built-in commands only); use the terminal command or MCP below |
+| Modern TUI and desktop app, Hermes 0.23 and later | yes |
+
+To update: `hermes minefield update --check` says what is newest, and
+`hermes minefield update --yes` (terminal only) installs it.
 
 Then `hermes minefield status` from a shell, or `/minefield status` in a chat,
 should name the endpoint your Hermes config points at. If it says
@@ -53,7 +72,7 @@ See [MCP setup](MCP_SETUP.md) for allowed roots.
 ## 3. The skill: guidance only, no commands
 
 ```bash
-hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/8df9b80231821f8135a3f7955406513632894753/skills/model-serving-minefield/SKILL.md --yes
+hermes skills install https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/fb3acb1fef11db8df2ba61d7946ce778b4ff4b7e/skills/model-serving-minefield/SKILL.md --yes
 hermes skills list
 hermes --skills model-serving-minefield
 ```
@@ -78,4 +97,5 @@ hermes skills uninstall model-serving-minefield
 `minefield menu --json` prints the catalogue (schema `minefield.menu.v1`) for a
 harness or plugin to render: every item has a stable `id`, the `argv` to pass
 to `minefield`, its `inputs`, what it `touches`, and whether it must `confirm`
-before running, plus `slash`, the matching chat command where a plugin provides one.
+before running, plus `slash`: the chat command that does the same thing, and `null`
+where the nearest chat command reads or sends something different.
