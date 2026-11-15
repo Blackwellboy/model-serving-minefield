@@ -6,6 +6,15 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-11-15 - Hermes integration audit: stale pins, menu chat commands, setup guide
+
+- **The Hermes downstream contract tested a plugin commit from September.** `agent-platform.yml` checked every core change against `hermes-minefield` at a commit from before its `guide`, `scan`, menu and Hermes 0.22 work, so a core change that broke the plugin people actually run could pass. The pin moves to the plugin's current `main` (`23abd6c`); its suite passes against this tree (305 passed in the CI configuration).
+- **`minefield.menu` chat commands are now only given where the chat command does the same thing.** `scan` said `/minefield scan [path ...]`, but the plugin's chat scan takes no paths. `plan` (which promises to send nothing) pointed at `/minefield doctor`, which resolves and probes the endpoint and can run the Doctor. `bundle` pointed at `/minefield contribute`, which drafts from a recorded incident and does not read the files you name. `scan` is now `/minefield scan`; `plan` and `bundle` have no `slash`. A test pins every value. Schema `minefield.menu.v1` is unchanged: the field was already nullable.
+- **[Hermes setup](docs/HERMES_SETUP.md)** said "validated on Hermes Agent 0.21.x", asked for core `>=0.2` where the plugin needs `>=0.2.1`, and offered only a symlink install. It now leads with `hermes plugins install`, says where `/minefield` works (terminal always; the modern TUI and desktop app on Hermes 0.23 and later, not 0.22), and how to update. The companion plugin change that makes it load on Hermes 0.23 is hermes-minefield PR 19.
+- **The skill install link was pinned to a July commit** and installed `SKILL.md` 0.1.0. It now pins this repository at `fb3acb1` (0.2.2). The skill's own direct-install fallback pointed at a July lite bundle; it now points at the lite bundle of the same commit (168 traps). Both stay commit-pinned.
+- [MCP setup](docs/MCP_SETUP.md): the `hermes mcp add` command shape is confirmed unchanged in Hermes 0.23.1.
+- Not changed, for the maintainer: PyPI carries 0.2.2, which predates traps 167 and 168 and the capped-count scan note; a release is a tag away.
+
 ## 2026-11-08 - traps 167 and 168: a validated-pack gate with a family exemption, and `down --all` that stops one group
 
 - Added [167](traps/runtime/167-validated-pack-gate-carries-a-family-exemption.md): REXL3 v0.1.0 boots any DeepSeek-V4.1 pack without `--allow-unvalidated-pack`, because the gate exempts configs that mention `deepseek_v41` (or `qwen3_5_moe`), and the boot facts then report the operator's flag as the reason. **Reproduced here** with a source check and a CPU-only test against the public v0.1.0 source; confirmed by the maintainers in REXL3/REXL3#86, fix due in the next engine release.

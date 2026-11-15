@@ -34,7 +34,9 @@ class MenuItem:
     touches: str                  # "nothing" | "files you name" | "endpoint: up to N requests"
     argv: tuple[str, ...]         # `minefield` argv; {name} placeholders are filled from inputs
     inputs: tuple[MenuInput, ...] = ()
-    slash: Optional[str] = None   # the matching chat slash command, when a harness plugin has one
+    # The chat slash command that does the same thing, when a harness plugin has one. None when
+    # the nearest chat command differs in what it reads or sends (tests pin each value).
+    slash: Optional[str] = None
     confirm: bool = False         # ask before running (live traffic beyond a lite check)
     tags: tuple[str, ...] = field(default_factory=tuple)
 
@@ -55,7 +57,8 @@ MENU: tuple[MenuItem, ...] = (
         "files you name",
         ("scan", "--text", "{paths...}"),
         (MenuInput("paths", "File or folder paths (space separated)", repeatable=True),),
-        slash="/minefield scan [path ...]", tags=("offline",)),
+        # In a chat the plugin scans the harness's own config; it takes no paths.
+        slash="/minefield scan", tags=("offline",)),
     MenuItem(
         "3", "lite", "Quick live check of my endpoint",
         "A bounded preflight of an OpenAI-compatible endpoint. Sends at most 5 short "
@@ -69,7 +72,9 @@ MENU: tuple[MenuItem, ...] = (
         "Lists every probe a full Doctor would run and its request budget. Sends nothing.",
         "nothing",
         ("doctor-plan", "--mode", "doctor", "--text"),
-        slash="/minefield doctor", tags=("offline",)),
+        # No chat equivalent: `/minefield doctor` resolves and probes the endpoint first, and
+        # can run the Doctor. This item promises to send nothing.
+        tags=("offline",)),
     MenuItem(
         "5", "doctor", "Full Doctor on my endpoint",
         "Runs every applicable live probe (dozens of requests; see option 4 for the "
@@ -95,7 +100,9 @@ MENU: tuple[MenuItem, ...] = (
                    required=False, repeatable=True),
          MenuInput("logs", "Log paths (space separated, blank for none)",
                    required=False, repeatable=True)),
-        slash="/minefield contribute", tags=("offline",)),
+        # No chat equivalent: `/minefield contribute` drafts a report from a recorded incident;
+        # it does not read the files you name.
+        tags=("offline",)),
 )
 
 

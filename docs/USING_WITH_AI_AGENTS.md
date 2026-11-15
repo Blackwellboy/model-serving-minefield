@@ -14,7 +14,8 @@ The lite bundle is a router and requires online fetches for full detail.
 ## Structured routes
 
 - Live endpoint: run `minefield quick` and upload its JSON.
-- Hermes: install the repository skill; see `HERMES_SETUP.md`.
+- Hermes: install the `hermes-minefield` plugin for a `/minefield` menu, or the MCP
+  server, or the repository skill; see `HERMES_SETUP.md`.
 - MCP: run `minefield-mcp`; see `MCP_SETUP.md`.
 - Config/log only: use `minefield inspect-config` and
   `minefield inspect-logs` with explicit files and `--allowed-root`.
