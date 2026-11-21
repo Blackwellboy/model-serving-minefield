@@ -21,6 +21,11 @@ pull request that changes those paths without touching this file; label it
 - Package version set to **0.2.3** in the tree; nothing is tagged or published.
 - Registry 168 to 175; symptom benchmark gains tune and holdout queries for each new entry.
 
+## 2026-11-22 - secret scan on new commits, ignore rules for weights and secrets
+
+- CI gains a `secret-scan` job: gitleaks (checksum-pinned binary, values redacted) scans only the commits in each push or pull request. `.gitleaks.toml` allowlists known fake-credential fixtures.
+- `.gitignore` gains rules for model weights, caches and secret/auth/session files. Tracked files are unaffected. Registry count and Doctor coverage are unchanged.
+
 ## 2026-11-08 - traps 167 and 168: a validated-pack gate with a family exemption, and `down --all` that stops one group
 
 - Added [167](traps/runtime/167-validated-pack-gate-carries-a-family-exemption.md): REXL3 v0.1.0 boots any DeepSeek-V4.1 pack without `--allow-unvalidated-pack`, because the gate exempts configs that mention `deepseek_v41` (or `qwen3_5_moe`), and the boot facts then report the operator's flag as the reason. **Reproduced here** with a source check and a CPU-only test against the public v0.1.0 source; confirmed by the maintainers in REXL3/REXL3#86, fix due in the next engine release.
