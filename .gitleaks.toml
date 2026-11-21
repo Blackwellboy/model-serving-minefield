@@ -1,0 +1,19 @@
+# Shared gitleaks config: default rules plus allowlists for known fake-secret fixtures.
+title = "blackwellboy"
+[extend]
+useDefault = true
+
+[allowlist]
+description = "benchmark fixtures and test data with fake credentials"
+paths = [
+  '''(^|/)bfcl[^/]*/''',
+  '''BFCL_v4_[^/]*\.json$''',
+  '''(^|/)tests?/fixtures/''',
+  '''sirwart__ripsecrets''',
+  '''\.traj\.json$''',
+  '''(^|/)tool_eval\.json$''',
+]
+regexes = [
+  '''sk-SENTINEL''',
+  '''(?i)(emitted|prompt)_token_sha256''',
+]
