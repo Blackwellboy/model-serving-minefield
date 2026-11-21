@@ -61,7 +61,10 @@ def canonical_paths(root: Path = ROOT) -> list[Path]:
 
 def _readme_symptoms(root: Path) -> dict[str, str]:
     symptoms: dict[str, str] = {}
-    for line in (root / "README.md").read_text(encoding="utf-8").splitlines():
+    table = root / "TRAPS.md"
+    if not table.exists():
+        table = root / "README.md"
+    for line in table.read_text(encoding="utf-8").splitlines():
         if not line.startswith("|"):
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]

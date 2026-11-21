@@ -10,7 +10,8 @@ carefully. This file is the part of that reading that a machine can do.
 
 What it asserts, per numbered entry:
 
-  README-ROW       a row in the README "Find your symptom" table
+  README-ROW       a row in the "Find your symptom" table (TRAPS.md; the
+                   README is the short front door and links to it)
   README-STATUS    that row's status cell is in the allowed vocabulary
   FILE-STATUS      the entry file carries a **Status:** line, in vocabulary
   FOUND-BY         the entry file names its finder on the first lines
@@ -201,10 +202,16 @@ def next_free_number(root):
     return "%02d" % n
 
 
+# The full symptom table moved out of README.md into TRAPS.md on 2026-11-22
+# so the README could be a short front door. The check names keep their
+# README- prefix because tests and history refer to them by name.
+SYMPTOM_TABLE = "TRAPS.md"
+
+
 def readme_rows(root):
-    """Parse the README symptom table into {id: (status_cell, line_no)}."""
+    """Parse the symptom table into {id: (status_cell, line_no)}."""
     rows = {}
-    text = read(os.path.join(root, "README.md"))
+    text = read(os.path.join(root, SYMPTOM_TABLE))
     started = False
     for i, line in enumerate(text.splitlines(), 1):
         if line.startswith("| You are seeing"):
@@ -439,7 +446,7 @@ def _as_int(tok):
 
 
 def check_word_counts(root, n_entries, findings):
-    for rel in ("README.md", "CORE.md", "CONTRIBUTING.md"):
+    for rel in ("README.md", "TRAPS.md", "docs/GUIDE.md", "CORE.md", "CONTRIBUTING.md"):
         p = os.path.join(root, rel)
         if not os.path.exists(p):
             continue
@@ -710,12 +717,12 @@ def run(root):
         # README row
         if tid not in rows:
             findings.append(Finding("README-ROW", rel,
-                                    "no row in the README symptom table"))
+                                    "no row in the TRAPS.md symptom table"))
         else:
             cell, lineno = rows[tid]
             if not status_ok(cell, stems):
                 findings.append(Finding(
-                    "README-STATUS", "README.md:%d" % lineno,
+                    "README-STATUS", "%s:%d" % (SYMPTOM_TABLE, lineno),
                     "trap %s status cell %r is not in the allowed vocabulary"
                     % (tid, cell)))
 

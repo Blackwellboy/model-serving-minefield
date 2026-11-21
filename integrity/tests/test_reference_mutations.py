@@ -55,7 +55,7 @@ def copy_tree(dst):
     # added a root front door, generated dist Markdown, and docs/ links; those
     # are copied for the same reason rather than exempted from link checking.
     for name in ("traps", "playbooks", "stacks", "models", "mining", "upstream",
-                 "registry", "README.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
+                 "registry", "README.md", "TRAPS.md", "CITATION.cff", "CODE_OF_CONDUCT.md", "CORE.md", "CHANGELOG.md", "CONTRIBUTING.md",
                  "MAINTAINING.md", "HALL_OF_FAME.md", "SECURITY.md", "llms.txt",
                  "AGENT_START_HERE.md", "dist", "docs", "doctor", "checks",
                  "community", "integrity", "skills", ".github", "LICENSE",
@@ -171,7 +171,7 @@ class ReferenceMutations(unittest.TestCase):
     def test_07_status_drifts_on_the_README_row(self):
         """The exact drift found on the live tip: a surface row dropping the
         entry's leading label, which erases a contributor's credit."""
-        p = os.path.join(self.repo, "README.md")
+        p = os.path.join(self.repo, "TRAPS.md")
         t = read_text(p)
         t = t.replace(
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | reproduced here |",
@@ -198,7 +198,7 @@ class ReferenceMutations(unittest.TestCase):
         """The false-positive guard. Round 2 of building this fired on 26
         entries because it matched negated mentions inside status prose. A
         qualifier after the leading stem must stay silent."""
-        p = os.path.join(self.repo, "README.md")
+        p = os.path.join(self.repo, "TRAPS.md")
         t = read_text(p)
         t = t.replace(
             "[01](traps/reasoning/01-reasoning-field-two-names.md) | reproduced here |",
@@ -314,10 +314,10 @@ class ReferenceMutations(unittest.TestCase):
         self.assertIn("VOCAB-DEFN", out)
 
     def test_19_public_surface_citing_a_dead_id(self):
-        p = os.path.join(self.repo, "README.md")
+        p = os.path.join(self.repo, "TRAPS.md")
         t = read_text(p)
         needle = "traps/runtime/60-cold-prefill-and-cache-hit-disagree.md"
-        self.assertIn(needle, t, "fixture drift: canonical trap 60 README link missing")
+        self.assertIn(needle, t, "fixture drift: canonical trap 60 TRAPS.md link missing")
         t = t.replace(needle, "traps/runtime/600-cold-prefill-and-cache-hit-disagree.md", 1)
         write_text(p, t)
         rc, out = run_checker(self.repo)
