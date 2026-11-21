@@ -84,6 +84,21 @@ Concrete class observations (sanitized multi-rank campaign):
 alone into "serving ready" or "qualification complete" without the next
 ladder rung you actually need (forward, generate, clean exit).
 
+## Addendum 2026-11-22: a correct endpoint whose owner was stopped
+
+A first-party case from 2026-09-14, measured here, raw not published. A local
+agent stayed correctly configured for its OpenAI-compatible endpoint, but a
+host memory watchdog had deliberately stopped the serving container after
+sustained low-memory samples, and nothing owned restarting it. The agent
+surfaced a generic connection error even though its provider configuration was
+right. This is the same ladder one rung lower: the configured route, the
+process or container that owns it, transport reachability and real generation
+are separate facts. Resolve the endpoint's owner, prove whether anything is
+listening, read the stop reason and restart policy, and require a real
+generation after recovery. Do not "fix" a correct provider URL because its
+owner was stopped. Planned restarts during an active agent session are
+[trap 175](175-restart-without-drain-drops-the-agents-model.md).
+
 **Related.** [114](114-hardcoded-rdma-gid-index-is-not-portable.md) (lower
 transport gate), [115](../evaluation/115-exit-137-is-not-oom-killer-proof.md)
 (do not invent causes), [16](../evaluation/16-finish-reason-is-not-a-failure-signal.md)

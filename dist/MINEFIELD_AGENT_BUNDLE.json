@@ -6,11 +6,11 @@
       "any_automated_check": 131,
       "counts_overlap": true,
       "endpoint_checks_implemented": 70,
-      "guided_experiments_specified": 168,
-      "human_review_possible": 168,
+      "guided_experiments_specified": 175,
+      "human_review_possible": 175,
       "log_checks_implemented": 31,
       "static_checks_implemented": 78,
-      "total_canonical_traps": 168
+      "total_canonical_traps": 175
     },
     "traps": [
       {
@@ -12584,6 +12584,524 @@
             "state": "possible"
           }
         }
+      },
+      {
+        "id": "169",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105).",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 169 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105).",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105).",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "170",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 170 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "171",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 171 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "172",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 172 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "173",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 173 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "174",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 174 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
+      },
+      {
+        "id": "175",
+        "modalities": {
+          "endpoint_probe": {
+            "can_prove_clean": false,
+            "confirm_criterion": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change.",
+            "expected_duration": "under one minute",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "Only a trap-specific clean contract may refute the named failure.",
+            "required_inputs": [],
+            "safety_level": "bounded read-only requests",
+            "state": "not_yet_designed"
+          },
+          "guided_experiment": {
+            "can_prove_clean": false,
+            "confirm_criterion": "The failure signature described by trap 175 appears under matching conditions.",
+            "expected_duration": "5-30 minutes unless the entry names a soak",
+            "implemented_checker": null,
+            "limitations": "",
+            "possible_match_only": true,
+            "refute_criterion": "The paired control and test contradict the published failure signature.",
+            "required_inputs": [
+              "A disposable or explicitly authorised test surface",
+              "Raw output capture"
+            ],
+            "safety_level": "unreviewed published procedure; a human must assess impact before running",
+            "state": "specified"
+          },
+          "human_review": {
+            "can_prove_clean": false,
+            "confirm_criterion": "A reviewer verifies the trap's exact conditions and criterion.",
+            "expected_duration": "variable",
+            "implemented_checker": null,
+            "limitations": "Human review retains the published evidence status.",
+            "possible_match_only": true,
+            "refute_criterion": "A reviewer verifies a condition mismatch or contrary control.",
+            "required_inputs": [
+              "Exact stack, model, versions, and preserved evidence"
+            ],
+            "safety_level": "read-only comparison",
+            "state": "possible"
+          },
+          "log_scan": {
+            "can_prove_clean": false,
+            "confirm_criterion": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Absence of a signature is not proof of safety.",
+            "possible_match_only": true,
+            "refute_criterion": "Show a later recovery or a contradictory control.",
+            "required_inputs": [
+              "Explicitly supplied bounded log files"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          },
+          "static_config": {
+            "can_prove_clean": false,
+            "confirm_criterion": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change.",
+            "expected_duration": "seconds",
+            "implemented_checker": null,
+            "limitations": "Static configuration does not prove the live process used it.",
+            "possible_match_only": true,
+            "refute_criterion": "Compare with the effective runtime configuration.",
+            "required_inputs": [
+              "Explicitly supplied files: configs, launch scripts, model folder, chat template or eval results"
+            ],
+            "safety_level": "read-only",
+            "state": "possible"
+          }
+        }
       }
     ]
   },
@@ -16619,6 +17137,174 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "168",
       "untrusted_published_check_text": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 169 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 169 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "169",
+      "untrusted_published_check_text": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105)."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 170 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 170 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "170",
+      "untrusted_published_check_text": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 171 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 171 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "171",
+      "untrusted_published_check_text": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 172 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 172 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "172",
+      "untrusted_published_check_text": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 173 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 173 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "173",
+      "untrusted_published_check_text": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 174 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 174 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "174",
+      "untrusted_published_check_text": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 175 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 175 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "175",
+      "untrusted_published_check_text": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change."
     }
   ],
   "possible_unverified_leads": {
@@ -17978,8 +18664,8 @@
   },
   "registry": {
     "canonical_enumeration": "traps/<category>/NN-*.md",
-    "canonical_trap_count": 168,
-    "content_sha256": "2b3de5484f475c6c0dd481c75bc2686cab531421791cebf3d687a88472bc11d4",
+    "canonical_trap_count": 175,
+    "content_sha256": "de17b3a148fad0c671bdded7a48d3bf178672345b8f90eea699279f0eed268b7",
     "doctor_implemented_trap_count": 70,
     "entries": [
       {
@@ -25749,7 +26435,8 @@
           "16",
           "53",
           "114",
-          "115"
+          "115",
+          "175"
         ],
         "source_path": "traps/runtime/112-process-liveness-is-not-model-readiness.md",
         "status": "contributor-measured, conditions as reported.",
@@ -29603,6 +30290,477 @@
         "supersession": null,
         "symptom": "You run several tensor-parallel groups from one cluster file and take them all down with rexl3-cluster down --cluster FILE --all. It prints a normal shutdown for one group and exits 0. The other groups keep running and keep their GPUs and memory. The next up on those nodes then fails on a busy GPU lock or a memory check, a long way from the command that caused it, or the \"stopped\" lane goes on answering requests.",
         "title": "down --all on a multi-group cluster tool stopped one group, said nothing about the others, and exited 0"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4.1-Flash EXL3 checkpoint",
+          "Qwen3.8-27B derivative"
+        ],
+        "affected_stacks": [],
+        "affected_versions_builds": "- RTX 5090 (450 W), a DFlash2 speculative-decoding engine with an unreleased adaptive-verification patch, INT8 KV, a Qwen3.8-27B derivative, 2026-11-21. Plain greedy decode rose from about 348 to about 542 tok/s (+56%). On a per-class workload set the same build gave about 114 tok/s on free prose, 242 on JSON, 167 on tool calls and 266 on reasoning traces, a gain of 0% to 23% per class over the build without the patch. The change was still worth shipping; the headline was not the number to quote. - 2x DGX Spark (GB10), TensorFold TP=2, a DeepSeek-V4.1-Flash EXL3 checkpoint, 2026-10-21. The benches ran at temperature 0, thinking off and at most 8K context. Real agent use ran at temperature 1, thinking on at high effort, 150K to 196K context and about 95% prefix-cache hits. Draft acceptance was 78% to 80% on the code bench and about 60% in real use.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [
+            "196k context",
+            "8k context"
+          ],
+          "device_class": [
+            "5090",
+            "dgx spark",
+            "gb10",
+            "rtx 5090"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4.1-flash",
+            "deepseek-v4.1-flash exl3 checkpoint",
+            "qwen3.8-27b",
+            "qwen3.8-27b derivative"
+          ],
+          "failure_stage": [
+            "decode",
+            "load"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek",
+            "qwen3.8"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [
+            "int8"
+          ],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "evaluation",
+        "check": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105).",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "- RTX 5090 (450 W), a DFlash2 speculative-decoding engine with an unreleased adaptive-verification patch, INT8 KV, a Qwen3.8-27B derivative, 2026-11-21. Plain greedy decode rose from about 348 to about 542 tok/s (+56%). On a per-class workload set the same build gave about 114 tok/s on free prose, 242 on JSON, 167 on tool calls and 266 on reasoning traces, a gain of 0% to 23% per class over the build without the patch. The change was still worth shipping; the headline was not the number to quote. - 2x DGX Spark (GB10), TensorFold TP=2, a DeepSeek-V4.1-Flash EXL3 checkpoint, 2026-10-21. The benches ran at temperature 0, thinking off and at most 8K context. Real agent use ran at temperature 1, thinking on at high effort, 150K to 196K context and about 95% prefix-cache hits. Draft acceptance was 78% to 80% on the code bench and about 60% in real use.",
+        "id": "169",
+        "known_limitations": "",
+        "mechanism": "Speculative decoding is paid for by acceptance, and acceptance is a property of the text being generated. The usual headline bench is greedy (temperature 0), short context, thinking off and a predictable prompt, which is close to the best case for a drafter: low-entropy continuations, no sampling noise and no long prefix. Real workloads move every one of those levers the other way, and each class of output (free prose, JSON, tool calls, reasoning traces) has its own acceptance curve. A change that buys extra accepted tokens when acceptance is already high can buy nothing on prose, where the draft is rejected early anyway. The bench number is real; it is just a measurement of a different workload. Trap 111 is the run-to-run version of the same dependence.",
+        "mitigation": "Quote speculative-decoding gains per output class and at served settings, with the bench regime written next to the number. Keep the greedy plain-decode bench as a regression gate, not as the claim.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "52",
+          "105",
+          "111"
+        ],
+        "source_path": "traps/evaluation/169-plain-greedy-decode-speedup-does-not-transfer.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "A speculative-decoding change (a new drafter, a deeper or adaptive verify step, a bigger draft budget) lifts the headline decode number by half or more. You ship it, and the agent, chat or coding workload it was meant for gets a small fraction of that gain, or none.",
+        "title": "a speculative-decoding speedup measured on plain greedy decode is not the speedup your workload gets"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4.1-Flash EXL3 checkpoint under TensorFold TP"
+        ],
+        "affected_stacks": [
+          "llama.cpp"
+        ],
+        "affected_versions_builds": "llama.cpp b12600, a Q4KM quant of Inkling 2 Mini, flash attention off, RTX 5090 at 450 W, 2 parallel slots, reasoning effort high, 2026-11-21: - 627 items at a 16,384-token cap: 63 hit it (GSM8K 1, MMLU-Pro 37 of 200, IFEval 25). - The 32,768-token retry ran one stream at about 70 to 80 tok/s, so a looping item cost up to about 7 minutes. In a 90-minute budget it reached 29 items; 19 MMLU-Pro items hit 32,768 again. - MMLU-Pro scored 72.5% with unresolved items counted wrong, and 84.7% on the items that finished. IFEval scored 80.3% and 87.4% respectively. - GSM8K's single capped item resolved, and that score (98.5%) is valid. A second lane is consistent but not settled: on a DeepSeek-V4.1-Flash EXL3 checkpoint under TensorFold TP=2 with the loop guard off, temperature 0 looped verbatim on 8 of 10 previously capped MMLU and GSM8K items out to 64K tokens, and temperature 1 on 0 of 12 (2026-10-24, measured here, raw not published, stock comparison not run).",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [
+            "64k tokens"
+          ],
+          "device_class": [
+            "5090",
+            "rtx 5090"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4.1-flash",
+            "deepseek-v4.1-flash exl3 checkpoint under tensorfold tp"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [
+            "llama.cpp"
+          ],
+          "stack_version": [
+            "b12600"
+          ],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "evaluation",
+        "check": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "llama.cpp b12600, a Q4KM quant of Inkling 2 Mini, flash attention off, RTX 5090 at 450 W, 2 parallel slots, reasoning effort high, 2026-11-21: - 627 items at a 16,384-token cap: 63 hit it (GSM8K 1, MMLU-Pro 37 of 200, IFEval 25). - The 32,768-token retry ran one stream at about 70 to 80 tok/s, so a looping item cost up to about 7 minutes. In a 90-minute budget it reached 29 items; 19 MMLU-Pro items hit 32,768 again. - MMLU-Pro scored 72.5% with unresolved items counted wrong, and 84.7% on the items that finished. IFEval scored 80.3% and 87.4% respectively. - GSM8K's single capped item resolved, and that score (98.5%) is valid. A second lane is consistent but not settled: on a DeepSeek-V4.1-Flash EXL3 checkpoint under TensorFold TP=2 with the loop guard off, temperature 0 looped verbatim on 8 of 10 previously capped MMLU and GSM8K items out to 64K tokens, and temperature 1 on 0 of 12 (2026-10-24, measured here, raw not published, stock comparison not run).",
+        "id": "170",
+        "known_limitations": "",
+        "mechanism": "At high reasoning effort some items do not need more tokens; they never converge. The model repeats itself or restarts its reasoning until the cap stops it. A bigger cap moves where it stops and multiplies the wall-clock cost, because a looping item always runs to the full budget and a retry queue is usually run one stream at a time. Meanwhile the headline score counts every capped item as wrong, so it blends two different properties: how often the model loops at this effort, and how accurate it is when it finishes. Trap 12 covers budgets that are simply too small; this entry is the case where the budget is not the problem.",
+        "mitigation": "Report three numbers, never one: the score with loops counted as failures, the accuracy on finished items, and the loop rate (items that hit the cap and still loop at the larger budget). Set a wall-clock budget for the retry and record anything unresolved as a loop failure. Mark any arm with a meaningful cap-hit share as invalid for comparison rather than publishing its headline score. Try the model's recommended sampling temperature before concluding the model is worse; greedy decoding can be the trigger.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "12",
+          "16",
+          "36",
+          "149"
+        ],
+        "source_path": "traps/evaluation/170-cap-hit-retry-at-a-bigger-budget-is-mostly-a-second-loop.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "A reasoning model's MMLU-Pro or IFEval score looks several points worse than its peers. A noticeable share of items hit the token cap. You rerun those at double the budget expecting the score to recover, and the rerun takes hours: most of the retried items hit the new cap too.",
+        "title": "retrying capped thinking answers at double the token budget mostly buys a second loop, and the score drop was loop rate, not accuracy"
+      },
+      {
+        "affected_models": [
+          "Qwen3.8-27B and three community derivatives of it"
+        ],
+        "affected_stacks": [
+          "ExLlama"
+        ],
+        "affected_versions_builds": "ExLlamaV3 1.6.1, BF16, Qwen3.8-27B and three community derivatives of it, 315 fresh documents (208,807 tokens) plus a control set, 2026-11-21: - Base 0.6396 bits per byte; a repeat run was bit-identical, so the scorer itself adds no noise. - One derivative scored 0.6415: +0.0020 (+0.31%), paired 95% interval [+0.0015, +0.0025], KL 0.0051, top-1 agreement 97.3%. The unpaired intervals almost completely overlapped. - A second derivative was +0.76%, paired interval [+0.0043, +0.0055]. - A third was +0.19% on fresh text with a paired interval crossing zero, but the worst on the control set (+3.66%, KL 0.069), which is an overfitting signal the fresh-text number alone would have hidden. - The derivative with the real +0.31% delta also scored 4 points lower on a 200-question MMLU-Pro subset (67.5% against 71.5%). That gap is inside unpaired noise at this n and is not explained by the bits-per-byte delta.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [
+            "208 807 tokens"
+          ],
+          "device_class": [],
+          "exact_checkpoint": [
+            "qwen3.8-27b",
+            "qwen3.8-27b and three community derivatives of it"
+          ],
+          "failure_stage": [],
+          "gpu_architecture": [],
+          "model_family": [
+            "qwen3.8"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [
+            "bf16"
+          ],
+          "serving_stack": [
+            "exllama"
+          ],
+          "stack_version": [
+            "1.6.1"
+          ],
+          "topology": []
+        },
+        "category": "evaluation",
+        "check": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "ExLlamaV3 1.6.1, BF16, Qwen3.8-27B and three community derivatives of it, 315 fresh documents (208,807 tokens) plus a control set, 2026-11-21: - Base 0.6396 bits per byte; a repeat run was bit-identical, so the scorer itself adds no noise. - One derivative scored 0.6415: +0.0020 (+0.31%), paired 95% interval [+0.0015, +0.0025], KL 0.0051, top-1 agreement 97.3%. The unpaired intervals almost completely overlapped. - A second derivative was +0.76%, paired interval [+0.0043, +0.0055]. - A third was +0.19% on fresh text with a paired interval crossing zero, but the worst on the control set (+3.66%, KL 0.069), which is an overfitting signal the fresh-text number alone would have hidden. - The derivative with the real +0.31% delta also scored 4 points lower on a 200-question MMLU-Pro subset (67.5% against 71.5%). That gap is inside unpaired noise at this n and is not explained by the bits-per-byte delta.",
+        "id": "171",
+        "known_limitations": "",
+        "mechanism": "Both arms score the same documents, and document difficulty varies far more than the difference between arms. Unpaired intervals carry all of that document-to-document spread, so a small, consistent shift sits inside them. Pairing removes it: the per-document difference is nearly constant, and its interval is narrow. The opposite failure comes from small n: on 200 multiple-choice items at about 70% accuracy, one arm's standard error is already about 3.2 points, so a 4-point gap between two unpaired arms is within noise.",
+        "mitigation": "Report paired deltas with their interval, plus KL and top-1 agreement, for any derivative-versus-base comparison. Keep a control set the derivative may have seen alongside fresh text the derivative cannot have seen; fresh minus control is a cheap overfit check. Do not read small-n benchmark gaps without a paired test.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "17",
+          "34",
+          "35"
+        ],
+        "source_path": "traps/evaluation/171-unpaired-intervals-hide-a-real-sub-percent-delta.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "You compare a base model with a fine-tuned, merged, edited or re-quantized derivative on bits per byte or perplexity. The two confidence intervals overlap, so you call it \"no measurable difference\". Or the reverse: a 4-point gap on a 200-question benchmark subset is read as real damage.",
+        "title": "unpaired confidence intervals hide a real sub-percent quality delta that a paired per-document comparison finds"
+      },
+      {
+        "affected_models": [
+          "DeepSeek-V4.1-Flash EXL3 checkpoint"
+        ],
+        "affected_stacks": [],
+        "affected_versions_builds": "2x DGX Spark (GB10), TensorFold TP=2, a DeepSeek-V4.1-Flash EXL3 checkpoint, driven by an agent framework at 150K to 190K context, 2026-10-22. The framework reported about 57 tok/s; the engine's decode rate over the same calls was flat at about 79 to 83 tok/s.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [
+            "190k context"
+          ],
+          "device_class": [
+            "dgx spark",
+            "gb10"
+          ],
+          "exact_checkpoint": [
+            "deepseek-v4.1-flash",
+            "deepseek-v4.1-flash exl3 checkpoint"
+          ],
+          "failure_stage": [
+            "decode"
+          ],
+          "gpu_architecture": [
+            "blackwell"
+          ],
+          "model_family": [
+            "deepseek"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [
+            "tp"
+          ],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": [
+            "tp"
+          ]
+        },
+        "category": "evaluation",
+        "check": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "2x DGX Spark (GB10), TensorFold TP=2, a DeepSeek-V4.1-Flash EXL3 checkpoint, driven by an agent framework at 150K to 190K context, 2026-10-22. The framework reported about 57 tok/s; the engine's decode rate over the same calls was flat at about 79 to 83 tok/s.",
+        "id": "172",
+        "known_limitations": "",
+        "mechanism": "The agent's per-call figure is output tokens divided by the wall time of the whole call, which includes prefill of the new part of the prompt, queueing, tool round trips the framework counts inside the call, and streaming overhead. At 150K to 190K tokens of context even a mostly cached prompt has real prefill work on every turn, so the per-call figure falls while decode itself has not moved.",
+        "mitigation": "Report prefill, decode and end-to-end per-call throughput as three separate numbers, each named. Tune prefill (prefix-cache hit rate, chunk size) when per-call time is the complaint and decode is flat.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "60",
+          "80",
+          "135"
+        ],
+        "source_path": "traps/evaluation/172-agent-wall-time-per-call-is-not-decode-speed.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "An agent framework or gateway log says the model runs at about 57 tok/s at long context, down from about 80 at short context. It looks like a long-context decode slowdown, and you start tuning attention kernels or KV settings.",
+        "title": "tokens per second from agent wall time per call is not decode speed"
+      },
+      {
+        "affected_models": [
+          "Qwen3.8 family checkpoint"
+        ],
+        "affected_stacks": [],
+        "affected_versions_builds": "A first-party autonomous-agent stack using a locally served OpenAI-compatible model (a Qwen3.8 family checkpoint) with explicit tool calling and a skill-loading tool, 2026-09-12. The serving parser was tested separately and ruled out: the raw completion already contained the wrong tool request. A targeted routing guard took executed wrong-tool calls to 0 of 30 on unrelated control prompts while the legitimate route stayed 20 of 20.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [
+            "qwen3.8",
+            "qwen3.8 family checkpoint"
+          ],
+          "failure_stage": [
+            "load"
+          ],
+          "gpu_architecture": [],
+          "model_family": [
+            "qwen3.8"
+          ],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "tools",
+        "check": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "A first-party autonomous-agent stack using a locally served OpenAI-compatible model (a Qwen3.8 family checkpoint) with explicit tool calling and a skill-loading tool, 2026-09-12. The serving parser was tested separately and ruled out: the raw completion already contained the wrong tool request. A targeted routing guard took executed wrong-tool calls to 0 of 30 on unrelated control prompts while the legitimate route stayed 20 of 20.",
+        "id": "173",
+        "known_limitations": "",
+        "mechanism": "Tool correctness has at least two layers: structural validity and semantic relevance. A model can emit a perfectly parseable call to the wrong tool. If that tool returns a large payload, the irrelevant result is injected into context and amplifies the original routing mistake on the next turn. Parser success and execution success say nothing about whether the right tool was chosen.",
+        "mitigation": "Add a narrow routing guard at the agent boundary for high-impact tools: block only semantically invalid routes, keep legitimate routes working, and fail closed for the targeted action. Do not disable the tool globally, and do not file a semantic routing error as a parser bug.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "42",
+          "78"
+        ],
+        "source_path": "traps/tools/173-valid-tool-call-is-not-correct-tool-choice.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "An agent makes a syntactically valid tool call, the parser accepts it, the tool runs successfully, and the next answer still derails badly. Every layer reports success, so the trace looks healthy even though the tool the model picked had nothing to do with the user's task.",
+        "title": "a valid tool call is not proof of the correct tool choice"
+      },
+      {
+        "affected_models": [],
+        "affected_stacks": [],
+        "affected_versions_builds": "A first-party autonomous-agent stack with a locally served tool-calling model, 2026-09-14. With the same weights, server, tools and user message, the first action changed when only the assembled system guidance changed. The fix was sealed with 23 assembled-prompt tests, 8 frozen replays, the existing 61 guardrail tests and a live smoke test.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [],
+          "failure_stage": [
+            "load"
+          ],
+          "gpu_architecture": [],
+          "model_family": [],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "template",
+        "check": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "A first-party autonomous-agent stack with a locally served tool-calling model, 2026-09-14. With the same weights, server, tools and user message, the first action changed when only the assembled system guidance changed. The fix was sealed with 23 assembled-prompt tests, 8 frozen replays, the existing 61 guardrail tests and a live smoke test.",
+        "id": "174",
+        "known_limitations": "",
+        "mechanism": "Help text injected into the assembled system prompt can override the literal-action path. A guidance paragraph telling the agent to load a skill or discover helper commands before troubleshooting primes an invented workflow, and the detour compounds into extra tool calls and no-progress loops even though the request was unambiguous. The template, the skills and any framework updates all write into the same assembled prompt, so the change that caused it may not look like a prompt change.",
+        "mitigation": "Write the invariant into the prompt: when the user explicitly asks to run a concrete, available command, run it first unless safety or a missing capability blocks it. Do not name imaginary wrappers even in negative guidance. Seal it with assembled-prompt tests and a live replay, and diff the assembled prompt (not the template file) after every framework or skill update.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "04",
+          "06"
+        ],
+        "source_path": "traps/template/174-system-prompt-drift-turns-a-literal-command-into-tool-discovery.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "You ask an agent to run a literal command, such as git status. Instead of running it, the agent searches for imagined wrappers, loads unrelated skills, reads configuration and explores binaries. The endpoint, model and tools are all healthy, and the same model did the obvious thing last week.",
+        "title": "system-prompt drift can turn a literal command into a tool-discovery detour"
+      },
+      {
+        "affected_models": [],
+        "affected_stacks": [],
+        "affected_versions_builds": "A first-party local OpenAI-compatible model service backing a long-lived autonomous coding session, 2026-09-15. The serving process was restarted inside a container that stayed up. After drain and lifecycle classification were added, 8 of 8 stability runs completed.",
+        "applicability": {
+          "concurrency_regime": [],
+          "context_regime": [],
+          "device_class": [],
+          "exact_checkpoint": [],
+          "failure_stage": [],
+          "gpu_architecture": [],
+          "model_family": [],
+          "node_count": [],
+          "operating_system": [],
+          "parallelism": [],
+          "quantization": [],
+          "serving_stack": [],
+          "stack_version": [],
+          "topology": []
+        },
+        "category": "runtime",
+        "check": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change.",
+        "contributor": "Blackwellboy",
+        "diagnostic_modalities": [
+          "static_config",
+          "log_scan",
+          "guided_experiment",
+          "human_review"
+        ],
+        "doctor_coverage": {
+          "implemented": false,
+          "source": null
+        },
+        "evidence_strength": [
+          "measured here, raw not published"
+        ],
+        "exact_conditions": "A first-party local OpenAI-compatible model service backing a long-lived autonomous coding session, 2026-09-15. The serving process was restarted inside a container that stayed up. After drain and lifecycle classification were added, 8 of 8 stability runs completed.",
+        "id": "175",
+        "known_limitations": "",
+        "mechanism": "The serving process was deliberately replaced to apply a configuration change while an agent session still depended on it. During the restart window the endpoint disappears, active and follow-up requests fail, and the framework's ordinary provider retries hide that this was planned lifecycle churn. A healthy probe at the start of a task says nothing about service continuity for the rest of it.",
+        "mitigation": "Drain or pause dependent agent work before replacing the serving process. On a local-provider connection error, probe the endpoint's lifecycle once and classify it as down or recovering instead of burning ordinary retries or silently switching models. Keep session state so the task can resume when the service returns.",
+        "public_evidence_links": [],
+        "related_traps": [
+          "53",
+          "112"
+        ],
+        "source_path": "traps/runtime/175-restart-without-drain-drops-the-agents-model.md",
+        "status": "measured here, raw not published.",
+        "supersession": null,
+        "symptom": "An agent is making useful progress, has already written or tested files, then suddenly gets generic connection errors from its local model provider. The container or worker around it still looks healthy, so the error reads as a network fault, an out-of-memory kill or a model crash.",
+        "title": "restarting the model server without draining active agents drops the session's backing model, and it looks like a network fault"
       }
     ],
     "schema_version": "1.1"

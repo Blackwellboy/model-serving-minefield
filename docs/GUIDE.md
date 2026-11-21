@@ -28,7 +28,7 @@ minefield diagnose "tp=2 dies after twenty minutes" \
   --base-url http://HOST:8000/v1
 ```
 
-Minefield considers all **168 canonical traps** for routing, scans the supplied
+Minefield considers all **175 canonical traps** for routing, scans the supplied
 files, auto-detects the endpoint stack/model when available, and spends its
 bounded live-probe budget on checks related to the traps already surfaced by
 the symptom/files before falling back to generic lite probes. The output keeps
@@ -56,7 +56,7 @@ before measuring a 5090, Spark or multi-node lane.
 read-only doctor:
 
 ```bash
-pipx install msmf
+pipx install model-serving-minefield
 minefield quick --base-url http://HOST:PORT/v1 --json doctor.json
 ```
 
@@ -79,7 +79,7 @@ unwired, and a count nobody looks at is not a check.
 
 ## Start here
 
-Four doors, and which one you want depends on why you are here. All 168
+Four doors, and which one you want depends on why you are here. All 175
 entries are too many to read; none of these asks you to.
 
 - **"What am I doing?"** The **[playbooks](../playbooks/)** are ordered checklists
@@ -103,7 +103,8 @@ entries are too many to read; none of these asks you to.
   [HF transformers](../stacks/hf-transformers.md),
   [TensorRT-LLM](../stacks/tensorrt-llm.md),
   [text-generation-inference](../stacks/text-generation-inference.md),
-  [TabbyAPI and ExLlama](../stacks/tabbyapi.md),
+  [TabbyAPI and ExLlama](../stacks/tabbyapi.md) (an ExLlamaV3 evaluation
+  lane only, no TabbyAPI server),
   [LM Studio](../stacks/lm-studio.md) and
   [text-generation-webui](../stacks/text-generation-webui.md). Those open by
   saying what they do **not** have, then name which mechanism classes most
@@ -114,7 +115,7 @@ entries are too many to read; none of these asks you to.
   including layers that are not serving stacks. Absence from either means
   nobody has reported on that model here, not that it is safe.
 - **"What am I seeing?"** The **[symptom table](../TRAPS.md)** is
-  directly below, all 168 entries, one row each, sorted by number. It is the
+  in [TRAPS.md](../TRAPS.md): all 175 entries, one row each. It is the
   answer to a weird number you are holding right now. That is the premise of
   this registry and it has not moved; it is placed after these doors only
   because most visitors arrive before the symptom rather than during it.
@@ -125,9 +126,9 @@ entries are too many to read; none of these asks you to.
 
 In a hurry and holding an endpoint? [Run the doctor](#run-the-doctor) against
 it. It is a **thinking-stack preflight, not a minefield doctor**: it has checks
-for **70 of these 168 entries**, weighted toward reasoning fields, templates,
+for **70 of these 175 entries**, weighted toward reasoning fields, templates,
 tool parsing and multimodal handling, and a clean run from it says nothing about
-the other 93. It runs
+the other 105. It runs
 in under a minute and prints its own coverage line at the end of every run so
 you can see exactly how much of the registry it touched, how much it could not
 check on your stack, and how much it never implements.
@@ -168,7 +169,7 @@ or long-context behaviour, which is most of this registry. A clean run is a
 statement about a handful of trap ids, never a bill of health.
 
 With that said, one stdlib-only file, no install, that diagnoses your endpoint
-against 70 of this registry's 168 entries in under a minute:
+against 70 of this registry's 175 entries in under a minute:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/Blackwellboy/model-serving-minefield/main/doctor/minefield_doctor.py

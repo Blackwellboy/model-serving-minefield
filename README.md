@@ -36,13 +36,13 @@ minefield diagnose "tp=2 dies after twenty minutes" --files start.sh ./logs/ --b
 ```
 
 Between `scan`, the log checks and the live doctor,
-131 of the 168 traps have at least one automatic check
+131 of the 175 traps have at least one automatic check
 (`minefield coverage` prints the breakdown). A match is a lead to check, never
 a diagnosis, and **no match is not a clean bill of health**.
 
 ## Find your symptom
 
-All 168 entries are in **[TRAPS.md](TRAPS.md)**, one row each: what you are
+All 175 entries are in **[TRAPS.md](TRAPS.md)**, one row each: what you are
 seeing, what it may be, the entry, and its evidence status. Shorter routes:
 
 - **Know your stack?** [stacks/](stacks/) has a page per serving stack

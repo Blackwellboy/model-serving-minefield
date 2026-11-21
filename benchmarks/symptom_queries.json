@@ -1830,6 +1830,76 @@
    "trap": "168",
    "split": "holdout",
    "query": "after taking every tensor parallel group down with one command the next up fails because a gpu lock is still held"
+  },
+  {
+   "trap": "169",
+   "split": "tune",
+   "query": "new drafter doubled the decode benchmark but our coding agent is barely faster"
+  },
+  {
+   "trap": "169",
+   "split": "holdout",
+   "query": "speculative decoding speedup looks huge at temperature zero but disappears on real prose and tool calls"
+  },
+  {
+   "trap": "170",
+   "split": "tune",
+   "query": "lots of answers hit max tokens with thinking on high and retrying with a bigger limit hits the limit again"
+  },
+  {
+   "trap": "170",
+   "split": "holdout",
+   "query": "mmlu pro score is low because many items ran to the token cap and the rerun takes hours"
+  },
+  {
+   "trap": "171",
+   "split": "tune",
+   "query": "confidence intervals overlap so the finetune looks identical to base on perplexity"
+  },
+  {
+   "trap": "171",
+   "split": "holdout",
+   "query": "four point drop on a two hundred question benchmark subset is it real or noise"
+  },
+  {
+   "trap": "172",
+   "split": "tune",
+   "query": "agent says tokens per second drops to 57 at long context but decode speed looks flat"
+  },
+  {
+   "trap": "172",
+   "split": "holdout",
+   "query": "framework reported throughput is much lower than the engine decode rate at 150k context"
+  },
+  {
+   "trap": "173",
+   "split": "tune",
+   "query": "tool call parsed and executed fine but it was the wrong tool and the agent went off the rails"
+  },
+  {
+   "trap": "173",
+   "split": "holdout",
+   "query": "agent keeps calling an unrelated skill tool even though the parser is fine"
+  },
+  {
+   "trap": "174",
+   "split": "tune",
+   "query": "asked the agent to run git status and it started searching for wrapper scripts instead"
+  },
+  {
+   "trap": "174",
+   "split": "holdout",
+   "query": "agent no longer runs literal commands after a system prompt change and explores binaries"
+  },
+  {
+   "trap": "175",
+   "split": "tune",
+   "query": "agent got connection errors mid task after we restarted the model server to change a setting"
+  },
+  {
+   "trap": "175",
+   "split": "holdout",
+   "query": "local provider connection refused during a long coding session while the container stayed up"
   }
  ],
  "negatives": {

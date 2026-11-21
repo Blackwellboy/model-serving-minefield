@@ -1,6 +1,6 @@
 # Agent bundle router
 
-Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `479b8d1c35f13b7442f91f51acec9d1c096ead2f999722a378091a0766e6096d`).
+Generated from `dist/MINEFIELD_AGENT_BUNDLE_LITE.md` (SHA-256 `6fa7462eed3ab74513fe3e042caa9d85638cecec2e16e55a6d6b7a34cebb4bbc`).
 
 # Model Serving Minefield — agent router (lite)
 
@@ -539,6 +539,13 @@ L-series suggestions use a different shape and always remain non-canonical:
 - 166: You vary reasoning per request: thinking on for some calls, off for others, or a different effort level for hard questions. The prompt is the same long system prompt and history every time, and prefix caching is on. Yet the first request at each new setting is as slow as a cold start, and its usage.prompt_tokens_details.cached_tokens is 0, even though the request just before it, with a different setting, had the whole prompt cached. This happens between two thinking levels too: low and high render to the
 - 167: An engine that promises to refuse any model pack not on its validated list boots an unlisted pack anyway. Nothing looks wrong: the boot finishes, /v1/models answers, and the boot facts read pack_validated: no (--allow-unvalidated-pack) with the warning "served only because --allow-unvalidated-pack was given". You never passed that flag. The line reads like a record of your own choice, so the natural reaction is to wonder which wrapper script added it, not to suspect the gate.
 - 168: You run several tensor-parallel groups from one cluster file and take them all down with rexl3-cluster down --cluster FILE --all. It prints a normal shutdown for one group and exits 0. The other groups keep running and keep their GPUs and memory. The next up on those nodes then fails on a busy GPU lock or a memory check, a long way from the command that caused it, or the "stopped" lane goes on answering requests.
+- 169: A speculative-decoding change (a new drafter, a deeper or adaptive verify step, a bigger draft budget) lifts the headline decode number by half or more. You ship it, and the agent, chat or coding workload it was meant for gets a small fraction of that gain, or none.
+- 170: A reasoning model's MMLU-Pro or IFEval score looks several points worse than its peers. A noticeable share of items hit the token cap. You rerun those at double the budget expecting the score to recover, and the rerun takes hours: most of the retried items hit the new cap too.
+- 171: You compare a base model with a fine-tuned, merged, edited or re-quantized derivative on bits per byte or perplexity. The two confidence intervals overlap, so you call it "no measurable difference". Or the reverse: a 4-point gap on a 200-question benchmark subset is read as real damage.
+- 172: An agent framework or gateway log says the model runs at about 57 tok/s at long context, down from about 80 at short context. It looks like a long-context decode slowdown, and you start tuning attention kernels or KV settings.
+- 173: An agent makes a syntactically valid tool call, the parser accepts it, the tool runs successfully, and the next answer still derails badly. Every layer reports success, so the trace looks healthy even though the tool the model picked had nothing to do with the user's task.
+- 174: You ask an agent to run a literal command, such as git status. Instead of running it, the agent searches for imagined wrappers, loads unrelated skills, reads configuration and explores binaries. The endpoint, model and tools are all healthy, and the same model did the obvious thing last week.
+- 175: An agent is making useful progress, has already written or tested files, then suddenly gets generic connection errors from its local model provider. The container or worker around it still looks healthy, so the error reads as a network fault, an out-of-memory kill or a model crash.
 
 ## Compact possible/unverified lead index
 

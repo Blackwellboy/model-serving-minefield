@@ -1,37 +1,70 @@
 # TabbyAPI and ExLlamaV2 / ExLlamaV3
 
-**Measured here:** no (no first-party run)
+**Measured here:** yes, ExLlamaV3 only (one first-party ExLlamaV3 evaluation
+lane; no first-party TabbyAPI server run)
 
 
-**We have measured nothing on this stack.** No entry names TabbyAPI, ExLlama,
-ExLlamaV2 or EXL2 anywhere. Absence means nobody has reported to us, not that
-the stack is clean.
+**Two entries name ExLlamaV3 or TabbyAPI as the stack that was run**, and one
+of them was measured here:
 
-**One distinction on this page matters more than the zero.** Six entries name
-**EXL3**: traps
+| Entry | What it says | Status |
+|---|---|---|
+| [156](../traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md) | Repeated ExLlamaV3 requeues can under-report `completion_tokens`, and TabbyAPI's tok/s inherits it | contributor-measured, conditions as reported |
+| [171](../traps/evaluation/171-unpaired-intervals-hide-a-real-sub-percent-delta.md) | On ExLlamaV3 BF16, a derivative's real +0.31% bits-per-byte delta was invisible to unpaired intervals and clear to a paired one | measured here, raw not published |
+
+Trap [137](../traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md)
+is a contributor measurement of one ExLlamaV3 native-extension contract, not a
+server run. ExLlamaV2 and EXL2 have no entry anywhere. Absence means nobody
+has reported to us, not that the stack is clean.
+
+**One distinction on this page matters more than the counts.** Several
+entries name **EXL3** as a **quantization format** in a hybrid build served
+from a container, not as ExLlama-the-runtime behind TabbyAPI: traps
 [02](../traps/template/02-orphaned-think-close-tag.md),
 [03](../traps/reasoning/03-enable-thinking-default-drift.md),
 [04](../traps/template/04-history-reasoning-stripping.md),
-[10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) and
-[30](../traps/template/30-default-system-message-silently-replaced.md) and
-[137](../traps/evaluation/137-kernel-selector-return-is-not-process-exit-status.md).
-The first five name EXL3 as a **quantization format** in a hybrid build, served
-from a container, not as ExLlama-the-runtime behind TabbyAPI. Trap 137 is a
-contributor measurement of one native extension contract, again not a TabbyAPI
-server run. We have data about EXL3 artifacts and one extension call. We have
-none about this *server*.
-
-Reading those five as TabbyAPI coverage would be the exact error trap
+[10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md),
+[30](../traps/template/30-default-system-message-silently-replaced.md) and the
+DeepSeek-V4.1-Flash EXL3 lanes under TensorFold in
+[169](../traps/evaluation/169-plain-greedy-decode-speedup-does-not-transfer.md),
+[170](../traps/evaluation/170-cap-hit-retry-at-a-bigger-budget-is-mostly-a-second-loop.md)
+and [172](../traps/evaluation/172-agent-wall-time-per-call-is-not-decode-speed.md).
+Reading those as TabbyAPI coverage would be the exact error trap
 [10](../traps/quantization/10-quant-label-is-not-the-kernel-path.md) is about:
 the format label is not the serving path.
 
-Nobody here has run TabbyAPI.
+## The three checks to run first
+
+**1. Count output tokens yourself on long replies.** Retokenize the returned
+reasoning and content with the served tokenizer and compare with
+`usage.completion_tokens`. A `finish_reason=length` with a reported count far
+below `max_tokens` is the signature of
+[trap 156](../traps/evaluation/156-exllamav3-requeue-undercounts-output-tokens.md),
+and every tok/s figure derived from that count is wrong with it.
+
+**2. Compare a derivative with its base paired, not unpaired.** ExLlamaV3's
+BF16 path scored the same 315 documents bit-identically on a repeat run, which
+makes it a good regression gate: keep per-document results and bootstrap the
+per-document difference
+([trap 171](../traps/evaluation/171-unpaired-intervals-hide-a-real-sub-percent-delta.md)).
+Run the scorer twice before trusting a small delta; if the repeat is not
+identical on your build, that noise floor is your minimum detectable effect.
+
+**3. Quote speculative-decoding gains per output class.** ExLlamaV3 and
+TabbyAPI can run a draft model (including DFlash-style drafters on recent
+builds). Measure prose, JSON, tool calls and reasoning traces separately at
+served settings, and read accepted and drafted counts from the engine, not
+from client timing
+([trap 169](../traps/evaluation/169-plain-greedy-decode-speedup-does-not-transfer.md),
+[trap 105](../traps/evaluation/105-acceptance-estimator-unnamed.md)).
 
 ## Why the gap
 
-Our EXL3 work arrived as one arm of a quantization comparison rather than as a
-serving stack we operate, and the comparison was run through a container we
-already had. TabbyAPI was never stood up.
+Our early EXL3 work arrived as one arm of a quantization comparison rather
+than as a serving stack we operate, and the comparison was run through a
+container we already had. The first-party ExLlamaV3 lane since then is an
+evaluation lane (bits per byte), not a TabbyAPI server. TabbyAPI itself has
+still not been stood up here.
 
 ## Which of our mechanism classes most likely apply, and why
 

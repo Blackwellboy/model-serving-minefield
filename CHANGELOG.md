@@ -6,6 +6,21 @@ CLI/MCP surface or the docs adds an entry at the top of this file, under a
 pull request that changes those paths without touching this file; label it
 `no-changelog` for a change nobody would look for here (typo, CI-only).
 
+## 2026-11-22 - traps 169 to 175, a short README, and the ExLlamaV3 stack page
+
+- Added [169](traps/evaluation/169-plain-greedy-decode-speedup-does-not-transfer.md): a speculative-decoding change lifted plain greedy decode from about 348 to 542 tok/s on an RTX 5090 DFlash2 lane, but the per-class workload gain was 0% to 23%; a second lane (TensorFold TP=2, 2x GB10) showed 78-80% acceptance on the code bench against about 60% in real agent use. **Measured here, raw not published.**
+- Added [170](traps/evaluation/170-cap-hit-retry-at-a-bigger-budget-is-mostly-a-second-loop.md): at high reasoning effort, 63 of 627 items hit a 16,384-token cap on llama.cpp b12600, and 19 of the 29 retried at 32,768 hit it again; MMLU-Pro read 72.5% with loops counted wrong and 84.7% on finished items. Report loop rate and finished-item accuracy separately. **Measured here, raw not published.**
+- Added [171](traps/evaluation/171-unpaired-intervals-hide-a-real-sub-percent-delta.md): on ExLlamaV3 BF16 bits per byte, a derivative's +0.31% delta had a paired interval of [+0.0015, +0.0025] while the unpaired intervals overlapped; a 4-point gap on a 200-question MMLU-Pro subset is inside unpaired noise. **Measured here, raw not published.**
+- Added [172](traps/evaluation/172-agent-wall-time-per-call-is-not-decode-speed.md): an agent framework reported about 57 tok/s at 150K-190K context while engine decode stayed at 79-83 tok/s. **Measured here, raw not published.**
+- Added [173](traps/tools/173-valid-tool-call-is-not-correct-tool-choice.md) (a valid tool call to the wrong tool), [174](traps/template/174-system-prompt-drift-turns-a-literal-command-into-tool-discovery.md) (system-prompt drift turns a literal command into tool discovery) and [175](traps/runtime/175-restart-without-drain-drops-the-agents-model.md) (restarting the server without draining active agent sessions), from first-party agent-stack findings. **Measured here, raw not published.**
+- [112](traps/runtime/112-process-liveness-is-not-model-readiness.md) gains an addendum: a correct endpoint whose owning container was stopped by a memory watchdog.
+- [stacks/tabbyapi.md](stacks/tabbyapi.md) is now an ExLlamaV3 page with three first checks (traps 156, 171, 169); the TabbyAPI/ExLlamaV2/V3 row in [stacks/README.md](stacks/README.md) moves from 0 to 2.
+- README.md is now a short front door (about 130 lines, down from 617). The full symptom table moves to [TRAPS.md](TRAPS.md) row for row, and every other section moves to [docs/GUIDE.md](docs/GUIDE.md). The registry loader, the integrity checks and their tests read the symptom table from `TRAPS.md`; the COUNT check now also covers `TRAPS.md` and `docs/GUIDE.md`.
+- One install name everywhere: `pipx install model-serving-minefield`. `msmf` stays as a documented alias.
+- Adds [CITATION.cff](CITATION.cff) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and a Pages workflow for the offline registry search in `web/` that runs only when started by hand (Pages is not enabled by this change).
+- Package version set to **0.2.3** in the tree; nothing is tagged or published.
+- Registry 168 to 175; symptom benchmark gains tune and holdout queries for each new entry.
+
 ## 2026-11-08 - traps 167 and 168: a validated-pack gate with a family exemption, and `down --all` that stops one group
 
 - Added [167](traps/runtime/167-validated-pack-gate-carries-a-family-exemption.md): REXL3 v0.1.0 boots any DeepSeek-V4.1 pack without `--allow-unvalidated-pack`, because the gate exempts configs that mention `deepseek_v41` (or `qwen3_5_moe`), and the boot facts then report the operator's flag as the reason. **Reproduced here** with a source check and a CPU-only test against the public v0.1.0 source; confirmed by the maintainers in REXL3/REXL3#86, fix due in the next engine release.
