@@ -1,0 +1,48 @@
+name: pages
+
+# Builds the static registry site (search UI plus one page per trap) and
+# deploys it to GitHub Pages. Manual only: nothing runs on push or on a pull
+# request. Before the first run the maintainer enables Pages for this
+# repository with "GitHub Actions" as the source (Settings > Pages).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: install the package
+        run: python -m pip install .
+      - name: verify generated registry is current
+        run: python -m minefield agent-bundle --verify
+      - name: build site
+        run: python3 site/build_site.py --out _site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
