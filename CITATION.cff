@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you cite Model Serving Minefield, please cite it as below, and name the trap numbers and the commit you read."
+title: "Model Serving Minefield: a registry of LLM serving-path traps"
+type: software
+authors:
+  - alias: Blackwellboy
+license: MIT
+repository-code: "https://github.com/Blackwellboy/model-serving-minefield"
+url: "https://github.com/Blackwellboy/model-serving-minefield"
+version: 0.2.3
+keywords:
+  - llm-serving
+  - benchmarking
+  - model-evaluation
+  - vllm
+  - llama-cpp
+  - quantization
+  - reasoning-models

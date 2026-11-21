@@ -330,15 +330,20 @@ def check_separation(root, entries, cfg, findings):
                 "the doctor references the upstream/ tree"))
 
     # US-NOT-COUNTED
-    readme = read(os.path.join(root, "README.md"))
-    for line in readme.splitlines():
-        if line.startswith("|") and "upstream/" in line and "](upstream/" in line:
-            # A pointer to the directory from prose is fine; a SYMPTOM-TABLE
-            # row is not, because that table is the measured registry's index.
-            if re.search(r"\|\s*\[U\d{2,}\]\(upstream/", line):
-                findings.append(Finding(
-                    "US-NOT-COUNTED", "README.md",
-                    "an upstream entry has a row in the symptom table"))
+    # The symptom table lives in TRAPS.md since 2026-11-22; README.md is
+    # still scanned because it carries a short table of its own.
+    for table_rel in ("README.md", "TRAPS.md"):
+        table_path = os.path.join(root, table_rel)
+        if not os.path.exists(table_path):
+            continue
+        for line in read(table_path).splitlines():
+            if line.startswith("|") and "upstream/" in line and "](upstream/" in line:
+                # A pointer to the directory from prose is fine; a SYMPTOM-TABLE
+                # row is not, because that table is the measured registry's index.
+                if re.search(r"\|\s*\[U\d{2,}\]\(upstream/", line):
+                    findings.append(Finding(
+                        "US-NOT-COUNTED", table_rel,
+                        "an upstream entry has a row in the symptom table"))
     traps = os.path.join(root, "traps")
     for dp, _dns, fns in os.walk(traps):
         for fn in fns:

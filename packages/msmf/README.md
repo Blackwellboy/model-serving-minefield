@@ -1,10 +1,16 @@
 msmf
 ====
 
-This is a tiny alias package that depends on `model-serving-minefield` and exposes the same console scripts:
+A short alias for [`model-serving-minefield`](https://pypi.org/project/model-serving-minefield/).
+The canonical install is:
+
+```bash
+pipx install model-serving-minefield
+```
+
+`pipx install msmf` installs the same thing: this package bundles no code or
+registry data, depends on `model-serving-minefield>=0.2,<0.3`, and exposes the
+same console scripts:
 
 - `minefield` → `minefield.cli:main`
 - `minefield-mcp` → `minefield.mcp_server:main`
-
-No code or registry data is bundled here; install `msmf` to get the `minefield` tools via the dependency on `model-serving-minefield`.
-

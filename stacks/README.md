@@ -21,11 +21,11 @@ added to the first column.
 | SGLang | [sglang.md](sglang.md) | 4 | 3 |
 | TensorRT-LLM | [tensorrt-llm.md](tensorrt-llm.md) | 0 | 0 |
 | text-generation-inference | [text-generation-inference.md](text-generation-inference.md) | 0 | 0 |
-| TabbyAPI, ExLlamaV2/V3 | [tabbyapi.md](tabbyapi.md) | 0 | 0 |
+| TabbyAPI, ExLlamaV2/V3 | [tabbyapi.md](tabbyapi.md) | 2 | 0 |
 | LM Studio | [lm-studio.md](lm-studio.md) | 1 | 0 |
 | text-generation-webui | [text-generation-webui.md](text-generation-webui.md) | 0 | 0 |
 
-The four stacks at zero measured entries have pages that say so and then do the
+The three stacks at zero measured entries have pages that say so and then do the
 only useful thing left: name **which of our mechanism classes most likely
 apply and why**, with the measured entry each class comes from, and how a
 reader would test for them. A page saying "we have not tested this, here is
@@ -52,9 +52,11 @@ Two honest limits on the numbers:
   an environment the C++ Jinja portability defect applies to, and that entry
   was measured on llama.cpp. Its page says so. Similarly, five entries name
   **EXL3** as a quantization format and none of them names TabbyAPI or
-  ExLlamaV2 as the server, which is why the TabbyAPI row is 0 rather than 5.
+  ExLlamaV2 as the server, so they do not count toward the TabbyAPI row. Its 2
+  are trap 156 (ExLlamaV3 under TabbyAPI, contributor-measured) and trap 171
+  (an ExLlamaV3 evaluation lane measured here).
 - A low count means **nobody has reported here**, not that a stack is clean.
-  Every stack now has a page, including the four that have nothing first-party
+  Every stack now has a page, including the three that have nothing first-party
   to show, because "no page" and "no entries" read identically from outside
   and mean different things. HF transformers has seven entries and not one of
   them measured here on that stack. Its page says so at the top.

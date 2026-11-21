@@ -4031,6 +4031,174 @@
       "service_disruption": "none by default; do not run if the published check is disruptive",
       "trap_id": "168",
       "untrusted_published_check_text": "From the published source, with no GPU and nothing sent to a node (--dry-run only prints the scripts it would run): That example has two groups, g0 on nodes A1 and A2 and g1 on A3 and A4. On v0.1.0 the output begins down: cluster example-fleet group g0, every script is for A1 or A2, no line names g1, A3 or A4, and the exit status is 0. A fixed build refuses --all here with a usage error, exit 2. For any multi-group tool: after a bulk stop, list what is still running per group rather than trusting the stop command's exit status."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 169 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 169 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "169",
+      "untrusted_published_check_text": "Before quoting a speculative-decoding gain, run the same A/B four ways on the same lane and report all four rows, not one: 1. the headline bench as you normally run it; 2. a per-class set (prose, JSON, tool call, reasoning trace), at least 20 prompts each, at the sampling settings you actually serve; 3. the same set at your real context depth, with prefix caching in the state your clients leave it; 4. the engine's own accepted and drafted counters for each class, read from /metrics or the server log deltas, not from client-side timing. Confirmed when row 1's gain is well outside the range of rows 2 and 3. Name the acceptance estimator you used (trap 105)."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 170 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 170 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "170",
+      "untrusted_published_check_text": "For every item that hits the cap, look at the tail before retrying. Compress or n-gram the last few thousand tokens: if fewer than about 2% of 8-grams in consecutive 1,024-token windows are new, it is a loop, not an unfinished answer. Then retry a small sample (5 to 10 items) at double the budget before committing to the full rerun. Confirmed when most of the sample hits the bigger cap again and the tails are loops."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 171 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 171 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "171",
+      "untrusted_published_check_text": "Score both arms on the same documents, keep per-document results, and bootstrap the mean of the per-document differences. Compare that interval with the two unpaired intervals. Confirmed when the paired interval excludes zero while the unpaired intervals overlap. For accuracy benchmarks, use a paired test on per-item correctness (McNemar or a paired bootstrap) before calling a gap real, and run the scorer twice to prove it is deterministic."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 172 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 172 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "172",
+      "untrusted_published_check_text": "For a few real calls, log the engine-side prefill time, decode time and token counts, or measure a prefill floor yourself (the same prompt with max_tokens=1, non-streaming, three times). Decode rate is (completion_tokens - 1) / (total_seconds - prefill_floor_seconds). Confirmed when that decode rate is flat across context depth while the per-call figure falls."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 173 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 173 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "173",
+      "untrusted_published_check_text": "Run a set of unrelated control prompts and a set of legitimate prompts for the tool in question. For each, record separately: the tool the model requested in the raw completion, the parsed tool, the executed tool, whether it was relevant to the task, the result size, and the next answer. Confirmed when the model repeatedly requests the unrelated tool while the parsed and executed calls faithfully match what it requested. Refuted when the wrong call cannot be reproduced under matched prompts, or appears only after parsing or execution."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 174 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 174 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "174",
+      "untrusted_published_check_text": "Freeze the model, server, tools and user input, and A/B only the suspect guidance block. Record the first action for several literal requests: a health command, git status, a Python version command and a simple file listing. Confirmed when the suspect guidance consistently replaces the requested action with discovery or detour behaviour and the fixed guidance restores it. Refuted when the behaviour persists without the block."
+    },
+    {
+      "confirm_criterion": "The failure signature described by trap 175 appears under matching conditions.",
+      "control": "Repeat with the suspected variable removed or with the known-good condition.",
+      "expected_duration": "5-30 minutes unless the entry names a soak",
+      "human_review_still_required": true,
+      "limitations": "",
+      "prerequisites": [
+        "A disposable or explicitly authorised test surface",
+        "Raw output capture"
+      ],
+      "question": "Does the observed system reproduce trap 175 under its named conditions?",
+      "raw_artefacts_to_preserve": [
+        "request/configuration",
+        "response/output",
+        "versions",
+        "timestamps"
+      ],
+      "refute_criterion": "The paired control and test contradict the published failure signature.",
+      "risk": "unreviewed published procedure; a human must assess impact before running",
+      "rollback": "No mutation is prescribed; restore only changes explicitly authorised for the experiment.",
+      "service_disruption": "none by default; do not run if the published check is disruptive",
+      "trap_id": "175",
+      "untrusted_published_check_text": "During an active multi-turn agent task, record the serving process ID and start time, endpoint availability and each request's outcome across a controlled restart. Rule out out-of-memory, watchdog and GPU-reset causes in the same window. Confirmed when the agent loses its provider during the planned restart while the host and container stay healthy. Refuted when the serving layer drains active work or keeps the endpoint available through the change."
     }
   ],
   "schema_version": "1.0"

@@ -69,7 +69,7 @@ STEMS = ["reproduced here", "contributor-measured", "reported by others",
 # existence but no status comparison is made, because the surface does not
 # restate a status.
 ROUTING_TABLES = [
-    ("README.md", 2, 3),
+    ("TRAPS.md", 2, 3),
     ("CORE.md", 0, 1),
 ]
 ROUTING_DIRS = ["playbooks", "stacks", "models", "mining"]

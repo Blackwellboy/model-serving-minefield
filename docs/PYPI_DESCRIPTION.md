@@ -12,8 +12,11 @@ your setup is safe.
 ## Install
 
 ```bash
-pipx install msmf
+pipx install model-serving-minefield
 ```
+
+`msmf` is a short alias package on PyPI that depends on this one and installs
+the same `minefield` and `minefield-mcp` commands.
 
 ## Use
 

@@ -151,7 +151,7 @@ class RegistryMutations(unittest.TestCase):
     def test_01_trap_missing_its_readme_row(self):
         """The launch-document failure: an entry exists, the symptom table
         does not know about it."""
-        p = os.path.join(self.root, "README.md")
+        p = os.path.join(self.root, "TRAPS.md")
         text = read(p)
         target = "traps/routing/33-moe-inference-topk-expansion-tax.md"
         lines = [l for l in text.splitlines()
@@ -279,7 +279,7 @@ class RegistryMutations(unittest.TestCase):
         self.assertTrue(any("33-moe" in f["where"] for f in st), st)
 
     def test_10_readme_status_cell_outside_the_vocabulary(self):
-        p = os.path.join(self.root, "README.md")
+        p = os.path.join(self.root, "TRAPS.md")
         write(p, read(p).replace(
             "| [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) | reported by others |",
             "| [41](traps/runtime/41-static-batching-buys-power-not-throughput.md) | mostly true |"))

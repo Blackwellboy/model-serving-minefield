@@ -1,0 +1,3 @@
+[console_scripts]
+minefield = minefield.cli:main
+minefield-mcp = minefield.mcp_server:main
